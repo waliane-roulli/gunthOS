@@ -33,7 +33,7 @@ export function RetroWindow({
       }}
     >
       <div
-        className="px-[10px] py-[6px] flex justify-between items-center border-b-2 border-black tracking-wider text-sm"
+        className="px-[10px] py-[6px] flex justify-between items-center border-b-2 border-black tracking-wider text-base"
         style={{
           background: "linear-gradient(to right, var(--t-titlebar-from), var(--t-titlebar-to))",
           color: "var(--t-titlebar-text)",

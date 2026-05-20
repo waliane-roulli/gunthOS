@@ -34,6 +34,7 @@ interface WindowManagerContextValue {
   restoreWindow: (id: string) => void;
   focusWindow: (id: string) => void;
   moveWindow: (id: string, x: number, y: number) => void;
+  resizeWindow: (id: string, w: number, h: number, x?: number, y?: number) => void;
 }
 
 const WindowManagerContext = createContext<WindowManagerContextValue>({
@@ -46,6 +47,7 @@ const WindowManagerContext = createContext<WindowManagerContextValue>({
   restoreWindow: () => {},
   focusWindow: () => {},
   moveWindow: () => {},
+  resizeWindow: () => {},
 });
 
 const BASE_Z = 100;
@@ -178,6 +180,20 @@ export function WindowManagerProvider({ children }: { children: ReactNode }) {
     );
   }, []);
 
+  const resizeWindow = useCallback((id: string, w: number, h: number, x?: number, y?: number) => {
+    setWindows((prev) =>
+      prev.map((win) =>
+        win.id === id
+          ? {
+              ...win,
+              size: { w: Math.max(240, w), h: Math.max(160, h) },
+              position: x !== undefined && y !== undefined ? { x, y } : win.position,
+            }
+          : win
+      )
+    );
+  }, []);
+
   return (
     <WindowManagerContext.Provider
       value={{
@@ -190,6 +206,7 @@ export function WindowManagerProvider({ children }: { children: ReactNode }) {
         restoreWindow,
         focusWindow,
         moveWindow,
+        resizeWindow,
       }}
     >
       {children}

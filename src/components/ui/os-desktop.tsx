@@ -164,7 +164,7 @@ function DesktopIcon({
         </span>
         {badge && (
           <span
-            className="absolute -top-1 -right-1 text-[0.5rem] font-bold px-1 border border-black animate-[blink_0.8s_step-end_infinite]"
+            className="absolute -top-1 -right-1 text-xs font-bold px-1 border border-black animate-[blink_0.8s_step-end_infinite]"
             style={{
               backgroundColor: "var(--t-badge-bg)",
               color: "var(--t-badge-text)",
@@ -176,7 +176,7 @@ function DesktopIcon({
         )}
       </div>
       <span
-        className="text-center text-[0.65rem] leading-tight px-0.5 max-w-full break-words"
+        className="text-center text-sm leading-tight px-0.5 max-w-full break-words"
         style={{
           fontFamily: "var(--t-font-display)",
           color: "white",

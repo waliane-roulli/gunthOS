@@ -47,10 +47,10 @@ function GunthDialog({
             color: "var(--t-titlebar-text)",
           }}
         >
-          <span className="text-xs tracking-widest font-bold">{config.icon} {config.title}</span>
+          <span className="text-sm tracking-widest font-bold">{config.icon} {config.title}</span>
           <button
             onClick={() => onClose()}
-            className="w-[18px] h-[18px] flex items-center justify-center text-[0.6rem] font-bold border-[2px] cursor-pointer"
+            className="w-[18px] h-[18px] flex items-center justify-center text-xs font-bold border-[2px] cursor-pointer"
             style={{
               backgroundColor: "var(--t-bg)",
               color: "var(--t-text)",
@@ -68,7 +68,7 @@ function GunthDialog({
         <div className="flex gap-3 items-start p-4">
           <span className="text-3xl shrink-0">{config.icon}</span>
           <p
-            className="text-[0.72rem] tracking-wide leading-relaxed"
+            className="text-sm tracking-wide leading-relaxed"
             style={{ color: "var(--t-text)" }}
           >
             {config.message}
@@ -81,7 +81,7 @@ function GunthDialog({
             <button
               key={btn.label}
               onClick={() => onClose(btn.response ?? btn.label)}
-              className="px-6 py-1 border-[2px] text-xs tracking-widest cursor-pointer min-w-[72px]"
+              className="px-6 py-1 border-[2px] text-sm tracking-widest cursor-pointer min-w-[72px]"
               style={{
                 backgroundColor: "var(--t-bg)",
                 color: "var(--t-text)",
@@ -218,7 +218,7 @@ function MyComputerContent() {
           MON ORDINATEUR
         </h2>
         <p
-          className="text-[0.6rem] mt-1 tracking-wider"
+          className="text-sm mt-1 tracking-wider"
           style={{ color: "var(--t-text-muted)", fontFamily: "var(--t-font-display)" }}
         >
           GunthOS v1.0 — {joke}
@@ -248,7 +248,7 @@ function MyComputerContent() {
           >
             <span className="text-3xl">{item.icon}</span>
             <span
-              className="text-[0.6rem] text-center tracking-wider leading-tight"
+              className="text-sm text-center tracking-wider leading-tight"
               style={{ color: "var(--t-text)" }}
             >
               {item.label}
@@ -258,13 +258,13 @@ function MyComputerContent() {
       </div>
 
       <div
-        className="mt-4 text-center text-[0.6rem] tracking-wider py-2 border-t"
+        className="mt-4 text-center text-sm tracking-wider py-2 border-t"
         style={{ color: "var(--t-text-muted)", fontFamily: "var(--t-font-display)", borderTopColor: "var(--t-border-dark)" }}
       >
         {status}
       </div>
       <div
-        className="text-center text-[0.55rem] tracking-wider"
+        className="text-center text-sm tracking-wider"
         style={{ color: "var(--t-text-muted)", fontFamily: "var(--t-font-display)" }}
       >
         Double-cliquez pour ouvrir

@@ -31,7 +31,7 @@ export function SolitaireApp() {
   return (
     <div className="p-4 flex flex-col gap-4 select-none" style={{ fontFamily: "var(--t-font-display)" }}>
       <div
-        className="text-center text-[0.6rem] tracking-widest py-1 border"
+        className="text-center text-sm tracking-widest py-1 border"
         style={{ color: "var(--t-text-muted)", borderColor: "var(--t-border-dark)" }}
       >
         {taunt}
@@ -102,7 +102,7 @@ export function SolitaireApp() {
               borderBottomColor: clicked === i ? "var(--t-border-light)" : "var(--t-border-dark)",
               borderRightColor: clicked === i ? "var(--t-border-light)" : "var(--t-border-dark)",
               color: c.red ? "#cc0000" : "var(--t-text)",
-              fontSize: "0.75rem",
+              fontSize: "0.875rem",
               fontWeight: "bold",
             }}
           >
@@ -113,7 +113,7 @@ export function SolitaireApp() {
       </div>
 
       <div
-        className="text-center text-[0.6rem] tracking-wider"
+        className="text-center text-sm tracking-wider"
         style={{ color: "var(--t-text-muted)" }}
       >
         {clicked !== null && clicked !== -1
@@ -184,7 +184,7 @@ export function DefragApp() {
 
   return (
     <div className="p-4 flex flex-col gap-3" style={{ fontFamily: "var(--t-font-display)" }}>
-      <div className="text-xs tracking-widest" style={{ color: "var(--t-text-muted)" }}>
+      <div className="text-sm tracking-widest" style={{ color: "var(--t-text-muted)" }}>
         DÉFRAGMENTEUR DE DISQUE GUNTH — Disque C:\\ (847 Mo utilisés sur 850 Mo)
       </div>
 
@@ -208,7 +208,7 @@ export function DefragApp() {
 
       {/* Progress bar */}
       <div>
-        <div className="text-[0.65rem] tracking-wider mb-1" style={{ color: "var(--t-text)" }}>
+        <div className="text-sm tracking-wider mb-1" style={{ color: "var(--t-text)" }}>
           {done ? "✅ Défragmentation terminée. Redémarrage recommandé." : message}
         </div>
         <div
@@ -229,7 +229,7 @@ export function DefragApp() {
             }}
           />
           <span
-            className="absolute inset-0 flex items-center justify-center text-[0.6rem] font-bold tracking-widest mix-blend-difference"
+            className="absolute inset-0 flex items-center justify-center text-sm font-bold tracking-widest mix-blend-difference"
             style={{ color: "#fff" }}
           >
             {Math.floor(progress)}%
@@ -239,7 +239,7 @@ export function DefragApp() {
 
       {done && (
         <div
-          className="text-center text-[0.65rem] tracking-wider p-2 border"
+          className="text-center text-sm tracking-wider p-2 border"
           style={{
             color: "var(--t-text-muted)",
             borderColor: "var(--t-border-dark)",
@@ -249,7 +249,7 @@ export function DefragApp() {
           Résultat : votre disque est exactement aussi fragmenté qu&apos;avant.
           <br />
           <button
-            className="mt-2 px-4 py-1 border-[2px] cursor-pointer text-[0.65rem] tracking-widest"
+            className="mt-2 px-4 py-1 border-[2px] cursor-pointer text-sm tracking-widest"
             style={{
               backgroundColor: "var(--t-bg)",
               color: "var(--t-text)",
@@ -266,7 +266,7 @@ export function DefragApp() {
       )}
 
       {/* Légende */}
-      <div className="flex gap-3 text-[0.55rem] tracking-wider flex-wrap" style={{ color: "var(--t-text-muted)" }}>
+      <div className="flex gap-3 text-xs tracking-wider flex-wrap" style={{ color: "var(--t-text-muted)" }}>
         {[
           ["bg-blue-600", "Utilisé"],
           ["bg-red-600", "Fragmenté"],
@@ -327,7 +327,7 @@ export function NotepadApp() {
     <div className="flex flex-col h-full" style={{ fontFamily: "var(--t-font-display)" }}>
       {/* Menu bar */}
       <div
-        className="flex gap-4 px-2 py-0.5 text-xs border-b shrink-0"
+        className="flex gap-4 px-2 py-0.5 text-sm border-b shrink-0"
         style={{ borderColor: "var(--t-border-dark)", color: "var(--t-text)" }}
       >
         {["Fichier", "Édition", "Format", "Affichage", "Aide"].map((m) => (
@@ -344,12 +344,12 @@ export function NotepadApp() {
 
       {/* Editor */}
       <textarea
-        className="flex-1 p-2 resize-none text-xs tracking-wide outline-none"
+        className="flex-1 p-2 resize-none text-sm tracking-wide outline-none"
         style={{
           backgroundColor: "#fff",
           color: "#000",
           fontFamily: "Courier New, monospace",
-          fontSize: "0.72rem",
+          fontSize: "0.875rem",
           lineHeight: 1.6,
           border: "none",
         }}
@@ -360,7 +360,7 @@ export function NotepadApp() {
 
       {/* Status bar */}
       <div
-        className="px-2 py-0.5 text-[0.55rem] tracking-widest border-t shrink-0"
+        className="px-2 py-0.5 text-xs tracking-widest border-t shrink-0"
         style={{
           borderColor: "var(--t-border-dark)",
           color: "var(--t-text-muted)",
@@ -422,7 +422,7 @@ export function PrinterApp() {
           <div className="text-sm font-bold tracking-widest" style={{ color: "var(--t-accent)" }}>
             GunthPrint 3000™
           </div>
-          <div className="text-[0.6rem] tracking-wider" style={{ color: "var(--t-text-muted)" }}>
+          <div className="text-sm tracking-wider" style={{ color: "var(--t-text-muted)" }}>
             État : HORS LIGNE (permanent) — Encre : ▓░░░░░░░░░ 3%
           </div>
         </div>
@@ -439,7 +439,7 @@ export function PrinterApp() {
         }}
       >
         <div
-          className="px-2 py-1 text-[0.6rem] tracking-widest border-b font-bold"
+          className="px-2 py-1 text-sm tracking-widest border-b font-bold"
           style={{ borderColor: "var(--t-border-dark)", color: "var(--t-text)", backgroundColor: "var(--t-bg-dark)" }}
         >
           FILE D'IMPRESSION ({queue.length} document{queue.length > 1 ? "s" : ""})
@@ -447,7 +447,7 @@ export function PrinterApp() {
         {queue.map((doc, i) => (
           <div
             key={i}
-            className="px-2 py-1.5 border-b flex justify-between items-center text-[0.6rem] tracking-wider"
+            className="px-2 py-1.5 border-b flex justify-between items-center text-sm tracking-wider"
             style={{ borderColor: "var(--t-border-dark)", color: "var(--t-text)" }}
           >
             <span>📄 {doc.name}</span>
@@ -459,7 +459,7 @@ export function PrinterApp() {
       {/* Log */}
       {log.length > 0 && (
         <div
-          className="border-[2px] p-2 text-[0.6rem] tracking-wider flex flex-col gap-1"
+          className="border-[2px] p-2 text-sm tracking-wider flex flex-col gap-1"
           style={{
             borderTopColor: "var(--t-border-dark)",
             borderLeftColor: "var(--t-border-dark)",
@@ -477,7 +477,7 @@ export function PrinterApp() {
       <div className="flex gap-2">
         <button
           onClick={handlePrint}
-          className="px-4 py-1 border-[2px] text-[0.65rem] tracking-widest cursor-pointer"
+          className="px-4 py-1 border-[2px] text-sm tracking-widest cursor-pointer"
           style={{
             backgroundColor: "var(--t-bg)",
             color: "var(--t-text)",
@@ -492,7 +492,7 @@ export function PrinterApp() {
         </button>
         <button
           onClick={handleClear}
-          className="px-4 py-1 border-[2px] text-[0.65rem] tracking-widest cursor-pointer"
+          className="px-4 py-1 border-[2px] text-sm tracking-widest cursor-pointer"
           style={{
             backgroundColor: "var(--t-bg)",
             color: "var(--t-text)",
@@ -591,7 +591,7 @@ export function IEApp() {
         ))}
 
         <input
-          className="flex-1 px-2 py-0.5 text-xs border-[2px] outline-none mx-1"
+          className="flex-1 px-2 py-0.5 text-sm border-[2px] outline-none mx-1"
           style={{
             backgroundColor: "#fff",
             color: "#000",
@@ -606,7 +606,7 @@ export function IEApp() {
           onKeyDown={(e) => e.key === "Enter" && navigate()}
         />
         <button
-          className="px-3 py-0.5 border-[2px] text-[0.65rem] tracking-widest cursor-pointer"
+          className="px-3 py-0.5 border-[2px] text-sm tracking-widest cursor-pointer"
           style={{
             backgroundColor: "var(--t-bg)",
             color: "var(--t-text)",
@@ -637,9 +637,9 @@ export function IEApp() {
         style={{ backgroundColor: "#fff", color: "#000" }}
       >
         {loading ? (
-          <div style={{ fontFamily: "monospace", fontSize: "0.75rem", color: "#000080" }}>
+          <div style={{ fontFamily: "monospace", fontSize: "0.875rem", color: "#000080" }}>
             Connexion à {url}…<br />
-            <span style={{ fontSize: "0.65rem", color: "#666" }}>
+            <span style={{ fontSize: "0.75rem", color: "#666" }}>
               {Math.floor(loadProgress)}% chargé — ne cliquez pas ailleurs
             </span>
           </div>
@@ -649,10 +649,10 @@ export function IEApp() {
             <div style={{ fontFamily: "Arial, sans-serif", fontSize: "1.1rem", fontWeight: "bold", color: "#000080", marginBottom: 6 }}>
               Cette page ne peut pas être affichée
             </div>
-            <div style={{ fontFamily: "monospace", fontSize: "0.65rem", color: "#444", maxWidth: 280 }}>
+            <div style={{ fontFamily: "monospace", fontSize: "0.75rem", color: "#444", maxWidth: 280 }}>
               {error}
             </div>
-            <div style={{ marginTop: 12, fontSize: "0.6rem", color: "#888" }}>
+            <div style={{ marginTop: 12, fontSize: "0.75rem", color: "#888" }}>
               Internet Explorer 6.0 — GunthOS Edition
             </div>
             <div className="flex gap-2 justify-center mt-4">
@@ -661,7 +661,7 @@ export function IEApp() {
                   key={s.url}
                   onClick={() => navigate(s.url)}
                   style={{
-                    fontSize: "0.6rem",
+                    fontSize: "0.75rem",
                     color: "#000080",
                     textDecoration: "underline",
                     background: "none",
@@ -683,7 +683,7 @@ export function IEApp() {
             <div style={{ fontSize: "0.75rem", color: "#444", fontFamily: "Arial", marginBottom: 16 }}>
               {visitedSite.joke}
             </div>
-            <div style={{ fontSize: "0.6rem", color: "#888" }}>
+            <div style={{ fontSize: "0.75rem", color: "#888" }}>
               🔒 Ce site est certifié sécurisé par GunthCert™ (certificat expiré)
             </div>
           </div>
@@ -692,7 +692,7 @@ export function IEApp() {
 
       {/* Status bar */}
       <div
-        className="px-2 py-0.5 text-[0.55rem] tracking-widest border-t shrink-0 flex justify-between"
+        className="px-2 py-0.5 text-xs tracking-widest border-t shrink-0 flex justify-between"
         style={{
           borderColor: "var(--t-border-dark)",
           color: "var(--t-text-muted)",

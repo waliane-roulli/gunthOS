@@ -15,7 +15,7 @@ export function SettingsPanel({ onClose, embedded = false }: SettingsPanelProps)
     <div className="p-5">
       {/* Section titre */}
       <div
-        className="text-xs tracking-widest mb-4 pb-1 border-b"
+        className="text-sm tracking-widest mb-4 pb-1 border-b"
         style={{
           color: "var(--t-text-muted)",
           fontFamily: "var(--t-font-display)",
@@ -64,7 +64,7 @@ export function SettingsPanel({ onClose, embedded = false }: SettingsPanelProps)
               </div>
 
               <div
-                className="text-xs font-bold tracking-wider truncate"
+                className="text-sm font-bold tracking-wider truncate"
                 style={{
                   color: "var(--t-accent)",
                   fontFamily: "var(--t-font-display)",
@@ -74,7 +74,7 @@ export function SettingsPanel({ onClose, embedded = false }: SettingsPanelProps)
                 {theme.name.toUpperCase()}
               </div>
               <div
-                className="text-[0.65rem] truncate mt-0.5"
+                className="text-sm truncate mt-0.5"
                 style={{
                   color: "var(--t-text-subtle)",
                   fontFamily: "var(--t-font-body)",
@@ -99,7 +99,7 @@ export function SettingsPanel({ onClose, embedded = false }: SettingsPanelProps)
         }}
       >
         <div
-          className="text-[0.6rem] tracking-widest mb-2"
+          className="text-sm tracking-widest mb-2"
           style={{
             color: "var(--t-text-subtle)",
             fontFamily: "var(--t-font-display)",
@@ -130,7 +130,7 @@ export function SettingsPanel({ onClose, embedded = false }: SettingsPanelProps)
       <div className="flex justify-end gap-2">
         <button
           onClick={onClose}
-          className="px-6 py-1.5 border-[2px] tracking-wider cursor-pointer text-sm"
+          className="px-6 py-1.5 border-[2px] tracking-wider cursor-pointer text-base"
           style={{
             backgroundColor: "var(--t-bg)",
             color: "var(--t-text)",
@@ -171,7 +171,7 @@ export function SettingsPanel({ onClose, embedded = false }: SettingsPanelProps)
       >
         {/* Titlebar */}
         <div
-          className="px-[10px] py-[6px] flex justify-between items-center border-b-2 border-black tracking-wider text-sm select-none"
+          className="px-[10px] py-[6px] flex justify-between items-center border-b-2 border-black tracking-wider text-base select-none"
           style={{
             background:
               "linear-gradient(to right, var(--t-titlebar-from), var(--t-titlebar-to))",

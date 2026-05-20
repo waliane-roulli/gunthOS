@@ -87,7 +87,7 @@ export function Taskbar() {
             }}
           >
             <div
-              className="px-2 py-1 border-b-2 border-black text-xs tracking-widest font-bold select-none"
+              className="px-2 py-1 border-b-2 border-black text-base tracking-widest font-bold select-none"
               style={{
                 background: "linear-gradient(to right, var(--t-titlebar-from), var(--t-titlebar-to))",
                 color: "var(--t-titlebar-text)",
@@ -97,14 +97,14 @@ export function Taskbar() {
             </div>
             <div className="flex gap-3 items-start p-4">
               <span className="text-3xl shrink-0">🔌</span>
-              <p className="text-[0.72rem] tracking-wide leading-relaxed whitespace-pre-line" style={{ color: "var(--t-text)" }}>
+              <p className="text-sm tracking-wide leading-relaxed whitespace-pre-line" style={{ color: "var(--t-text)" }}>
                 {shutdownMsg}
               </p>
             </div>
             <div className="flex justify-center pb-4">
               <button
                 onClick={() => setShutdownMsg(null)}
-                className="px-8 py-1 border-[2px] text-xs tracking-widest cursor-pointer"
+                className="px-8 py-1 border-[2px] text-base tracking-widest cursor-pointer"
                 style={{
                   backgroundColor: "var(--t-bg)",
                   color: "var(--t-text)",
@@ -235,7 +235,7 @@ export function Taskbar() {
           }}
         >
           <div
-            className="px-2 py-1.5 text-xs tracking-widest border-b"
+            className="px-2 py-1.5 text-base tracking-widest border-b"
             style={{
               background:
                 "linear-gradient(to right, var(--t-titlebar-from), var(--t-titlebar-to))",
@@ -277,7 +277,7 @@ export function Taskbar() {
             setStartMenuOpen((o) => !o);
             setThemeMenuOpen(false);
           }}
-          className="flex items-center gap-1.5 px-3 h-[30px] border-[2px] font-bold tracking-wider text-sm shrink-0 cursor-pointer select-none"
+          className="flex items-center gap-1.5 px-3 h-[30px] border-[2px] font-bold tracking-wider text-base shrink-0 cursor-pointer select-none"
           style={{
             backgroundColor: startMenuOpen ? "var(--t-bg-dark)" : "var(--t-bg)",
             fontFamily: "var(--t-font-display)",
@@ -308,7 +308,7 @@ export function Taskbar() {
               <button
                 key={win.id}
                 onClick={() => handleTaskbarClick(win.id)}
-                className="flex items-center gap-1 px-2 h-[28px] border-[2px] text-xs tracking-wider truncate min-w-[100px] max-w-[180px] cursor-pointer select-none"
+                className="flex items-center gap-1 px-2 h-[28px] border-[2px] text-sm tracking-wider truncate min-w-[100px] max-w-[180px] cursor-pointer select-none"
                 style={{
                   fontFamily: "var(--t-font-display)",
                   color: "var(--t-text)",
@@ -328,7 +328,7 @@ export function Taskbar() {
 
         {/* System tray */}
         <div
-          className="flex items-center gap-2 px-2 h-[28px] border-[2px] shrink-0 ml-auto text-xs"
+          className="flex items-center gap-2 px-2 h-[28px] border-[2px] shrink-0 ml-auto text-sm"
           style={{
             backgroundColor: "var(--t-bg)",
             borderTopColor: "var(--t-border-dark)",
@@ -375,7 +375,7 @@ function StartMenuItem({
   return (
     <button
       onClick={onClick}
-      className="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-left cursor-pointer hover:opacity-90"
+      className="w-full flex items-center gap-2 px-3 py-1.5 text-base text-left cursor-pointer hover:opacity-90"
       style={{
         fontFamily: "var(--t-font-display)",
         color: "var(--t-text)",

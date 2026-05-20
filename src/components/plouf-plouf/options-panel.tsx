@@ -47,7 +47,7 @@ export function OptionsPanel({
       {/* Titlebar */}
       <div
         onMouseDown={drag.onMouseDown}
-        className="px-[10px] py-[6px] flex justify-between items-center tracking-wider text-sm cursor-move select-none"
+        className="px-[10px] py-[6px] flex justify-between items-center tracking-wider text-base cursor-move select-none"
         style={{
           background: "linear-gradient(to right, var(--t-titlebar-from), var(--t-titlebar-to))",
           color: "var(--t-titlebar-text)",
@@ -101,7 +101,7 @@ export function OptionsPanel({
                 <button
                   key={t.id}
                   onClick={() => setTheme(t.id as ThemeId)}
-                  className="border-[2px] px-1 py-[5px] text-[0.72rem] font-bold cursor-pointer text-left transition-none"
+                  className="border-[2px] px-1 py-[5px] text-sm font-bold cursor-pointer text-left transition-none"
                   style={{
                     fontFamily: "var(--t-font-body)",
                     backgroundColor: isActive ? "var(--t-accent)" : "var(--t-bg)",
@@ -128,7 +128,7 @@ export function OptionsPanel({
                 <button
                   key={name}
                   onClick={() => onChange({ ...PRESETS[name] })}
-                  className="border-[2px] px-1 py-[5px] text-[0.72rem] font-bold cursor-pointer text-center transition-none"
+                  className="border-[2px] px-1 py-[5px] text-sm font-bold cursor-pointer text-center transition-none"
                   style={{
                     fontFamily: "var(--t-font-body)",
                     backgroundColor: isActive ? "var(--t-accent)" : "var(--t-bg)",
@@ -154,7 +154,7 @@ export function OptionsPanel({
               onChange={(e) =>
                 update({ type: e.target.value as CelebrationOptions["type"] })
               }
-              className="border-[2px] px-1.5 py-0.5 text-[0.8rem] flex-1"
+              className="border-[2px] px-1.5 py-0.5 text-sm flex-1"
               style={{
                 fontFamily: "var(--t-font-body)",
                 backgroundColor: "var(--t-card-bg)",
@@ -180,7 +180,7 @@ export function OptionsPanel({
               value={options.text}
               onChange={(e) => update({ text: e.target.value })}
               maxLength={30}
-              className="border-[2px] px-1.5 py-0.5 text-[0.8rem] flex-1"
+              className="border-[2px] px-1.5 py-0.5 text-sm flex-1"
               style={{
                 fontFamily: "var(--t-font-body)",
                 backgroundColor: "var(--t-card-bg)",

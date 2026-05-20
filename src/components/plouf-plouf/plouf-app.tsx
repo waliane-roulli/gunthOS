@@ -360,7 +360,7 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
             </h1>
             <p className="font-[family-name:var(--font-vt323)] text-[#000080] text-[1.2rem] tracking-[2px] mt-1">
               ★ TIRAGE AU SORT DE JEUX VIDEO ★
-              <span className="inline-block bg-red-600 text-yellow-300 font-bold text-[0.7rem] px-1.5 border border-black ml-1.5 animate-[blink_0.8s_step-end_infinite] -rotate-3">
+              <span className="inline-block bg-red-600 text-yellow-300 font-bold text-xs px-1.5 border border-black ml-1.5 animate-[blink_0.8s_step-end_infinite] -rotate-3">
                 NEW!
               </span>
             </p>
