@@ -15,6 +15,13 @@
       "when": 1779276614906,
       "tag": "0001_naive_grey_gargoyle",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1779304359146,
+      "tag": "0002_grey_carmella_unuscione",
+      "breakpoints": true
     }
   ]
 }

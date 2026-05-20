@@ -241,8 +241,8 @@ export function DefragApp() {
             }}
           />
           <span
-            className="absolute inset-0 flex items-center justify-center text-sm font-bold tracking-widest mix-blend-difference"
-            style={{ color: "var(--t-app-bg)" }}
+            className="absolute inset-0 flex items-center justify-center text-sm font-bold tracking-widest"
+            style={{ color: "var(--t-text)", textShadow: "0 0 3px var(--t-app-bg), 0 0 3px var(--t-app-bg)" }}
           >
             {Math.floor(progress)}%
           </span>

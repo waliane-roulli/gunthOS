@@ -9,7 +9,7 @@ export const APPS: App[] = [
     description: "Tirage au sort façon Web 1.0",
     emoji: "💧",
     href: "/plouf-plouf",
-    badge: "NEW!",
+    badge: "NEW",
   },
   {
     slug: "profile",
@@ -32,6 +32,13 @@ export const APPS: App[] = [
     emoji: "🦋",
     iconNode: <MsnLogo size={46} />,
     href: "/msn" as Route,
-    badge: "NEW!",
+  },
+  {
+    slug: "radio",
+    name: "GunthRadio™",
+    description: "Fréquence Groove — 6 stations, 0 pub",
+    emoji: "📻",
+    href: "/radio" as Route,
+    badge: "NEW",
   },
 ];

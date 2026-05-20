@@ -49,6 +49,23 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
   const [winnerName, setWinnerName] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
 
+  // Démarre la musique au premier geste, coupe à la fermeture
+  useEffect(() => {
+    sound.setOnFirstInit(() => { sound.startPloufPlouf(); });
+    return () => { sound.stopPloufPlouf(); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Sync mute avec la musique d'ambiance
+  useEffect(() => {
+    if (muted) {
+      sound.stopPloufPlouf();
+    } else {
+      sound.startPloufPlouf();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [muted]);
+
   const { trigger: triggerCelebration } = useCelebrationEffects({
     flashRef,
     containerRef,

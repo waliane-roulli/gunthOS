@@ -11,6 +11,7 @@ const bootRawBufferPromise: Promise<ArrayBuffer> =
 export function useSound(muted: boolean) {
   const ctxRef = useRef<AudioContext | null>(null);
   const bootLoadPromiseRef = useRef<Promise<void> | null>(null);
+  const onFirstInitRef = useRef<(() => void) | null>(null);
 
   const init = useCallback(() => {
     if (ctxRef.current) {
@@ -19,6 +20,8 @@ export function useSound(muted: boolean) {
     }
     const ctx = new AudioContext();
     ctxRef.current = ctx;
+    onFirstInitRef.current?.();
+    onFirstInitRef.current = null;
     bootLoadPromiseRef.current = fetch("/sounds/boot.mp3")
       .then((r) => r.arrayBuffer())
       .then((ab) => ctx.decodeAudioData(ab))
@@ -302,6 +305,8 @@ export function useSound(muted: boolean) {
   const bootBufferRef = useRef<AudioBuffer | null>(null);
   const runBufferRef = useRef<AudioBuffer | null>(null);
   const accessDiskBufferRef = useRef<AudioBuffer | null>(null);
+  const ploufploufBufferRef = useRef<AudioBuffer | null>(null);
+  const ploufploufAudioRef = useRef<{ source: AudioBufferSourceNode; gainNode: GainNode } | null>(null);
 
   // Joue Boot.mp3 une fois, puis enchaîne Run.mp3 en boucle
   const startBootAudio = useCallback(async () => {
@@ -415,9 +420,60 @@ export function useSound(muted: boolean) {
     try { source.stop(ctx ? ctx.currentTime + 0.15 : 0); } catch {}
   }, []);
 
+  const supportsOpus = typeof window !== "undefined" && (() => {
+    const a = document.createElement("audio");
+    return a.canPlayType("audio/ogg; codecs=opus") !== "";
+  })();
+
+  const loadPloufPlouf = useCallback(async (ctx: AudioContext) => {
+    if (ploufploufBufferRef.current) return ploufploufBufferRef.current;
+    const url = supportsOpus ? "/sounds/ploufplouf.opus" : "/sounds/ploufplouf.mp3";
+    const ab = await fetch(url).then((r) => r.arrayBuffer());
+    const buf = await ctx.decodeAudioData(ab);
+    ploufploufBufferRef.current = buf;
+    return buf;
+  }, [supportsOpus]);
+
+  const startPloufPlouf = useCallback(async () => {
+    const ctx = getCtx();
+    if (!ctx) return;
+    if (ploufploufAudioRef.current) {
+      try { ploufploufAudioRef.current.source.stop(); } catch {}
+      ploufploufAudioRef.current = null;
+    }
+    try {
+      const buffer = await loadPloufPlouf(ctx);
+      const gainNode = ctx.createGain();
+      gainNode.gain.setValueAtTime(1, ctx.currentTime);
+      gainNode.connect(ctx.destination);
+      const source = ctx.createBufferSource();
+      source.buffer = buffer;
+      source.loop = true;
+      source.connect(gainNode);
+      source.start(ctx.currentTime, 0);
+      ploufploufAudioRef.current = { source, gainNode };
+    } catch {}
+  }, [getCtx, loadPloufPlouf]);
+
+  const stopPloufPlouf = useCallback(() => {
+    if (!ploufploufAudioRef.current) return;
+    const { source, gainNode } = ploufploufAudioRef.current;
+    ploufploufAudioRef.current = null;
+    const ctx = ctxRef.current;
+    if (ctx) {
+      gainNode.gain.setValueAtTime(gainNode.gain.value, ctx.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.4);
+    }
+    setTimeout(() => { try { source.stop(); } catch {} }, 500);
+  }, []);
+
   const closeContext = useCallback(() => {
     ctxRef.current?.close();
     ctxRef.current = null;
+  }, []);
+
+  const setOnFirstInit = useCallback((cb: () => void) => {
+    onFirstInitRef.current = cb;
   }, []);
 
   // stubs vides pour ne pas casser les imports existants
@@ -427,6 +483,7 @@ export function useSound(muted: boolean) {
 
   return {
     init,
+    setOnFirstInit,
     closeContext,
     playPop,
     playBip,
@@ -443,6 +500,8 @@ export function useSound(muted: boolean) {
     stopBootAudio,
     startAccessDisk,
     stopAccessDisk,
+    startPloufPlouf,
+    stopPloufPlouf,
     startAmbient,
     stopAmbient,
     setAmbientVolume,

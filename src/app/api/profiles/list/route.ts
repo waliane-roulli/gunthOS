@@ -13,6 +13,7 @@ export async function GET() {
       name: user.name,
       statusMessage: user.statusMessage,
       avatarDataUrl: user.avatarDataUrl,
+      onlineStatus: user.onlineStatus,
       createdAt: user.createdAt,
     })
     .from(user)

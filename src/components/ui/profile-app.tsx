@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { useWindowManager } from "@/lib/contexts/window-manager-context";
 import { pickRandom } from "@/lib/gunth-jokes";
+import { useWastedTime, formatWastedTime } from "@/lib/hooks/use-wasted-time";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -305,7 +306,7 @@ function AvatarBlock({
 function StatsBlock({ profile }: { profile: ProfileData }) {
   const days = getDaysSinceJoin(profile.createdAt);
   const rank = getGunthosRank(days);
-  const hoursWasted = Math.floor(days * 0.4 * 10) / 10;
+  const wastedSeconds = useWastedTime();
   const defragCount = Math.floor(days * 0.7);
   const compliment = pickRandom(PROFILE_COMPLIMENTS);
 
@@ -332,7 +333,7 @@ function StatsBlock({ profile }: { profile: ProfileData }) {
       </div>
 
       <StatRow icon="📅" label="Inscrit il y a" value={`${days} jour${days > 1 ? "s" : ""}`} />
-      <StatRow icon="⏱️" label="Temps gaspillé" value={`~${hoursWasted}h sur GunthOS`} />
+      <StatRow icon="⏱️" label="Temps gaspillé" value={`${formatWastedTime(wastedSeconds)} sur GunthOS`} />
       <StatRow icon="🗂️" label="Défragmentations" value={`${defragCount} (toutes inutiles)`} />
       <StatRow icon="🏅" label="Rang GunthOS" value={rank.rank} />
       {favApp && <StatRow icon="⭐" label="App favorite" value={favApp.label} />}

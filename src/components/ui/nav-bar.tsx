@@ -2,7 +2,33 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
 import { APPS } from "@/lib/apps";
+
+const SEEN_BADGES_KEY = "gunth_seen_badges";
+
+function useSeenBadges() {
+  const [seen, setSeen] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(SEEN_BADGES_KEY);
+      if (stored) setSeen(new Set(JSON.parse(stored)));
+    } catch {}
+  }, []);
+
+  const markSeen = (slug: string) => {
+    setSeen((prev) => {
+      const next = new Set(prev).add(slug);
+      try {
+        localStorage.setItem(SEEN_BADGES_KEY, JSON.stringify([...next]));
+      } catch {}
+      return next;
+    });
+  };
+
+  return { seen, markSeen };
+}
 
 interface NavBarProps {
   onSettingsClick?: () => void;
@@ -10,6 +36,7 @@ interface NavBarProps {
 
 export function NavBar({ onSettingsClick }: NavBarProps) {
   const pathname = usePathname();
+  const { seen, markSeen } = useSeenBadges();
 
   return (
     <div
@@ -47,10 +74,12 @@ export function NavBar({ onSettingsClick }: NavBarProps) {
       <div className="flex items-center gap-1 flex-wrap flex-1">
         {APPS.map((app) => {
           const isActive = pathname === app.href;
+          const showBadge = app.badge && !seen.has(app.slug);
           return (
             <Link
               key={app.slug}
               href={app.href}
+              onClick={() => { if (showBadge) markSeen(app.slug); }}
               className="flex items-center gap-1 px-2 py-0.5 border-[2px] tracking-wider select-none whitespace-nowrap transition-none"
               style={{
                 fontFamily: "var(--t-font-display)",
@@ -66,9 +95,9 @@ export function NavBar({ onSettingsClick }: NavBarProps) {
             >
               <span>{app.emoji}</span>
               <span>{app.name.toUpperCase()}</span>
-              {app.badge && (
+              {showBadge && (
                 <span
-                  className="font-bold text-xs px-0.5 border border-black animate-[blink_0.8s_step-end_infinite] leading-none py-px"
+                  className="font-bold text-xs px-0.5 border border-black leading-none py-px"
                   style={{
                     backgroundColor: "var(--t-badge-bg)",
                     color: "var(--t-badge-text)",

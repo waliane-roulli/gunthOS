@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { useWindowManager } from "@/lib/contexts/window-manager-context";
+import { useUnread } from "@/lib/contexts/unread-context";
 import { MsnLogo } from "./msn-logo";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -26,15 +27,6 @@ interface Message {
 }
 
 // ── Blagues MSN ────────────────────────────────────────────────────────────────
-
-const MSN_STATUTS = [
-  "En ligne",
-  "Occupé(e)",
-  "Absent(e)",
-  "Déjeuner",
-  "Au téléphone",
-  "Hors ligne",
-];
 
 const MSN_WINKS = [
   "🫨 NUDGE ENVOYÉ",
@@ -91,14 +83,6 @@ function getRandomAwayMessage() {
   return MSN_AWAY_MESSAGES[Math.floor(Math.random() * MSN_AWAY_MESSAGES.length)];
 }
 
-function getRandomOnlineStatus(): Contact["onlineStatus"] {
-  const r = Math.random();
-  if (r < 0.5) return "online";
-  if (r < 0.7) return "away";
-  if (r < 0.85) return "busy";
-  return "offline";
-}
-
 const STATUS_ICONS: Record<Contact["onlineStatus"], string> = {
   online: "🟢",
   away: "🟡",
@@ -151,6 +135,37 @@ function Avatar({ contact, size = 36 }: { contact: Pick<Contact, "avatarDataUrl"
   );
 }
 
+// ── Unread badge ───────────────────────────────────────────────────────────────
+
+function UnreadBadge({ count }: { count: number }) {
+  if (count <= 0) return null;
+  return (
+    <div
+      style={{
+        position: "absolute",
+        top: -4,
+        right: -4,
+        background: "#cc0000",
+        color: "white",
+        borderRadius: "50%",
+        width: 16,
+        height: 16,
+        fontSize: 9,
+        fontWeight: "bold",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontFamily: "Arial, sans-serif",
+        border: "1px solid white",
+        zIndex: 1,
+        animation: "badgePop 0.2s ease",
+      }}
+    >
+      {count > 9 ? "9+" : count}
+    </div>
+  );
+}
+
 // ── Conversation window ────────────────────────────────────────────────────────
 
 function ChatWindow({
@@ -160,6 +175,7 @@ function ChatWindow({
   myAvatar,
   onClose,
   onDragStart,
+  onRead,
 }: {
   contact: Contact;
   myId: string;
@@ -167,6 +183,7 @@ function ChatWindow({
   myAvatar: string | null;
   onClose: () => void;
   onDragStart?: (e: React.MouseEvent) => void;
+  onRead?: () => void;
 }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -179,51 +196,54 @@ function ChatWindow({
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const onReadRef = useRef(onRead);
+  useEffect(() => { onReadRef.current = onRead; }, [onRead]);
+
   const fetchMessages = useCallback(async (since = 0) => {
     const res = await fetch(`/api/messages?with=${contact.id}&since=${since}`);
     if (!res.ok) return;
     const data = await res.json();
     if (data.messages?.length > 0) {
+      let hasFromContact = false;
+      let hasNew = false;
+
       setMessages((prev) => {
-        const existingIds = new Set(prev.map((m) => m.id));
-        const newMsgs = data.messages.filter((m: Message) => !existingIds.has(m.id));
+        const ids = new Set(prev.map((m) => m.id));
+        const newMsgs = data.messages.filter((m: Message) => !ids.has(m.id));
         if (newMsgs.length === 0) return prev;
-        // Simulate contact typing when new message arrives from them
-        const hasFromContact = newMsgs.some((m: Message) => m.fromUserId === contact.id);
-        if (hasFromContact) {
-          setIsTyping(false);
-        }
+        hasNew = true;
+        hasFromContact = newMsgs.some((m: Message) => m.fromUserId === contact.id);
         const merged = [...prev, ...newMsgs].sort(
           (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
         );
         lastMsgId.current = merged[merged.length - 1]?.id ?? 0;
         return merged;
       });
+
+      if (hasNew && hasFromContact) {
+        setIsTyping(false);
+        onReadRef.current?.();
+      }
     }
   }, [contact.id]);
 
-  // Initial load
   useEffect(() => {
     fetchMessages(0);
+    onReadRef.current?.();
   }, [fetchMessages]);
 
-  // Polling every 3s
   useEffect(() => {
     const id = setInterval(() => {
-      if (lastMsgId.current > 0) {
-        const lastMsg = messages[messages.length - 1];
-        const since = lastMsg
-          ? new Date(lastMsg.createdAt).getTime()
-          : 0;
-        fetchMessages(since);
-      } else {
-        fetchMessages(0);
-      }
+      const lastMsg = messages[messages.length - 1];
+      const since = lastMsg ? new Date(lastMsg.createdAt).getTime() : 0;
+      fetchMessages(since);
     }, 3000);
     return () => clearInterval(id);
-  }, [fetchMessages, messages]);
+    // messages intentionally excluded — we capture latest via closure but don't want
+    // to restart the interval on every received message
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchMessages]);
 
-  // Scroll to bottom on new messages
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -561,16 +581,15 @@ function ChatWindow({
   );
 }
 
-
-
 // ── Draggable chat window wrapper ─────────────────────────────────────────────
 
-function DraggableChatWindow({ contact, myId, myName, myAvatar, onClose }: {
+function DraggableChatWindow({ contact, myId, myName, myAvatar, onClose, onRead }: {
   contact: Contact;
   myId: string;
   myName: string;
   myAvatar: string | null;
   onClose: () => void;
+  onRead?: () => void;
 }) {
   const [pos, setPos] = useState(() => ({
     x: window.innerWidth - 480,
@@ -619,6 +638,7 @@ function DraggableChatWindow({ contact, myId, myName, myAvatar, onClose }: {
         myAvatar={myAvatar}
         onClose={onClose}
         onDragStart={onMouseDown}
+        onRead={onRead}
       />
     </div>
   );
@@ -629,6 +649,7 @@ function DraggableChatWindow({ contact, myId, myName, myAvatar, onClose }: {
 export function MsnApp() {
   const { user } = useAuth();
   const { openWindow } = useWindowManager();
+  const { setTotalUnread } = useUnread();
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
   const [openChats, setOpenChats] = useState<Record<string, boolean>>({});
@@ -636,37 +657,103 @@ export function MsnApp() {
   const [searchQuery, setSearchQuery] = useState("");
   const [myAwayMsg] = useState(() => getRandomAwayMessage());
   const [myAvatar, setMyAvatar] = useState<string | null>(null);
+  const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
+  const [lastSync, setLastSync] = useState<Date | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const openChatsRef = useRef<Record<string, boolean>>({});
 
   useEffect(() => {
     if (!user) return;
     fetch("/api/user/me").then(r => r.ok ? r.json() : null).then(data => {
       if (data?.profile?.avatarDataUrl) setMyAvatar(data.profile.avatarDataUrl);
+      if (data?.profile?.onlineStatus) setMyStatus(data.profile.onlineStatus);
     });
   }, [user]);
 
+  const loadContacts = useCallback(async () => {
+    if (!user) return;
+    const res = await fetch("/api/profiles/list");
+    if (!res.ok) return;
+    const data = await res.json();
+    const all: Contact[] = (data.users || [])
+      .filter((u: { id?: string; username?: string | null }) => u.username !== user?.username)
+      .map((u: {
+        id: string;
+        name: string;
+        username: string | null;
+        displayUsername?: string | null;
+        statusMessage?: string | null;
+        avatarDataUrl?: string | null;
+        onlineStatus?: string | null;
+      }) => ({
+        ...u,
+        onlineStatus: (u.onlineStatus as Contact["onlineStatus"]) ?? "offline",
+      }));
+    const order: Contact["onlineStatus"][] = ["online", "away", "busy", "offline"];
+    all.sort((a, b) => order.indexOf(a.onlineStatus) - order.indexOf(b.onlineStatus));
+    setContacts(all);
+    setLoading(false);
+    setLastSync(new Date());
+  }, [user]);
+
   useEffect(() => {
-    async function load() {
-      const res = await fetch("/api/profiles/list");
-      if (!res.ok) return;
-      const data = await res.json();
-      const all: Contact[] = (data.users || [])
-        .filter((u: { id?: string; username?: string | null }) => u.username !== user?.username)
-        .map((u: { id: string; name: string; username: string | null; displayUsername?: string | null; statusMessage?: string | null; avatarDataUrl?: string | null }) => ({
-          ...u,
-          onlineStatus: getRandomOnlineStatus(),
-        }));
-      // Sort: online first, then away, busy, offline
-      const order: Contact["onlineStatus"][] = ["online", "away", "busy", "offline"];
-      all.sort((a, b) => order.indexOf(a.onlineStatus) - order.indexOf(b.onlineStatus));
-      setContacts(all);
-      setLoading(false);
+    loadContacts();
+  }, [loadContacts]);
+
+  // Poll unread counts globally every 5s
+  const fetchUnread = useCallback(async () => {
+    if (!user) return;
+    const since = Date.now() - 24 * 60 * 60 * 1000;
+    const res = await fetch(`/api/messages/unread?since=${since}`);
+    if (!res.ok) return;
+    const data = await res.json();
+    const raw = data.counts as Record<string, number>;
+    // For each contact, subtract messages received before we last read the chat
+    const next: Record<string, number> = {};
+    for (const [contactId, count] of Object.entries(raw)) {
+      const isOpen = openChatsRef.current[contactId];
+      next[contactId] = isOpen ? 0 : count;
     }
-    load();
-  }, [user?.username]);
+    setUnreadCounts(next);
+    setLastSync(new Date());
+  }, [user]);
+
+  useEffect(() => {
+    fetchUnread();
+    const id = setInterval(fetchUnread, 5000);
+    return () => clearInterval(id);
+  }, [fetchUnread]);
+
+  async function handleStatusChange(newStatus: Contact["onlineStatus"]) {
+    setMyStatus(newStatus);
+    await fetch("/api/user/profile", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ onlineStatus: newStatus }),
+    });
+  }
+
+  async function handleRefresh() {
+    setIsRefreshing(true);
+    await Promise.all([loadContacts(), fetchUnread()]);
+    setIsRefreshing(false);
+  }
 
   function toggleChat(contact: Contact) {
-    setOpenChats((prev) => ({ ...prev, [contact.id]: !prev[contact.id] }));
+    setOpenChats((prev) => {
+      const nowOpen = !prev[contact.id];
+      if (nowOpen) {
+        setUnreadCounts(u => ({ ...u, [contact.id]: 0 }));
+      }
+      const next = { ...prev, [contact.id]: nowOpen };
+      openChatsRef.current = next;
+      return next;
+    });
   }
+
+  const handleRead = useCallback((contactId: string) => {
+    setUnreadCounts(u => ({ ...u, [contactId]: 0 }));
+  }, []);
 
   function openProfile(username: string | null) {
     if (!username) return;
@@ -680,6 +767,12 @@ export function MsnApp() {
   });
 
   const myDisplayName = user?.name || "Moi";
+
+  const totalUnread = Object.values(unreadCounts).reduce((a, b) => a + b, 0);
+
+  useEffect(() => {
+    setTotalUnread(totalUnread);
+  }, [totalUnread, setTotalUnread]);
 
   return (
     <div
@@ -710,7 +803,30 @@ export function MsnApp() {
               v6.0 — Connexion 56K détectée
             </div>
           </div>
-          <div style={{ fontSize: 22 }}>{STATUS_ICONS[myStatus]}</div>
+          <div style={{ position: "relative" }}>
+            <div style={{ fontSize: 22 }}>{STATUS_ICONS[myStatus]}</div>
+            {totalUnread > 0 && (
+              <div style={{
+                position: "absolute",
+                top: -4,
+                right: -4,
+                background: "#cc0000",
+                color: "white",
+                borderRadius: "50%",
+                width: 14,
+                height: 14,
+                fontSize: 8,
+                fontWeight: "bold",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontFamily: "Arial, sans-serif",
+                border: "1px solid white",
+              }}>
+                {totalUnread > 9 ? "9+" : totalUnread}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* My profile block */}
@@ -745,7 +861,7 @@ export function MsnApp() {
           {/* Status selector */}
           <select
             value={myStatus}
-            onChange={(e) => setMyStatus(e.target.value as Contact["onlineStatus"])}
+            onChange={(e) => handleStatusChange(e.target.value as Contact["onlineStatus"])}
             style={{
               fontSize: 10,
               background: "rgba(255,255,255,0.2)",
@@ -764,9 +880,9 @@ export function MsnApp() {
         </div>
       </div>
 
-      {/* Search */}
+      {/* Search + Refresh bar */}
       <div
-        className="shrink-0 px-2 py-1"
+        className="shrink-0 px-2 py-1 flex items-center gap-1"
         style={{ background: "var(--t-bg-light)", borderBottom: "2px solid var(--t-border-dark)" }}
       >
         <input
@@ -774,7 +890,7 @@ export function MsnApp() {
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="🔍 Rechercher un contact..."
           style={{
-            width: "100%",
+            flex: 1,
             padding: "2px 6px",
             fontSize: 11,
             fontFamily: "var(--t-font-display)",
@@ -788,7 +904,44 @@ export function MsnApp() {
             outline: "none",
           }}
         />
+        <button
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+          title={lastSync ? `Dernière sync: ${lastSync.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}` : "Actualiser"}
+          style={{
+            background: "var(--t-bg)",
+            border: "2px solid",
+            borderTopColor: "var(--t-border-light)",
+            borderLeftColor: "var(--t-border-light)",
+            borderBottomColor: "var(--t-border-dark)",
+            borderRightColor: "var(--t-border-dark)",
+            cursor: isRefreshing ? "wait" : "pointer",
+            fontSize: 12,
+            padding: "1px 5px",
+            lineHeight: 1.4,
+            animation: isRefreshing ? "spin 0.8s linear infinite" : "none",
+            display: "inline-flex",
+            alignItems: "center",
+          }}
+        >
+          🔄
+        </button>
       </div>
+
+      {/* Last sync indicator */}
+      {lastSync && (
+        <div style={{
+          fontSize: 9,
+          color: "var(--t-text-subtle)",
+          fontFamily: "Arial, sans-serif",
+          textAlign: "right",
+          padding: "1px 8px",
+          background: "var(--t-bg-light)",
+          borderBottom: "1px solid var(--t-border-dark)",
+        }}>
+          ⏱ {lastSync.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+        </div>
+      )}
 
       {/* Contacts list */}
       <div className="flex-1 overflow-y-auto">
@@ -840,10 +993,9 @@ export function MsnApp() {
           </div>
         ) : (
           <>
-            {/* Online group */}
-            {renderGroup("En ligne", filtered.filter(c => c.onlineStatus === "online"), openChats, toggleChat, openProfile)}
-            {renderGroup("Absent / Occupé", filtered.filter(c => c.onlineStatus === "away" || c.onlineStatus === "busy"), openChats, toggleChat, openProfile)}
-            {renderGroup("Hors ligne", filtered.filter(c => c.onlineStatus === "offline"), openChats, toggleChat, openProfile)}
+            {renderGroup("En ligne", filtered.filter(c => c.onlineStatus === "online"), openChats, unreadCounts, toggleChat, openProfile)}
+            {renderGroup("Absent / Occupé", filtered.filter(c => c.onlineStatus === "away" || c.onlineStatus === "busy"), openChats, unreadCounts, toggleChat, openProfile)}
+            {renderGroup("Hors ligne", filtered.filter(c => c.onlineStatus === "offline"), openChats, unreadCounts, toggleChat, openProfile)}
           </>
         )}
       </div>
@@ -862,7 +1014,7 @@ export function MsnApp() {
         <span>© Gunth Corp. Tous droits réservés.</span>
       </div>
 
-      {/* Open chat windows — draggable floating panels */}
+      {/* Open chat windows */}
       {user && Object.entries(openChats)
         .filter(([contactId, isOpen]) => isOpen && contacts.some(c => c.id === contactId))
         .map(([contactId]) => {
@@ -874,7 +1026,12 @@ export function MsnApp() {
               myId={user.id}
               myName={myDisplayName}
               myAvatar={myAvatar}
-              onClose={() => setOpenChats(prev => ({ ...prev, [contactId]: false }))}
+              onClose={() => setOpenChats(prev => {
+                const next = { ...prev, [contactId]: false };
+                openChatsRef.current = next;
+                return next;
+              })}
+              onRead={() => handleRead(contactId)}
             />
           );
         })}
@@ -882,6 +1039,10 @@ export function MsnApp() {
       <style>{`
         @keyframes spin {
           to { transform: rotate(360deg); }
+        }
+        @keyframes badgePop {
+          0% { transform: scale(0.5); }
+          100% { transform: scale(1); }
         }
       `}</style>
     </div>
@@ -892,6 +1053,7 @@ function renderGroup(
   label: string,
   contacts: Contact[],
   openChats: Record<string, boolean>,
+  unreadCounts: Record<string, number>,
   toggleChat: (c: Contact) => void,
   openProfile: (username: string | null) => void,
 ) {
@@ -919,6 +1081,7 @@ function renderGroup(
       {contacts.map((contact) => {
         const displayName = contact.displayUsername || contact.username || contact.name;
         const isOpen = openChats[contact.id];
+        const unread = unreadCounts[contact.id] ?? 0;
         return (
           <div
             key={contact.id}
@@ -931,7 +1094,7 @@ function renderGroup(
             onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "var(--t-card-hover)"; }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = isOpen ? "var(--t-card-hover)" : "transparent"; }}
           >
-            {/* Avatar with status dot */}
+            {/* Avatar with status dot + unread badge */}
             <div style={{ position: "relative", flexShrink: 0 }}>
               <Avatar contact={contact} size={32} />
               <div
@@ -945,12 +1108,19 @@ function renderGroup(
               >
                 {STATUS_ICONS[contact.onlineStatus]}
               </div>
+              <UnreadBadge count={unread} />
             </div>
 
             {/* Info */}
             <div className="flex-1 min-w-0" onClick={() => toggleChat(contact)}>
-              <div className="text-xs font-bold tracking-wider truncate" style={{ color: "var(--t-text)" }}>
-                {displayName}
+              <div
+                className="text-xs font-bold tracking-wider truncate"
+                style={{
+                  color: unread > 0 ? "var(--t-accent, #cc0000)" : "var(--t-text)",
+                  fontWeight: unread > 0 ? "bold" : undefined,
+                }}
+              >
+                {unread > 0 && "● "}{displayName}
               </div>
               <div className="text-xs tracking-wide truncate" style={{ color: "var(--t-text-muted)", fontStyle: "italic" }}>
                 {contact.statusMessage || STATUS_LABELS[contact.onlineStatus]}
@@ -972,6 +1142,7 @@ function renderGroup(
                   cursor: "pointer",
                   fontSize: 12,
                   padding: "1px 4px",
+                  position: "relative",
                 }}
               >
                 💬

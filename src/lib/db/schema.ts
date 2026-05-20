@@ -31,6 +31,7 @@ export const user = sqliteTable("user", {
   avatarDataUrl: text("avatar_data_url"),
   favoriteApp: text("favorite_app"),
   gunthosRank: text("gunthos_rank"),
+  onlineStatus: text("online_status", { enum: ["online", "away", "busy", "offline"] }).default("online"),
 });
 
 export const session = sqliteTable("session", {

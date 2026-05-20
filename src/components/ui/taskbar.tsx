@@ -11,6 +11,8 @@ import { useOsClock } from "@/lib/hooks/use-os-clock";
 import { useVisitorCountApi } from "@/lib/hooks/use-visitor-count-api";
 import { useSoundContext } from "@/lib/contexts/sound-context";
 import { useAuth } from "@/lib/contexts/auth-context";
+import { useUnread } from "@/lib/contexts/unread-context";
+import { useRadio, type StationId } from "@/lib/contexts/radio-context";
 
 export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShutdown?: () => void }) {
   const { windows, activeWindowId, focusWindow, restoreWindow, minimizeWindow, openWindow } =
@@ -18,6 +20,7 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
   const { themeId, setTheme } = useTheme();
   const { init, playClick, playWindowOpen, playWindowMinimize } = useSoundContext();
   const { user } = useAuth();
+  const { totalUnread } = useUnread();
   const time = useOsClock();
   const visitorCount = useVisitorCountApi();
   const [startMenuOpen, setStartMenuOpen] = useState(false);
@@ -489,11 +492,36 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
             title="GunthMessenger™ — Ouvrir la messagerie"
             onClick={() => { init(); openWindow("msn", "GunthMessenger™", "🦋"); }}
             className="cursor-pointer select-none hover:opacity-80 border-r pr-2"
-            style={{ borderColor: "var(--t-border-dark)", background: "none", padding: 0, display: "flex", alignItems: "center", lineHeight: 0 }}
+            style={{ borderColor: "var(--t-border-dark)", background: "none", padding: 0, display: "flex", alignItems: "center", lineHeight: 0, position: "relative" }}
           >
             <MsnLogo size={20} />
+            {totalUnread > 0 && (
+              <span
+                style={{
+                  position: "absolute",
+                  top: -4,
+                  right: 4,
+                  background: "#cc0000",
+                  color: "white",
+                  borderRadius: "50%",
+                  width: 13,
+                  height: 13,
+                  fontSize: 8,
+                  fontWeight: "bold",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontFamily: "Arial, sans-serif",
+                  border: "1px solid white",
+                  lineHeight: 1,
+                }}
+              >
+                {totalUnread > 9 ? "9+" : totalUnread}
+              </span>
+            )}
           </button>
-          <span title="Volume">🔊</span>
+          <RadioTrayPlayer />
+          <VolumeTray />
           <span
             className="border-l pl-2"
             style={{ borderColor: "var(--t-border-dark)" }}
@@ -503,6 +531,197 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
         </div>
       </div>
     </>
+  );
+}
+
+function VolumeTray() {
+  const { volume, setVolume, currentStation } = useRadio();
+  const [open, setOpen] = useState(false);
+
+  const icon = volume === 0 ? "🔇" : volume < 40 ? "🔈" : volume < 75 ? "🔉" : "🔊";
+
+  return (
+    <div className="relative border-l pl-2" style={{ borderColor: "var(--t-border-dark)" }}>
+      <button
+        title={`Volume : ${volume}%`}
+        onClick={() => setOpen((o) => !o)}
+        style={{
+          background: "none",
+          border: "none",
+          cursor: "pointer",
+          color: "var(--t-text)",
+          fontFamily: "var(--t-font-display)",
+          fontSize: "0.9rem",
+          padding: 0,
+          lineHeight: 1,
+          opacity: currentStation ? 1 : 0.6,
+        }}
+      >
+        {icon}
+      </button>
+
+      {open && (
+        <>
+          {/* Backdrop */}
+          <div className="fixed inset-0 z-[9000]" onClick={() => setOpen(false)} />
+
+          {/* Popup */}
+          <div
+            className="absolute border-[2px] z-[9001] flex flex-col items-center gap-2 py-3 px-3"
+            style={{
+              bottom: 36,
+              right: -8,
+              width: 44,
+              backgroundColor: "var(--t-bg)",
+              borderTopColor: "var(--t-border-light)",
+              borderLeftColor: "var(--t-border-light)",
+              borderBottomColor: "var(--t-border-dark)",
+              borderRightColor: "var(--t-border-dark)",
+              boxShadow: "var(--t-window-shadow)",
+              fontFamily: "var(--t-font-display)",
+            }}
+          >
+            {/* Valeur */}
+            <span className="text-xs tracking-widest tabular-nums" style={{ color: "var(--t-accent)" }}>
+              {volume}
+            </span>
+
+            {/* Slider vertical */}
+            <div
+              className="relative flex justify-center"
+              style={{ height: 80, width: 16 }}
+            >
+              {/* Track */}
+              <div
+                className="absolute border-[2px]"
+                style={{
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  width: 8,
+                  height: "100%",
+                  borderTopColor: "var(--t-border-dark)",
+                  borderLeftColor: "var(--t-border-dark)",
+                  borderBottomColor: "var(--t-border-light)",
+                  borderRightColor: "var(--t-border-light)",
+                  backgroundColor: "var(--t-app-bg)",
+                  cursor: "pointer",
+                }}
+                onClick={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const ratio = 1 - (e.clientY - rect.top) / rect.height;
+                  setVolume(Math.round(Math.max(0, Math.min(1, ratio)) * 100));
+                }}
+              >
+                {/* Fill */}
+                <div
+                  style={{
+                    position: "absolute",
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: `${volume}%`,
+                    background: "linear-gradient(to top, var(--t-titlebar-from), var(--t-titlebar-to))",
+                  }}
+                />
+              </div>
+
+              {/* Draggable thumb */}
+              <div
+                className="absolute border-[2px] cursor-pointer"
+                style={{
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  width: 16,
+                  height: 8,
+                  bottom: `calc(${volume}% - 4px)`,
+                  backgroundColor: "var(--t-bg)",
+                  borderTopColor: "var(--t-border-light)",
+                  borderLeftColor: "var(--t-border-light)",
+                  borderBottomColor: "var(--t-border-dark)",
+                  borderRightColor: "var(--t-border-dark)",
+                }}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  const track = e.currentTarget.parentElement!;
+                  const onMove = (me: MouseEvent) => {
+                    const rect = track.getBoundingClientRect();
+                    const ratio = 1 - (me.clientY - rect.top) / rect.height;
+                    setVolume(Math.round(Math.max(0, Math.min(1, ratio)) * 100));
+                  };
+                  const onUp = () => {
+                    window.removeEventListener("mousemove", onMove);
+                    window.removeEventListener("mouseup", onUp);
+                  };
+                  window.addEventListener("mousemove", onMove);
+                  window.addEventListener("mouseup", onUp);
+                }}
+              />
+            </div>
+
+            {/* Icône bas */}
+            <span style={{ fontSize: "0.75rem" }}>{icon}</span>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function RadioTrayPlayer() {
+  const { currentStation, isPlaying, isBuffering, next, prev, stop, play } = useRadio();
+  const { openWindow } = useWindowManager();
+  const { init } = useSoundContext();
+
+  const btnStyle: React.CSSProperties = {
+    background: "none",
+    border: "none",
+    color: "var(--t-text)",
+    fontFamily: "var(--t-font-display)",
+    fontSize: "0.75rem",
+    cursor: "pointer",
+    padding: "0 2px",
+    lineHeight: 1,
+  };
+
+  if (!currentStation && !isBuffering) {
+    return (
+      <button
+        title="GunthRadio™ — Ouvrir"
+        style={{ ...btnStyle, opacity: 0.6 }}
+        className="border-r pr-2 hover:opacity-100"
+        onClick={() => { init(); openWindow("radio", "GunthRadio™", "📻"); }}
+      >
+        📻
+      </button>
+    );
+  }
+
+  return (
+    <div
+      className="flex items-center gap-1 border-r pr-2"
+      style={{ borderColor: "var(--t-border-dark)" }}
+    >
+      <button style={btnStyle} title="Station précédente" onClick={prev}>⏮</button>
+      <button
+        style={btnStyle}
+        title={isPlaying ? "Stop" : "Lecture"}
+        onClick={() => {
+          if (isPlaying) stop();
+          else if (currentStation) play(currentStation.id as StationId);
+        }}
+      >
+        {isBuffering ? "⏳" : isPlaying ? "■" : "▶"}
+      </button>
+      <button style={btnStyle} title="Station suivante" onClick={next}>⏭</button>
+      <span
+        className="text-xs tracking-wider max-w-[90px] truncate cursor-pointer"
+        style={{ color: "var(--t-accent)", fontFamily: "var(--t-font-display)" }}
+        title={`GunthRadio™ — ${currentStation?.name}`}
+        onClick={() => { init(); openWindow("radio", "GunthRadio™", "📻"); }}
+      >
+        {currentStation?.emoji} {currentStation?.name}
+      </span>
+    </div>
   );
 }
 

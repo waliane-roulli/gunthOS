@@ -5,6 +5,7 @@ import { useWindowManager } from "@/lib/contexts/window-manager-context";
 import { APPS } from "@/lib/apps";
 import { useTheme } from "@/lib/contexts/settings-context";
 import { useSoundContext } from "@/lib/contexts/sound-context";
+import { useUnread } from "@/lib/contexts/unread-context";
 
 const WALLPAPERS: Record<string, string> = {
   win95: `
@@ -57,6 +58,7 @@ export function OsDesktop() {
   const { openWindow } = useWindowManager();
   const { themeId } = useTheme();
   const { init, playWindowOpen } = useSoundContext();
+  const { totalUnread } = useUnread();
 
   const wallpaper = WALLPAPERS[themeId] ?? WALLPAPERS.win95!;
 
@@ -117,7 +119,7 @@ export function OsDesktop() {
             key={app.slug}
             emoji={app.iconNode ?? app.emoji}
             label={app.name}
-            badge={app.badge}
+            badge={app.slug === "msn" && totalUnread > 0 ? String(totalUnread > 9 ? "9+" : totalUnread) : app.badge}
             onClick={() => handleOpenApp(app.slug)}
           />
         ))}
@@ -180,7 +182,7 @@ function DesktopIcon({
         )}
         {badge && (
           <span
-            className="absolute -top-1 -right-1 text-xs font-bold px-1 border border-black animate-[blink_0.8s_step-end_infinite]"
+            className="absolute -top-1 -right-1 text-xs font-bold px-1 border border-black"
             style={{
               backgroundColor: "var(--t-badge-bg)",
               color: "var(--t-badge-text)",

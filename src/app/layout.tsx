@@ -3,6 +3,7 @@ import { Fredoka, VT323 } from "next/font/google";
 import "./globals.css";
 import { SettingsProvider } from "@/lib/contexts/settings-context";
 import { AuthProvider } from "@/lib/contexts/auth-context";
+import { UnreadProvider } from "@/lib/contexts/unread-context";
 import { SiteShell } from "@/components/ui/site-shell";
 
 const fredoka = Fredoka({
@@ -32,9 +33,11 @@ export default function RootLayout({
     <html lang="fr" className={`${fredoka.variable} ${vt323.variable}`}>
       <body>
         <AuthProvider>
-          <SettingsProvider>
-            <SiteShell>{children}</SiteShell>
-          </SettingsProvider>
+          <UnreadProvider>
+            <SettingsProvider>
+              <SiteShell>{children}</SiteShell>
+            </SettingsProvider>
+          </UnreadProvider>
         </AuthProvider>
       </body>
     </html>

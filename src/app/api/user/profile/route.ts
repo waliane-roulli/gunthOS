@@ -11,6 +11,7 @@ const profilePatchSchema = z.object({
   bio: z.string().max(280).optional(),
   statusMessage: z.string().max(80).optional(),
   favoriteApp: z.string().max(40).optional(),
+  onlineStatus: z.enum(["online", "away", "busy", "offline"]).optional(),
 });
 
 async function getSession() {
@@ -34,6 +35,7 @@ export async function PATCH(req: NextRequest) {
     if (parsed.data.bio !== undefined) updates.bio = parsed.data.bio;
     if (parsed.data.statusMessage !== undefined) updates.statusMessage = parsed.data.statusMessage;
     if (parsed.data.favoriteApp !== undefined) updates.favoriteApp = parsed.data.favoriteApp;
+    if (parsed.data.onlineStatus !== undefined) updates.onlineStatus = parsed.data.onlineStatus;
 
     db().update(user).set(updates).where(eq(user.id, session.user.id)).run();
 
