@@ -3,7 +3,7 @@
 import { PRESETS } from "@/types/plouf-plouf";
 import type { CelebrationOptions, PresetName } from "@/types/plouf-plouf";
 import { useDraggable } from "@/lib/hooks/use-draggable";
-import { useTheme } from "@/lib/contexts/theme-context";
+import { useTheme } from "@/lib/contexts/settings-context";
 import { THEMES } from "@/lib/themes";
 import type { ThemeId } from "@/lib/themes";
 import { RetroTitlebarBtn } from "@/components/ui/retro-titlebar-btn";

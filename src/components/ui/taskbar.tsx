@@ -3,7 +3,7 @@
 import { useCallback, useState } from "react";
 import { useWindowManager } from "@/lib/contexts/window-manager-context";
 import { APPS } from "@/lib/apps";
-import { useTheme } from "@/lib/contexts/theme-context";
+import { useTheme } from "@/lib/contexts/settings-context";
 import { THEMES, type ThemeId } from "@/lib/themes";
 import { GUNTH_SHUTDOWN_MESSAGES, GUNTH_REBOOT_MESSAGES, pickRandom } from "@/lib/gunth-jokes";
 import { useOsClock } from "@/lib/hooks/use-os-clock";

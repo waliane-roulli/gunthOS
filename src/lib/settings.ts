@@ -1,0 +1,72 @@
+import { THEMES, DEFAULT_THEME_ID, type ThemeId } from "@/lib/themes";
+
+export type Density = "compact" | "normal" | "large";
+
+export interface AppSettings {
+  themeId: ThemeId;
+  soundEnabled: boolean;
+  animationsEnabled: boolean;
+  density: Density;
+}
+
+export const DEFAULT_SETTINGS: AppSettings = {
+  themeId: DEFAULT_THEME_ID,
+  soundEnabled: true,
+  animationsEnabled: true,
+  density: "normal",
+};
+
+const STORAGE_KEY = "gunth-settings";
+
+export function loadSettings(): AppSettings {
+  if (typeof window === "undefined") return DEFAULT_SETTINGS;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return migrateFromLegacy();
+    const parsed = JSON.parse(raw) as Partial<AppSettings>;
+    return {
+      themeId:
+        parsed.themeId && THEMES.some((t) => t.id === parsed.themeId)
+          ? parsed.themeId
+          : DEFAULT_SETTINGS.themeId,
+      soundEnabled: parsed.soundEnabled ?? DEFAULT_SETTINGS.soundEnabled,
+      animationsEnabled: parsed.animationsEnabled ?? DEFAULT_SETTINGS.animationsEnabled,
+      density: (["compact", "normal", "large"] as Density[]).includes(parsed.density as Density)
+        ? (parsed.density as Density)
+        : DEFAULT_SETTINGS.density,
+    };
+  } catch {
+    return DEFAULT_SETTINGS;
+  }
+}
+
+function migrateFromLegacy(): AppSettings {
+  const legacyTheme = localStorage.getItem("site-theme") as ThemeId | null;
+  if (legacyTheme && THEMES.some((t) => t.id === legacyTheme)) {
+    localStorage.removeItem("site-theme");
+    return { ...DEFAULT_SETTINGS, themeId: legacyTheme };
+  }
+  return DEFAULT_SETTINGS;
+}
+
+export function saveSettings(settings: AppSettings): void {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+}
+
+export const DENSITY_CSS: Record<Density, Record<string, string>> = {
+  compact: {
+    "--t-density-gap": "0.25rem",
+    "--t-density-pad": "0.5rem",
+    "--t-density-text": "0.8rem",
+  },
+  normal: {
+    "--t-density-gap": "0.5rem",
+    "--t-density-pad": "0.75rem",
+    "--t-density-text": "1rem",
+  },
+  large: {
+    "--t-density-gap": "0.75rem",
+    "--t-density-pad": "1rem",
+    "--t-density-text": "1.1rem",
+  },
+};

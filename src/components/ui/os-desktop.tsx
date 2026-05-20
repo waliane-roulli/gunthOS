@@ -3,7 +3,7 @@
 import { useCallback } from "react";
 import { useWindowManager } from "@/lib/contexts/window-manager-context";
 import { APPS } from "@/lib/apps";
-import { useTheme } from "@/lib/contexts/theme-context";
+import { useTheme } from "@/lib/contexts/settings-context";
 
 const WALLPAPERS: Record<string, string> = {
   win95: `
