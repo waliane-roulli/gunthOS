@@ -1,4 +1,5 @@
 import { THEMES, DEFAULT_THEME_ID, type ThemeId } from "@/lib/themes";
+import { CURSORS, DEFAULT_CURSOR_ID, type CursorId } from "@/lib/cursors";
 
 export type Density = "compact" | "normal" | "large";
 
@@ -9,6 +10,7 @@ export interface AppSettings {
   animationsEnabled: boolean;
   density: Density;
   scanlinesEnabled: boolean;
+  cursorId: CursorId;
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -18,6 +20,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   animationsEnabled: true,
   density: "normal",
   scanlinesEnabled: true,
+  cursorId: DEFAULT_CURSOR_ID,
 };
 
 const STORAGE_KEY = "gunth-settings";
@@ -42,6 +45,9 @@ export function loadSettings(): AppSettings {
         ? (parsed.density as Density)
         : DEFAULT_SETTINGS.density,
       scanlinesEnabled: parsed.scanlinesEnabled ?? DEFAULT_SETTINGS.scanlinesEnabled,
+      cursorId: CURSORS.some((c) => c.id === parsed.cursorId)
+        ? (parsed.cursorId as CursorId)
+        : DEFAULT_SETTINGS.cursorId,
     };
   } catch {
     return DEFAULT_SETTINGS;

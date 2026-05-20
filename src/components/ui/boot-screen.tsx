@@ -256,7 +256,22 @@ export function BootScreen({ onComplete }: BootScreenProps) {
   const [progressLabel, setProgressLabel] = useState(PROGRESS_STEPS[0]!.label);
   const [fadeOut, setFadeOut] = useState(false);
   const terminalRef = useRef<HTMLDivElement>(null);
+  const skippedRef = useRef(false);
   const { init, playBiosBleep, playModemDialup, playStartupChime, startBootAudio, stopBootAudio, startAccessDisk, stopAccessDisk } = useSoundContext();
+
+  // Skip on Escape or Space
+  useEffect(() => {
+    const handle = (e: KeyboardEvent) => {
+      if (e.key !== "Escape" && e.key !== " ") return;
+      if (skippedRef.current) return;
+      skippedRef.current = true;
+      stopBootAudio();
+      stopAccessDisk();
+      onComplete();
+    };
+    window.addEventListener("keydown", handle);
+    return () => window.removeEventListener("keydown", handle);
+  }, [onComplete, stopBootAudio, stopAccessDisk]);
 
   // Cursor blink
   useEffect(() => {
@@ -320,7 +335,7 @@ export function BootScreen({ onComplete }: BootScreenProps) {
 
     timers.push(setTimeout(() => {
       setFadeOut(true);
-      setTimeout(onComplete, 700);
+      timers.push(setTimeout(onComplete, 700));
     }, totalDuration + 400));
 
     return () => {

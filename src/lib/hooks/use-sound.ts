@@ -2,10 +2,11 @@
 
 import { useRef, useCallback } from "react";
 
-// Précharge Boot.mp3 dans le cache HTTP dès le chargement du module
-const bootRawBufferPromise: Promise<ArrayBuffer> = fetch("/sounds/boot.mp3")
-  .then((r) => r.arrayBuffer())
-  .catch(() => new ArrayBuffer(0));
+// Précharge Boot.mp3 dans le cache HTTP dès le chargement du module (client uniquement)
+const bootRawBufferPromise: Promise<ArrayBuffer> =
+  typeof window !== "undefined"
+    ? fetch("/sounds/boot.mp3").then((r) => r.arrayBuffer()).catch(() => new ArrayBuffer(0))
+    : Promise.resolve(new ArrayBuffer(0));
 
 export function useSound(muted: boolean) {
   const ctxRef = useRef<AudioContext | null>(null);
@@ -414,6 +415,11 @@ export function useSound(muted: boolean) {
     try { source.stop(ctx ? ctx.currentTime + 0.15 : 0); } catch {}
   }, []);
 
+  const closeContext = useCallback(() => {
+    ctxRef.current?.close();
+    ctxRef.current = null;
+  }, []);
+
   // stubs vides pour ne pas casser les imports existants
   const startAmbient = useCallback(() => {}, []);
   const stopAmbient = useCallback(() => {}, []);
@@ -421,6 +427,7 @@ export function useSound(muted: boolean) {
 
   return {
     init,
+    closeContext,
     playPop,
     playBip,
     playDelete,

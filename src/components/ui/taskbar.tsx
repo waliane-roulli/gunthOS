@@ -9,12 +9,14 @@ import { GUNTH_SHUTDOWN_MESSAGES, GUNTH_REBOOT_MESSAGES, pickRandom } from "@/li
 import { useOsClock } from "@/lib/hooks/use-os-clock";
 import { useVisitorCountApi } from "@/lib/hooks/use-visitor-count-api";
 import { useSoundContext } from "@/lib/contexts/sound-context";
+import { useAuth } from "@/lib/contexts/auth-context";
 
 export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShutdown?: () => void }) {
   const { windows, activeWindowId, focusWindow, restoreWindow, minimizeWindow, openWindow } =
     useWindowManager();
   const { themeId, setTheme } = useTheme();
   const { init, playClick, playWindowOpen, playWindowMinimize } = useSoundContext();
+  const { user } = useAuth();
   const time = useOsClock();
   const visitorCount = useVisitorCountApi();
   const [startMenuOpen, setStartMenuOpen] = useState(false);
@@ -304,6 +306,20 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
             />
 
             <StartMenuItem
+              icon={user ? "👤" : "🔑"}
+              label={user ? `Profil (${user.name})` : "Connexion / Inscription"}
+              onClick={() => {
+                openWindow("login", "GUNTH.EXE — Connexion", "🔑");
+                setStartMenuOpen(false);
+              }}
+            />
+
+            <div
+              className="my-1 mx-2 border-t border-b"
+              style={{ borderColor: "var(--t-border-dark)", borderBottomColor: "var(--t-border-light)" }}
+            />
+
+            <StartMenuItem
               icon="🔄"
               label="Redémarrer GunthOS"
               onClick={() => {
@@ -458,6 +474,14 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
               👁 {visitorCount}
             </span>
           )}
+          <button
+            title={user ? `Connecté : ${user.email}` : "Accès invité — cliquez pour vous connecter"}
+            onClick={() => { init(); openWindow("login", "GUNTH.EXE — Connexion", "🔑"); }}
+            className="border-r pr-2 cursor-pointer select-none hover:opacity-80"
+            style={{ borderColor: "var(--t-border-dark)", background: "none", fontFamily: "var(--t-font-display)", color: "var(--t-text)", fontSize: "inherit" }}
+          >
+            {user ? `👤 ${user.name}` : "👤 Invité"}
+          </button>
           <span title="Volume">🔊</span>
           <span
             className="border-l pl-2"

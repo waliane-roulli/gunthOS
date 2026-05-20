@@ -1,4 +1,5 @@
 import type { App } from "@/types";
+import type { Route } from "next";
 
 export const APPS: App[] = [
   {
@@ -8,5 +9,19 @@ export const APPS: App[] = [
     emoji: "💧",
     href: "/plouf-plouf",
     badge: "NEW!",
+  },
+  {
+    slug: "profile",
+    name: "Mon Profil",
+    description: "Votre fiche GunthOS™",
+    emoji: "👤",
+    href: "/profile" as Route,
+  },
+  {
+    slug: "directory",
+    name: "Annuaire",
+    description: "Tous les utilisateurs GunthOS",
+    emoji: "📋",
+    href: "/directory" as Route,
   },
 ];

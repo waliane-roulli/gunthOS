@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useSettings } from "@/lib/contexts/settings-context";
 import { THEMES, type ThemeId } from "@/lib/themes";
+import { CURSORS, type CursorId } from "@/lib/cursors";
 import { type Density } from "@/lib/settings";
 import { RetroTitlebarBtn } from "./retro-titlebar-btn";
 
@@ -20,7 +21,7 @@ interface SettingsPanelProps {
 }
 
 export function SettingsPanel({ onClose, embedded = false }: SettingsPanelProps) {
-  const { settings, setTheme, setSoundEnabled, setAmbientVolume, setAnimationsEnabled, setDensity, setScanlinesEnabled } = useSettings();
+  const { settings, setTheme, setSoundEnabled, setAmbientVolume, setAnimationsEnabled, setDensity, setScanlinesEnabled, setCursorId } = useSettings();
   const [activeTab, setActiveTab] = useState<Tab>("theme");
 
   const content = (
@@ -61,9 +62,11 @@ export function SettingsPanel({ onClose, embedded = false }: SettingsPanelProps)
             density={settings.density}
             animationsEnabled={settings.animationsEnabled}
             scanlinesEnabled={settings.scanlinesEnabled}
+            cursorId={settings.cursorId}
             setDensity={setDensity}
             setAnimationsEnabled={setAnimationsEnabled}
             setScanlinesEnabled={setScanlinesEnabled}
+            setCursorId={setCursorId}
           />
         )}
         {activeTab === "system" && (
@@ -312,16 +315,20 @@ function DisplayTab({
   density,
   animationsEnabled,
   scanlinesEnabled,
+  cursorId,
   setDensity,
   setAnimationsEnabled,
   setScanlinesEnabled,
+  setCursorId,
 }: {
   density: Density;
   animationsEnabled: boolean;
   scanlinesEnabled: boolean;
+  cursorId: CursorId;
   setDensity: (v: Density) => void;
   setAnimationsEnabled: (v: boolean) => void;
   setScanlinesEnabled: (v: boolean) => void;
+  setCursorId: (v: CursorId) => void;
 }) {
   return (
     <>
@@ -371,6 +378,40 @@ function DisplayTab({
         label="Scanlines CRT"
         description="Lignes de balayage rétro (actif sur Win95, Hacker, Amber)"
       />
+
+      <SectionTitle>🖱️ CURSEUR SOURIS</SectionTitle>
+      <div className="grid grid-cols-3 gap-2">
+        {CURSORS.map((c) => {
+          const isActive = c.id === cursorId;
+          return (
+            <button
+              key={c.id}
+              onClick={() => setCursorId(c.id as CursorId)}
+              className="flex flex-col items-center gap-1 py-2 px-1 border-[2px] text-center cursor-pointer"
+              style={{
+                backgroundColor: isActive ? "var(--t-card-hover)" : "var(--t-bg-dark)",
+                color: isActive ? "var(--t-accent)" : "var(--t-text-muted)",
+                fontFamily: "var(--t-font-display)",
+                borderTopColor: isActive ? "var(--t-border-dark)" : "var(--t-border-light)",
+                borderLeftColor: isActive ? "var(--t-border-dark)" : "var(--t-border-light)",
+                borderBottomColor: isActive ? "var(--t-border-light)" : "var(--t-border-dark)",
+                borderRightColor: isActive ? "var(--t-border-light)" : "var(--t-border-dark)",
+              }}
+            >
+              <span style={{ fontSize: "20px", lineHeight: 1 }}>{c.emoji}</span>
+              <span className="text-xs tracking-wider" style={{ fontSize: "9px" }}>
+                {isActive ? "✓ " : ""}{c.label}
+              </span>
+              <span
+                className="text-xs"
+                style={{ color: "var(--t-text-subtle)", fontFamily: "var(--t-font-body)", fontSize: "8px", textAlign: "center" }}
+              >
+                {c.description}
+              </span>
+            </button>
+          );
+        })}
+      </div>
     </>
   );
 }

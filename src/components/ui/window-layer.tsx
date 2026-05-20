@@ -7,6 +7,8 @@ import { OsWindow } from "./os-window";
 import { SettingsPanel } from "./settings-panel";
 import { RetroTitlebarBtn } from "./retro-titlebar-btn";
 import { SolitaireApp, DefragApp, NotepadApp, PrinterApp, IEApp } from "./fake-apps";
+import { ProfileApp, PublicProfileApp, UserDirectoryApp } from "./profile-app";
+import { LoginWindow } from "./login-window";
 import { GUNTH_STATUS, pickRandom } from "@/lib/gunth-jokes";
 import { useSoundContext } from "@/lib/contexts/sound-context";
 
@@ -285,6 +287,8 @@ const APP_COMPONENTS: Partial<Record<string, () => React.ReactElement>> = {
   notepad: () => <NotepadApp />,
   printer: () => <PrinterApp />,
   ie: () => <IEApp />,
+  profile: () => <ProfileApp />,
+  directory: () => <UserDirectoryApp />,
 };
 
 // Durée de chargement simulée par app (ms)
@@ -297,6 +301,9 @@ const LOAD_DURATIONS: Record<string, number> = {
   printer: 1500,
   ie: 2000,
   settings: 700,
+  login: 900,
+  profile: 1400,
+  directory: 1700,
 };
 
 const LOADING_MESSAGES = [
@@ -313,7 +320,8 @@ const LOADING_MESSAGES = [
 ];
 
 function AppLoadingScreen({ appSlug, onDone }: { appSlug: string; onDone: () => void }) {
-  const duration = LOAD_DURATIONS[appSlug] ?? 2000;
+  const slugKey = appSlug.startsWith("profile:") ? "profile" : appSlug;
+  const duration = LOAD_DURATIONS[slugKey] ?? 2000;
   const [progress, setProgress] = useState(0);
   const [msgIndex, setMsgIndex] = useState(0);
   const [hourglassFlipped, setHourglassFlipped] = useState(false);
@@ -470,6 +478,16 @@ function WindowContent({ win }: { win: { id: string; appSlug: string } }) {
         <SettingsPanel onClose={() => closeWindow(win.id)} embedded />
       </div>
     );
+  }
+
+  if (win.appSlug === "login") {
+    return <LoginWindow onClose={() => closeWindow(win.id)} />;
+  }
+
+  // profile:<username> — public profile viewer
+  if (win.appSlug.startsWith("profile:")) {
+    const username = win.appSlug.slice("profile:".length);
+    return <PublicProfileApp username={username} />;
   }
 
   const Component = APP_COMPONENTS[win.appSlug];

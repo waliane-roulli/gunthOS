@@ -4,6 +4,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useMemo,
   useRef,
   useState,
   type ReactNode,
@@ -197,21 +198,24 @@ export function WindowManagerProvider({ children }: { children: ReactNode }) {
     );
   }, []);
 
+  const contextValue = useMemo(
+    () => ({
+      windows,
+      activeWindowId,
+      openWindow,
+      closeWindow,
+      minimizeWindow,
+      maximizeWindow,
+      restoreWindow,
+      focusWindow,
+      moveWindow,
+      resizeWindow,
+    }),
+    [windows, activeWindowId, openWindow, closeWindow, minimizeWindow, maximizeWindow, restoreWindow, focusWindow, moveWindow, resizeWindow]
+  );
+
   return (
-    <WindowManagerContext.Provider
-      value={{
-        windows,
-        activeWindowId,
-        openWindow,
-        closeWindow,
-        minimizeWindow,
-        maximizeWindow,
-        restoreWindow,
-        focusWindow,
-        moveWindow,
-        resizeWindow,
-      }}
-    >
+    <WindowManagerContext.Provider value={contextValue}>
       {children}
     </WindowManagerContext.Provider>
   );

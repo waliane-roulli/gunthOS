@@ -12,6 +12,12 @@ export function SoundProvider({ children }: { children: ReactNode }) {
   const { settings } = useSettings();
   const sound = useSound(!settings.soundEnabled);
 
+  useEffect(() => {
+    return () => { sound.closeContext(); };
+  // sound est stable sur la durée de vie du provider — pas de re-run voulu
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Sync volume ambiant en temps réel depuis les settings
   useEffect(() => {
     if (!settings.soundEnabled) {
@@ -19,7 +25,7 @@ export function SoundProvider({ children }: { children: ReactNode }) {
     } else {
       sound.setAmbientVolume(settings.ambientVolume);
     }
-  }, [settings.ambientVolume, settings.soundEnabled, sound.setAmbientVolume, sound.stopAmbient]);
+  }, [settings.ambientVolume, settings.soundEnabled, sound]);
 
   return (
     <SoundContext.Provider value={sound}>
