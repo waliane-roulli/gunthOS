@@ -10,31 +10,63 @@ html, body {
 :root {
   --t-bg: #c0c0c0;
   --t-bg-light: #ffffff;
-  --t-bg-dark: #808080;
-  --t-bg-darker: #404040;
+  --t-bg-dark: #a0a0a0;
+  --t-bg-darker: #808080;
   --t-border-light: #ffffff;
   --t-border-dark: #808080;
   --t-titlebar-from: #000080;
   --t-titlebar-to: #1084d0;
   --t-titlebar-text: #ffffff;
   --t-accent: #000080;
-  --t-accent-hover: #0000a0;
+  --t-accent-hover: #0000c8;
   --t-text: #000000;
   --t-text-muted: #444444;
   --t-text-subtle: #808080;
   --t-marquee-bg: #000000;
   --t-marquee-text: #00ff00;
-  --t-card-bg: #ffffff;
+  --t-card-bg: #d8d8d8;
   --t-card-hover: #ffffcc;
   --t-card-hover-border: #ffaa00;
   --t-page-from: #b8d8f0;
   --t-page-to: #87b8d8;
   --t-badge-bg: #cc0000;
   --t-badge-text: #ffff00;
-  --t-inset-from: #e8f4fd;
-  --t-inset-to: #c6e2f5;
+  --t-inset-from: #e8e8e8;
+  --t-inset-to: #d0d0d0;
+  /* App content areas (notepad, IE, etc.) */
+  --t-app-bg: #ffffff;
+  --t-app-text: #000000;
+  --t-app-text-muted: #444444;
+  /* Progress bars */
+  --t-progress-from: #000080;
+  --t-progress-to: #1084d0;
+  /* Defrag block colors */
+  --t-defrag-used: #000080;
+  --t-defrag-fragmented: #cc0000;
+  --t-defrag-free: #ffffff;
+  --t-defrag-system: #808080;
+  --t-defrag-mystery: #ffaa00;
+  /* Fonts */
   --t-font-display: var(--font-vt323);
   --t-font-body: var(--font-fredoka);
+  --t-font-mono: "Courier New", monospace;
+  /* Window chrome */
+  --t-window-radius: 0px;
+  --t-titlebar-radius: 0px;
+  --t-window-shadow: 4px 4px 0 rgba(0,0,0,0.5);
+  --t-dialog-shadow: 6px 6px 0 rgba(0,0,0,0.5);
+  /* Taskbar */
+  --t-taskbar-bg: #c0c0c0;
+  --t-taskbar-blur: none;
+  /* Aero glass (Vista/7 only) */
+  --t-glass-bg: #c0c0c0;
+  --t-glass-blur: none;
+  --t-glass-border: #c0c0c0;
+  /* CRT scanlines opacity (0 = off) */
+  --t-scanlines: 0;
+  /* Start button */
+  --t-start-btn-bg: linear-gradient(to bottom, var(--t-bg-light), var(--t-bg));
+  --t-start-btn-text: #000000;
 }
 
 @theme {
@@ -68,6 +100,22 @@ html, body {
   --animate-slide-out: slideOut 0.3s ease forwards;
   --animate-fade-in: fadeIn 0.4s ease;
   --animate-pop: pop 0.5s ease;
+}
+
+/* CRT scanlines overlay — visible only when --t-scanlines > 0 */
+.scanlines::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 99998;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 2px,
+    rgba(0, 0, 0, var(--t-scanlines)) 2px,
+    rgba(0, 0, 0, var(--t-scanlines)) 4px
+  );
 }
 
 /* App card — theme-aware hover via CSS (no JS event handlers needed in Server Components) */

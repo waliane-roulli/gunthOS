@@ -146,13 +146,17 @@ export function OsWindow({ win, children }: OsWindowProps) {
     <div
       style={{
         ...windowStyle,
-        backgroundColor: "var(--t-bg)",
+        backgroundColor: "var(--t-glass-bg)",
+        backdropFilter: "var(--t-glass-blur)",
+        WebkitBackdropFilter: "var(--t-glass-blur)",
         border: "3px solid",
         borderTopColor: isActive ? "var(--t-border-light)" : "var(--t-border-dark)",
         borderLeftColor: isActive ? "var(--t-border-light)" : "var(--t-border-dark)",
         borderBottomColor: isActive ? "var(--t-border-dark)" : "var(--t-border-light)",
         borderRightColor: isActive ? "var(--t-border-dark)" : "var(--t-border-light)",
-        boxShadow: isActive ? "6px 6px 0 rgba(0,0,0,0.45)" : "3px 3px 0 rgba(0,0,0,0.2)",
+        borderRadius: "var(--t-window-radius)",
+        boxShadow: isActive ? "var(--t-window-shadow)" : "none",
+        overflow: "hidden",
       }}
       onMouseDown={() => { if (!isActive) focusWindow(win.id); }}
     >
@@ -185,6 +189,7 @@ export function OsWindow({ win, children }: OsWindowProps) {
           fontSize: "1rem",
           letterSpacing: "0.08em",
           cursor: isMaximized ? "default" : "move",
+          borderRadius: isMaximized ? "0" : "calc(var(--t-titlebar-radius) - 1px) calc(var(--t-titlebar-radius) - 1px) 0 0",
         }}
       >
         <span className="truncate">{win.icon} {win.title}</span>

@@ -20,7 +20,7 @@ interface SettingsPanelProps {
 }
 
 export function SettingsPanel({ onClose, embedded = false }: SettingsPanelProps) {
-  const { settings, setTheme, setSoundEnabled, setAmbientVolume, setAnimationsEnabled, setDensity } = useSettings();
+  const { settings, setTheme, setSoundEnabled, setAmbientVolume, setAnimationsEnabled, setDensity, setScanlinesEnabled } = useSettings();
   const [activeTab, setActiveTab] = useState<Tab>("theme");
 
   const content = (
@@ -60,8 +60,10 @@ export function SettingsPanel({ onClose, embedded = false }: SettingsPanelProps)
           <DisplayTab
             density={settings.density}
             animationsEnabled={settings.animationsEnabled}
+            scanlinesEnabled={settings.scanlinesEnabled}
             setDensity={setDensity}
             setAnimationsEnabled={setAnimationsEnabled}
+            setScanlinesEnabled={setScanlinesEnabled}
           />
         )}
         {activeTab === "system" && (
@@ -202,50 +204,70 @@ function ThemeTab({
   return (
     <>
       <SectionTitle>🎨 THÈME VISUEL</SectionTitle>
-      <div className="grid grid-cols-2 gap-2 mb-4">
+      <div className="grid grid-cols-3 gap-2 mb-4">
         {THEMES.map((theme) => {
           const isActive = theme.id === themeId;
+          const p = theme.preview;
           return (
             <button
               key={theme.id}
               onClick={() => setTheme(theme.id as ThemeId)}
-              className="p-3 border-[2px] text-left cursor-pointer"
+              className="p-0 border-[2px] text-left cursor-pointer overflow-hidden flex flex-col"
               style={{
-                backgroundColor: isActive ? "var(--t-card-hover)" : "var(--t-card-bg)",
-                borderTopColor: isActive ? "var(--t-border-dark)" : "var(--t-border-light)",
-                borderLeftColor: isActive ? "var(--t-border-dark)" : "var(--t-border-light)",
-                borderBottomColor: isActive ? "var(--t-border-light)" : "var(--t-border-dark)",
-                borderRightColor: isActive ? "var(--t-border-light)" : "var(--t-border-dark)",
+                backgroundColor: p.bg,
+                borderTopColor: isActive ? p.accent : p.titlebarFrom,
+                borderLeftColor: isActive ? p.accent : p.titlebarFrom,
+                borderBottomColor: isActive ? p.accent : "rgba(0,0,0,0.4)",
+                borderRightColor: isActive ? p.accent : "rgba(0,0,0,0.4)",
+                outline: isActive ? `2px solid ${p.accent}` : "none",
+                outlineOffset: "1px",
               }}
             >
+              {/* Titlebar miniature */}
               <div
-                className="w-full h-8 mb-2 border border-black flex items-center justify-center text-sm"
+                className="w-full px-1.5 py-0.5 flex items-center gap-1 text-xs shrink-0"
                 style={{
-                  background: `linear-gradient(135deg, ${theme.vars["--t-titlebar-from"]}, ${theme.vars["--t-titlebar-to"]})`,
+                  background: `linear-gradient(90deg, ${p.titlebarFrom}, ${p.titlebarTo})`,
+                  color: p.titlebarText,
+                  fontFamily: "monospace",
+                  fontSize: "10px",
                 }}
               >
-                <span style={{ color: theme.vars["--t-titlebar-text"], fontFamily: "monospace" }}>
-                  {theme.emoji} {theme.name}
-                </span>
+                <span>{theme.emoji}</span>
+                <span className="truncate">{theme.name}</span>
+                {isActive && <span className="ml-auto">✓</span>}
               </div>
-              <div
-                className="text-sm font-bold tracking-wider truncate"
-                style={{ color: "var(--t-accent)", fontFamily: "var(--t-font-display)" }}
-              >
-                {isActive ? "✓ " : ""}{theme.name.toUpperCase()}
+              {/* Mini desktop preview */}
+              <div className="flex-1 p-1.5 flex flex-col gap-1" style={{ backgroundColor: p.bg }}>
+                {/* Fausse barre */}
+                <div className="h-1 rounded-sm w-3/4" style={{ backgroundColor: p.accent, opacity: 0.7 }} />
+                <div className="h-1 rounded-sm w-1/2" style={{ backgroundColor: p.text, opacity: 0.3 }} />
+                <div className="h-1 rounded-sm w-2/3" style={{ backgroundColor: p.text, opacity: 0.2 }} />
               </div>
+              {/* Nom + description */}
               <div
-                className="text-sm truncate mt-0.5"
-                style={{ color: "var(--t-text-subtle)", fontFamily: "var(--t-font-body)" }}
+                className="px-1.5 pb-1.5 pt-0.5"
+                style={{ backgroundColor: p.bg }}
               >
-                {theme.description}
+                <div
+                  className="text-xs font-bold tracking-wider truncate"
+                  style={{ color: p.accent, fontFamily: "monospace" }}
+                >
+                  {theme.name.toUpperCase()}
+                </div>
+                <div
+                  className="text-xs truncate opacity-70"
+                  style={{ color: p.text, fontFamily: "monospace", fontSize: "9px" }}
+                >
+                  {theme.description}
+                </div>
               </div>
             </button>
           );
         })}
       </div>
 
-      {/* Palette d'aperçu */}
+      {/* Palette d'aperçu du thème actif */}
       <div
         className="p-3 border-[2px]"
         style={{
@@ -260,15 +282,18 @@ function ThemeTab({
           className="text-sm tracking-widest mb-2"
           style={{ color: "var(--t-text-subtle)", fontFamily: "var(--t-font-display)" }}
         >
-          APERÇU COULEURS
+          PALETTE ACTIVE
         </div>
         <div className="flex gap-1 flex-wrap">
-          {["--t-bg", "--t-accent", "--t-titlebar-from", "--t-titlebar-to", "--t-marquee-text", "--t-card-hover-border"].map((v) => (
+          {[
+            "--t-bg", "--t-accent", "--t-titlebar-from", "--t-titlebar-to",
+            "--t-marquee-text", "--t-card-hover-border", "--t-defrag-used", "--t-defrag-mystery",
+          ].map((v) => (
             <div
               key={v}
-              className="w-6 h-6 border border-black"
+              className="w-6 h-6 border border-black/30"
               style={{ backgroundColor: `var(${v})` }}
-              title={v}
+              title={v.replace("--t-", "")}
             />
           ))}
         </div>
@@ -286,13 +311,17 @@ const DENSITY_OPTIONS: { id: Density; label: string; description: string }[] = [
 function DisplayTab({
   density,
   animationsEnabled,
+  scanlinesEnabled,
   setDensity,
   setAnimationsEnabled,
+  setScanlinesEnabled,
 }: {
   density: Density;
   animationsEnabled: boolean;
+  scanlinesEnabled: boolean;
   setDensity: (v: Density) => void;
   setAnimationsEnabled: (v: boolean) => void;
+  setScanlinesEnabled: (v: boolean) => void;
 }) {
   return (
     <>
@@ -333,6 +362,14 @@ function DisplayTab({
         onChange={setAnimationsEnabled}
         label="Animations du système"
         description="Transitions, effets visuels, ouverture de fenêtres"
+      />
+
+      <SectionTitle>📺 EFFETS CRT</SectionTitle>
+      <RetroToggle
+        value={scanlinesEnabled}
+        onChange={setScanlinesEnabled}
+        label="Scanlines CRT"
+        description="Lignes de balayage rétro (actif sur Win95, Hacker, Amber)"
       />
     </>
   );

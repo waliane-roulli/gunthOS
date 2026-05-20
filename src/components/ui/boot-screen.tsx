@@ -2,6 +2,181 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useSoundContext } from "@/lib/contexts/sound-context";
+import { useSettings } from "@/lib/contexts/settings-context";
+
+// ── Shutdown screen ───────────────────────────────────────────────────────────
+
+const SHUTDOWN_LINES = [
+  { text: "GunthOS v1.0 — Procédure d'arrêt initiée.", delay: 0 },
+  { text: "", delay: 200 },
+  { text: "Fermeture des applications en cours...", delay: 400 },
+  { text: "  Solitaire ..................................... REFUS (il était en train de gagner)", delay: 700 },
+  { text: "  Bloc-notes .................................... FERMÉ (contenu non sauvegardé : votre vie)", delay: 1050 },
+  { text: "  Internet Explorer ............................. TOUJOURS EN COURS DE FERMETURE", delay: 1400 },
+  { text: "  Processus mystérieux (PID 666) ............... QU'EST-CE QUE C'EST", delay: 1750 },
+  { text: "  Processus mystérieux (PID 666) ............... IGNORÉ", delay: 2050 },
+  { text: "", delay: 2200 },
+  { text: "Sauvegarde des préférences...", delay: 2350 },
+  { text: "  Thème de bureau .............................. ENREGISTRÉ (il était hideux)", delay: 2600 },
+  { text: "  Raccourcis bureau ............................ 47 icônes sauvegardées", delay: 2900 },
+  { text: "  Vos données importantes ...................... PEUT-ÊTRE", delay: 3200 },
+  { text: "", delay: 3400 },
+  { text: "Nettoyage du cache...", delay: 3550 },
+  { text: "  Fichiers temporaires ......................... 4,7 Go supprimés (ça faisait longtemps)", delay: 3800 },
+  { text: "  Cookies ...................................... CONSERVÉS (pour la nostalgie)", delay: 4150 },
+  { text: "  Historique ................................... EFFACÉ. On ne demande pas.", delay: 4500 },
+  { text: "", delay: 4700 },
+  { text: "Déconnexion du réseau...", delay: 4850 },
+  { text: "  Modem 14.4k : raccrochage .................... KSHHH BOING DING KRRSSH", delay: 5100 },
+  { text: "  Connexion Internet ........................... PERDUE (comme d'habitude)", delay: 5700 },
+  { text: "  Votre email non lu ........................... 1 message en attente depuis 2002", delay: 6000 },
+  { text: "", delay: 6200 },
+  { text: "Arrêt des services système...", delay: 6350 },
+  { text: "  Horloge système .............................. STOPPÉE (le temps c'est de l'argent)", delay: 6600 },
+  { text: "  Gestionnaire de mémoire ...................... LIBÉRÉ (640K, c'est plus que suffisant)", delay: 6950 },
+  { text: "  Pilote PLOUF.SYS ............................. RESTÉ MOUILLÉ", delay: 7300 },
+  { text: "  GUNTH.DRV .................................... TOUJOURS MYSTÉRIEUX", delay: 7600 },
+  { text: "", delay: 7800 },
+  { text: "================================================================", delay: 7950 },
+  { text: "  GunthOS s'éteint correctement.", delay: 8150 },
+  { text: "  Merci d'avoir utilisé GunthOS v1.0.", delay: 8350 },
+  { text: "  Rappel : soufflez dans la cartouche avant de rallumer.", delay: 8600 },
+  { text: "  Au revoir. Nous espérons que vous avez sauvegardé.", delay: 8900 },
+  { text: "================================================================", delay: 9150 },
+  { text: "", delay: 9300 },
+  { text: "Il est maintenant sans danger d'éteindre votre ordinateur.", delay: 9500 },
+];
+
+interface ShutdownScreenProps {
+  onPowerOn: () => void;
+}
+
+export function ShutdownScreen({ onPowerOn }: ShutdownScreenProps) {
+  const { settings } = useSettings();
+  const [phase, setPhase] = useState<"shutdown" | "off">("shutdown");
+  const [visibleLines, setVisibleLines] = useState(0);
+  const [cursorVisible, setCursorVisible] = useState(true);
+  const terminalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const id = setInterval(() => setCursorVisible((v) => !v), 530);
+    return () => clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    const timers: ReturnType<typeof setTimeout>[] = [];
+
+    SHUTDOWN_LINES.forEach((line, i) => {
+      timers.push(
+        setTimeout(() => {
+          setVisibleLines(i + 1);
+          if (terminalRef.current) {
+            terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
+          }
+        }, line.delay)
+      );
+    });
+
+    const lastDelay = SHUTDOWN_LINES[SHUTDOWN_LINES.length - 1]!.delay;
+    timers.push(setTimeout(() => setPhase("off"), lastDelay + 1200));
+
+    return () => timers.forEach(clearTimeout);
+  }, []);
+
+  const crtOverlay = settings.scanlinesEnabled ? (
+    <div aria-hidden style={{ position: "fixed", inset: 0, zIndex: 1, pointerEvents: "none", backgroundImage: "repeating-linear-gradient(to bottom, transparent 0px, transparent 2px, rgba(255,255,255,0.04) 2px, rgba(255,255,255,0.04) 4px)" }} />
+  ) : null;
+
+  return (
+    <div
+      className="fixed inset-0 z-[9999] flex flex-col"
+      style={{
+        fontFamily: "var(--font-vt323), monospace",
+        background: "#000000",
+      }}
+    >
+      {crtOverlay}
+      {phase === "shutdown" && (
+        <div
+          ref={terminalRef}
+          className="flex-1 overflow-hidden p-4 leading-[1.4]"
+          style={{ color: "#c0c0c0", fontSize: "clamp(13px, 1.8vw, 18px)" }}
+        >
+          {SHUTDOWN_LINES.slice(0, visibleLines).map((line, i) => (
+            <div key={i} style={{ minHeight: "1.4em" }}>
+              {line.text}
+            </div>
+          ))}
+          {visibleLines < SHUTDOWN_LINES.length && (
+            <span style={{ color: "#c0c0c0" }}>
+              {cursorVisible ? "█" : " "}
+            </span>
+          )}
+        </div>
+      )}
+
+      {phase === "off" && (
+        <div className="flex-1 flex flex-col items-center justify-center gap-8">
+          <p
+            style={{
+              color: "#404040",
+              fontSize: "clamp(12px, 1.6vw, 16px)",
+              letterSpacing: "0.15em",
+              fontFamily: "var(--font-vt323), monospace",
+            }}
+          >
+            Il est maintenant sans danger d&apos;éteindre votre ordinateur.
+          </p>
+          <p
+            style={{
+              color: "#2a2a2a",
+              fontSize: "clamp(11px, 1.4vw, 14px)",
+              letterSpacing: "0.1em",
+              fontFamily: "var(--font-vt323), monospace",
+              textAlign: "center",
+            }}
+          >
+            (Le processus mystérieux PID 666 est toujours en cours d&apos;arrêt.)
+          </p>
+          <button
+            onClick={onPowerOn}
+            style={{
+              fontFamily: "var(--font-vt323), monospace",
+              fontSize: "clamp(18px, 2.2vw, 26px)",
+              color: "var(--t-text, #1a1a1a)",
+              letterSpacing: "0.25em",
+              cursor: "pointer",
+              padding: "14px 48px",
+              border: "2px solid var(--t-border-dark, #808080)",
+              background: "linear-gradient(180deg, var(--t-bg-light, #d8d8d8) 0%, var(--t-bg, #c0c0c0) 50%, var(--t-bg-dark, #a0a0a0) 100%)",
+              boxShadow: "0 6px 0 rgba(0,0,0,0.6), 0 8px 16px rgba(0,0,0,0.8), inset 0 1px 0 var(--t-border-light, #ffffff)",
+              position: "relative",
+              top: 0,
+              transition: "top 0.06s, box-shadow 0.06s",
+            }}
+            onMouseDown={(e) => {
+              const b = e.currentTarget;
+              b.style.top = "4px";
+              b.style.boxShadow = "0 2px 0 rgba(0,0,0,0.6), 0 3px 8px rgba(0,0,0,0.8), inset 0 1px 0 var(--t-border-light, #ffffff)";
+            }}
+            onMouseUp={(e) => {
+              const b = e.currentTarget;
+              b.style.top = "0px";
+              b.style.boxShadow = "0 6px 0 rgba(0,0,0,0.6), 0 8px 16px rgba(0,0,0,0.8), inset 0 1px 0 var(--t-border-light, #ffffff)";
+            }}
+            onMouseLeave={(e) => {
+              const b = e.currentTarget;
+              b.style.top = "0px";
+              b.style.boxShadow = "0 6px 0 rgba(0,0,0,0.6), 0 8px 16px rgba(0,0,0,0.8), inset 0 1px 0 var(--t-border-light, #ffffff)";
+            }}
+          >
+            ⏻ ALLUMER
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 const BOOT_LINES = [
   { text: "GunthOS v1.0 - Copyright (C) 1998 Gunther Corp.", delay: 0 },
@@ -73,6 +248,7 @@ const BIOS_SOUND_TRIGGERS: Record<number, "ok" | "error" | "modem" | "hdd"> = {
 };
 
 export function BootScreen({ onComplete }: BootScreenProps) {
+  const { settings } = useSettings();
   const [phase, setPhase] = useState<"bios" | "loading" | "done">("bios");
   const [visibleLines, setVisibleLines] = useState<number>(0);
   const [cursorVisible, setCursorVisible] = useState(true);
@@ -163,6 +339,7 @@ export function BootScreen({ onComplete }: BootScreenProps) {
         transition: fadeOut ? "opacity 0.6s ease" : "none",
       }}
     >
+      {settings.scanlinesEnabled && <div aria-hidden style={{ position: "fixed", inset: 0, zIndex: 1, pointerEvents: "none", backgroundImage: "repeating-linear-gradient(to bottom, transparent 0px, transparent 2px, rgba(255,255,255,0.04) 2px, rgba(255,255,255,0.04) 4px)" }} />}
       {phase === "bios" && (
         <div
           ref={terminalRef}
@@ -183,17 +360,17 @@ export function BootScreen({ onComplete }: BootScreenProps) {
       )}
 
       {phase === "loading" && (
-        <div className="flex-1 flex flex-col items-center justify-center gap-0" style={{ color: "#c0c0c0" }}>
-          {/* Win95-style logo block */}
+        <div className="flex-1 flex flex-col items-center justify-center gap-0" style={{ color: "var(--t-text, #c0c0c0)" }}>
+          {/* Retro-style logo block — uses theme vars with Win95 fallbacks */}
           <div
             className="mb-10 text-center"
             style={{
               border: "2px solid",
-              borderTopColor: "#ffffff",
-              borderLeftColor: "#ffffff",
-              borderBottomColor: "#404040",
-              borderRightColor: "#404040",
-              background: "#c0c0c0",
+              borderTopColor: "var(--t-border-light, #ffffff)",
+              borderLeftColor: "var(--t-border-light, #ffffff)",
+              borderBottomColor: "var(--t-border-dark, #404040)",
+              borderRightColor: "var(--t-border-dark, #404040)",
+              backgroundColor: "var(--t-bg, #c0c0c0)",
               padding: "0",
               width: "clamp(320px, 60vw, 520px)",
             }}
@@ -202,8 +379,8 @@ export function BootScreen({ onComplete }: BootScreenProps) {
             <div
               className="flex items-center gap-2 px-2 py-1"
               style={{
-                background: "linear-gradient(90deg, #000080, #1084d0)",
-                color: "#ffffff",
+                background: "linear-gradient(90deg, var(--t-titlebar-from, #000080), var(--t-titlebar-to, #1084d0))",
+                color: "var(--t-titlebar-text, #ffffff)",
                 fontFamily: "var(--font-vt323), monospace",
                 fontSize: "clamp(16px, 2vw, 20px)",
               }}
@@ -216,18 +393,18 @@ export function BootScreen({ onComplete }: BootScreenProps) {
               <div
                 className="text-center"
                 style={{
-                  color: "#000080",
+                  color: "var(--t-accent, #000080)",
                   fontFamily: "var(--font-vt323), monospace",
                   fontSize: "clamp(28px, 5vw, 52px)",
                   lineHeight: 1,
-                  textShadow: "2px 2px 0 #808080",
+                  textShadow: "2px 2px 0 var(--t-border-dark, #808080)",
                 }}
               >
                 GunthOS
               </div>
               <div
                 style={{
-                  color: "#000000",
+                  color: "var(--t-text, #000000)",
                   fontSize: "clamp(12px, 1.6vw, 16px)",
                   fontFamily: "var(--font-vt323), monospace",
                 }}
@@ -235,16 +412,16 @@ export function BootScreen({ onComplete }: BootScreenProps) {
                 Version 1.0 — Certifié compatible avec lui-même
               </div>
 
-              {/* Progress bar Win95 style */}
+              {/* Progress bar */}
               <div className="w-full flex flex-col gap-2">
                 <div
                   style={{
                     border: "2px solid",
-                    borderTopColor: "#808080",
-                    borderLeftColor: "#808080",
-                    borderBottomColor: "#ffffff",
-                    borderRightColor: "#ffffff",
-                    background: "#ffffff",
+                    borderTopColor: "var(--t-border-dark, #808080)",
+                    borderLeftColor: "var(--t-border-dark, #808080)",
+                    borderBottomColor: "var(--t-border-light, #ffffff)",
+                    borderRightColor: "var(--t-border-light, #ffffff)",
+                    backgroundColor: "var(--t-app-bg, #ffffff)",
                     height: "22px",
                     padding: "2px",
                     width: "100%",
@@ -254,7 +431,7 @@ export function BootScreen({ onComplete }: BootScreenProps) {
                     style={{
                       height: "100%",
                       width: `${progress}%`,
-                      background: "repeating-linear-gradient(90deg, #000080 0px, #000080 18px, #1084d0 18px, #1084d0 20px)",
+                      background: "linear-gradient(90deg, var(--t-progress-from, #000080), var(--t-progress-to, #1084d0))",
                       transition: "width 0.28s linear",
                     }}
                   />
@@ -262,7 +439,7 @@ export function BootScreen({ onComplete }: BootScreenProps) {
                 <div
                   style={{
                     fontSize: "clamp(11px, 1.4vw, 14px)",
-                    color: "#000000",
+                    color: "var(--t-text-muted, #000000)",
                     fontFamily: "var(--font-vt323), monospace",
                     textAlign: "center",
                     minHeight: "1.4em",
@@ -277,7 +454,7 @@ export function BootScreen({ onComplete }: BootScreenProps) {
           <div
             style={{
               fontSize: "clamp(11px, 1.3vw, 14px)",
-              color: "#808080",
+              color: "var(--t-text-subtle, #808080)",
               fontFamily: "var(--font-vt323), monospace",
             }}
           >

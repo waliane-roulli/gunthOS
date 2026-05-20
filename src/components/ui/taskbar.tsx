@@ -10,7 +10,7 @@ import { useOsClock } from "@/lib/hooks/use-os-clock";
 import { useVisitorCountApi } from "@/lib/hooks/use-visitor-count-api";
 import { useSoundContext } from "@/lib/contexts/sound-context";
 
-export function Taskbar({ onReboot }: { onReboot?: () => void }) {
+export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShutdown?: () => void }) {
   const { windows, activeWindowId, focusWindow, restoreWindow, minimizeWindow, openWindow } =
     useWindowManager();
   const { themeId, setTheme } = useTheme();
@@ -20,11 +20,10 @@ export function Taskbar({ onReboot }: { onReboot?: () => void }) {
   const [startMenuOpen, setStartMenuOpen] = useState(false);
   const [themeMenuOpen, setThemeMenuOpen] = useState(false);
   const [shutdownMsg, setShutdownMsg] = useState<string | null>(null);
-  const [shutdownScreen, setShutdownScreen] = useState(false);
 
   const handleShutdownConfirm = () => {
-    window.close();
-    setTimeout(() => setShutdownScreen(true), 200);
+    setShutdownMsg(null);
+    onShutdown?.();
   };
   const [rebootMsg, setRebootMsg] = useState<string | null>(null);
 
@@ -61,18 +60,6 @@ export function Taskbar({ onReboot }: { onReboot?: () => void }) {
 
   return (
     <>
-      {/* Shutdown screen */}
-      {shutdownScreen && (
-        <div
-          className="fixed inset-0 z-[999999] flex flex-col items-center justify-center gap-4"
-          style={{ backgroundColor: "#000", fontFamily: "var(--t-font-display)" }}
-        >
-          <p className="text-white text-sm tracking-widest opacity-60">
-            Vous pouvez fermer cet onglet.
-          </p>
-        </div>
-      )}
-
       {/* Reboot dialog */}
       {rebootMsg && (
         <div
@@ -80,13 +67,18 @@ export function Taskbar({ onReboot }: { onReboot?: () => void }) {
           style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
         >
           <div
-            className="border-[3px] shadow-[6px_6px_0_rgba(0,0,0,0.5)] min-w-[280px] max-w-[340px]"
+            className="border-[3px] min-w-[280px] max-w-[340px]"
             style={{
-              backgroundColor: "var(--t-bg)",
+              backgroundColor: "var(--t-glass-bg)",
+              backdropFilter: "var(--t-glass-blur)",
+              WebkitBackdropFilter: "var(--t-glass-blur)",
+              borderColor: "var(--t-glass-border, transparent)",
               borderTopColor: "var(--t-border-light)",
               borderLeftColor: "var(--t-border-light)",
               borderBottomColor: "var(--t-border-dark)",
               borderRightColor: "var(--t-border-dark)",
+              borderRadius: "var(--t-window-radius)",
+              boxShadow: "var(--t-dialog-shadow)",
               fontFamily: "var(--t-font-display)",
             }}
           >
@@ -95,6 +87,7 @@ export function Taskbar({ onReboot }: { onReboot?: () => void }) {
               style={{
                 background: "linear-gradient(to right, var(--t-titlebar-from), var(--t-titlebar-to))",
                 color: "var(--t-titlebar-text)",
+                borderRadius: "calc(var(--t-titlebar-radius) - 1px) calc(var(--t-titlebar-radius) - 1px) 0 0",
               }}
             >
               🔄 Redémarrage de GunthOS
@@ -151,13 +144,18 @@ export function Taskbar({ onReboot }: { onReboot?: () => void }) {
           style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
         >
           <div
-            className="border-[3px] shadow-[6px_6px_0_rgba(0,0,0,0.5)] min-w-[280px] max-w-[340px]"
+            className="border-[3px] min-w-[280px] max-w-[340px]"
             style={{
-              backgroundColor: "var(--t-bg)",
+              backgroundColor: "var(--t-glass-bg)",
+              backdropFilter: "var(--t-glass-blur)",
+              WebkitBackdropFilter: "var(--t-glass-blur)",
+              borderColor: "var(--t-glass-border, transparent)",
               borderTopColor: "var(--t-border-light)",
               borderLeftColor: "var(--t-border-light)",
               borderBottomColor: "var(--t-border-dark)",
               borderRightColor: "var(--t-border-dark)",
+              borderRadius: "var(--t-window-radius)",
+              boxShadow: "var(--t-dialog-shadow)",
               fontFamily: "var(--t-font-display)",
             }}
           >
@@ -166,6 +164,7 @@ export function Taskbar({ onReboot }: { onReboot?: () => void }) {
               style={{
                 background: "linear-gradient(to right, var(--t-titlebar-from), var(--t-titlebar-to))",
                 color: "var(--t-titlebar-text)",
+                borderRadius: "calc(var(--t-titlebar-radius) - 1px) calc(var(--t-titlebar-radius) - 1px) 0 0",
               }}
             >
               🔌 Arrêt du système GunthOS
@@ -176,10 +175,10 @@ export function Taskbar({ onReboot }: { onReboot?: () => void }) {
                 {shutdownMsg}
               </p>
             </div>
-            <div className="flex justify-center pb-4">
+            <div className="flex justify-center gap-3 pb-4">
               <button
                 onClick={handleShutdownConfirm}
-                className="px-8 py-1 border-[2px] text-base tracking-widest cursor-pointer"
+                className="px-6 py-1 border-[2px] text-base tracking-widest cursor-pointer"
                 style={{
                   backgroundColor: "var(--t-bg)",
                   color: "var(--t-text)",
@@ -190,7 +189,22 @@ export function Taskbar({ onReboot }: { onReboot?: () => void }) {
                   borderRightColor: "var(--t-border-dark)",
                 }}
               >
-                OK
+                🔌 Éteindre
+              </button>
+              <button
+                onClick={() => setShutdownMsg(null)}
+                className="px-6 py-1 border-[2px] text-base tracking-widest cursor-pointer"
+                style={{
+                  backgroundColor: "var(--t-bg)",
+                  color: "var(--t-text)",
+                  fontFamily: "var(--t-font-display)",
+                  borderTopColor: "var(--t-border-light)",
+                  borderLeftColor: "var(--t-border-light)",
+                  borderBottomColor: "var(--t-border-dark)",
+                  borderRightColor: "var(--t-border-dark)",
+                }}
+              >
+                Annuler
               </button>
             </div>
           </div>
@@ -211,13 +225,17 @@ export function Taskbar({ onReboot }: { onReboot?: () => void }) {
       {/* Start menu */}
       {startMenuOpen && (
         <div
-          className="fixed top-[40px] left-0 w-56 border-[3px] shadow-[4px_4px_0_rgba(0,0,0,0.5)] z-[9001] animate-[slideInUp_0.15s_ease]"
+          className="fixed top-[40px] left-0 w-56 border-[3px] z-[9001] animate-[slideInUp_0.15s_ease]"
           style={{
-            backgroundColor: "var(--t-bg)",
+            backgroundColor: "var(--t-glass-bg, var(--t-bg))",
+            backdropFilter: "var(--t-glass-blur)",
+            WebkitBackdropFilter: "var(--t-glass-blur)",
             borderTopColor: "var(--t-border-light)",
             borderLeftColor: "var(--t-border-light)",
             borderRightColor: "var(--t-border-dark)",
             borderBottomColor: "var(--t-border-dark)",
+            borderRadius: "var(--t-window-radius)",
+            boxShadow: "var(--t-window-shadow)",
           }}
         >
           {/* Logo strip */}
@@ -308,23 +326,27 @@ export function Taskbar({ onReboot }: { onReboot?: () => void }) {
       {/* Theme menu */}
       {themeMenuOpen && (
         <div
-          className="fixed top-[40px] left-0 w-56 border-[3px] shadow-[4px_4px_0_rgba(0,0,0,0.5)] z-[9001]"
+          className="fixed top-[40px] left-0 w-56 border-[3px] z-[9001]"
           style={{
-            backgroundColor: "var(--t-bg)",
+            backgroundColor: "var(--t-glass-bg, var(--t-bg))",
+            backdropFilter: "var(--t-glass-blur)",
+            WebkitBackdropFilter: "var(--t-glass-blur)",
             borderTopColor: "var(--t-border-light)",
             borderLeftColor: "var(--t-border-light)",
             borderRightColor: "var(--t-border-dark)",
             borderBottomColor: "var(--t-border-dark)",
+            borderRadius: "var(--t-window-radius)",
+            boxShadow: "var(--t-window-shadow)",
           }}
         >
           <div
             className="px-2 py-1.5 text-base tracking-widest border-b"
             style={{
-              background:
-                "linear-gradient(to right, var(--t-titlebar-from), var(--t-titlebar-to))",
+              background: "linear-gradient(to right, var(--t-titlebar-from), var(--t-titlebar-to))",
               color: "var(--t-titlebar-text)",
               fontFamily: "var(--t-font-display)",
               borderBottomColor: "var(--t-border-dark)",
+              borderRadius: "calc(var(--t-titlebar-radius) - 1px) calc(var(--t-titlebar-radius) - 1px) 0 0",
             }}
           >
             🎨 CHOISIR UN THÈME
@@ -350,7 +372,9 @@ export function Taskbar({ onReboot }: { onReboot?: () => void }) {
       <div
         className="h-[40px] border-b-2 flex items-center gap-1 px-1 shrink-0 z-[8999]"
         style={{
-          backgroundColor: "var(--t-bg)",
+          backgroundColor: "var(--t-taskbar-bg)",
+          backdropFilter: "var(--t-taskbar-blur)",
+          WebkitBackdropFilter: "var(--t-taskbar-blur)",
           borderBottomColor: "var(--t-border-dark)",
         }}
       >
@@ -364,13 +388,14 @@ export function Taskbar({ onReboot }: { onReboot?: () => void }) {
           }}
           className="flex items-center gap-1.5 px-3 h-[30px] border-[2px] font-bold tracking-wider text-base shrink-0 cursor-pointer select-none"
           style={{
-            backgroundColor: startMenuOpen ? "var(--t-bg-dark)" : "var(--t-bg)",
+            background: startMenuOpen ? "var(--t-bg-dark)" : "var(--t-start-btn-bg)",
             fontFamily: "var(--t-font-display)",
-            color: "var(--t-text)",
+            color: "var(--t-start-btn-text)",
             borderTopColor: startMenuOpen ? "var(--t-border-dark)" : "var(--t-border-light)",
             borderLeftColor: startMenuOpen ? "var(--t-border-dark)" : "var(--t-border-light)",
             borderBottomColor: startMenuOpen ? "var(--t-border-light)" : "var(--t-border-dark)",
             borderRightColor: startMenuOpen ? "var(--t-border-light)" : "var(--t-border-dark)",
+            borderRadius: "var(--t-window-radius)",
           }}
         >
           🌐 <span>Démarrer</span>

@@ -8,6 +8,7 @@ export interface AppSettings {
   ambientVolume: number; // 0–1, volume du bruit de fond machine
   animationsEnabled: boolean;
   density: Density;
+  scanlinesEnabled: boolean;
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -16,6 +17,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   ambientVolume: 0.5,
   animationsEnabled: true,
   density: "normal",
+  scanlinesEnabled: true,
 };
 
 const STORAGE_KEY = "gunth-settings";
@@ -39,6 +41,7 @@ export function loadSettings(): AppSettings {
       density: (["compact", "normal", "large"] as Density[]).includes(parsed.density as Density)
         ? (parsed.density as Density)
         : DEFAULT_SETTINGS.density,
+      scanlinesEnabled: parsed.scanlinesEnabled ?? DEFAULT_SETTINGS.scanlinesEnabled,
     };
   } catch {
     return DEFAULT_SETTINGS;

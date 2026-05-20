@@ -42,7 +42,7 @@ export function SolitaireApp() {
         <div
           className="w-14 h-20 border-[2px] flex items-center justify-center text-xl cursor-pointer"
           style={{
-            background: "linear-gradient(135deg, #000080, #0000cc)",
+            background: "linear-gradient(135deg, var(--t-titlebar-from), var(--t-titlebar-to))",
             borderTopColor: "var(--t-border-light)",
             borderLeftColor: "var(--t-border-light)",
             borderBottomColor: "var(--t-border-dark)",
@@ -51,7 +51,7 @@ export function SolitaireApp() {
           onClick={() => setClicked(-1)}
           title="Retourner une carte"
         >
-          <span style={{ color: "#fff", fontSize: "1.2rem" }}>🂠</span>
+          <span style={{ color: "var(--t-titlebar-text)", fontSize: "1.2rem" }}>🂠</span>
         </div>
         <div
           className="w-14 h-20 border-[2px] flex items-center justify-center"
@@ -64,7 +64,7 @@ export function SolitaireApp() {
             fontSize: "1.5rem",
           }}
         >
-          {clicked === -1 ? <span style={{ color: "red" }}>✕</span> : ""}
+          {clicked === -1 ? <span style={{ color: "var(--t-accent)" }}>✕</span> : ""}
         </div>
 
         {/* Foundations */}
@@ -78,7 +78,7 @@ export function SolitaireApp() {
                 borderLeftColor: "var(--t-border-dark)",
                 borderBottomColor: "var(--t-border-light)",
                 borderRightColor: "var(--t-border-light)",
-                color: RED.has(s) ? "#cc0000" : "#000",
+                color: RED.has(s) ? "var(--t-defrag-fragmented, #cc0000)" : "var(--t-app-text)",
                 opacity: 0.4,
               }}
             >
@@ -96,12 +96,12 @@ export function SolitaireApp() {
             onClick={() => setClicked(i)}
             className="w-14 h-20 border-[2px] flex flex-col items-start justify-start p-1 cursor-pointer"
             style={{
-              backgroundColor: clicked === i ? "var(--t-card-hover)" : "var(--t-bg)",
+              backgroundColor: clicked === i ? "var(--t-card-hover)" : "var(--t-app-bg)",
               borderTopColor: clicked === i ? "var(--t-border-dark)" : "var(--t-border-light)",
               borderLeftColor: clicked === i ? "var(--t-border-dark)" : "var(--t-border-light)",
               borderBottomColor: clicked === i ? "var(--t-border-light)" : "var(--t-border-dark)",
               borderRightColor: clicked === i ? "var(--t-border-light)" : "var(--t-border-dark)",
-              color: c.red ? "#cc0000" : "var(--t-text)",
+              color: c.red ? "var(--t-defrag-fragmented, #cc0000)" : "var(--t-app-text)",
               fontSize: "0.875rem",
               fontWeight: "bold",
             }}
@@ -141,38 +141,46 @@ const DEFRAG_MESSAGES = [
   "Chargement du module de chargement...",
 ];
 
+type DefragBlock = "used" | "fragmented" | "free" | "system" | "mystery";
+
+function randomBlock(): DefragBlock {
+  return pickRandom<DefragBlock>(["used", "fragmented", "free", "system", "mystery"])!;
+}
+
+const BLOCK_VAR: Record<DefragBlock, string> = {
+  used: "var(--t-defrag-used)",
+  fragmented: "var(--t-defrag-fragmented)",
+  free: "var(--t-defrag-free)",
+  system: "var(--t-defrag-system)",
+  mystery: "var(--t-defrag-mystery)",
+};
+
 export function DefragApp() {
   const [progress, setProgress] = useState(0);
   const [message, setMessage] = useState(DEFRAG_MESSAGES[0]!);
-  const [blocks, setBlocks] = useState<string[]>(() =>
-    Array.from({ length: 120 }, () =>
-      pickRandom(["bg-blue-600", "bg-red-600", "bg-white", "bg-gray-400", "bg-yellow-400"])!
-    )
+  const [blocks, setBlocks] = useState<DefragBlock[]>(() =>
+    Array.from({ length: 120 }, randomBlock)
   );
   const [done, setDone] = useState(false);
   const [restarted, setRestarted] = useState(0);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     if (done) return;
-    const id = setInterval(() => {
+    intervalRef.current = setInterval(() => {
       setProgress((p) => {
         const next = p + Math.random() * 1.2;
         if (next >= 100) {
+          if (intervalRef.current) clearInterval(intervalRef.current);
           setDone(true);
           return 100;
         }
         setMessage(pickRandom(DEFRAG_MESSAGES)!);
-        setBlocks((b) =>
-          b.map((c) =>
-            Math.random() < 0.08
-              ? pickRandom(["bg-blue-600", "bg-red-600", "bg-white", "bg-gray-400", "bg-yellow-400"])!
-              : c
-          )
-        );
+        setBlocks((b) => b.map((c) => (Math.random() < 0.08 ? randomBlock() : c)));
         return next;
       });
     }, 180);
-    return () => clearInterval(id);
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
   }, [done, restarted]);
 
   function handleRestart() {
@@ -200,8 +208,12 @@ export function DefragApp() {
         }}
       >
         <div className="flex flex-wrap gap-[2px]">
-          {blocks.map((color, i) => (
-            <div key={i} className={`w-3 h-3 border border-black/20 ${color}`} />
+          {blocks.map((block, i) => (
+            <div
+              key={i}
+              className="w-3 h-3 border border-black/20"
+              style={{ backgroundColor: BLOCK_VAR[block] }}
+            />
           ))}
         </div>
       </div>
@@ -218,19 +230,19 @@ export function DefragApp() {
             borderLeftColor: "var(--t-border-dark)",
             borderBottomColor: "var(--t-border-light)",
             borderRightColor: "var(--t-border-light)",
-            backgroundColor: "var(--t-bg)",
+            backgroundColor: "var(--t-app-bg)",
           }}
         >
           <div
             className="h-full transition-none"
             style={{
               width: `${progress}%`,
-              background: "linear-gradient(to right, #000080, #0000ff)",
+              background: "linear-gradient(to right, var(--t-progress-from), var(--t-progress-to))",
             }}
           />
           <span
             className="absolute inset-0 flex items-center justify-center text-sm font-bold tracking-widest mix-blend-difference"
-            style={{ color: "#fff" }}
+            style={{ color: "var(--t-app-bg)" }}
           >
             {Math.floor(progress)}%
           </span>
@@ -253,6 +265,7 @@ export function DefragApp() {
             style={{
               backgroundColor: "var(--t-bg)",
               color: "var(--t-text)",
+              fontFamily: "var(--t-font-display)",
               borderTopColor: "var(--t-border-light)",
               borderLeftColor: "var(--t-border-light)",
               borderBottomColor: "var(--t-border-dark)",
@@ -267,18 +280,24 @@ export function DefragApp() {
 
       {/* Légende */}
       <div className="flex gap-3 text-xs tracking-wider flex-wrap" style={{ color: "var(--t-text-muted)" }}>
-        {[
-          ["bg-blue-600", "Utilisé"],
-          ["bg-red-600", "Fragmenté"],
-          ["bg-white border border-gray-300", "Libre"],
-          ["bg-gray-400", "Système"],
-          ["bg-yellow-400", "Mystérieux"],
-        ].map(([cls, label]) => (
-          <span key={label} className="flex items-center gap-1">
-            <span className={`inline-block w-3 h-3 border border-black/20 ${cls}`} />
-            {label}
-          </span>
-        ))}
+        {(["used", "fragmented", "free", "system", "mystery"] as DefragBlock[]).map((block) => {
+          const labels: Record<DefragBlock, string> = {
+            used: "Utilisé",
+            fragmented: "Fragmenté",
+            free: "Libre",
+            system: "Système",
+            mystery: "Mystérieux",
+          };
+          return (
+            <span key={block} className="flex items-center gap-1">
+              <span
+                className="inline-block w-3 h-3 border border-black/20"
+                style={{ backgroundColor: BLOCK_VAR[block] }}
+              />
+              {labels[block]}
+            </span>
+          );
+        })}
       </div>
     </div>
   );
@@ -304,24 +323,27 @@ Contenu du fichier système :
 
 GunthOS vous remercie de votre confiance.`;
 
+const SAVE_RESPONSES = [
+  "Sauvegardé dans C:\\GUNTH\\TEMP\\UNTITLED(1).txt",
+  "Sauvegardé… ou pas. Le disque est plein.",
+  "Fichier sauvegardé. Écrasement de la sauvegarde précédente.",
+  "Erreur : impossible de sauvegarder. Sauvegardé quand même.",
+];
+
 export function NotepadApp() {
   const [text, setText] = useState(NOTEPAD_PLACEHOLDER);
   const [saved, setSaved] = useState(false);
   const [saveCount, setSaveCount] = useState(0);
-
-  const SAVE_RESPONSES = [
-    "Sauvegardé dans C:\\GUNTH\\TEMP\\UNTITLED(1).txt",
-    "Sauvegardé… ou pas. Le disque est plein.",
-    "Fichier sauvegardé. Écrasement de la sauvegarde précédente.",
-    "Erreur : impossible de sauvegarder. Sauvegardé quand même.",
-    `Sauvegarde ${saveCount + 1} effectuée. Les ${saveCount} précédentes ont été perdues.`,
-  ];
 
   function handleSave() {
     setSaved(true);
     setSaveCount((c) => c + 1);
     setTimeout(() => setSaved(false), 3000);
   }
+
+  const saveMsg = saveCount > 0
+    ? `Sauvegarde ${saveCount} effectuée. Les ${saveCount - 1} précédentes ont été perdues.`
+    : pickRandom(SAVE_RESPONSES)!;
 
   return (
     <div className="flex flex-col h-full" style={{ fontFamily: "var(--t-font-display)" }}>
@@ -342,13 +364,13 @@ export function NotepadApp() {
         ))}
       </div>
 
-      {/* Editor */}
+      {/* Editor — uses --t-app-bg / --t-app-text so it adapts per theme */}
       <textarea
         className="flex-1 p-2 resize-none text-sm tracking-wide outline-none"
         style={{
-          backgroundColor: "#fff",
-          color: "#000",
-          fontFamily: "Courier New, monospace",
+          backgroundColor: "var(--t-app-bg)",
+          color: "var(--t-app-text)",
+          fontFamily: "var(--t-font-mono)",
           fontSize: "0.875rem",
           lineHeight: 1.6,
           border: "none",
@@ -368,7 +390,7 @@ export function NotepadApp() {
         }}
       >
         {saved
-          ? `✅ ${pickRandom(SAVE_RESPONSES)}`
+          ? `✅ ${saveMsg}`
           : `Ligne 1, Col 1 — ${text.length} caractères — Encodage : GUNTH-1252`}
       </div>
     </div>
@@ -442,7 +464,7 @@ export function PrinterApp() {
           className="px-2 py-1 text-sm tracking-widest border-b font-bold"
           style={{ borderColor: "var(--t-border-dark)", color: "var(--t-text)", backgroundColor: "var(--t-bg-dark)" }}
         >
-          FILE D'IMPRESSION ({queue.length} document{queue.length > 1 ? "s" : ""})
+          FILE D&apos;IMPRESSION ({queue.length} document{queue.length > 1 ? "s" : ""})
         </div>
         {queue.map((doc, i) => (
           <div
@@ -466,7 +488,7 @@ export function PrinterApp() {
             borderBottomColor: "var(--t-border-light)",
             borderRightColor: "var(--t-border-light)",
             backgroundColor: "var(--t-inset-from)",
-            color: "#cc2200",
+            color: "var(--t-defrag-fragmented, #cc2200)",
           }}
         >
           {log.map((l, i) => <div key={i}>⚠ {l}</div>)}
@@ -579,6 +601,7 @@ export function IEApp() {
             className="w-7 h-7 border-[2px] text-sm flex items-center justify-center cursor-pointer"
             style={{
               backgroundColor: "var(--t-bg)",
+              color: "var(--t-text)",
               borderTopColor: "var(--t-border-light)",
               borderLeftColor: "var(--t-border-light)",
               borderBottomColor: "var(--t-border-dark)",
@@ -593,9 +616,9 @@ export function IEApp() {
         <input
           className="flex-1 px-2 py-0.5 text-sm border-[2px] outline-none mx-1"
           style={{
-            backgroundColor: "#fff",
-            color: "#000",
-            fontFamily: "monospace",
+            backgroundColor: "var(--t-app-bg)",
+            color: "var(--t-app-text)",
+            fontFamily: "var(--t-font-mono)",
             borderTopColor: "var(--t-border-dark)",
             borderLeftColor: "var(--t-border-dark)",
             borderBottomColor: "var(--t-border-light)",
@@ -631,28 +654,28 @@ export function IEApp() {
         </div>
       )}
 
-      {/* Content area */}
+      {/* Content area — theme-aware */}
       <div
         className="flex-1 flex items-center justify-center p-6 text-center"
-        style={{ backgroundColor: "#fff", color: "#000" }}
+        style={{ backgroundColor: "var(--t-app-bg)", color: "var(--t-app-text)" }}
       >
         {loading ? (
-          <div style={{ fontFamily: "monospace", fontSize: "0.875rem", color: "#000080" }}>
+          <div style={{ fontFamily: "var(--t-font-mono)", fontSize: "0.875rem", color: "var(--t-accent)" }}>
             Connexion à {url}…<br />
-            <span style={{ fontSize: "0.75rem", color: "#666" }}>
+            <span style={{ fontSize: "0.75rem", color: "var(--t-text-muted)" }}>
               {Math.floor(loadProgress)}% chargé — ne cliquez pas ailleurs
             </span>
           </div>
         ) : error ? (
           <div>
             <div style={{ fontSize: "2rem", marginBottom: 8 }}>🚫</div>
-            <div style={{ fontFamily: "Arial, sans-serif", fontSize: "1.1rem", fontWeight: "bold", color: "#000080", marginBottom: 6 }}>
+            <div style={{ fontFamily: "var(--t-font-display)", fontSize: "1.1rem", fontWeight: "bold", color: "var(--t-accent)", marginBottom: 6 }}>
               Cette page ne peut pas être affichée
             </div>
-            <div style={{ fontFamily: "monospace", fontSize: "0.75rem", color: "#444", maxWidth: 280 }}>
+            <div style={{ fontFamily: "var(--t-font-mono)", fontSize: "0.75rem", color: "var(--t-app-text-muted)", maxWidth: 280 }}>
               {error}
             </div>
-            <div style={{ marginTop: 12, fontSize: "0.75rem", color: "#888" }}>
+            <div style={{ marginTop: 12, fontSize: "0.75rem", color: "var(--t-text-subtle)" }}>
               Internet Explorer 6.0 — GunthOS Edition
             </div>
             <div className="flex gap-2 justify-center mt-4">
@@ -662,12 +685,12 @@ export function IEApp() {
                   onClick={() => navigate(s.url)}
                   style={{
                     fontSize: "0.75rem",
-                    color: "#000080",
+                    color: "var(--t-accent)",
                     textDecoration: "underline",
                     background: "none",
                     border: "none",
                     cursor: "pointer",
-                    fontFamily: "Arial",
+                    fontFamily: "var(--t-font-display)",
                   }}
                 >
                   {new URL(s.url).hostname}
@@ -677,13 +700,13 @@ export function IEApp() {
           </div>
         ) : visitedSite ? (
           <div>
-            <div style={{ fontSize: "1.2rem", fontWeight: "bold", color: "#000080", fontFamily: "Arial", marginBottom: 8 }}>
+            <div style={{ fontSize: "1.2rem", fontWeight: "bold", color: "var(--t-accent)", fontFamily: "var(--t-font-display)", marginBottom: 8 }}>
               {visitedSite.url}
             </div>
-            <div style={{ fontSize: "0.75rem", color: "#444", fontFamily: "Arial", marginBottom: 16 }}>
+            <div style={{ fontSize: "0.75rem", color: "var(--t-app-text-muted)", fontFamily: "var(--t-font-display)", marginBottom: 16 }}>
               {visitedSite.joke}
             </div>
-            <div style={{ fontSize: "0.75rem", color: "#888" }}>
+            <div style={{ fontSize: "0.75rem", color: "var(--t-text-subtle)" }}>
               🔒 Ce site est certifié sécurisé par GunthCert™ (certificat expiré)
             </div>
           </div>

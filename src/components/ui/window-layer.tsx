@@ -31,14 +31,19 @@ function GunthDialog({
       style={{ backgroundColor: "rgba(0,0,0,0.35)" }}
     >
       <div
-        className="border-[3px] shadow-[6px_6px_0_rgba(0,0,0,0.5)] min-w-[280px] max-w-[360px]"
+        className="border-[3px] min-w-[280px] max-w-[360px]"
         style={{
-          backgroundColor: "var(--t-bg)",
+          backgroundColor: "var(--t-glass-bg)",
+          backdropFilter: "var(--t-glass-blur)",
+          WebkitBackdropFilter: "var(--t-glass-blur)",
           borderTopColor: "var(--t-border-light)",
           borderLeftColor: "var(--t-border-light)",
           borderBottomColor: "var(--t-border-dark)",
           borderRightColor: "var(--t-border-dark)",
+          borderRadius: "var(--t-window-radius)",
+          boxShadow: "var(--t-dialog-shadow)",
           fontFamily: "var(--t-font-display)",
+          overflow: "hidden",
         }}
       >
         {/* Titlebar */}
@@ -47,6 +52,7 @@ function GunthDialog({
           style={{
             background: "linear-gradient(to right, var(--t-titlebar-from), var(--t-titlebar-to))",
             color: "var(--t-titlebar-text)",
+            borderRadius: "calc(var(--t-titlebar-radius) - 1px) calc(var(--t-titlebar-radius) - 1px) 0 0",
           }}
         >
           <span className="text-sm tracking-widest font-bold">{config.icon} {config.title}</span>

@@ -35,16 +35,16 @@ export const GUNTH_STATUS = [
 ];
 
 export const GUNTH_SHUTDOWN_MESSAGES = [
-  "GunthOS s'éteint…\n\nIl est maintenant sans danger d'allumer votre ordinateur.",
-  "GunthOS s'éteint…\n\nVeuillez retirer la disquette du lecteur avant de partir.",
-  "GunthOS s'éteint…\n\nN'oubliez pas de souffler dans la cartouche.",
-  "GunthOS s'éteint…\n\nMerci d'avoir utilisé GunthOS. Nous espérons que vous avez sauvegardé.",
-  "GunthOS s'éteint…\n\nErreur lors de l'arrêt. Arrêt quand même effectué.",
-  "GunthOS s'éteint…\n\nFermeture de l'onglet dans 0 seconde(s). (Pas notre faute si ça marche pas.)",
-  "GunthOS s'éteint…\n\nVos données non sauvegardées ont été conservées en lieu sûr. (C'est faux.)",
-  "GunthOS s'éteint…\n\nÀ bientôt. Ou pas. On ne sait jamais avec les onglets.",
-  "GunthOS s'éteint…\n\nApplication de 0 mise à jour. Pour une fois.",
-  "GunthOS s'éteint…\n\nMerci d'avoir éteint correctement GunthOS plutôt que de fermer l'onglet directement. Ce qui revient au même.",
+  "Êtes-vous sûr(e) de vouloir éteindre GunthOS ?\n\nVos 47 onglets non sauvegardés seront perdus. Comme toujours.",
+  "Êtes-vous sûr(e) de vouloir éteindre GunthOS ?\n\nNous vous recommandons de retirer la disquette du lecteur avant de partir.",
+  "Êtes-vous sûr(e) de vouloir éteindre GunthOS ?\n\nN'oubliez pas de souffler dans la cartouche avant de rallumer.",
+  "Êtes-vous sûr(e) de vouloir éteindre GunthOS ?\n\nErreur lors de la préparation de l'arrêt. L'arrêt aura quand même lieu.",
+  "Êtes-vous sûr(e) de vouloir éteindre GunthOS ?\n\nVos données non sauvegardées ont été conservées en lieu sûr. (C'est faux.)",
+  "Êtes-vous sûr(e) de vouloir éteindre GunthOS ?\n\nApplication de 0 mise à jour critique. Pour une fois.",
+  "Êtes-vous sûr(e) de vouloir éteindre GunthOS ?\n\nGunthOS vous remercie de l'avoir utilisé. Il ne le pense pas vraiment.",
+  "Êtes-vous sûr(e) de vouloir éteindre GunthOS ?\n\nLe processus mystérieux (PID 666) est toujours en cours. Vous êtes prévenu(e).",
+  "Êtes-vous sûr(e) de vouloir éteindre GunthOS ?\n\nDéfragmentation du disque recommandée avant l'arrêt. Temps estimé : 6h.",
+  "Êtes-vous sûr(e) de vouloir éteindre GunthOS ?\n\nAucune sauvegarde automatique n'a été effectuée. Bonne chance.",
 ];
 
 export const GUNTH_REBOOT_MESSAGES = [

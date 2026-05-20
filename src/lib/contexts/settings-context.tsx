@@ -29,6 +29,7 @@ interface SettingsContextValue {
   setAmbientVolume: (v: number) => void;
   setAnimationsEnabled: (v: boolean) => void;
   setDensity: (v: Density) => void;
+  setScanlinesEnabled: (v: boolean) => void;
   updateSettings: (patch: Partial<AppSettings>) => void;
 }
 
@@ -40,6 +41,7 @@ const SettingsContext = createContext<SettingsContextValue>({
   setAmbientVolume: () => {},
   setAnimationsEnabled: () => {},
   setDensity: () => {},
+  setScanlinesEnabled: () => {},
   updateSettings: () => {},
 });
 
@@ -71,6 +73,17 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     );
   }, [settings.animationsEnabled]);
 
+  useEffect(() => {
+    const root = document.documentElement;
+    if (!settings.scanlinesEnabled) {
+      root.style.setProperty("--t-scanlines", "0");
+    } else {
+      // Restore the theme's original scanlines value
+      const themeVal = theme.vars["--t-scanlines"] ?? "0";
+      root.style.setProperty("--t-scanlines", themeVal);
+    }
+  }, [settings.scanlinesEnabled, theme]);
+
   const updateSettings = useCallback((patch: Partial<AppSettings>) => {
     setSettings((prev) => {
       const next = { ...prev, ...patch };
@@ -84,10 +97,11 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const setAmbientVolume = useCallback((v: number) => updateSettings({ ambientVolume: Math.max(0, Math.min(1, v)) }), [updateSettings]);
   const setAnimationsEnabled = useCallback((v: boolean) => updateSettings({ animationsEnabled: v }), [updateSettings]);
   const setDensity = useCallback((v: Density) => updateSettings({ density: v }), [updateSettings]);
+  const setScanlinesEnabled = useCallback((v: boolean) => updateSettings({ scanlinesEnabled: v }), [updateSettings]);
 
   return (
     <SettingsContext.Provider
-      value={{ settings, theme, setTheme, setSoundEnabled, setAmbientVolume, setAnimationsEnabled, setDensity, updateSettings }}
+      value={{ settings, theme, setTheme, setSoundEnabled, setAmbientVolume, setAnimationsEnabled, setDensity, setScanlinesEnabled, updateSettings }}
     >
       {children}
     </SettingsContext.Provider>
