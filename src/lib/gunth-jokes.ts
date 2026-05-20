@@ -42,6 +42,14 @@ export const GUNTH_SHUTDOWN_MESSAGES = [
   "GunthOS s'éteint…\n\nErreur lors de l'arrêt. Arrêt quand même effectué.",
 ];
 
+export const GUNTH_REBOOT_MESSAGES = [
+  "GunthOS redémarre…\n\nVeuillez patienter pendant que nous prétendons réparer quelque chose.",
+  "GunthOS redémarre…\n\nC'est souvent la solution à tous les problèmes.",
+  "GunthOS redémarre…\n\nNe touchez à rien. Surtout pas à ça.",
+  "GunthOS redémarre…\n\nApplication de 47 mises à jour critiques. (c'est un mensonge)",
+  "GunthOS redémarre…\n\nDéfragmentation du cerveau en cours. Cela peut prendre un moment.",
+];
+
 export function pickRandom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)]!;
 }

@@ -5,11 +5,11 @@ import { useWindowManager } from "@/lib/contexts/window-manager-context";
 import { APPS } from "@/lib/apps";
 import { useTheme } from "@/lib/contexts/theme-context";
 import { THEMES, type ThemeId } from "@/lib/themes";
-import { GUNTH_SHUTDOWN_MESSAGES, pickRandom } from "@/lib/gunth-jokes";
+import { GUNTH_SHUTDOWN_MESSAGES, GUNTH_REBOOT_MESSAGES, pickRandom } from "@/lib/gunth-jokes";
 import { useOsClock } from "@/lib/hooks/use-os-clock";
 import { useVisitorCountApi } from "@/lib/hooks/use-visitor-count-api";
 
-export function Taskbar() {
+export function Taskbar({ onReboot }: { onReboot?: () => void }) {
   const { windows, activeWindowId, focusWindow, restoreWindow, minimizeWindow, openWindow } =
     useWindowManager();
   const { themeId, setTheme } = useTheme();
@@ -18,6 +18,7 @@ export function Taskbar() {
   const [startMenuOpen, setStartMenuOpen] = useState(false);
   const [themeMenuOpen, setThemeMenuOpen] = useState(false);
   const [shutdownMsg, setShutdownMsg] = useState<string | null>(null);
+  const [rebootMsg, setRebootMsg] = useState<string | null>(null);
 
   const handleTaskbarClick = useCallback(
     (winId: string) => {
@@ -46,6 +47,77 @@ export function Taskbar() {
 
   return (
     <>
+      {/* Reboot dialog */}
+      {rebootMsg && (
+        <div
+          className="fixed inset-0 z-[99999] flex items-center justify-center"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+        >
+          <div
+            className="border-[3px] shadow-[6px_6px_0_rgba(0,0,0,0.5)] min-w-[280px] max-w-[340px]"
+            style={{
+              backgroundColor: "var(--t-bg)",
+              borderTopColor: "var(--t-border-light)",
+              borderLeftColor: "var(--t-border-light)",
+              borderBottomColor: "var(--t-border-dark)",
+              borderRightColor: "var(--t-border-dark)",
+              fontFamily: "var(--t-font-display)",
+            }}
+          >
+            <div
+              className="px-2 py-1 border-b-2 border-black text-base tracking-widest font-bold select-none"
+              style={{
+                background: "linear-gradient(to right, var(--t-titlebar-from), var(--t-titlebar-to))",
+                color: "var(--t-titlebar-text)",
+              }}
+            >
+              🔄 Redémarrage de GunthOS
+            </div>
+            <div className="flex gap-3 items-start p-4">
+              <span className="text-3xl shrink-0">🔄</span>
+              <p className="text-sm tracking-wide leading-relaxed whitespace-pre-line" style={{ color: "var(--t-text)" }}>
+                {rebootMsg}
+              </p>
+            </div>
+            <div className="flex justify-center gap-3 pb-4">
+              <button
+                onClick={() => {
+                  setRebootMsg(null);
+                  onReboot?.();
+                }}
+                className="px-6 py-1 border-[2px] text-base tracking-widest cursor-pointer"
+                style={{
+                  backgroundColor: "var(--t-bg)",
+                  color: "var(--t-text)",
+                  fontFamily: "var(--t-font-display)",
+                  borderTopColor: "var(--t-border-light)",
+                  borderLeftColor: "var(--t-border-light)",
+                  borderBottomColor: "var(--t-border-dark)",
+                  borderRightColor: "var(--t-border-dark)",
+                }}
+              >
+                Redémarrer
+              </button>
+              <button
+                onClick={() => setRebootMsg(null)}
+                className="px-6 py-1 border-[2px] text-base tracking-widest cursor-pointer"
+                style={{
+                  backgroundColor: "var(--t-bg)",
+                  color: "var(--t-text)",
+                  fontFamily: "var(--t-font-display)",
+                  borderTopColor: "var(--t-border-light)",
+                  borderLeftColor: "var(--t-border-light)",
+                  borderBottomColor: "var(--t-border-dark)",
+                  borderRightColor: "var(--t-border-dark)",
+                }}
+              >
+                Annuler
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Shutdown dialog */}
       {shutdownMsg && (
         <div
@@ -187,6 +259,14 @@ export function Taskbar() {
               }}
             />
 
+            <StartMenuItem
+              icon="🔄"
+              label="Redémarrer GunthOS"
+              onClick={() => {
+                setRebootMsg(pickRandom(GUNTH_REBOOT_MESSAGES)!);
+                setStartMenuOpen(false);
+              }}
+            />
             <StartMenuItem
               icon="🔌"
               label="Éteindre GunthOS"
