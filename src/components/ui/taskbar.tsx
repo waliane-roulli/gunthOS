@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { MsnLogo } from "./msn-logo";
 import { useWindowManager } from "@/lib/contexts/window-manager-context";
 import { APPS } from "@/lib/apps";
 import { useTheme } from "@/lib/contexts/settings-context";
@@ -445,7 +446,9 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
                   borderRightColor: isActive ? "var(--t-border-light)" : "var(--t-border-dark)",
                 }}
               >
-                <span className="shrink-0">{win.icon}</span>
+                <span className="shrink-0" style={{ lineHeight: 0, display: "flex", alignItems: "center" }}>
+                  {win.appSlug === "msn" ? <MsnLogo size={16} /> : win.icon}
+                </span>
                 <span className="truncate">{win.title}</span>
               </button>
             );
@@ -481,6 +484,14 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
             style={{ borderColor: "var(--t-border-dark)", background: "none", fontFamily: "var(--t-font-display)", color: "var(--t-text)", fontSize: "inherit" }}
           >
             {user ? `👤 ${user.name}` : "👤 Invité"}
+          </button>
+          <button
+            title="GunthMessenger™ — Ouvrir la messagerie"
+            onClick={() => { init(); openWindow("msn", "GunthMessenger™", "🦋"); }}
+            className="cursor-pointer select-none hover:opacity-80 border-r pr-2"
+            style={{ borderColor: "var(--t-border-dark)", background: "none", padding: 0, display: "flex", alignItems: "center", lineHeight: 0 }}
+          >
+            <MsnLogo size={20} />
           </button>
           <span title="Volume">🔊</span>
           <span

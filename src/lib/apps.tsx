@@ -1,5 +1,6 @@
 import type { App } from "@/types";
 import type { Route } from "next";
+import { MsnLogo } from "@/components/ui/msn-logo";
 
 export const APPS: App[] = [
   {
@@ -23,5 +24,14 @@ export const APPS: App[] = [
     description: "Tous les utilisateurs GunthOS",
     emoji: "📋",
     href: "/directory" as Route,
+  },
+  {
+    slug: "msn",
+    name: "GunthMessenger™",
+    description: "Messagerie instantanée style MSN",
+    emoji: "🦋",
+    iconNode: <MsnLogo size={46} />,
+    href: "/msn" as Route,
+    badge: "NEW!",
   },
 ];

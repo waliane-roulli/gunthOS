@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, type ReactNode } from "react";
 import { useWindowManager } from "@/lib/contexts/window-manager-context";
 import { APPS } from "@/lib/apps";
 import { useTheme } from "@/lib/contexts/settings-context";
@@ -115,7 +115,7 @@ export function OsDesktop() {
         {APPS.map((app) => (
           <DesktopIcon
             key={app.slug}
-            emoji={app.emoji}
+            emoji={app.iconNode ?? app.emoji}
             label={app.name}
             badge={app.badge}
             onClick={() => handleOpenApp(app.slug)}
@@ -149,7 +149,7 @@ function DesktopIcon({
   badge,
   onClick,
 }: {
-  emoji: string;
+  emoji: string | import("react").ReactNode;
   label: string;
   badge?: string;
   onClick: () => void;
@@ -163,15 +163,21 @@ function DesktopIcon({
       className="group flex flex-col items-center gap-1 w-[72px] p-1.5 focus:outline-none cursor-default"
     >
       <div className="relative">
-        <span
-          className="text-[2.8rem] leading-none drop-shadow-[2px_3px_4px_rgba(0,0,0,0.5)] group-focus:opacity-80"
-          style={{
-            filter:
-              "drop-shadow(1px 1px 2px rgba(0,0,0,0.7)) drop-shadow(0 0 8px rgba(0,0,0,0.3))",
-          }}
-        >
-          {emoji}
-        </span>
+        {typeof emoji === "string" ? (
+          <span
+            className="text-[2.8rem] leading-none drop-shadow-[2px_3px_4px_rgba(0,0,0,0.5)] group-focus:opacity-80"
+            style={{
+              filter:
+                "drop-shadow(1px 1px 2px rgba(0,0,0,0.7)) drop-shadow(0 0 8px rgba(0,0,0,0.3))",
+            }}
+          >
+            {emoji}
+          </span>
+        ) : (
+          <div className="leading-none group-focus:opacity-80" style={{ filter: "drop-shadow(1px 2px 3px rgba(0,0,0,0.6))" }}>
+            {emoji}
+          </div>
+        )}
         {badge && (
           <span
             className="absolute -top-1 -right-1 text-xs font-bold px-1 border border-black animate-[blink_0.8s_step-end_infinite]"

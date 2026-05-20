@@ -7,6 +7,7 @@ import { desc } from "drizzle-orm";
 export async function GET() {
   const users = db()
     .select({
+      id: user.id,
       username: user.username,
       displayUsername: user.displayUsername,
       name: user.name,

@@ -8,6 +8,7 @@ import { SettingsPanel } from "./settings-panel";
 import { RetroTitlebarBtn } from "./retro-titlebar-btn";
 import { SolitaireApp, DefragApp, NotepadApp, PrinterApp, IEApp } from "./fake-apps";
 import { ProfileApp, PublicProfileApp, UserDirectoryApp } from "./profile-app";
+import { MsnApp } from "./msn-app";
 import { LoginWindow } from "./login-window";
 import { GUNTH_STATUS, pickRandom } from "@/lib/gunth-jokes";
 import { useSoundContext } from "@/lib/contexts/sound-context";
@@ -289,6 +290,7 @@ const APP_COMPONENTS: Partial<Record<string, () => React.ReactElement>> = {
   ie: () => <IEApp />,
   profile: () => <ProfileApp />,
   directory: () => <UserDirectoryApp />,
+  msn: () => <MsnApp />,
 };
 
 // Durée de chargement simulée par app (ms)
@@ -304,6 +306,7 @@ const LOAD_DURATIONS: Record<string, number> = {
   login: 900,
   profile: 1400,
   directory: 1700,
+  msn: 1200,
 };
 
 const LOADING_MESSAGES = [

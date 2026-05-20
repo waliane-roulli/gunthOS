@@ -69,6 +69,15 @@ export const verification = sqliteTable("verification", {
   updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
+// Messages MSN style
+export const messages = sqliteTable("messages", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  fromUserId: text("from_user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  toUserId: text("to_user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  content: text("content").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+});
+
 // Settings persistées par user
 export const userSettings = sqliteTable("user_settings", {
   userId: text("user_id").primaryKey().references(() => user.id, { onDelete: "cascade" }),
