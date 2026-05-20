@@ -22,7 +22,7 @@ export function SettingsPanel({ onClose, embedded = false }: SettingsPanelProps)
           borderBottomColor: "var(--t-border-dark)",
         }}
       >
-        🎨 THÈME VISUEL
+        🎨 THÈME VISUEL — PANNEAU DE CONFIGURATION GUNTH
       </div>
 
       {/* Grille thèmes */}
@@ -179,7 +179,7 @@ export function SettingsPanel({ onClose, embedded = false }: SettingsPanelProps)
             fontFamily: "var(--t-font-display)",
           }}
         >
-          <span>⚙️ Paramètres du site</span>
+          <span>⚙️ Paramètres GunthOS — redémarrage non requis (pour l&apos;instant)</span>
           <div className="flex gap-1">
             <button
               onClick={onClose}

@@ -17,9 +17,9 @@ const vt323 = VT323({
 });
 
 export const metadata: Metadata = {
-  title: "Plouf Plouf — Le portail de jeux et outils Web 1.0",
+  title: "GunthOS v1.0 — Chargement en cours… (depuis 1998)",
   description:
-    "Tirage au sort, mini-jeux et outils kitsch façon années 90. 100% gratuit, sans inscription.",
+    "GunthOS : le système d'exploitation du web. Tirage au sort, mini-jeux et outils kitsch. Chargement en cours depuis 1998.",
 };
 
 export default function RootLayout({

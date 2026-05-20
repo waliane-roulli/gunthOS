@@ -127,7 +127,7 @@ export function OsDesktop() {
 
       {/* Recycle bin top-right */}
       <div className="absolute top-6 right-6 z-10">
-        <DesktopIcon emoji="🗑️" label="Corbeille" onClick={() => {}} />
+        <DesktopIcon emoji="🗑️" label="Corbeille (pleine)" onClick={() => {}} />
       </div>
     </div>
   );

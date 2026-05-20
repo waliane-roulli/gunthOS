@@ -1,10 +1,13 @@
 "use client";
 
+"use client";
+
 import { useEffect, useState } from "react";
 import { useWindowManager } from "@/lib/contexts/window-manager-context";
 import { APPS } from "@/lib/apps";
 import { useTheme } from "@/lib/contexts/theme-context";
 import { THEMES, type ThemeId } from "@/lib/themes";
+import { GUNTH_SHUTDOWN_MESSAGES, pickRandom } from "@/lib/gunth-jokes";
 
 function useOsClock() {
   const [time, setTime] = useState("");
@@ -41,6 +44,7 @@ export function Taskbar() {
   const visitorCount = useVisitorCounter();
   const [startMenuOpen, setStartMenuOpen] = useState(false);
   const [themeMenuOpen, setThemeMenuOpen] = useState(false);
+  const [shutdownMsg, setShutdownMsg] = useState<string | null>(null);
 
   const visibleWindows = windows;
 
@@ -65,6 +69,59 @@ export function Taskbar() {
 
   return (
     <>
+      {/* Shutdown dialog */}
+      {shutdownMsg && (
+        <div
+          className="fixed inset-0 z-[99999] flex items-center justify-center"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+        >
+          <div
+            className="border-[3px] shadow-[6px_6px_0_rgba(0,0,0,0.5)] min-w-[280px] max-w-[340px]"
+            style={{
+              backgroundColor: "var(--t-bg)",
+              borderTopColor: "var(--t-border-light)",
+              borderLeftColor: "var(--t-border-light)",
+              borderBottomColor: "var(--t-border-dark)",
+              borderRightColor: "var(--t-border-dark)",
+              fontFamily: "var(--t-font-display)",
+            }}
+          >
+            <div
+              className="px-2 py-1 border-b-2 border-black text-xs tracking-widest font-bold select-none"
+              style={{
+                background: "linear-gradient(to right, var(--t-titlebar-from), var(--t-titlebar-to))",
+                color: "var(--t-titlebar-text)",
+              }}
+            >
+              🔌 Arrêt du système GunthOS
+            </div>
+            <div className="flex gap-3 items-start p-4">
+              <span className="text-3xl shrink-0">🔌</span>
+              <p className="text-[0.72rem] tracking-wide leading-relaxed whitespace-pre-line" style={{ color: "var(--t-text)" }}>
+                {shutdownMsg}
+              </p>
+            </div>
+            <div className="flex justify-center pb-4">
+              <button
+                onClick={() => setShutdownMsg(null)}
+                className="px-8 py-1 border-[2px] text-xs tracking-widest cursor-pointer"
+                style={{
+                  backgroundColor: "var(--t-bg)",
+                  color: "var(--t-text)",
+                  fontFamily: "var(--t-font-display)",
+                  borderTopColor: "var(--t-border-light)",
+                  borderLeftColor: "var(--t-border-light)",
+                  borderBottomColor: "var(--t-border-dark)",
+                  borderRightColor: "var(--t-border-dark)",
+                }}
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Backdrop to close start menu */}
       {(startMenuOpen || themeMenuOpen) && (
         <div
@@ -105,7 +162,7 @@ export function Taskbar() {
                 fontFamily: "var(--t-font-display)",
               }}
             >
-              🌐 Gunthos
+              🌐 GunthOS
             </span>
           </div>
 
@@ -141,6 +198,23 @@ export function Taskbar() {
               label="Changer le thème"
               onClick={() => {
                 setThemeMenuOpen(true);
+                setStartMenuOpen(false);
+              }}
+            />
+
+            <div
+              className="my-1 mx-2 border-t border-b"
+              style={{
+                borderColor: "var(--t-border-dark)",
+                borderBottomColor: "var(--t-border-light)",
+              }}
+            />
+
+            <StartMenuItem
+              icon="🔌"
+              label="Éteindre GunthOS"
+              onClick={() => {
+                setShutdownMsg(pickRandom(GUNTH_SHUTDOWN_MESSAGES)!);
                 setStartMenuOpen(false);
               }}
             />

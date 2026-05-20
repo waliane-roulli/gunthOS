@@ -1,9 +1,105 @@
 "use client";
 
+import { useState } from "react";
 import dynamic from "next/dynamic";
 import { useWindowManager } from "@/lib/contexts/window-manager-context";
 import { OsWindow } from "./os-window";
 import { SettingsPanel } from "./settings-panel";
+import { SolitaireApp, DefragApp, NotepadApp, PrinterApp, IEApp } from "./fake-apps";
+import { GUNTH_STATUS, pickRandom } from "@/lib/gunth-jokes";
+
+interface DialogConfig {
+  icon: string;
+  title: string;
+  message: string;
+  buttons?: { label: string; response?: string }[];
+}
+
+function GunthDialog({
+  config,
+  onClose,
+}: {
+  config: DialogConfig;
+  onClose: (response?: string) => void;
+}) {
+  const buttons = config.buttons ?? [{ label: "OK" }];
+  return (
+    <div
+      className="fixed inset-0 z-[99999] flex items-center justify-center"
+      style={{ backgroundColor: "rgba(0,0,0,0.35)" }}
+    >
+      <div
+        className="border-[3px] shadow-[6px_6px_0_rgba(0,0,0,0.5)] min-w-[280px] max-w-[360px]"
+        style={{
+          backgroundColor: "var(--t-bg)",
+          borderTopColor: "var(--t-border-light)",
+          borderLeftColor: "var(--t-border-light)",
+          borderBottomColor: "var(--t-border-dark)",
+          borderRightColor: "var(--t-border-dark)",
+          fontFamily: "var(--t-font-display)",
+        }}
+      >
+        {/* Titlebar */}
+        <div
+          className="px-2 py-1 flex items-center justify-between border-b-2 border-black select-none"
+          style={{
+            background: "linear-gradient(to right, var(--t-titlebar-from), var(--t-titlebar-to))",
+            color: "var(--t-titlebar-text)",
+          }}
+        >
+          <span className="text-xs tracking-widest font-bold">{config.icon} {config.title}</span>
+          <button
+            onClick={() => onClose()}
+            className="w-[18px] h-[18px] flex items-center justify-center text-[0.6rem] font-bold border-[2px] cursor-pointer"
+            style={{
+              backgroundColor: "var(--t-bg)",
+              color: "var(--t-text)",
+              borderTopColor: "var(--t-border-light)",
+              borderLeftColor: "var(--t-border-light)",
+              borderBottomColor: "var(--t-border-dark)",
+              borderRightColor: "var(--t-border-dark)",
+            }}
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="flex gap-3 items-start p-4">
+          <span className="text-3xl shrink-0">{config.icon}</span>
+          <p
+            className="text-[0.72rem] tracking-wide leading-relaxed"
+            style={{ color: "var(--t-text)" }}
+          >
+            {config.message}
+          </p>
+        </div>
+
+        {/* Buttons */}
+        <div className="flex justify-center gap-2 pb-4 px-4">
+          {buttons.map((btn) => (
+            <button
+              key={btn.label}
+              onClick={() => onClose(btn.response ?? btn.label)}
+              className="px-6 py-1 border-[2px] text-xs tracking-widest cursor-pointer min-w-[72px]"
+              style={{
+                backgroundColor: "var(--t-bg)",
+                color: "var(--t-text)",
+                fontFamily: "var(--t-font-display)",
+                borderTopColor: "var(--t-border-light)",
+                borderLeftColor: "var(--t-border-light)",
+                borderBottomColor: "var(--t-border-dark)",
+                borderRightColor: "var(--t-border-dark)",
+              }}
+            >
+              {btn.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const PloufApp = dynamic(
   () =>
@@ -13,7 +109,95 @@ const PloufApp = dynamic(
   { ssr: false }
 );
 
+const MY_COMPUTER_JOKES = [
+  "Toute ressemblance avec Windows est purement intentionnelle.",
+  "Propriété de Gunth Corp™. Ne pas ouvrir le boîtier.",
+  "Processeur : Pentium II 233 MHz. Surpuissant pour vos besoins.",
+  "Garantie expirée le 14 janvier 2002.",
+  "Votre ordinateur a besoin d'être redémarré. Comme toujours.",
+  "Pilote de son introuvable. Vous entendrez quand même.",
+  "Mémoire disponible : suffisante pour ce que vous faites là.",
+];
+
+const DISK_C_JOKES = [
+  "Disque C:\\ — 0 octets libres. Comme d'habitude.",
+  "Disque C:\\ — Plein depuis 2002. Supprimez vos MP3.",
+  "Disque C:\\ — Fragmentation : 97%. Bonne chance.",
+  "Disque C:\\ — Erreur SMART détectée. Ignorez.",
+];
+
+const DISK_D_JOKES = [
+  "Lecteur D:\\ — Veuillez insérer le CD-ROM « GunthOS SP2 »",
+  "Lecteur D:\\ — Disque non reconnu. Soufflez dedans.",
+  "Lecteur D:\\ — Aucun média inséré (depuis l'usine).",
+];
+
+const DOCS_JOKES = [
+  "Mes Documents — 847 fichiers nommés « SANS TITRE (1).doc »",
+  "Mes Documents — Dernière sauvegarde : jamais.",
+  "Mes Documents — Dossier vide. Vos données sont ailleurs.",
+];
+
 function MyComputerContent() {
+  const [joke] = useState(() => pickRandom(MY_COMPUTER_JOKES));
+  const [status] = useState(() => pickRandom(GUNTH_STATUS));
+  const [dialog, setDialog] = useState<DialogConfig | null>(null);
+  const { openWindow } = useWindowManager();
+
+  function showDialog(cfg: DialogConfig) {
+    setDialog(cfg);
+  }
+
+  const ITEMS = [
+    {
+      icon: "💾", label: "Disque C:\\",
+      onClick: () => showDialog({
+        icon: "💾",
+        title: "Disque C:\\",
+        message: pickRandom(DISK_C_JOKES)!,
+        buttons: [{ label: "Défragmenter", response: "defrag" }, { label: "Ignorer" }],
+      }),
+    },
+    {
+      icon: "💿", label: "Lecteur D:\\",
+      onClick: () => showDialog({
+        icon: "💿",
+        title: "Lecteur D:\\",
+        message: pickRandom(DISK_D_JOKES)!,
+        buttons: [{ label: "Souffler dedans" }, { label: "Réessayer" }],
+      }),
+    },
+    {
+      icon: "🖨️", label: "Imprimante",
+      onClick: () => openWindow("printer", "GunthPrint 3000™", "🖨️"),
+    },
+    {
+      icon: "📂", label: "Mes Documents",
+      onClick: () => showDialog({
+        icon: "📂",
+        title: "Mes Documents",
+        message: pickRandom(DOCS_JOKES)!,
+        buttons: [{ label: "Récupérer" }, { label: "Pleurer" }],
+      }),
+    },
+    {
+      icon: "🌐", label: "Internet",
+      onClick: () => openWindow("ie", "Internet Explorer 6 — GunthOS Edition", "🌐"),
+    },
+    {
+      icon: "🃏", label: "Solitaire",
+      onClick: () => openWindow("solitaire", "Solitaire GunthOS™", "🃏"),
+    },
+    {
+      icon: "🗂️", label: "Défragmenteur",
+      onClick: () => openWindow("defrag", "Défragmenteur de disque", "🗂️"),
+    },
+    {
+      icon: "📝", label: "Bloc-notes",
+      onClick: () => openWindow("notepad", "Bloc-notes — UNTITLED.txt", "📝"),
+    },
+  ];
+
   return (
     <div className="p-6">
       <div
@@ -29,47 +213,72 @@ function MyComputerContent() {
         <div className="text-5xl mb-2">🖥️</div>
         <h2
           className="text-2xl tracking-widest"
-          style={{
-            color: "var(--t-accent)",
-            fontFamily: "var(--t-font-display)",
-          }}
+          style={{ color: "var(--t-accent)", fontFamily: "var(--t-font-display)" }}
         >
           MON ORDINATEUR
         </h2>
+        <p
+          className="text-[0.6rem] mt-1 tracking-wider"
+          style={{ color: "var(--t-text-muted)", fontFamily: "var(--t-font-display)" }}
+        >
+          GunthOS v1.0 — {joke}
+        </p>
       </div>
-      <div className="grid grid-cols-3 gap-3">
-        {[
-          { icon: "💾", label: "Disque C:\\" },
-          { icon: "💿", label: "Lecteur D:\\" },
-          { icon: "🖨️", label: "Imprimante" },
-          { icon: "📂", label: "Mes Documents" },
-          { icon: "🌐", label: "Internet" },
-          { icon: "🕹️", label: "Jeux" },
-        ].map((item) => (
-          <div
+
+      <div className="grid grid-cols-4 gap-2">
+        {ITEMS.map((item) => (
+          <button
             key={item.label}
-            className="flex flex-col items-center gap-1 p-3 cursor-default hover:opacity-80"
+            onDoubleClick={item.onClick}
+            onClick={(e) => { if (e.detail === 1) e.currentTarget.focus(); }}
+            className="flex flex-col items-center gap-1 p-3 border-[2px] cursor-default focus:outline-none group"
+            style={{
+              backgroundColor: "transparent",
+              borderColor: "transparent",
+              fontFamily: "var(--t-font-display)",
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.backgroundColor = "var(--t-card-hover)";
+              e.currentTarget.style.borderColor = "var(--t-accent)";
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.backgroundColor = "transparent";
+              e.currentTarget.style.borderColor = "transparent";
+            }}
           >
-            <span className="text-4xl">{item.icon}</span>
+            <span className="text-3xl">{item.icon}</span>
             <span
-              className="text-xs text-center tracking-wider"
-              style={{ fontFamily: "var(--t-font-display)", color: "var(--t-text)" }}
+              className="text-[0.6rem] text-center tracking-wider leading-tight"
+              style={{ color: "var(--t-text)" }}
             >
               {item.label}
             </span>
-          </div>
+          </button>
         ))}
       </div>
+
       <div
-        className="mt-4 text-center text-xs tracking-wider py-2 border-t"
-        style={{
-          color: "var(--t-text-muted)",
-          fontFamily: "var(--t-font-display)",
-          borderTopColor: "var(--t-border-dark)",
-        }}
+        className="mt-4 text-center text-[0.6rem] tracking-wider py-2 border-t"
+        style={{ color: "var(--t-text-muted)", fontFamily: "var(--t-font-display)", borderTopColor: "var(--t-border-dark)" }}
       >
-        🚧 Système d'exploitation Gunthos v1.0 — 640 Ko de RAM libres 🚧
+        {status}
       </div>
+      <div
+        className="text-center text-[0.55rem] tracking-wider"
+        style={{ color: "var(--t-text-muted)", fontFamily: "var(--t-font-display)" }}
+      >
+        Double-cliquez pour ouvrir
+      </div>
+
+      {dialog && (
+        <GunthDialog
+          config={dialog}
+          onClose={(response) => {
+            setDialog(null);
+            if (response === "defrag") openWindow("defrag", "Défragmenteur de disque", "🗂️");
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -104,6 +313,16 @@ export function WindowLayer() {
           );
         } else if (win.appSlug === "my-computer") {
           content = <MyComputerContent />;
+        } else if (win.appSlug === "solitaire") {
+          content = <SolitaireApp />;
+        } else if (win.appSlug === "defrag") {
+          content = <DefragApp />;
+        } else if (win.appSlug === "notepad") {
+          content = <NotepadApp />;
+        } else if (win.appSlug === "printer") {
+          content = <PrinterApp />;
+        } else if (win.appSlug === "ie") {
+          content = <IEApp />;
         }
 
         return (

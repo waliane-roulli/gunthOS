@@ -34,7 +34,7 @@ export function NavBar({ onSettingsClick }: NavBarProps) {
           fontSize: "0.875rem",
         }}
       >
-        🌐 <span>gunthOS</span>
+        🌐 <span>GunthOS</span>
       </Link>
 
       {/* Separator */}
