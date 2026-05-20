@@ -26,6 +26,7 @@ interface SettingsContextValue {
   theme: Theme;
   setTheme: (id: ThemeId) => void;
   setSoundEnabled: (v: boolean) => void;
+  setAmbientVolume: (v: number) => void;
   setAnimationsEnabled: (v: boolean) => void;
   setDensity: (v: Density) => void;
   updateSettings: (patch: Partial<AppSettings>) => void;
@@ -36,6 +37,7 @@ const SettingsContext = createContext<SettingsContextValue>({
   theme: THEME_MAP.get(DEFAULT_SETTINGS.themeId) as Theme,
   setTheme: () => {},
   setSoundEnabled: () => {},
+  setAmbientVolume: () => {},
   setAnimationsEnabled: () => {},
   setDensity: () => {},
   updateSettings: () => {},
@@ -79,12 +81,13 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
   const setTheme = useCallback((id: ThemeId) => updateSettings({ themeId: id }), [updateSettings]);
   const setSoundEnabled = useCallback((v: boolean) => updateSettings({ soundEnabled: v }), [updateSettings]);
+  const setAmbientVolume = useCallback((v: number) => updateSettings({ ambientVolume: Math.max(0, Math.min(1, v)) }), [updateSettings]);
   const setAnimationsEnabled = useCallback((v: boolean) => updateSettings({ animationsEnabled: v }), [updateSettings]);
   const setDensity = useCallback((v: Density) => updateSettings({ density: v }), [updateSettings]);
 
   return (
     <SettingsContext.Provider
-      value={{ settings, theme, setTheme, setSoundEnabled, setAnimationsEnabled, setDensity, updateSettings }}
+      value={{ settings, theme, setTheme, setSoundEnabled, setAmbientVolume, setAnimationsEnabled, setDensity, updateSettings }}
     >
       {children}
     </SettingsContext.Provider>

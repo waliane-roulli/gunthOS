@@ -20,7 +20,7 @@ interface SettingsPanelProps {
 }
 
 export function SettingsPanel({ onClose, embedded = false }: SettingsPanelProps) {
-  const { settings, setTheme, setSoundEnabled, setAnimationsEnabled, setDensity } = useSettings();
+  const { settings, setTheme, setSoundEnabled, setAmbientVolume, setAnimationsEnabled, setDensity } = useSettings();
   const [activeTab, setActiveTab] = useState<Tab>("theme");
 
   const content = (
@@ -68,6 +68,8 @@ export function SettingsPanel({ onClose, embedded = false }: SettingsPanelProps)
           <SystemTab
             soundEnabled={settings.soundEnabled}
             setSoundEnabled={setSoundEnabled}
+            ambientVolume={settings.ambientVolume}
+            setAmbientVolume={setAmbientVolume}
           />
         )}
 
@@ -339,10 +341,15 @@ function DisplayTab({
 function SystemTab({
   soundEnabled,
   setSoundEnabled,
+  ambientVolume,
+  setAmbientVolume,
 }: {
   soundEnabled: boolean;
   setSoundEnabled: (v: boolean) => void;
+  ambientVolume: number;
+  setAmbientVolume: (v: number) => void;
 }) {
+  const volumePct = Math.round(ambientVolume * 100);
   return (
     <>
       <SectionTitle>🔊 SONS SYSTÈME</SectionTitle>
@@ -352,6 +359,41 @@ function SystemTab({
         label="Sons GunthOS"
         description="Bips, pops et effets sonores du système"
       />
+
+      <div className="flex items-center justify-between py-2 gap-4">
+        <div>
+          <div
+            className="text-sm tracking-wider"
+            style={{ color: "var(--t-text)", fontFamily: "var(--t-font-display)" }}
+          >
+            🖥️ Bruit ambiant machine
+          </div>
+          <div
+            className="text-sm"
+            style={{ color: "var(--t-text-subtle)", fontFamily: "var(--t-font-body)" }}
+          >
+            Ventilateur + bourdonnement électronique
+          </div>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <input
+            type="range"
+            min={0}
+            max={100}
+            value={volumePct}
+            disabled={!soundEnabled}
+            onChange={(e) => setAmbientVolume(Number(e.target.value) / 100)}
+            className="w-24 cursor-pointer"
+            style={{ accentColor: "var(--t-accent)", opacity: soundEnabled ? 1 : 0.4 }}
+          />
+          <span
+            className="text-sm w-8 text-right tabular-nums"
+            style={{ color: "var(--t-text-muted)", fontFamily: "var(--t-font-display)" }}
+          >
+            {volumePct}%
+          </span>
+        </div>
+      </div>
 
       <div
         className="mt-4 p-3 border-[2px]"

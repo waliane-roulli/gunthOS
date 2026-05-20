@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { useSoundContext } from "@/lib/contexts/sound-context";
 
 const BOOT_LINES = [
   { text: "GunthOS v1.0 - Copyright (C) 1998 Gunther Corp.", delay: 0 },
@@ -61,14 +62,25 @@ interface BootScreenProps {
   onComplete: () => void;
 }
 
+// Indices des lignes BIOS qui déclenchent des sons spéciaux
+const BIOS_SOUND_TRIGGERS: Record<number, "ok" | "error" | "modem" | "hdd"> = {
+  4: "ok",   // Processeur OK
+  7: "hdd",  // Lecteur disquette ABSENT
+  10: "ok",  // Modem détecté
+  12: "hdd", // Vérification disque dur
+  13: "hdd", // Erreurs disque
+  25: "modem", // SKRRRR KSSHHH
+};
+
 export function BootScreen({ onComplete }: BootScreenProps) {
   const [phase, setPhase] = useState<"bios" | "loading" | "done">("bios");
   const [visibleLines, setVisibleLines] = useState<number>(0);
   const [cursorVisible, setCursorVisible] = useState(true);
   const [progress, setProgress] = useState(0);
-  const [progressLabel, setProgressLabel] = useState(PROGRESS_STEPS[0].label);
+  const [progressLabel, setProgressLabel] = useState(PROGRESS_STEPS[0]!.label);
   const [fadeOut, setFadeOut] = useState(false);
   const terminalRef = useRef<HTMLDivElement>(null);
+  const { init, playBiosBleep, playModemDialup, playStartupChime, startBootAudio, stopBootAudio, startAccessDisk, stopAccessDisk } = useSoundContext();
 
   // Cursor blink
   useEffect(() => {
@@ -76,10 +88,15 @@ export function BootScreen({ onComplete }: BootScreenProps) {
     return () => clearInterval(id);
   }, []);
 
-  // BIOS text lines
+  // BIOS text lines + sons
   useEffect(() => {
     if (phase !== "bios") return;
+    init();
     const timers: ReturnType<typeof setTimeout>[] = [];
+
+    // Bip POST + boot_and_run.mp3 démarre
+    timers.push(setTimeout(() => { playBiosBleep("start"); startBootAudio(); }, 50));
+
     BOOT_LINES.forEach((line, i) => {
       timers.push(
         setTimeout(() => {
@@ -87,19 +104,28 @@ export function BootScreen({ onComplete }: BootScreenProps) {
           if (terminalRef.current) {
             terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
           }
+          const trigger = BIOS_SOUND_TRIGGERS[i];
+          if (trigger === "ok") playBiosBleep("ok");
+          else if (trigger === "modem") playModemDialup();
         }, line.delay)
       );
     });
-    const lastDelay = BOOT_LINES[BOOT_LINES.length - 1].delay;
+
+    const lastDelay = BOOT_LINES[BOOT_LINES.length - 1]!.delay;
     timers.push(setTimeout(() => setPhase("loading"), lastDelay + 600));
     return () => timers.forEach(clearTimeout);
-  }, [phase]);
+  }, [phase, init, playBiosBleep, playModemDialup, startBootAudio]);
 
-  // Progress bar
+  // Progress bar — access_disk.mp3 pendant le chargement, chime à la fin
   useEffect(() => {
     if (phase !== "loading") return;
     const timers: ReturnType<typeof setTimeout>[] = [];
     const stepDuration = 2400 / PROGRESS_STEPS.length;
+
+    // boot_and_run s'arrête, access_disk prend le relais
+    stopBootAudio();
+    startAccessDisk();
+
     PROGRESS_STEPS.forEach((step, i) => {
       timers.push(
         setTimeout(() => {
@@ -108,14 +134,24 @@ export function BootScreen({ onComplete }: BootScreenProps) {
         }, i * stepDuration)
       );
     });
-    timers.push(
-      setTimeout(() => {
-        setFadeOut(true);
-        setTimeout(onComplete, 700);
-      }, PROGRESS_STEPS.length * stepDuration + 400)
-    );
-    return () => timers.forEach(clearTimeout);
-  }, [phase, onComplete]);
+
+    const totalDuration = PROGRESS_STEPS.length * stepDuration;
+
+    timers.push(setTimeout(() => {
+      stopAccessDisk();
+      playStartupChime();
+    }, totalDuration - 200));
+
+    timers.push(setTimeout(() => {
+      setFadeOut(true);
+      setTimeout(onComplete, 700);
+    }, totalDuration + 400));
+
+    return () => {
+      timers.forEach(clearTimeout);
+      stopAccessDisk();
+    };
+  }, [phase, onComplete, playStartupChime, stopBootAudio, startAccessDisk, stopAccessDisk]);
 
   return (
     <div

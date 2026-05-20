@@ -5,6 +5,7 @@ export type Density = "compact" | "normal" | "large";
 export interface AppSettings {
   themeId: ThemeId;
   soundEnabled: boolean;
+  ambientVolume: number; // 0–1, volume du bruit de fond machine
   animationsEnabled: boolean;
   density: Density;
 }
@@ -12,6 +13,7 @@ export interface AppSettings {
 export const DEFAULT_SETTINGS: AppSettings = {
   themeId: DEFAULT_THEME_ID,
   soundEnabled: true,
+  ambientVolume: 0.5,
   animationsEnabled: true,
   density: "normal",
 };
@@ -30,6 +32,9 @@ export function loadSettings(): AppSettings {
           ? parsed.themeId
           : DEFAULT_SETTINGS.themeId,
       soundEnabled: parsed.soundEnabled ?? DEFAULT_SETTINGS.soundEnabled,
+      ambientVolume: typeof parsed.ambientVolume === "number"
+        ? Math.max(0, Math.min(1, parsed.ambientVolume))
+        : DEFAULT_SETTINGS.ambientVolume,
       animationsEnabled: parsed.animationsEnabled ?? DEFAULT_SETTINGS.animationsEnabled,
       density: (["compact", "normal", "large"] as Density[]).includes(parsed.density as Density)
         ? (parsed.density as Density)

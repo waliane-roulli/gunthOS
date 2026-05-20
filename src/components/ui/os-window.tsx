@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef } from "react";
 import { useWindowManager } from "@/lib/contexts/window-manager-context";
 import type { WindowInstance } from "@/lib/contexts/window-manager-context";
 import { RetroTitlebarBtn } from "./retro-titlebar-btn";
+import { useSoundContext } from "@/lib/contexts/sound-context";
 
 interface OsWindowProps {
   win: WindowInstance;
@@ -24,6 +25,7 @@ const MIN_H = 160;
 export function OsWindow({ win, children }: OsWindowProps) {
   const { closeWindow, minimizeWindow, maximizeWindow, focusWindow, moveWindow, resizeWindow, activeWindowId } =
     useWindowManager();
+  const { playWindowClose, playWindowMinimize, playWindowOpen } = useSoundContext();
 
   const dragging = useRef(false);
   const dragOffset = useRef({ x: 0, y: 0 });
@@ -187,11 +189,11 @@ export function OsWindow({ win, children }: OsWindowProps) {
       >
         <span className="truncate">{win.icon} {win.title}</span>
         <div className="flex gap-0.5 shrink-0 ml-2">
-          <RetroTitlebarBtn size={20} isActive={isActive} onClick={(e) => { e.stopPropagation(); minimizeWindow(win.id); }} title="Réduire">_</RetroTitlebarBtn>
-          <RetroTitlebarBtn size={20} isActive={isActive} onClick={(e) => { e.stopPropagation(); maximizeWindow(win.id); }} title={isMaximized ? "Restaurer" : "Agrandir"}>
+          <RetroTitlebarBtn size={20} isActive={isActive} onClick={(e) => { e.stopPropagation(); playWindowMinimize(); minimizeWindow(win.id); }} title="Réduire">_</RetroTitlebarBtn>
+          <RetroTitlebarBtn size={20} isActive={isActive} onClick={(e) => { e.stopPropagation(); playWindowOpen(); maximizeWindow(win.id); }} title={isMaximized ? "Restaurer" : "Agrandir"}>
             {isMaximized ? "❐" : "□"}
           </RetroTitlebarBtn>
-          <RetroTitlebarBtn size={20} isActive={isActive} close onClick={(e) => { e.stopPropagation(); closeWindow(win.id); }} title="Fermer">✕</RetroTitlebarBtn>
+          <RetroTitlebarBtn size={20} isActive={isActive} close onClick={(e) => { e.stopPropagation(); playWindowClose(); closeWindow(win.id); }} title="Fermer">✕</RetroTitlebarBtn>
         </div>
       </div>
 

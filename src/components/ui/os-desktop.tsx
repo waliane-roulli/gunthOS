@@ -4,6 +4,7 @@ import { useCallback } from "react";
 import { useWindowManager } from "@/lib/contexts/window-manager-context";
 import { APPS } from "@/lib/apps";
 import { useTheme } from "@/lib/contexts/settings-context";
+import { useSoundContext } from "@/lib/contexts/sound-context";
 
 const WALLPAPERS: Record<string, string> = {
   win95: `
@@ -55,22 +56,26 @@ const WALLPAPERS: Record<string, string> = {
 export function OsDesktop() {
   const { openWindow } = useWindowManager();
   const { themeId } = useTheme();
+  const { init, playWindowOpen } = useSoundContext();
 
   const wallpaper = WALLPAPERS[themeId] ?? WALLPAPERS.win95!;
 
   const handleOpenApp = useCallback(
     (slug: string) => {
+      init();
+      playWindowOpen();
       const app = APPS.find((a) => a.slug === slug);
       if (!app) return;
       openWindow(app.slug, app.name, app.emoji);
     },
-    [openWindow]
+    [openWindow, init, playWindowOpen]
   );
 
-  const handleOpenSettings = useCallback(
-    () => openWindow("settings", "Paramètres", "⚙️"),
-    [openWindow]
-  );
+  const handleOpenSettings = useCallback(() => {
+    init();
+    playWindowOpen();
+    openWindow("settings", "Paramètres", "⚙️");
+  }, [openWindow, init, playWindowOpen]);
 
   return (
     <div

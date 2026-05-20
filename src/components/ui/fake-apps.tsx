@@ -289,7 +289,7 @@ export function DefragApp() {
 const NOTEPAD_PLACEHOLDER = `Bienvenue dans Bloc-Notes GunthOS.
 
 Ce fichier a été créé automatiquement par GunthOS
-lors d'une mise à jour du 14/03/1998.
+lors d'une mise à jour du 25/03/1998.
 
 NE PAS SUPPRIMER CE FICHIER
 (suppression interdite par le CLUF GunthOS §47.3.b)

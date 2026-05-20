@@ -40,6 +40,11 @@ export const GUNTH_SHUTDOWN_MESSAGES = [
   "GunthOS s'éteint…\n\nN'oubliez pas de souffler dans la cartouche.",
   "GunthOS s'éteint…\n\nMerci d'avoir utilisé GunthOS. Nous espérons que vous avez sauvegardé.",
   "GunthOS s'éteint…\n\nErreur lors de l'arrêt. Arrêt quand même effectué.",
+  "GunthOS s'éteint…\n\nFermeture de l'onglet dans 0 seconde(s). (Pas notre faute si ça marche pas.)",
+  "GunthOS s'éteint…\n\nVos données non sauvegardées ont été conservées en lieu sûr. (C'est faux.)",
+  "GunthOS s'éteint…\n\nÀ bientôt. Ou pas. On ne sait jamais avec les onglets.",
+  "GunthOS s'éteint…\n\nApplication de 0 mise à jour. Pour une fois.",
+  "GunthOS s'éteint…\n\nMerci d'avoir éteint correctement GunthOS plutôt que de fermer l'onglet directement. Ce qui revient au même.",
 ];
 
 export const GUNTH_REBOOT_MESSAGES = [

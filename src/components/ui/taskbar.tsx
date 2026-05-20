@@ -8,45 +8,71 @@ import { THEMES, type ThemeId } from "@/lib/themes";
 import { GUNTH_SHUTDOWN_MESSAGES, GUNTH_REBOOT_MESSAGES, pickRandom } from "@/lib/gunth-jokes";
 import { useOsClock } from "@/lib/hooks/use-os-clock";
 import { useVisitorCountApi } from "@/lib/hooks/use-visitor-count-api";
+import { useSoundContext } from "@/lib/contexts/sound-context";
 
 export function Taskbar({ onReboot }: { onReboot?: () => void }) {
   const { windows, activeWindowId, focusWindow, restoreWindow, minimizeWindow, openWindow } =
     useWindowManager();
   const { themeId, setTheme } = useTheme();
+  const { init, playClick, playWindowOpen, playWindowMinimize } = useSoundContext();
   const time = useOsClock();
   const visitorCount = useVisitorCountApi();
   const [startMenuOpen, setStartMenuOpen] = useState(false);
   const [themeMenuOpen, setThemeMenuOpen] = useState(false);
   const [shutdownMsg, setShutdownMsg] = useState<string | null>(null);
+  const [shutdownScreen, setShutdownScreen] = useState(false);
+
+  const handleShutdownConfirm = () => {
+    window.close();
+    setTimeout(() => setShutdownScreen(true), 200);
+  };
   const [rebootMsg, setRebootMsg] = useState<string | null>(null);
 
   const handleTaskbarClick = useCallback(
     (winId: string) => {
+      init();
       const win = windows.find((w) => w.id === winId);
       if (!win) return;
       if (win.state === "minimized") {
+        playWindowOpen();
         restoreWindow(winId);
       } else if (activeWindowId === winId) {
+        playWindowMinimize();
         minimizeWindow(winId);
       } else {
+        playClick();
         focusWindow(winId);
       }
     },
-    [windows, activeWindowId, restoreWindow, minimizeWindow, focusWindow]
+    [windows, activeWindowId, restoreWindow, minimizeWindow, focusWindow, init, playClick, playWindowOpen, playWindowMinimize]
   );
 
   const handleOpenApp = useCallback(
     (slug: string) => {
+      init();
+      playWindowOpen();
       const app = APPS.find((a) => a.slug === slug);
       if (!app) return;
       openWindow(app.slug, app.name, app.emoji);
       setStartMenuOpen(false);
     },
-    [openWindow]
+    [openWindow, init, playWindowOpen]
   );
 
   return (
     <>
+      {/* Shutdown screen */}
+      {shutdownScreen && (
+        <div
+          className="fixed inset-0 z-[999999] flex flex-col items-center justify-center gap-4"
+          style={{ backgroundColor: "#000", fontFamily: "var(--t-font-display)" }}
+        >
+          <p className="text-white text-sm tracking-widest opacity-60">
+            Vous pouvez fermer cet onglet.
+          </p>
+        </div>
+      )}
+
       {/* Reboot dialog */}
       {rebootMsg && (
         <div
@@ -152,7 +178,7 @@ export function Taskbar({ onReboot }: { onReboot?: () => void }) {
             </div>
             <div className="flex justify-center pb-4">
               <button
-                onClick={() => setShutdownMsg(null)}
+                onClick={handleShutdownConfirm}
                 className="px-8 py-1 border-[2px] text-base tracking-widest cursor-pointer"
                 style={{
                   backgroundColor: "var(--t-bg)",
@@ -331,6 +357,8 @@ export function Taskbar({ onReboot }: { onReboot?: () => void }) {
         {/* Start button */}
         <button
           onClick={() => {
+            init();
+            playClick();
             setStartMenuOpen((o) => !o);
             setThemeMenuOpen(false);
           }}

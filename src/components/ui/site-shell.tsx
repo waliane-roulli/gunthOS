@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { WindowManagerProvider } from "@/lib/contexts/window-manager-context";
+import { SoundProvider } from "@/lib/contexts/sound-context";
 import { OsDesktop } from "./os-desktop";
 import { Taskbar } from "./taskbar";
 import { WindowLayer } from "./window-layer";
@@ -18,7 +19,7 @@ export function SiteShell({ children: _children }: { children?: React.ReactNode 
   };
 
   return (
-    <>
+    <SoundProvider>
       {!booted && <BootScreen key={bootKey} onComplete={() => setBooted(true)} />}
       <WindowManagerProvider>
         <GunthTitle />
@@ -28,6 +29,6 @@ export function SiteShell({ children: _children }: { children?: React.ReactNode 
           <WindowLayer />
         </div>
       </WindowManagerProvider>
-    </>
+    </SoundProvider>
   );
 }
