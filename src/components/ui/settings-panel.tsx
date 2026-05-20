@@ -1,16 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { useSettings } from "@/lib/contexts/settings-context";
 import { THEMES, type ThemeId } from "@/lib/themes";
 import { CURSORS, type CursorId } from "@/lib/cursors";
+import { WALLPAPERS, type WallpaperId } from "@/lib/wallpapers";
 import { type Density } from "@/lib/settings";
 import { RetroTitlebarBtn } from "./retro-titlebar-btn";
 
-type Tab = "theme" | "display" | "system";
+type Tab = "theme" | "wallpaper" | "display" | "system";
 
 const TABS: { id: Tab; label: string; icon: string }[] = [
   { id: "theme", label: "THÈME", icon: "🎨" },
+  { id: "wallpaper", label: "FOND", icon: "🖼️" },
   { id: "display", label: "AFFICHAGE", icon: "🖥️" },
   { id: "system", label: "SYSTÈME", icon: "⚙️" },
 ];
@@ -21,7 +23,7 @@ interface SettingsPanelProps {
 }
 
 export function SettingsPanel({ onClose, embedded = false }: SettingsPanelProps) {
-  const { settings, setTheme, setSoundEnabled, setAmbientVolume, setAnimationsEnabled, setDensity, setScanlinesEnabled, setCursorId } = useSettings();
+  const { settings, setTheme, setSoundEnabled, setAmbientVolume, setAnimationsEnabled, setDensity, setScanlinesEnabled, setCursorId, setWallpaperId } = useSettings();
   const [activeTab, setActiveTab] = useState<Tab>("theme");
 
   const content = (
@@ -56,6 +58,9 @@ export function SettingsPanel({ onClose, embedded = false }: SettingsPanelProps)
       <div className="p-5">
         {activeTab === "theme" && (
           <ThemeTab themeId={settings.themeId} setTheme={setTheme} />
+        )}
+        {activeTab === "wallpaper" && (
+          <WallpaperTab wallpaperId={settings.wallpaperId ?? "bliss"} setWallpaperId={setWallpaperId} />
         )}
         {activeTab === "display" && (
           <DisplayTab
@@ -411,6 +416,155 @@ function DisplayTab({
             </button>
           );
         })}
+      </div>
+    </>
+  );
+}
+
+function WallpaperTab({
+  wallpaperId,
+  setWallpaperId,
+}: {
+  wallpaperId: WallpaperId;
+  setWallpaperId: (id: WallpaperId) => void;
+}) {
+  const active = WALLPAPERS.find((w) => w.id === wallpaperId) ?? WALLPAPERS[0]!;
+
+  return (
+    <>
+      <SectionTitle>🖼️ FOND D&apos;ÉCRAN</SectionTitle>
+
+      {/* Preview */}
+      <div
+        className="w-full mb-4 border-[2px] relative overflow-hidden"
+        style={{
+          height: 90,
+          ...(active.style as CSSProperties),
+          borderTopColor: "var(--t-border-dark)",
+          borderLeftColor: "var(--t-border-dark)",
+          borderBottomColor: "var(--t-border-light)",
+          borderRightColor: "var(--t-border-light)",
+        }}
+      >
+        <div
+          className="absolute inset-0 flex flex-col items-center justify-center"
+          style={{ zIndex: 2, pointerEvents: "none" }}
+        >
+          <span style={{ fontSize: 28 }}>{active.emoji}</span>
+          <span
+            style={{
+              fontFamily: "var(--t-font-display)",
+              fontSize: 12,
+              color: "white",
+              textShadow: "1px 1px 3px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.8)",
+              marginTop: 4,
+              letterSpacing: "0.1em",
+            }}
+          >
+            {active.name}
+          </span>
+          {active.animated && (
+            <span
+              style={{
+                fontFamily: "var(--t-font-body)",
+                fontSize: 9,
+                color: "rgba(255,255,255,0.7)",
+                marginTop: 2,
+              }}
+            >
+              ✨ Animé
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Grid */}
+      <div className="grid grid-cols-3 gap-2 max-h-[280px] overflow-y-auto pr-1">
+        {WALLPAPERS.map((w) => {
+          const isActive = w.id === wallpaperId;
+          return (
+            <button
+              key={w.id}
+              onClick={() => setWallpaperId(w.id)}
+              className="relative border-[2px] text-left overflow-hidden flex flex-col cursor-pointer"
+              style={{
+                height: 72,
+                ...(w.style as CSSProperties),
+                borderTopColor: isActive ? "var(--t-accent)" : "var(--t-border-dark)",
+                borderLeftColor: isActive ? "var(--t-accent)" : "var(--t-border-dark)",
+                borderBottomColor: isActive ? "var(--t-accent)" : "var(--t-border-light)",
+                borderRightColor: isActive ? "var(--t-accent)" : "var(--t-border-light)",
+                outline: isActive ? "2px solid var(--t-accent)" : "none",
+                outlineOffset: "1px",
+              }}
+            >
+              {/* Dimming overlay so text is readable */}
+              <div
+                className="absolute inset-0"
+                style={{ backgroundColor: "rgba(0,0,0,0.15)", zIndex: 0 }}
+              />
+              <div
+                className="absolute inset-0 flex flex-col items-center justify-center"
+                style={{ zIndex: 1 }}
+              >
+                <span style={{ fontSize: 20 }}>{w.emoji}</span>
+                <span
+                  style={{
+                    fontFamily: "monospace",
+                    fontSize: 9,
+                    color: "white",
+                    textShadow: "1px 1px 2px rgba(0,0,0,1), 0 0 4px rgba(0,0,0,0.9)",
+                    textAlign: "center",
+                    padding: "0 4px",
+                    lineHeight: 1.2,
+                    marginTop: 2,
+                  }}
+                >
+                  {w.name}
+                </span>
+                {w.animated && (
+                  <span style={{ fontSize: 7, color: "rgba(255,255,200,0.9)", textShadow: "1px 1px 2px rgba(0,0,0,1)" }}>
+                    ✨
+                  </span>
+                )}
+              </div>
+              {isActive && (
+                <div
+                  className="absolute top-1 right-1"
+                  style={{
+                    backgroundColor: "var(--t-accent)",
+                    color: "var(--t-bg)",
+                    fontSize: 8,
+                    padding: "1px 3px",
+                    fontFamily: "monospace",
+                    fontWeight: "bold",
+                    zIndex: 2,
+                  }}
+                >
+                  ✓
+                </div>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      <div
+        className="mt-3 p-2 border-[2px]"
+        style={{
+          backgroundColor: "var(--t-inset-from)",
+          borderTopColor: "var(--t-border-dark)",
+          borderLeftColor: "var(--t-border-dark)",
+          borderBottomColor: "var(--t-border-light)",
+          borderRightColor: "var(--t-border-light)",
+        }}
+      >
+        <div
+          className="text-xs tracking-widest"
+          style={{ color: "var(--t-text-subtle)", fontFamily: "var(--t-font-display)" }}
+        >
+          {active.emoji} {active.name.toUpperCase()} — {active.description}
+        </div>
       </div>
     </>
   );

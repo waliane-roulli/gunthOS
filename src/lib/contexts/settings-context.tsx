@@ -20,6 +20,7 @@ import {
   type AppSettings,
   type Density,
 } from "@/lib/settings";
+import { WALLPAPERS, type WallpaperId } from "@/lib/wallpapers";
 import { useAuth } from "@/lib/contexts/auth-context";
 
 const THEME_MAP = new Map(THEMES.map((t) => [t.id, t]));
@@ -34,6 +35,7 @@ interface SettingsContextValue {
   setDensity: (v: Density) => void;
   setScanlinesEnabled: (v: boolean) => void;
   setCursorId: (v: CursorId) => void;
+  setWallpaperId: (v: WallpaperId) => void;
   updateSettings: (patch: Partial<AppSettings>) => void;
 }
 
@@ -47,6 +49,7 @@ const SettingsContext = createContext<SettingsContextValue>({
   setDensity: () => {},
   setScanlinesEnabled: () => {},
   setCursorId: () => {},
+  setWallpaperId: () => {},
   updateSettings: () => {},
 });
 
@@ -89,6 +92,9 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
           ambientVolume: typeof data.settings.ambientVolume === "number"
             ? Math.max(0, Math.min(1, data.settings.ambientVolume))
             : DEFAULT_SETTINGS.ambientVolume,
+          wallpaperId: WALLPAPERS.some((w) => w.id === data.settings!.wallpaperId)
+            ? data.settings!.wallpaperId!
+            : DEFAULT_SETTINGS.wallpaperId,
         };
         setSettings(merged);
         saveSettings(merged);
@@ -167,10 +173,11 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const setDensity = useCallback((v: Density) => updateSettings({ density: v }), [updateSettings]);
   const setScanlinesEnabled = useCallback((v: boolean) => updateSettings({ scanlinesEnabled: v }), [updateSettings]);
   const setCursorId = useCallback((v: CursorId) => updateSettings({ cursorId: v }), [updateSettings]);
+  const setWallpaperId = useCallback((v: WallpaperId) => updateSettings({ wallpaperId: v }), [updateSettings]);
 
   const contextValue = useMemo(
-    () => ({ settings, theme, setTheme, setSoundEnabled, setAmbientVolume, setAnimationsEnabled, setDensity, setScanlinesEnabled, setCursorId, updateSettings }),
-    [settings, theme, setTheme, setSoundEnabled, setAmbientVolume, setAnimationsEnabled, setDensity, setScanlinesEnabled, setCursorId, updateSettings]
+    () => ({ settings, theme, setTheme, setSoundEnabled, setAmbientVolume, setAnimationsEnabled, setDensity, setScanlinesEnabled, setCursorId, setWallpaperId, updateSettings }),
+    [settings, theme, setTheme, setSoundEnabled, setAmbientVolume, setAnimationsEnabled, setDensity, setScanlinesEnabled, setCursorId, setWallpaperId, updateSettings]
   );
 
   return (

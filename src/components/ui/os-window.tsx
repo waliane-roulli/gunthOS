@@ -192,7 +192,12 @@ export function OsWindow({ win, children }: OsWindowProps) {
           borderRadius: isMaximized ? "0" : "calc(var(--t-titlebar-radius) - 1px) calc(var(--t-titlebar-radius) - 1px) 0 0",
         }}
       >
-        <span className="truncate">{win.icon} {win.title}</span>
+        <span className="truncate flex items-center gap-1.5">
+          <span className="shrink-0" style={{ width: 16, height: 16, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ transform: `scale(${16 / 46})`, transformOrigin: "center", display: "inline-flex" }}>{win.icon}</span>
+          </span>
+          {win.title}
+        </span>
         <div className="flex gap-0.5 shrink-0 ml-2">
           <RetroTitlebarBtn size={20} isActive={isActive} onClick={(e) => { e.stopPropagation(); playWindowMinimize(); minimizeWindow(win.id); }} title="Réduire">_</RetroTitlebarBtn>
           <RetroTitlebarBtn size={20} isActive={isActive} onClick={(e) => { e.stopPropagation(); playWindowOpen(); maximizeWindow(win.id); }} title={isMaximized ? "Restaurer" : "Agrandir"}>

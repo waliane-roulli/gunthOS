@@ -1,5 +1,6 @@
 import { THEMES, DEFAULT_THEME_ID, type ThemeId } from "@/lib/themes";
 import { CURSORS, DEFAULT_CURSOR_ID, type CursorId } from "@/lib/cursors";
+import { WALLPAPERS, DEFAULT_WALLPAPER_ID, type WallpaperId } from "@/lib/wallpapers";
 
 export type Density = "compact" | "normal" | "large";
 
@@ -11,6 +12,7 @@ export interface AppSettings {
   density: Density;
   scanlinesEnabled: boolean;
   cursorId: CursorId;
+  wallpaperId: WallpaperId;
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -21,6 +23,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   density: "normal",
   scanlinesEnabled: true,
   cursorId: DEFAULT_CURSOR_ID,
+  wallpaperId: DEFAULT_WALLPAPER_ID,
 };
 
 const STORAGE_KEY = "gunth-settings";
@@ -48,6 +51,9 @@ export function loadSettings(): AppSettings {
       cursorId: CURSORS.some((c) => c.id === parsed.cursorId)
         ? (parsed.cursorId as CursorId)
         : DEFAULT_SETTINGS.cursorId,
+      wallpaperId: WALLPAPERS.some((w) => w.id === parsed.wallpaperId)
+        ? (parsed.wallpaperId as WallpaperId)
+        : DEFAULT_SETTINGS.wallpaperId,
     };
   } catch {
     return DEFAULT_SETTINGS;
