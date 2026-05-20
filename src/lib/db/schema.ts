@@ -8,3 +8,8 @@ export const appMeta = sqliteTable("app_meta", {
     .$defaultFn(() => new Date())
     .notNull(),
 });
+
+export const visitors = sqliteTable("visitors", {
+  id: integer("id").primaryKey(),
+  count: integer("count").notNull().default(0),
+});

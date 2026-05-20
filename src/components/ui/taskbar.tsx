@@ -22,6 +22,17 @@ function useOsClock() {
   return time;
 }
 
+function useVisitorCounter() {
+  const [count, setCount] = useState<number | null>(null);
+  useEffect(() => {
+    fetch("/api/visitors", { method: "POST" })
+      .then((r) => r.json())
+      .then((d) => setCount(d.count))
+      .catch(() => {});
+  }, []);
+  return count;
+}
+
 export function Taskbar() {
   const { windows, activeWindowId, focusWindow, restoreWindow, minimizeWindow, openWindow } =
     useWindowManager();
