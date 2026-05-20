@@ -1,0 +1,296 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useWindowManager } from "@/lib/contexts/window-manager-context";
+import { APPS } from "@/lib/apps";
+import { useTheme } from "@/lib/contexts/theme-context";
+import { THEMES, type ThemeId } from "@/lib/themes";
+
+function useOsClock() {
+  const [time, setTime] = useState("");
+  useEffect(() => {
+    const update = () => {
+      const now = new Date();
+      setTime(
+        now.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })
+      );
+    };
+    update();
+    const id = setInterval(update, 30_000);
+    return () => clearInterval(id);
+  }, []);
+  return time;
+}
+
+export function Taskbar() {
+  const { windows, activeWindowId, focusWindow, restoreWindow, minimizeWindow, openWindow } =
+    useWindowManager();
+  const { themeId, setTheme } = useTheme();
+  const time = useOsClock();
+  const [startMenuOpen, setStartMenuOpen] = useState(false);
+  const [themeMenuOpen, setThemeMenuOpen] = useState(false);
+
+  const visibleWindows = windows;
+
+  function handleTaskbarClick(winId: string) {
+    const win = windows.find((w) => w.id === winId);
+    if (!win) return;
+    if (win.state === "minimized") {
+      restoreWindow(winId);
+    } else if (activeWindowId === winId) {
+      minimizeWindow(winId);
+    } else {
+      focusWindow(winId);
+    }
+  }
+
+  function handleOpenApp(slug: string) {
+    const app = APPS.find((a) => a.slug === slug);
+    if (!app) return;
+    openWindow(app.slug, app.name, app.emoji);
+    setStartMenuOpen(false);
+  }
+
+  return (
+    <>
+      {/* Backdrop to close start menu */}
+      {(startMenuOpen || themeMenuOpen) && (
+        <div
+          className="fixed inset-0 z-[9000]"
+          onClick={() => {
+            setStartMenuOpen(false);
+            setThemeMenuOpen(false);
+          }}
+        />
+      )}
+
+      {/* Start menu */}
+      {startMenuOpen && (
+        <div
+          className="fixed top-[40px] left-0 w-56 border-[3px] shadow-[4px_4px_0_rgba(0,0,0,0.5)] z-[9001] animate-[slideInUp_0.15s_ease]"
+          style={{
+            backgroundColor: "var(--t-bg)",
+            borderTopColor: "var(--t-border-light)",
+            borderLeftColor: "var(--t-border-light)",
+            borderRightColor: "var(--t-border-dark)",
+            borderBottomColor: "var(--t-border-dark)",
+          }}
+        >
+          {/* Logo strip */}
+          <div
+            className="flex items-end px-2 py-3"
+            style={{
+              background:
+                "linear-gradient(to right, var(--t-titlebar-from), var(--t-titlebar-to))",
+              writingMode: "vertical-rl",
+              height: 48,
+              writingMode: "horizontal-tb",
+            }}
+          >
+            <span
+              className="text-lg tracking-widest font-bold"
+              style={{
+                color: "var(--t-titlebar-text)",
+                fontFamily: "var(--t-font-display)",
+              }}
+            >
+              🌐 Gunthos
+            </span>
+          </div>
+
+          <div className="py-1">
+            {/* Apps */}
+            {APPS.map((app) => (
+              <StartMenuItem
+                key={app.slug}
+                icon={app.emoji}
+                label={app.name}
+                onClick={() => handleOpenApp(app.slug)}
+              />
+            ))}
+
+            <div
+              className="my-1 mx-2 border-t border-b"
+              style={{
+                borderColor: "var(--t-border-dark)",
+                borderBottomColor: "var(--t-border-light)",
+              }}
+            />
+
+            <StartMenuItem
+              icon="⚙️"
+              label="Paramètres"
+              onClick={() => {
+                openWindow("settings", "Paramètres", "⚙️");
+                setStartMenuOpen(false);
+              }}
+            />
+            <StartMenuItem
+              icon="🎨"
+              label="Changer le thème"
+              onClick={() => {
+                setThemeMenuOpen(true);
+                setStartMenuOpen(false);
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Theme menu */}
+      {themeMenuOpen && (
+        <div
+          className="fixed top-[40px] left-0 w-56 border-[3px] shadow-[4px_4px_0_rgba(0,0,0,0.5)] z-[9001]"
+          style={{
+            backgroundColor: "var(--t-bg)",
+            borderTopColor: "var(--t-border-light)",
+            borderLeftColor: "var(--t-border-light)",
+            borderRightColor: "var(--t-border-dark)",
+            borderBottomColor: "var(--t-border-dark)",
+          }}
+        >
+          <div
+            className="px-2 py-1.5 text-xs tracking-widest border-b"
+            style={{
+              background:
+                "linear-gradient(to right, var(--t-titlebar-from), var(--t-titlebar-to))",
+              color: "var(--t-titlebar-text)",
+              fontFamily: "var(--t-font-display)",
+              borderBottomColor: "var(--t-border-dark)",
+            }}
+          >
+            🎨 CHOISIR UN THÈME
+          </div>
+          <div className="py-1">
+            {THEMES.map((theme) => (
+              <StartMenuItem
+                key={theme.id}
+                icon={theme.emoji}
+                label={theme.name}
+                active={theme.id === themeId}
+                onClick={() => {
+                  setTheme(theme.id as ThemeId);
+                  setThemeMenuOpen(false);
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Taskbar */}
+      <div
+        className="h-[40px] border-b-2 flex items-center gap-1 px-1 shrink-0 z-[8999]"
+        style={{
+          backgroundColor: "var(--t-bg)",
+          borderBottomColor: "var(--t-border-dark)",
+        }}
+      >
+        {/* Start button */}
+        <button
+          onClick={() => {
+            setStartMenuOpen((o) => !o);
+            setThemeMenuOpen(false);
+          }}
+          className="flex items-center gap-1.5 px-3 h-[30px] border-[2px] font-bold tracking-wider text-sm shrink-0 cursor-pointer select-none"
+          style={{
+            backgroundColor: startMenuOpen ? "var(--t-bg-dark)" : "var(--t-bg)",
+            fontFamily: "var(--t-font-display)",
+            color: "var(--t-text)",
+            borderTopColor: startMenuOpen ? "var(--t-border-dark)" : "var(--t-border-light)",
+            borderLeftColor: startMenuOpen ? "var(--t-border-dark)" : "var(--t-border-light)",
+            borderBottomColor: startMenuOpen ? "var(--t-border-light)" : "var(--t-border-dark)",
+            borderRightColor: startMenuOpen ? "var(--t-border-light)" : "var(--t-border-dark)",
+          }}
+        >
+          🌐 <span>Démarrer</span>
+        </button>
+
+        {/* Separator */}
+        <div
+          className="w-px h-[28px] shrink-0 mx-0.5"
+          style={{
+            borderLeft: "1px solid var(--t-border-dark)",
+            borderRight: "1px solid var(--t-border-light)",
+          }}
+        />
+
+        {/* Window buttons */}
+        <div className="flex items-center gap-1 flex-1 overflow-hidden">
+          {visibleWindows.map((win) => {
+            const isActive = win.id === activeWindowId && win.state !== "minimized";
+            return (
+              <button
+                key={win.id}
+                onClick={() => handleTaskbarClick(win.id)}
+                className="flex items-center gap-1 px-2 h-[28px] border-[2px] text-xs tracking-wider truncate min-w-[100px] max-w-[180px] cursor-pointer select-none"
+                style={{
+                  fontFamily: "var(--t-font-display)",
+                  color: "var(--t-text)",
+                  backgroundColor: isActive ? "var(--t-bg-dark)" : "var(--t-bg)",
+                  borderTopColor: isActive ? "var(--t-border-dark)" : "var(--t-border-light)",
+                  borderLeftColor: isActive ? "var(--t-border-dark)" : "var(--t-border-light)",
+                  borderBottomColor: isActive ? "var(--t-border-light)" : "var(--t-border-dark)",
+                  borderRightColor: isActive ? "var(--t-border-light)" : "var(--t-border-dark)",
+                }}
+              >
+                <span className="shrink-0">{win.icon}</span>
+                <span className="truncate">{win.title}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* System tray */}
+        <div
+          className="flex items-center gap-2 px-2 h-[28px] border-[2px] shrink-0 ml-auto text-xs"
+          style={{
+            backgroundColor: "var(--t-bg)",
+            borderTopColor: "var(--t-border-dark)",
+            borderLeftColor: "var(--t-border-dark)",
+            borderBottomColor: "var(--t-border-light)",
+            borderRightColor: "var(--t-border-light)",
+            fontFamily: "var(--t-font-display)",
+            color: "var(--t-text)",
+          }}
+        >
+          <span title="Volume">🔊</span>
+          <span
+            className="border-l pl-2"
+            style={{ borderColor: "var(--t-border-dark)" }}
+          >
+            {time}
+          </span>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function StartMenuItem({
+  icon,
+  label,
+  onClick,
+  active,
+}: {
+  icon: string;
+  label: string;
+  onClick: () => void;
+  active?: boolean;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-left cursor-pointer hover:opacity-90"
+      style={{
+        fontFamily: "var(--t-font-display)",
+        color: "var(--t-text)",
+        backgroundColor: active ? "var(--t-card-hover)" : "transparent",
+      }}
+    >
+      <span className="text-base">{icon}</span>
+      <span className="tracking-wider">{label}</span>
+      {active && <span className="ml-auto text-xs">✓</span>}
+    </button>
+  );
+}

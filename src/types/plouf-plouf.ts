@@ -1,0 +1,128 @@
+export type CelebType =
+  | "confetti"
+  | "fireworks"
+  | "rain"
+  | "matrix"
+  | "hearts"
+  | "stars"
+  | "xp";
+
+export interface CelebrationOptions {
+  preset: string;
+  type: CelebType;
+  text: string;
+  density: number;
+  duration: number;
+  shake: number;
+  color1: string;
+  color2: string;
+  color3: string;
+  rainbow: boolean;
+  flash: boolean;
+  marquee: boolean;
+  bigText: boolean;
+  damageNumbers: boolean;
+  bgPulse: boolean;
+  epicResult: boolean;
+}
+
+export const DEFAULT_OPTIONS: CelebrationOptions = {
+  preset: "classic",
+  type: "confetti",
+  text: "VICTOIRE!",
+  density: 150,
+  duration: 4,
+  shake: 5,
+  color1: "#ff0080",
+  color2: "#00ffff",
+  color3: "#ffee00",
+  rainbow: true,
+  flash: true,
+  marquee: true,
+  bigText: true,
+  damageNumbers: true,
+  bgPulse: true,
+  epicResult: true,
+};
+
+export type PresetName =
+  | "classic"
+  | "vampire"
+  | "disco"
+  | "chaos"
+  | "zen"
+  | "retro";
+
+export const PRESETS: Record<PresetName, CelebrationOptions> = {
+  classic: { ...DEFAULT_OPTIONS, preset: "classic" },
+  vampire: {
+    ...DEFAULT_OPTIONS,
+    preset: "vampire",
+    type: "xp",
+    text: "LOOT!",
+    density: 300,
+    duration: 5,
+    shake: 7,
+    color1: "#00ff41",
+    color2: "#ff00ff",
+    color3: "#ffea00",
+    rainbow: false,
+    marquee: false,
+  },
+  disco: {
+    ...DEFAULT_OPTIONS,
+    preset: "disco",
+    type: "stars",
+    text: "DISCO!",
+    density: 200,
+    duration: 6,
+    shake: 3,
+    color1: "#ff00ff",
+    color2: "#ffea00",
+    color3: "#00ffff",
+    damageNumbers: false,
+  },
+  chaos: {
+    ...DEFAULT_OPTIONS,
+    preset: "chaos",
+    type: "fireworks",
+    text: "CHAOS!!!",
+    density: 400,
+    duration: 8,
+    shake: 10,
+    color1: "#ff0000",
+    color2: "#00ff00",
+    color3: "#0000ff",
+  },
+  zen: {
+    ...DEFAULT_OPTIONS,
+    preset: "zen",
+    type: "rain",
+    text: "✨",
+    density: 60,
+    duration: 3,
+    shake: 0,
+    color1: "#ffd700",
+    color2: "#fff5b0",
+    color3: "#ffe08a",
+    rainbow: false,
+    flash: false,
+    marquee: false,
+    bigText: false,
+    damageNumbers: false,
+    bgPulse: false,
+  },
+  retro: {
+    ...DEFAULT_OPTIONS,
+    preset: "retro",
+    type: "hearts",
+    text: "♥ WIN! ♥",
+    density: 180,
+    duration: 5,
+    shake: 4,
+    color1: "#ff0080",
+    color2: "#ff00ff",
+    color3: "#ff69b4",
+    damageNumbers: false,
+  },
+};
