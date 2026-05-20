@@ -5,7 +5,7 @@ import { normalize } from "@/lib/utils/normalize";
 
 export type InputError = "empty" | "duplicate" | null;
 
-export function useGameList() {
+export function useItemList() {
   const [games, setGames] = useState<string[]>([]);
   const [inputError, setInputError] = useState<InputError>(null);
   const errorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);

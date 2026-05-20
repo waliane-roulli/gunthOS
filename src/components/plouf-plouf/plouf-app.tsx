@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
-import { GameList } from "./game-list";
+import { ItemList } from "./item-list";
 import { OptionsPanel } from "./options-panel";
 import { RetroButton } from "@/components/ui/retro-button";
 import { RetroTitlebarBtn } from "@/components/ui/retro-titlebar-btn";
 import { RetroInput } from "@/components/ui/retro-input";
-import { useGameList } from "@/lib/hooks/use-game-list";
+import { useItemList } from "@/lib/hooks/use-item-list";
 import { useDrawing } from "@/lib/hooks/use-drawing";
 import { useSound } from "@/lib/hooks/use-sound";
 import { useCelebration } from "@/lib/hooks/use-celebration";
@@ -40,7 +40,7 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
   const drag = useDraggable();
 
   const visitorCount = useVisitorCount();
-  const { games, inputError, addGame, removeGame, clearGames } = useGameList();
+  const { games, inputError, addGame, removeGame, clearGames } = useItemList();
   const sound = useSound(muted);
   const { canvasRef, start: startCelebration, stop: stopCelebration } = useCelebration();
 
@@ -281,7 +281,7 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
               PLOUF PLOUF
             </h1>
             <p className="font-[family-name:var(--font-vt323)] text-[#000080] text-[1.2rem] tracking-[2px] mt-1">
-              ★ TIRAGE AU SORT DE JEUX VIDEO ★
+              ★ TIRAGE AU SORT ★
               <span className="inline-block bg-red-600 text-yellow-300 font-bold text-xs px-1.5 border border-black ml-1.5 animate-[blink_0.8s_step-end_infinite] -rotate-3">
                 NEW!
               </span>
@@ -302,7 +302,7 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
             }}
           >
             <span className="inline-block pl-[100%] animate-[marqueeScroll_25s_linear_infinite]">
-              ★ Bienvenue sur Plouf Plouf !! ★ Ajoutez vos jeux et laissez le
+              ★ Bienvenue sur Plouf Plouf !! ★ Ajoutez vos éléments et laissez le
               destin décider ! ★ 100% GRATUIT ★ Sans inscription ★ Fonctionne
               même sur Netscape 4 !!
             </span>
@@ -320,11 +320,11 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
                   handleAdd();
                 }
               }}
-              placeholder="🎮 Nom du jeu vidéo…"
+              placeholder="✏️ Ajouter un élément…"
               maxLength={100}
               disabled={drawing.isDrawing}
               error={inputError}
-              aria-label="Nom du jeu vidéo à ajouter"
+              aria-label="Élément à ajouter"
             />
             <RetroButton
               variant="primary"
@@ -360,7 +360,7 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
                 fontFamily: "var(--t-font-display)",
               }}
             >
-              {games.length} {games.length <= 1 ? "jeu" : "jeux"}
+              {games.length} {games.length <= 1 ? "élément" : "éléments"}
             </span>
             <span
               className="text-base tracking-wider"
@@ -372,7 +372,7 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
               {games.length === 0
                 ? "[ Pret a demarrer ]"
                 : games.length === 1
-                  ? "[ Ajoutez encore des jeux... ]"
+                  ? "[ Ajoutez encore des éléments... ]"
                   : "[ Pret pour le tirage ! ]"}
             </span>
           </div>
@@ -389,7 +389,7 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
               borderRightColor: "var(--t-border-light)",
             }}
           >
-            <GameList
+            <ItemList
               games={games}
               highlightedIndex={drawing.highlightedIndex}
               winnerIndex={drawing.winnerIndex}
@@ -459,7 +459,7 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
                   }`}
                 style={options.epicResult ? { WebkitTextFillColor: "transparent" } : undefined}
               >
-                🎮 {winnerName}
+                🎉 {winnerName}
               </p>
               <div className="flex gap-1.5 justify-center flex-wrap">
                 <RetroButton variant="primary" onClick={handleRetry}>

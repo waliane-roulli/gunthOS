@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 
-interface GameListProps {
+interface ItemListProps {
   games: string[];
   highlightedIndex: number;
   winnerIndex: number;
@@ -10,13 +10,13 @@ interface GameListProps {
   disabled: boolean;
 }
 
-export function GameList({
+export function ItemList({
   games,
   highlightedIndex,
   winnerIndex,
   onRemove,
   disabled,
-}: GameListProps) {
+}: ItemListProps) {
   const listRef = useRef<HTMLUListElement>(null);
 
   useEffect(() => {
@@ -31,14 +31,14 @@ export function GameList({
         className="flex flex-col items-center justify-center p-8 text-lg tracking-wider"
         style={{ color: "var(--t-text-subtle)", fontFamily: "var(--t-font-display)" }}
       >
-        <span className="text-4xl mb-2 animate-[float_3s_ease-in-out_infinite]">🎮</span>
+        <span className="text-4xl mb-2 animate-[float_3s_ease-in-out_infinite]">💧</span>
         <p>&lt;&lt; VOTRE LISTE EST VIDE &gt;&gt;</p>
       </div>
     );
   }
 
   return (
-    <ul ref={listRef} aria-label="Liste des jeux">
+    <ul ref={listRef} aria-label="Liste des éléments">
       {games.map((name, i) => {
         const isHighlighted = highlightedIndex === i;
         const isWinner = winnerIndex === i;
