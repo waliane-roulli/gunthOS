@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback } from "react";
 import { useWindowManager } from "@/lib/contexts/window-manager-context";
 import { APPS } from "@/lib/apps";
 import { useTheme } from "@/lib/contexts/theme-context";
@@ -57,15 +58,19 @@ export function OsDesktop() {
 
   const wallpaper = WALLPAPERS[themeId] ?? WALLPAPERS.win95!;
 
-  function handleOpenApp(slug: string) {
-    const app = APPS.find((a) => a.slug === slug);
-    if (!app) return;
-    openWindow(app.slug, app.name, app.emoji);
-  }
+  const handleOpenApp = useCallback(
+    (slug: string) => {
+      const app = APPS.find((a) => a.slug === slug);
+      if (!app) return;
+      openWindow(app.slug, app.name, app.emoji);
+    },
+    [openWindow]
+  );
 
-  function handleOpenSettings() {
-    openWindow("settings", "Paramètres", "⚙️");
-  }
+  const handleOpenSettings = useCallback(
+    () => openWindow("settings", "Paramètres", "⚙️"),
+    [openWindow]
+  );
 
   return (
     <div

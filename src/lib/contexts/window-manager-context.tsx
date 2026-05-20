@@ -70,10 +70,12 @@ export function WindowManagerProvider({ children }: { children: ReactNode }) {
   const [windows, setWindows] = useState<WindowInstance[]>([]);
   const [activeWindowId, setActiveWindowId] = useState<string | null>(null);
   const topZRef = useRef(BASE_Z);
+  const windowsRef = useRef<WindowInstance[]>(windows);
+  windowsRef.current = windows;
 
   const openWindow = useCallback(
     (appSlug: string, title: string, icon: string): string => {
-      const existing = windows.find((w) => w.appSlug === appSlug);
+      const existing = windowsRef.current.find((w) => w.appSlug === appSlug);
       if (existing) {
         setWindows((prev) =>
           prev.map((w) =>
@@ -87,25 +89,26 @@ export function WindowManagerProvider({ children }: { children: ReactNode }) {
       }
 
       const id = `win-${++idCounter}`;
-      const position = getDefaultPosition(windows.length);
+      const position = getDefaultPosition(windowsRef.current.length);
       const size = getDefaultSize();
 
-      const newWindow: WindowInstance = {
-        id,
-        appSlug,
-        title,
-        icon,
-        state: "normal",
-        zIndex: ++topZRef.current,
-        position,
-        size,
-      };
-
-      setWindows((prev) => [...prev, newWindow]);
+      setWindows((prev) => [
+        ...prev,
+        {
+          id,
+          appSlug,
+          title,
+          icon,
+          state: "normal",
+          zIndex: ++topZRef.current,
+          position,
+          size,
+        } satisfies WindowInstance,
+      ]);
       setActiveWindowId(id);
       return id;
     },
-    [windows]
+    []
   );
 
   const closeWindow = useCallback((id: string) => {

@@ -1,52 +1,23 @@
 "use client";
 
-"use client";
-
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useWindowManager } from "@/lib/contexts/window-manager-context";
 import { APPS } from "@/lib/apps";
 import { useTheme } from "@/lib/contexts/theme-context";
 import { THEMES, type ThemeId } from "@/lib/themes";
 import { GUNTH_SHUTDOWN_MESSAGES, pickRandom } from "@/lib/gunth-jokes";
-
-function useOsClock() {
-  const [time, setTime] = useState("");
-  useEffect(() => {
-    const update = () => {
-      const now = new Date();
-      setTime(
-        now.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })
-      );
-    };
-    update();
-    const id = setInterval(update, 30_000);
-    return () => clearInterval(id);
-  }, []);
-  return time;
-}
-
-function useVisitorCounter() {
-  const [count, setCount] = useState<number | null>(null);
-  useEffect(() => {
-    fetch("/api/visitors", { method: "POST" })
-      .then((r) => r.json())
-      .then((d) => setCount(d.count))
-      .catch(() => {});
-  }, []);
-  return count;
-}
+import { useOsClock } from "@/lib/hooks/use-os-clock";
+import { useVisitorCountApi } from "@/lib/hooks/use-visitor-count-api";
 
 export function Taskbar() {
   const { windows, activeWindowId, focusWindow, restoreWindow, minimizeWindow, openWindow } =
     useWindowManager();
   const { themeId, setTheme } = useTheme();
   const time = useOsClock();
-  const visitorCount = useVisitorCounter();
+  const visitorCount = useVisitorCountApi();
   const [startMenuOpen, setStartMenuOpen] = useState(false);
   const [themeMenuOpen, setThemeMenuOpen] = useState(false);
   const [shutdownMsg, setShutdownMsg] = useState<string | null>(null);
-
-  const visibleWindows = windows;
 
   function handleTaskbarClick(winId: string) {
     const win = windows.find((w) => w.id === winId);
@@ -302,7 +273,7 @@ export function Taskbar() {
 
         {/* Window buttons */}
         <div className="flex items-center gap-1 flex-1 overflow-hidden">
-          {visibleWindows.map((win) => {
+          {windows.map((win) => {
             const isActive = win.id === activeWindowId && win.state !== "minimized";
             return (
               <button

@@ -4,11 +4,13 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { GameList } from "./game-list";
 import { OptionsPanel } from "./options-panel";
 import { RetroButton } from "@/components/ui/retro-button";
+import { RetroTitlebarBtn } from "@/components/ui/retro-titlebar-btn";
 import { RetroInput } from "@/components/ui/retro-input";
 import { useGameList } from "@/lib/hooks/use-game-list";
 import { useDrawing } from "@/lib/hooks/use-drawing";
 import { useSound } from "@/lib/hooks/use-sound";
 import { useCelebration } from "@/lib/hooks/use-celebration";
+import { useCelebrationEffects } from "@/lib/hooks/use-celebration-effects";
 import { useLocalStorage } from "@/lib/hooks/use-local-storage";
 import { useVisitorCount } from "@/lib/hooks/use-visitor-count";
 import { useDraggable } from "@/lib/hooks/use-draggable";
@@ -40,103 +42,21 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
   const sound = useSound(muted);
   const { canvasRef, start: startCelebration, stop: stopCelebration } = useCelebration();
 
-  const handleVictory = useCallback(() => {}, []);
-  const drawing = useDrawing(games.length, sound.playBip, handleVictory);
+  const drawing = useDrawing(games.length, sound.playBip, undefined);
 
   const [winnerName, setWinnerName] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
 
-  const spawnDamageNumbers = useCallback((o: CelebrationOptions) => {
-    const texts = ["+999", "CRIT!", "+XP", "!!1!", "9999", "WIN", "x10", "+500", "GG", "1UP"];
-    const count = Math.min(15, Math.floor(o.density / 15));
-    for (let i = 0; i < count; i++) {
-      setTimeout(() => {
-        const el = document.createElement("div");
-        el.style.cssText = `
-          position:fixed; font-family:'VT323',monospace; font-weight:700;
-          font-size:2.5rem; z-index:9996; pointer-events:none;
-          color:#ffff00; text-shadow:3px 3px 0 #000,-2px -2px 0 #000,0 0 20px #ff00ff;
-          animation:damageFloat 1.2s ease-out forwards; letter-spacing:2px;
-          left:${Math.random() * 80 + 10}%; top:${Math.random() * 60 + 20}%;
-        `;
-        el.textContent = texts[Math.floor(Math.random() * texts.length)] ?? "+999";
-        document.body.appendChild(el);
-        setTimeout(() => el.remove(), 1200);
-      }, i * 100);
-    }
-  }, []);
-
-  const triggerCelebration = useCallback(
-    (name: string, o: CelebrationOptions) => {
-      if (o.flash && flashRef.current) {
-        flashRef.current.classList.remove("animate-[flashAnim_0.4s_ease-out]");
-        void flashRef.current.offsetWidth;
-        flashRef.current.classList.add("animate-[flashAnim_0.4s_ease-out]");
-      }
-
-      if (o.shake > 0 && containerRef.current) {
-        containerRef.current.classList.add("animate-[shake_0.08s_linear_infinite]");
-        setTimeout(
-          () => containerRef.current?.classList.remove("animate-[shake_0.08s_linear_infinite]"),
-          o.duration * 400
-        );
-      }
-
-      if (o.bigText && winnerBigRef.current) {
-        winnerBigRef.current.textContent = name;
-        winnerBigRef.current.style.display = "block";
-        winnerBigRef.current.style.animation = "none";
-        void winnerBigRef.current.offsetWidth;
-        winnerBigRef.current.style.animation = "";
-        winnerBigRef.current.classList.add("active");
-
-        if (o.text && winnerSubRef.current) {
-          winnerSubRef.current.textContent = `★ ${o.text} ★`;
-          winnerSubRef.current.style.display = "block";
-          winnerSubRef.current.classList.add("active");
-        }
-
-        setTimeout(() => {
-          winnerBigRef.current?.classList.remove("active");
-          if (winnerSubRef.current) {
-            winnerSubRef.current.classList.remove("active");
-            winnerSubRef.current.style.display = "none";
-          }
-          if (winnerBigRef.current) winnerBigRef.current.style.display = "none";
-        }, Math.min(o.duration * 1000, 4000));
-      }
-
-      if (o.marquee) {
-        const t = `  ★  ${name}  ★  WINNER  ★  ${name}  ★  CHAMPION  ★  ${name}  ★  `.repeat(6);
-        if (marqueeTopRef.current) {
-          marqueeTopRef.current.querySelector(".inner")!.textContent = t;
-          marqueeTopRef.current.style.display = "block";
-        }
-        if (marqueeBottomRef.current) {
-          marqueeBottomRef.current.querySelector(".inner")!.textContent = t;
-          marqueeBottomRef.current.style.display = "block";
-        }
-        setTimeout(() => {
-          if (marqueeTopRef.current) marqueeTopRef.current.style.display = "none";
-          if (marqueeBottomRef.current) marqueeBottomRef.current.style.display = "none";
-        }, o.duration * 1000);
-      }
-
-      if (o.bgPulse) {
-        document.body.classList.add("animate-[bgPulse_0.4s_ease-in-out_infinite_alternate]");
-        setTimeout(
-          () => document.body.classList.remove("animate-[bgPulse_0.4s_ease-in-out_infinite_alternate]"),
-          o.duration * 1000
-        );
-      }
-
-      if (o.damageNumbers) spawnDamageNumbers(o);
-
-      sound.playVictory();
-      startCelebration(o);
-    },
-    [sound, startCelebration, spawnDamageNumbers]
-  );
+  const { trigger: triggerCelebration } = useCelebrationEffects({
+    flashRef,
+    containerRef,
+    winnerBigRef,
+    winnerSubRef,
+    marqueeTopRef,
+    marqueeBottomRef,
+    sound,
+    startCelebration,
+  });
 
   const handleAdd = useCallback(() => {
     sound.init();
@@ -309,15 +229,15 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
           >
             <span>🎮 PloufPlouf.exe — Tirage au sort</span>
             <div className="flex gap-0.5">
-              <TitleBtn onClick={() => { sound.init(); setMuted((m) => !m); }}>
+              <RetroTitlebarBtn onClick={() => { sound.init(); setMuted((m) => !m); }}>
                 {muted ? "🔇" : "🔊"}
-              </TitleBtn>
-              <TitleBtn onClick={() => { setOptionsOpen((o) => !o); sound.init(); }}>
+              </RetroTitlebarBtn>
+              <RetroTitlebarBtn onClick={() => { setOptionsOpen((o) => !o); sound.init(); }}>
                 ⚙
-              </TitleBtn>
-              <TitleBtn>_</TitleBtn>
-              <TitleBtn>□</TitleBtn>
-              <TitleBtn>✕</TitleBtn>
+              </RetroTitlebarBtn>
+              <RetroTitlebarBtn>_</RetroTitlebarBtn>
+              <RetroTitlebarBtn>□</RetroTitlebarBtn>
+              <RetroTitlebarBtn close>✕</RetroTitlebarBtn>
             </div>
           </div>
         )}
@@ -331,12 +251,12 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
               borderBottomColor: "var(--t-border-dark)",
             }}
           >
-            <TitleBtn onClick={() => { sound.init(); setMuted((m) => !m); }}>
+            <RetroTitlebarBtn onClick={() => { sound.init(); setMuted((m) => !m); }}>
               {muted ? "🔇" : "🔊"}
-            </TitleBtn>
-            <TitleBtn onClick={() => { setOptionsOpen((o) => !o); sound.init(); }}>
+            </RetroTitlebarBtn>
+            <RetroTitlebarBtn onClick={() => { setOptionsOpen((o) => !o); sound.init(); }}>
               ⚙
-            </TitleBtn>
+            </RetroTitlebarBtn>
           </div>
         )}
 
@@ -599,31 +519,6 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
   );
 }
 
-function TitleBtn({
-  onClick,
-  children,
-}: {
-  onClick?: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className="border-[2px] w-[22px] h-[22px] flex items-center justify-center text-xs font-bold cursor-pointer select-none"
-      style={{
-        backgroundColor: "var(--t-bg)",
-        color: "var(--t-text)",
-        fontFamily: "var(--t-font-display)",
-        borderTopColor: "var(--t-border-light)",
-        borderLeftColor: "var(--t-border-light)",
-        borderBottomColor: "var(--t-border-dark)",
-        borderRightColor: "var(--t-border-dark)",
-      }}
-    >
-      {children}
-    </button>
-  );
-}
 
 function WaterDropSVG() {
   return (

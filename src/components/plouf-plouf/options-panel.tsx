@@ -6,6 +6,7 @@ import { useDraggable } from "@/lib/hooks/use-draggable";
 import { useTheme } from "@/lib/contexts/theme-context";
 import { THEMES } from "@/lib/themes";
 import type { ThemeId } from "@/lib/themes";
+import { RetroTitlebarBtn } from "@/components/ui/retro-titlebar-btn";
 
 interface OptionsPanelProps {
   open: boolean;
@@ -55,21 +56,7 @@ export function OptionsPanel({
         }}
       >
         <span>⚙ Options.exe</span>
-        <button
-          onClick={onClose}
-          className="border-[2px] w-[22px] h-[22px] flex items-center justify-center text-xs font-bold cursor-pointer"
-          style={{
-            backgroundColor: "var(--t-bg)",
-            color: "var(--t-text)",
-            borderTopColor: "var(--t-border-light)",
-            borderLeftColor: "var(--t-border-light)",
-            borderBottomColor: "var(--t-border-dark)",
-            borderRightColor: "var(--t-border-dark)",
-          }}
-          aria-label="Fermer"
-        >
-          ✕
-        </button>
+        <RetroTitlebarBtn onClick={onClose} aria-label="Fermer">✕</RetroTitlebarBtn>
       </div>
 
       <div className="p-3">

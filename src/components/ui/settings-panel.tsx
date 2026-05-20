@@ -2,6 +2,7 @@
 
 import { useTheme } from "@/lib/contexts/theme-context";
 import { THEMES, type ThemeId } from "@/lib/themes";
+import { RetroTitlebarBtn } from "./retro-titlebar-btn";
 
 interface SettingsPanelProps {
   onClose: () => void;
@@ -180,23 +181,7 @@ export function SettingsPanel({ onClose, embedded = false }: SettingsPanelProps)
           }}
         >
           <span>⚙️ Paramètres GunthOS — redémarrage non requis (pour l&apos;instant)</span>
-          <div className="flex gap-1">
-            <button
-              onClick={onClose}
-              className="w-[22px] h-[22px] flex items-center justify-center text-xs font-bold border-[2px] cursor-pointer"
-              style={{
-                backgroundColor: "var(--t-bg)",
-                color: "var(--t-text)",
-                borderTopColor: "var(--t-border-light)",
-                borderLeftColor: "var(--t-border-light)",
-                borderBottomColor: "var(--t-border-dark)",
-                borderRightColor: "var(--t-border-dark)",
-                fontFamily: "var(--t-font-display)",
-              }}
-            >
-              ✕
-            </button>
-          </div>
+          <RetroTitlebarBtn onClick={onClose}>✕</RetroTitlebarBtn>
         </div>
         {content}
       </div>

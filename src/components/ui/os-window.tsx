@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useWindowManager } from "@/lib/contexts/window-manager-context";
 import type { WindowInstance } from "@/lib/contexts/window-manager-context";
+import { RetroTitlebarBtn } from "./retro-titlebar-btn";
 
 interface OsWindowProps {
   win: WindowInstance;
@@ -45,8 +46,8 @@ export function OsWindow({ win, children }: OsWindowProps) {
     [isMaximized, win.id, win.position.x, win.position.y, focusWindow]
   );
 
-  function onResizeMouseDown(edge: ResizeEdge) {
-    return (e: React.MouseEvent) => {
+  const onResizeMouseDown = useCallback(
+    (edge: ResizeEdge) => (e: React.MouseEvent) => {
       if (isMaximized) return;
       e.preventDefault();
       e.stopPropagation();
@@ -60,8 +61,9 @@ export function OsWindow({ win, children }: OsWindowProps) {
         w: win.size.w,
         h: win.size.h,
       };
-    };
-  }
+    },
+    [isMaximized, win.id, win.position.x, win.position.y, win.size.w, win.size.h, focusWindow]
+  );
 
   useEffect(() => {
     const MIN_W = 240;
@@ -182,11 +184,11 @@ export function OsWindow({ win, children }: OsWindowProps) {
       >
         <span className="truncate">{win.icon} {win.title}</span>
         <div className="flex gap-0.5 shrink-0 ml-2">
-          <WinBtn onClick={() => minimizeWindow(win.id)} title="Réduire" isActive={isActive}>_</WinBtn>
-          <WinBtn onClick={() => maximizeWindow(win.id)} title={isMaximized ? "Restaurer" : "Agrandir"} isActive={isActive}>
+          <RetroTitlebarBtn size={20} isActive={isActive} onClick={(e) => { e.stopPropagation(); minimizeWindow(win.id); }} title="Réduire">_</RetroTitlebarBtn>
+          <RetroTitlebarBtn size={20} isActive={isActive} onClick={(e) => { e.stopPropagation(); maximizeWindow(win.id); }} title={isMaximized ? "Restaurer" : "Agrandir"}>
             {isMaximized ? "❐" : "□"}
-          </WinBtn>
-          <WinBtn onClick={() => closeWindow(win.id)} title="Fermer" isActive={isActive} close>✕</WinBtn>
+          </RetroTitlebarBtn>
+          <RetroTitlebarBtn size={20} isActive={isActive} close onClick={(e) => { e.stopPropagation(); closeWindow(win.id); }} title="Fermer">✕</RetroTitlebarBtn>
         </div>
       </div>
 
@@ -196,31 +198,3 @@ export function OsWindow({ win, children }: OsWindowProps) {
   );
 }
 
-function WinBtn({
-  children, onClick, title, isActive, close,
-}: {
-  children: React.ReactNode;
-  onClick: () => void;
-  title: string;
-  isActive: boolean;
-  close?: boolean;
-}) {
-  return (
-    <button
-      onClick={(e) => { e.stopPropagation(); onClick(); }}
-      title={title}
-      className="w-[20px] h-[20px] flex items-center justify-center text-xs font-bold border-[2px] cursor-pointer shrink-0"
-      style={{
-        backgroundColor: close ? (isActive ? "#cc2222" : "var(--t-bg)") : "var(--t-bg)",
-        color: close && isActive ? "#fff" : "var(--t-text)",
-        fontFamily: "var(--t-font-display)",
-        borderTopColor: "var(--t-border-light)",
-        borderLeftColor: "var(--t-border-light)",
-        borderBottomColor: "var(--t-border-dark)",
-        borderRightColor: "var(--t-border-dark)",
-      }}
-    >
-      {children}
-    </button>
-  );
-}

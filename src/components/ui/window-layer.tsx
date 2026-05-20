@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { useWindowManager } from "@/lib/contexts/window-manager-context";
 import { OsWindow } from "./os-window";
 import { SettingsPanel } from "./settings-panel";
+import { RetroTitlebarBtn } from "./retro-titlebar-btn";
 import { SolitaireApp, DefragApp, NotepadApp, PrinterApp, IEApp } from "./fake-apps";
 import { GUNTH_STATUS, pickRandom } from "@/lib/gunth-jokes";
 
@@ -48,20 +49,7 @@ function GunthDialog({
           }}
         >
           <span className="text-sm tracking-widest font-bold">{config.icon} {config.title}</span>
-          <button
-            onClick={() => onClose()}
-            className="w-[18px] h-[18px] flex items-center justify-center text-xs font-bold border-[2px] cursor-pointer"
-            style={{
-              backgroundColor: "var(--t-bg)",
-              color: "var(--t-text)",
-              borderTopColor: "var(--t-border-light)",
-              borderLeftColor: "var(--t-border-light)",
-              borderBottomColor: "var(--t-border-dark)",
-              borderRightColor: "var(--t-border-dark)",
-            }}
-          >
-            ✕
-          </button>
+          <RetroTitlebarBtn size={18} onClick={() => onClose()}>✕</RetroTitlebarBtn>
         </div>
 
         {/* Body */}
@@ -283,51 +271,53 @@ function MyComputerContent() {
   );
 }
 
+const STATIC_APP_CONTENT: Partial<Record<string, React.ReactNode>> = {
+  "my-computer": <MyComputerContent />,
+  solitaire: <SolitaireApp />,
+  defrag: <DefragApp />,
+  notepad: <NotepadApp />,
+  printer: <PrinterApp />,
+  ie: <IEApp />,
+};
+
+function WindowContent({ win }: { win: { id: string; appSlug: string } }) {
+  const { closeWindow } = useWindowManager();
+
+  if (win.appSlug === "plouf-plouf") {
+    return (
+      <div
+        className="min-h-full relative"
+        style={{
+          background:
+            "radial-gradient(ellipse at 20% 20%, rgba(173,216,255,0.25) 0%, transparent 50%), linear-gradient(180deg, var(--t-page-from) 0%, var(--t-page-to) 100%)",
+        }}
+      >
+        <PloufApp embedded />
+      </div>
+    );
+  }
+
+  if (win.appSlug === "settings") {
+    return (
+      <div className="relative">
+        <SettingsPanel onClose={() => closeWindow(win.id)} embedded />
+      </div>
+    );
+  }
+
+  return <>{STATIC_APP_CONTENT[win.appSlug] ?? null}</>;
+}
+
 export function WindowLayer() {
-  const { windows, closeWindow } = useWindowManager();
+  const { windows } = useWindowManager();
 
   return (
     <>
       {windows.map((win) => {
         if (win.state === "minimized") return null;
-
-        let content: React.ReactNode = null;
-
-        if (win.appSlug === "plouf-plouf") {
-          content = (
-            <div
-              className="min-h-full relative"
-              style={{
-                background:
-                  "radial-gradient(ellipse at 20% 20%, rgba(173,216,255,0.25) 0%, transparent 50%), linear-gradient(180deg, var(--t-page-from) 0%, var(--t-page-to) 100%)",
-              }}
-            >
-              <PloufApp embedded />
-            </div>
-          );
-        } else if (win.appSlug === "settings") {
-          content = (
-            <div className="relative">
-              <SettingsPanel onClose={() => closeWindow(win.id)} embedded />
-            </div>
-          );
-        } else if (win.appSlug === "my-computer") {
-          content = <MyComputerContent />;
-        } else if (win.appSlug === "solitaire") {
-          content = <SolitaireApp />;
-        } else if (win.appSlug === "defrag") {
-          content = <DefragApp />;
-        } else if (win.appSlug === "notepad") {
-          content = <NotepadApp />;
-        } else if (win.appSlug === "printer") {
-          content = <PrinterApp />;
-        } else if (win.appSlug === "ie") {
-          content = <IEApp />;
-        }
-
         return (
           <OsWindow key={win.id} win={win}>
-            {content}
+            <WindowContent win={win} />
           </OsWindow>
         );
       })}

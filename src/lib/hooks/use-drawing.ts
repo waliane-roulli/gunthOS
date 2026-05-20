@@ -15,7 +15,7 @@ export interface DrawingState {
 export function useDrawing(
   gamesCount: number,
   onBip: () => void,
-  onVictory: () => void
+  onVictory?: () => void
 ) {
   const [state, setState] = useState<DrawingState>({
     isDrawing: false,
@@ -55,7 +55,7 @@ export function useDrawing(
     }
 
     setState({ isDrawing: false, highlightedIndex: -1, winnerIndex: winnerIdx });
-    onVictory();
+    onVictory?.();
     return winnerIdx;
   }, [gamesCount, onBip, onVictory]);
 
