@@ -38,6 +38,7 @@ export function Taskbar() {
     useWindowManager();
   const { themeId, setTheme } = useTheme();
   const time = useOsClock();
+  const visitorCount = useVisitorCounter();
   const [startMenuOpen, setStartMenuOpen] = useState(false);
   const [themeMenuOpen, setThemeMenuOpen] = useState(false);
 
@@ -264,6 +265,15 @@ export function Taskbar() {
             color: "var(--t-text)",
           }}
         >
+          {visitorCount !== null && (
+            <span
+              title={`${visitorCount} visiteur${visitorCount > 1 ? "s" : ""} depuis le début`}
+              className="border-r pr-2"
+              style={{ borderColor: "var(--t-border-dark)" }}
+            >
+              👁 {visitorCount}
+            </span>
+          )}
           <span title="Volume">🔊</span>
           <span
             className="border-l pl-2"
