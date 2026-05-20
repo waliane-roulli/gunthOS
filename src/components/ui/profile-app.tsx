@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { useWindowManager } from "@/lib/contexts/window-manager-context";
 import { pickRandom } from "@/lib/gunth-jokes";
@@ -950,7 +950,6 @@ export function UserDirectoryApp() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const { openWindow } = useWindowManager();
-  const [pixelEmojis] = useState<Record<string, string>>({});
 
   useEffect(() => {
     fetch("/api/profiles/list")
@@ -961,6 +960,12 @@ export function UserDirectoryApp() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  const pixelEmojis = useMemo(
+    () => Object.fromEntries(users.map((u) => [u.username ?? u.name, pickRandom(PIXEL_AVATARS)])),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [users.length]
+  );
 
   const filtered = users.filter((u) => {
     const q = search.toLowerCase();
@@ -1008,7 +1013,7 @@ export function UserDirectoryApp() {
           <div className="flex flex-col">
             {filtered.map((u) => {
               const key = u.username ?? u.name;
-              const emoji = pixelEmojis[key] ?? pickRandom(PIXEL_AVATARS);
+              const emoji = pixelEmojis[key] ?? PIXEL_AVATARS[0]!;
               const days = getDaysSinceJoin(u.createdAt);
               const rank = getGunthosRank(days);
               return (

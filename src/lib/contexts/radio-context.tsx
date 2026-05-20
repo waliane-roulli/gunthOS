@@ -101,7 +101,6 @@ export function RadioProvider({ children }: { children: ReactNode }) {
   const [volume, setVolumeState] = useState(80);
   const [playTime, setPlayTime] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const bufferIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const timeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const currentStation = STATIONS.find((s) => s.id === currentStationId) ?? null;
@@ -116,36 +115,27 @@ export function RadioProvider({ children }: { children: ReactNode }) {
     };
   }, [isPlaying]);
 
-  function clearBufferInterval() {
-    if (bufferIntervalRef.current) {
-      clearInterval(bufferIntervalRef.current);
-      bufferIntervalRef.current = null;
-    }
-  }
+  const volumeRef = useRef(volume);
+  useEffect(() => { volumeRef.current = volume; }, [volume]);
 
   const play = useCallback((id: StationId) => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    clearBufferInterval();
     setHasError(false);
     setPlayTime(0);
     setCurrentStationId(id);
     setIsBuffering(true);
 
-    bufferIntervalRef.current = setInterval(() => {}, 1200);
-
     const station = STATIONS.find((s) => s.id === id)!;
     audio.src = station.url;
-    audio.volume = volume / 100;
+    audio.volume = volumeRef.current / 100;
     audio.load();
     audio.play().catch(() => {
-      clearBufferInterval();
       setIsBuffering(false);
       setHasError(true);
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [volume]);
+  }, []);
 
   const stop = useCallback(() => {
     const audio = audioRef.current;
@@ -153,7 +143,6 @@ export function RadioProvider({ children }: { children: ReactNode }) {
       audio.pause();
       audio.src = "";
     }
-    clearBufferInterval();
     setCurrentStationId(null);
     setIsBuffering(false);
     setHasError(false);
@@ -177,16 +166,14 @@ export function RadioProvider({ children }: { children: ReactNode }) {
     if (audioRef.current) audioRef.current.volume = v / 100;
   }, []);
 
-  function handlePlaying() {
-    clearBufferInterval();
+  const handlePlaying = useCallback(() => {
     setIsBuffering(false);
-  }
+  }, []);
 
-  function handleError() {
-    clearBufferInterval();
+  const handleError = useCallback(() => {
     setIsBuffering(false);
     setHasError(true);
-  }
+  }, []);
 
   return (
     <RadioContext.Provider

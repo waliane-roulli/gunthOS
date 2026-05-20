@@ -55,7 +55,7 @@ const WALLPAPERS: Record<string, string> = {
 };
 
 export function OsDesktop() {
-  const { openWindow } = useWindowManager();
+  const { openWindow, openApp } = useWindowManager();
   const { themeId } = useTheme();
   const { init, playWindowOpen } = useSoundContext();
   const { totalUnread } = useUnread();
@@ -66,18 +66,16 @@ export function OsDesktop() {
     (slug: string) => {
       init();
       playWindowOpen();
-      const app = APPS.find((a) => a.slug === slug);
-      if (!app) return;
-      openWindow(app.slug, app.name, app.emoji);
+      openApp(slug);
     },
-    [openWindow, init, playWindowOpen]
+    [openApp, init, playWindowOpen]
   );
 
   const handleOpenSettings = useCallback(() => {
     init();
     playWindowOpen();
-    openWindow("settings", "Paramètres", "⚙️");
-  }, [openWindow, init, playWindowOpen]);
+    openApp("settings");
+  }, [openApp, init, playWindowOpen]);
 
   return (
     <div

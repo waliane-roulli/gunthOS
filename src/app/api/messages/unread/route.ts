@@ -12,8 +12,11 @@ export async function GET(req: NextRequest) {
   if (!session?.user) return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
 
   const { searchParams } = new URL(req.url);
-  const since = searchParams.get("since");
-  const sinceDate = since ? new Date(Number(since)) : new Date(Date.now() - 24 * 60 * 60 * 1000);
+  const sinceRaw = searchParams.get("since");
+  const sinceMs = sinceRaw ? Number(sinceRaw) : NaN;
+  const sinceDate = Number.isFinite(sinceMs) && sinceMs > 0
+    ? new Date(sinceMs)
+    : new Date(Date.now() - 24 * 60 * 60 * 1000);
 
   const myId = session.user.id;
 

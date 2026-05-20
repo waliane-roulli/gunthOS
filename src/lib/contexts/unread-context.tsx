@@ -1,10 +1,10 @@
 "use client";
 
-import { createContext, useContext, useState, useCallback } from "react";
+import { createContext, useContext, useState } from "react";
 
 interface UnreadContextValue {
   totalUnread: number;
-  setTotalUnread: (n: number) => void;
+  setTotalUnread: React.Dispatch<React.SetStateAction<number>>;
 }
 
 const UnreadContext = createContext<UnreadContextValue>({
@@ -14,9 +14,8 @@ const UnreadContext = createContext<UnreadContextValue>({
 
 export function UnreadProvider({ children }: { children: React.ReactNode }) {
   const [totalUnread, setTotalUnread] = useState(0);
-  const set = useCallback((n: number) => setTotalUnread(n), []);
   return (
-    <UnreadContext.Provider value={{ totalUnread, setTotalUnread: set }}>
+    <UnreadContext.Provider value={{ totalUnread, setTotalUnread }}>
       {children}
     </UnreadContext.Provider>
   );

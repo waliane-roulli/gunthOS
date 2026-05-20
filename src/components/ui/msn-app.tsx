@@ -171,7 +171,6 @@ function UnreadBadge({ count }: { count: number }) {
 function ChatWindow({
   contact,
   myId,
-  myName,
   myAvatar,
   onClose,
   onDragStart,
@@ -179,7 +178,6 @@ function ChatWindow({
 }: {
   contact: Contact;
   myId: string;
-  myName: string;
   myAvatar: string | null;
   onClose: () => void;
   onDragStart?: (e: React.MouseEvent) => void;
@@ -359,7 +357,7 @@ function ChatWindow({
             {STATUS_ICONS[contact.onlineStatus]} {displayName}
           </span>
           <span className="text-xs tracking-wider truncate" style={{ color: "var(--t-text-muted)" }}>
-            {contact.statusMessage || getRandomAwayMessage()}
+            {contact.statusMessage || STATUS_LABELS[contact.onlineStatus]}
           </span>
         </div>
       </div>
@@ -583,10 +581,9 @@ function ChatWindow({
 
 // ── Draggable chat window wrapper ─────────────────────────────────────────────
 
-function DraggableChatWindow({ contact, myId, myName, myAvatar, onClose, onRead }: {
+function DraggableChatWindow({ contact, myId, myAvatar, onClose, onRead }: {
   contact: Contact;
   myId: string;
-  myName: string;
   myAvatar: string | null;
   onClose: () => void;
   onRead?: () => void;
@@ -597,12 +594,14 @@ function DraggableChatWindow({ contact, myId, myName, myAvatar, onClose, onRead 
   }));
   const dragging = useRef(false);
   const origin = useRef({ mx: 0, my: 0, wx: 0, wy: 0 });
+  const posRef = useRef(pos);
+  useEffect(() => { posRef.current = pos; }, [pos]);
 
   const onMouseDown = useCallback((e: React.MouseEvent) => {
     dragging.current = true;
-    origin.current = { mx: e.clientX, my: e.clientY, wx: pos.x, wy: pos.y };
+    origin.current = { mx: e.clientX, my: e.clientY, wx: posRef.current.x, wy: posRef.current.y };
     e.preventDefault();
-  }, [pos]);
+  }, []);
 
   useEffect(() => {
     function onMove(e: MouseEvent) {
@@ -634,7 +633,6 @@ function DraggableChatWindow({ contact, myId, myName, myAvatar, onClose, onRead 
       <ChatWindow
         contact={contact}
         myId={myId}
-        myName={myName}
         myAvatar={myAvatar}
         onClose={onClose}
         onDragStart={onMouseDown}
@@ -1024,7 +1022,6 @@ export function MsnApp() {
               key={contactId}
               contact={contact}
               myId={user.id}
-              myName={myDisplayName}
               myAvatar={myAvatar}
               onClose={() => setOpenChats(prev => {
                 const next = { ...prev, [contactId]: false };

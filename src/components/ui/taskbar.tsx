@@ -15,7 +15,7 @@ import { useUnread } from "@/lib/contexts/unread-context";
 import { useRadio, type StationId } from "@/lib/contexts/radio-context";
 
 export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShutdown?: () => void }) {
-  const { windows, activeWindowId, focusWindow, restoreWindow, minimizeWindow, openWindow } =
+  const { windows, activeWindowId, focusWindow, restoreWindow, minimizeWindow, openWindow, openApp } =
     useWindowManager();
   const { themeId, setTheme } = useTheme();
   const { init, playClick, playWindowOpen, playWindowMinimize } = useSoundContext();
@@ -56,12 +56,10 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
     (slug: string) => {
       init();
       playWindowOpen();
-      const app = APPS.find((a) => a.slug === slug);
-      if (!app) return;
-      openWindow(app.slug, app.name, app.emoji);
+      openApp(slug);
       setStartMenuOpen(false);
     },
-    [openWindow, init, playWindowOpen]
+    [openApp, init, playWindowOpen]
   );
 
   return (
@@ -288,7 +286,7 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
               icon="⚙️"
               label="Paramètres"
               onClick={() => {
-                openWindow("settings", "Paramètres", "⚙️");
+                openApp("settings");
                 setStartMenuOpen(false);
               }}
             />
@@ -450,7 +448,7 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
                 }}
               >
                 <span className="shrink-0" style={{ lineHeight: 0, display: "flex", alignItems: "center" }}>
-                  {win.appSlug === "msn" ? <MsnLogo size={16} /> : win.icon}
+                  {win.icon}
                 </span>
                 <span className="truncate">{win.title}</span>
               </button>
@@ -490,7 +488,7 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
           </button>
           <button
             title="GunthMessenger™ — Ouvrir la messagerie"
-            onClick={() => { init(); openWindow("msn", "GunthMessenger™", "🦋"); }}
+            onClick={() => { init(); openApp("msn"); }}
             className="cursor-pointer select-none hover:opacity-80 border-r pr-2"
             style={{ borderColor: "var(--t-border-dark)", background: "none", padding: 0, display: "flex", alignItems: "center", lineHeight: 0, position: "relative" }}
           >
@@ -669,7 +667,7 @@ function VolumeTray() {
 
 function RadioTrayPlayer() {
   const { currentStation, isPlaying, isBuffering, next, prev, stop, play } = useRadio();
-  const { openWindow } = useWindowManager();
+  const { openApp } = useWindowManager();
   const { init } = useSoundContext();
 
   const btnStyle: React.CSSProperties = {
@@ -689,7 +687,7 @@ function RadioTrayPlayer() {
         title="GunthRadio™ — Ouvrir"
         style={{ ...btnStyle, opacity: 0.6 }}
         className="border-r pr-2 hover:opacity-100"
-        onClick={() => { init(); openWindow("radio", "GunthRadio™", "📻"); }}
+        onClick={() => { init(); openApp("radio"); }}
       >
         📻
       </button>
@@ -717,7 +715,7 @@ function RadioTrayPlayer() {
         className="text-xs tracking-wider max-w-[90px] truncate cursor-pointer"
         style={{ color: "var(--t-accent)", fontFamily: "var(--t-font-display)" }}
         title={`GunthRadio™ — ${currentStation?.name}`}
-        onClick={() => { init(); openWindow("radio", "GunthRadio™", "📻"); }}
+        onClick={() => { init(); openApp("radio"); }}
       >
         {currentStation?.emoji} {currentStation?.name}
       </span>

@@ -9,6 +9,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { APPS } from "@/lib/apps";
 
 export type WindowState = "normal" | "minimized" | "maximized";
 
@@ -16,7 +17,7 @@ export interface WindowInstance {
   id: string;
   appSlug: string;
   title: string;
-  icon: string;
+  icon: ReactNode;
   state: WindowState;
   zIndex: number;
   position: { x: number; y: number };
@@ -28,7 +29,8 @@ export interface WindowInstance {
 interface WindowManagerContextValue {
   windows: WindowInstance[];
   activeWindowId: string | null;
-  openWindow: (appSlug: string, title: string, icon: string) => string;
+  openWindow: (appSlug: string, title: string, icon: ReactNode) => string;
+  openApp: (slug: string) => string;
   closeWindow: (id: string) => void;
   minimizeWindow: (id: string) => void;
   maximizeWindow: (id: string) => void;
@@ -42,6 +44,7 @@ const WindowManagerContext = createContext<WindowManagerContextValue>({
   windows: [],
   activeWindowId: null,
   openWindow: () => "",
+  openApp: () => "",
   closeWindow: () => {},
   minimizeWindow: () => {},
   maximizeWindow: () => {},
@@ -75,7 +78,7 @@ export function WindowManagerProvider({ children }: { children: ReactNode }) {
   windowsRef.current = windows;
 
   const openWindow = useCallback(
-    (appSlug: string, title: string, icon: string): string => {
+    (appSlug: string, title: string, icon: ReactNode): string => {
       const existing = windowsRef.current.find((w) => w.appSlug === appSlug);
       if (existing) {
         setWindows((prev) =>
@@ -110,6 +113,15 @@ export function WindowManagerProvider({ children }: { children: ReactNode }) {
       return id;
     },
     []
+  );
+
+  const openApp = useCallback(
+    (slug: string): string => {
+      const app = APPS.find((a) => a.slug === slug);
+      if (!app) return "";
+      return openWindow(app.slug, app.name, app.iconNode ?? app.emoji);
+    },
+    [openWindow]
   );
 
   const closeWindow = useCallback((id: string) => {
@@ -203,6 +215,7 @@ export function WindowManagerProvider({ children }: { children: ReactNode }) {
       windows,
       activeWindowId,
       openWindow,
+      openApp,
       closeWindow,
       minimizeWindow,
       maximizeWindow,
@@ -211,7 +224,7 @@ export function WindowManagerProvider({ children }: { children: ReactNode }) {
       moveWindow,
       resizeWindow,
     }),
-    [windows, activeWindowId, openWindow, closeWindow, minimizeWindow, maximizeWindow, restoreWindow, focusWindow, moveWindow, resizeWindow]
+    [windows, activeWindowId, openWindow, openApp, closeWindow, minimizeWindow, maximizeWindow, restoreWindow, focusWindow, moveWindow, resizeWindow]
   );
 
   return (

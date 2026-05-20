@@ -38,13 +38,24 @@ export function useWastedTime() {
 
     const tick = setInterval(() => {
       const sessionSeconds = Math.floor((Date.now() - sessionStart.current) / 1000);
-      const newTotal = storedRef.current + sessionSeconds;
-      setTotal(newTotal);
-      save(newTotal);
+      setTotal(storedRef.current + sessionSeconds);
     }, 1000);
+
+    const persist = setInterval(() => {
+      const sessionSeconds = Math.floor((Date.now() - sessionStart.current) / 1000);
+      save(storedRef.current + sessionSeconds);
+    }, 30_000);
+
+    function onUnload() {
+      const sessionSeconds = Math.floor((Date.now() - sessionStart.current) / 1000);
+      save(storedRef.current + sessionSeconds);
+    }
+    window.addEventListener("beforeunload", onUnload);
 
     return () => {
       clearInterval(tick);
+      clearInterval(persist);
+      window.removeEventListener("beforeunload", onUnload);
       const sessionSeconds = Math.floor((Date.now() - sessionStart.current) / 1000);
       save(storedRef.current + sessionSeconds);
     };
