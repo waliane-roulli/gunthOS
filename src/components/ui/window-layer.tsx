@@ -271,13 +271,13 @@ function MyComputerContent() {
   );
 }
 
-const STATIC_APP_CONTENT: Partial<Record<string, React.ReactNode>> = {
-  "my-computer": <MyComputerContent />,
-  solitaire: <SolitaireApp />,
-  defrag: <DefragApp />,
-  notepad: <NotepadApp />,
-  printer: <PrinterApp />,
-  ie: <IEApp />,
+const APP_COMPONENTS: Partial<Record<string, () => React.ReactElement>> = {
+  "my-computer": () => <MyComputerContent />,
+  solitaire: () => <SolitaireApp />,
+  defrag: () => <DefragApp />,
+  notepad: () => <NotepadApp />,
+  printer: () => <PrinterApp />,
+  ie: () => <IEApp />,
 };
 
 function WindowContent({ win }: { win: { id: string; appSlug: string } }) {
@@ -305,7 +305,8 @@ function WindowContent({ win }: { win: { id: string; appSlug: string } }) {
     );
   }
 
-  return <>{STATIC_APP_CONTENT[win.appSlug] ?? null}</>;
+  const Component = APP_COMPONENTS[win.appSlug];
+  return Component ? <Component /> : null;
 }
 
 export function WindowLayer() {

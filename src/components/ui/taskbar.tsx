@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useWindowManager } from "@/lib/contexts/window-manager-context";
 import { APPS } from "@/lib/apps";
 import { useTheme } from "@/lib/contexts/theme-context";
@@ -19,24 +19,30 @@ export function Taskbar() {
   const [themeMenuOpen, setThemeMenuOpen] = useState(false);
   const [shutdownMsg, setShutdownMsg] = useState<string | null>(null);
 
-  function handleTaskbarClick(winId: string) {
-    const win = windows.find((w) => w.id === winId);
-    if (!win) return;
-    if (win.state === "minimized") {
-      restoreWindow(winId);
-    } else if (activeWindowId === winId) {
-      minimizeWindow(winId);
-    } else {
-      focusWindow(winId);
-    }
-  }
+  const handleTaskbarClick = useCallback(
+    (winId: string) => {
+      const win = windows.find((w) => w.id === winId);
+      if (!win) return;
+      if (win.state === "minimized") {
+        restoreWindow(winId);
+      } else if (activeWindowId === winId) {
+        minimizeWindow(winId);
+      } else {
+        focusWindow(winId);
+      }
+    },
+    [windows, activeWindowId, restoreWindow, minimizeWindow, focusWindow]
+  );
 
-  function handleOpenApp(slug: string) {
-    const app = APPS.find((a) => a.slug === slug);
-    if (!app) return;
-    openWindow(app.slug, app.name, app.emoji);
-    setStartMenuOpen(false);
-  }
+  const handleOpenApp = useCallback(
+    (slug: string) => {
+      const app = APPS.find((a) => a.slug === slug);
+      if (!app) return;
+      openWindow(app.slug, app.name, app.emoji);
+      setStartMenuOpen(false);
+    },
+    [openWindow]
+  );
 
   return (
     <>

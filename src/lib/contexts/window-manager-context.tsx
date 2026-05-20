@@ -51,7 +51,6 @@ const WindowManagerContext = createContext<WindowManagerContextValue>({
 });
 
 const BASE_Z = 100;
-let idCounter = 0;
 
 function getDefaultPosition(index: number): { x: number; y: number } {
   const offset = (index % 8) * 32;
@@ -70,6 +69,7 @@ export function WindowManagerProvider({ children }: { children: ReactNode }) {
   const [windows, setWindows] = useState<WindowInstance[]>([]);
   const [activeWindowId, setActiveWindowId] = useState<string | null>(null);
   const topZRef = useRef(BASE_Z);
+  const idCounterRef = useRef(0);
   const windowsRef = useRef<WindowInstance[]>(windows);
   windowsRef.current = windows;
 
@@ -88,7 +88,7 @@ export function WindowManagerProvider({ children }: { children: ReactNode }) {
         return existing.id;
       }
 
-      const id = `win-${++idCounter}`;
+      const id = `win-${++idCounterRef.current}`;
       const position = getDefaultPosition(windowsRef.current.length);
       const size = getDefaultSize();
 

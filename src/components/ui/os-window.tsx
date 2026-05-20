@@ -18,6 +18,8 @@ const CURSOR: Record<ResizeEdge, string> = {
 };
 
 const EDGE_SIZE = 6;
+const MIN_W = 240;
+const MIN_H = 160;
 
 export function OsWindow({ win, children }: OsWindowProps) {
   const { closeWindow, minimizeWindow, maximizeWindow, focusWindow, moveWindow, resizeWindow, activeWindowId } =
@@ -27,6 +29,8 @@ export function OsWindow({ win, children }: OsWindowProps) {
   const dragOffset = useRef({ x: 0, y: 0 });
   const resizing = useRef<ResizeEdge | null>(null);
   const resizeStart = useRef({ mx: 0, my: 0, x: 0, y: 0, w: 0, h: 0 });
+  const winRef = useRef(win);
+  winRef.current = win;
 
   const isActive = win.id === activeWindowId;
   const isMaximized = win.state === "maximized";
@@ -34,46 +38,45 @@ export function OsWindow({ win, children }: OsWindowProps) {
   const onTitleBarMouseDown = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
       if ((e.target as HTMLElement).closest("button")) return;
-      if (isMaximized) return;
+      if (winRef.current.state === "maximized") return;
       e.preventDefault();
-      focusWindow(win.id);
+      focusWindow(winRef.current.id);
       dragging.current = true;
       dragOffset.current = {
-        x: e.clientX - win.position.x,
-        y: e.clientY - win.position.y,
+        x: e.clientX - winRef.current.position.x,
+        y: e.clientY - winRef.current.position.y,
       };
     },
-    [isMaximized, win.id, win.position.x, win.position.y, focusWindow]
+    [focusWindow]
   );
 
   const onResizeMouseDown = useCallback(
     (edge: ResizeEdge) => (e: React.MouseEvent) => {
-      if (isMaximized) return;
+      if (winRef.current.state === "maximized") return;
       e.preventDefault();
       e.stopPropagation();
-      focusWindow(win.id);
+      focusWindow(winRef.current.id);
       resizing.current = edge;
       resizeStart.current = {
         mx: e.clientX,
         my: e.clientY,
-        x: win.position.x,
-        y: win.position.y,
-        w: win.size.w,
-        h: win.size.h,
+        x: winRef.current.position.x,
+        y: winRef.current.position.y,
+        w: winRef.current.size.w,
+        h: winRef.current.size.h,
       };
     },
-    [isMaximized, win.id, win.position.x, win.position.y, win.size.w, win.size.h, focusWindow]
+    [focusWindow]
   );
 
   useEffect(() => {
-    const MIN_W = 240;
-    const MIN_H = 160;
+    const winId = win.id;
 
     const onMouseMove = (e: MouseEvent) => {
       if (dragging.current) {
         const x = e.clientX - dragOffset.current.x;
         const y = Math.max(40, e.clientY - dragOffset.current.y);
-        moveWindow(win.id, x, y);
+        moveWindow(winId, x, y);
         return;
       }
 
@@ -96,7 +99,7 @@ export function OsWindow({ win, children }: OsWindowProps) {
         newY = Math.max(40, y + (h - newH));
       }
 
-      resizeWindow(win.id, newW, newH, newX, newY);
+      resizeWindow(winId, newW, newH, newX, newY);
     };
 
     const onMouseUp = () => {

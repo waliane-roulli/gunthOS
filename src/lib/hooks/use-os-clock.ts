@@ -2,16 +2,16 @@
 
 import { useState, useEffect } from "react";
 
+function getTime(): string {
+  return new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+}
+
 export function useOsClock(): string {
-  const [time, setTime] = useState("");
+  const [time, setTime] = useState(getTime);
 
   useEffect(() => {
-    const update = () =>
-      setTime(
-        new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })
-      );
-    update();
-    const id = setInterval(update, 30_000);
+    setTime(getTime());
+    const id = setInterval(() => setTime(getTime()), 30_000);
     return () => clearInterval(id);
   }, []);
 

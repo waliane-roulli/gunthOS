@@ -17,6 +17,8 @@ import { useDraggable } from "@/lib/hooks/use-draggable";
 import { DEFAULT_OPTIONS } from "@/types/plouf-plouf";
 import type { CelebrationOptions } from "@/types/plouf-plouf";
 
+const WATER_DROP = <WaterDropSVG />;
+
 export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
   const [inputValue, setInputValue] = useState("");
   const [optionsOpen, setOptionsOpen] = useState(false);
@@ -115,7 +117,7 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
     setShowResult(false);
     setWinnerName(null);
     stopCelebration();
-    setTimeout(() => handlePlouf(), 100);
+    setTimeout(handlePlouf, 100);
   }, [drawing.isDrawing, games.length, stopCelebration, handlePlouf]);
 
   const handleRemoveWinner = useCallback(() => {
@@ -273,7 +275,7 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
             }}
           >
             <div className="inline-block animate-[float_4s_ease-in-out_infinite] cursor-pointer hover:scale-110 hover:-rotate-6 transition-none relative">
-              <WaterDropSVG />
+              {WATER_DROP}
             </div>
             <h1 className="text-[2.6rem] font-bold font-[family-name:var(--font-fredoka)] tracking-[2px] mt-2.5 bg-[linear-gradient(90deg,#ff0000,#ff8800,#ffee00,#00ff00,#00ccff,#8800ff,#ff00ff,#ff0000)] bg-[length:300%_100%] [background-clip:text] [-webkit-background-clip:text] text-transparent animate-[rainbow_4s_linear_infinite] [filter:drop-shadow(2px_2px_0_rgba(0,0,0,0.2))]">
               PLOUF PLOUF
