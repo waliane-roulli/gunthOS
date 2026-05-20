@@ -45,5 +45,4 @@ next-env.d.ts
 /data/*.db-shm
 /data/*.db-wal
 
-# drizzle migrations (generated, not committed)
-/drizzle
+# drizzle migrations are committed — run pnpm db:generate locally after schema changes
