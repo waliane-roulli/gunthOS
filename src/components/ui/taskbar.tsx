@@ -82,7 +82,6 @@ export function Taskbar() {
             style={{
               background:
                 "linear-gradient(to right, var(--t-titlebar-from), var(--t-titlebar-to))",
-              writingMode: "vertical-rl",
               height: 48,
               writingMode: "horizontal-tb",
             }}

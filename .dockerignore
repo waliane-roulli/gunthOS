@@ -1,0 +1,13 @@
+.git
+.next
+node_modules
+.env*
+data/
+drizzle/
+*.db
+*.db-shm
+*.db-wal
+README.md
+.DS_Store
+.vscode
+coverage
