@@ -66,6 +66,16 @@ export function WallpaperDecoration({ decorationKey, wallpaperId }: Props) {
     case "nokia3310": return <Nokia3310Wallpaper />;
     case "fax_2024": return <Fax2024Wallpaper />;
     case "windows_update_forced": return <WindowsUpdateForcedWallpaper />;
+    case "zoom_meeting": return <ZoomMeetingWallpaper />;
+    case "linkedin_cringe": return <LinkedInCringeWallpaper />;
+    case "jira_ticket": return <JiraTicketWallpaper />;
+    case "microwave_office": return <MicrowaveOfficeWallpaper />;
+    case "dark_mode_extreme": return <DarkModeExtremeWallpaper />;
+    case "crypto_bro": return <CryptoBroWallpaper />;
+    case "gdpr_popup": return <GdprPopupWallpaper />;
+    case "teams_mute": return <TeamsMuteWallpaper />;
+    case "regex_hell": return <RegexHellWallpaper />;
+    case "404_not_found": return <NotFound404Wallpaper />;
     default: return null;
   }
 }
@@ -3736,6 +3746,331 @@ function WindowsUpdateForcedWallpaper() {
       </div>
 
       <style>{`@keyframes wuspin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
+    </div>
+  );
+}
+
+/* ─── Zoom Meeting ────────────────────────────────────────────── */
+function ZoomMeetingWallpaper() {
+  const participants = [
+    { name: "Jean-Michel B.", status: "😴", muted: true },
+    { name: "Marie D.", status: "📱", muted: false },
+    { name: "CEO_Patrick", status: "🤔", muted: true },
+    { name: "Vous", status: "😰", muted: true },
+    { name: "Stagiaire", status: "👀", muted: false },
+    { name: "RH_Sandrine", status: "☕", muted: true },
+  ];
+  const [time, setTime] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setTime(t => t + 1), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const mins = String(Math.floor(time / 60)).padStart(2, "0");
+  const secs = String(time % 60).padStart(2, "0");
+
+  return (
+    <div style={{ position: "absolute", inset: 0, background: "#1c1c1c", display: "flex", flexDirection: "column", padding: 16, gap: 8 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, flex: 1 }}>
+        {participants.map(p => (
+          <div key={p.name} style={{ background: "#2a2a2a", borderRadius: 6, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, border: p.name === "Vous" ? "2px solid #2d8cff" : "1px solid #333", position: "relative", minHeight: 60 }}>
+            <div style={{ fontSize: "clamp(18px,3vw,32px)" }}>{p.status}</div>
+            <div style={{ color: "#e0e0e0", fontSize: "clamp(7px,1vw,11px)", textAlign: "center" }}>{p.name}</div>
+            {p.muted && <div style={{ position: "absolute", bottom: 4, right: 4, background: "#ff3b3b", borderRadius: "50%", width: 14, height: 14, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8 }}>🔇</div>}
+          </div>
+        ))}
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0" }}>
+        <div style={{ color: "#999", fontSize: "clamp(8px,1vw,12px)" }}>Réunion hebdo — {mins}:{secs}</div>
+        <div style={{ color: "#ff3b3b", fontSize: "clamp(8px,1vw,11px)" }}>🔇 Vous êtes en sourdine depuis le début</div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── LinkedIn Cringe ─────────────────────────────────────────── */
+function LinkedInCringeWallpaper() {
+  const posts = [
+    { user: "Patrick M. 🚀", title: "CEO | Visionnaire | Disrupteur", text: "J'ai licencié 200 personnes aujourd'hui. La leçon ? Toujours être reconnaissant. 🙏", likes: "47.2k", comments: "2.1k" },
+    { user: "Sandrine D. 💼", title: "Chief Happiness Officer", text: "Premier jour dans mon nouveau bureau à domicile. Humbled. Blessed. GRATEFUL. La vraie réussite c'est d'être heureux 😭", likes: "12.8k", comments: "891" },
+    { user: "Kevin L. ⚡", title: "Entrepreneur | Ex-GAFA | Pivot", text: "À 23 ans j'ai tout perdu. À 24 ans j'avais un yacht. La différence ? Le mindset. 🧠", likes: "89k", comments: "4.2k" },
+  ];
+
+  return (
+    <div style={{ position: "absolute", inset: 0, background: "#f3f6f8", overflowY: "hidden", padding: "12px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
+      <div style={{ background: "#0077b5", borderRadius: 4, padding: "6px 12px", color: "#fff", fontSize: "clamp(10px,1.4vw,16px)", fontWeight: "bold", textAlign: "center" }}>LinkedIn</div>
+      {posts.map(p => (
+        <div key={p.user} style={{ background: "#fff", borderRadius: 6, padding: 10, border: "1px solid #e0e0e0", boxShadow: "0 1px 4px rgba(0,0,0,0.08)" }}>
+          <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 6 }}>
+            <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#0077b5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>👤</div>
+            <div>
+              <div style={{ fontSize: "clamp(8px,1vw,12px)", fontWeight: "bold", color: "#1d2226" }}>{p.user}</div>
+              <div style={{ fontSize: "clamp(7px,0.9vw,10px)", color: "#666" }}>{p.title}</div>
+            </div>
+          </div>
+          <div style={{ fontSize: "clamp(7px,0.95vw,11px)", color: "#1d2226", lineHeight: 1.4, marginBottom: 6 }}>{p.text}</div>
+          <div style={{ fontSize: "clamp(6px,0.8vw,10px)", color: "#888" }}>👍 {p.likes} · 💬 {p.comments} commentaires</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ─── Jira Ticket ─────────────────────────────────────────────── */
+function JiraTicketWallpaper() {
+  const tickets = [
+    { id: "PROJ-4269", title: "Définir les critères d'acceptance", status: "En cours", points: 3, assignee: "Vous", priority: "🔴" },
+    { id: "PROJ-4270", title: "Réunion de refinement du backlog", status: "Todo", points: 1, assignee: "Toute l'équipe", priority: "🟡" },
+    { id: "PROJ-4271", title: "Fix bug prod critique (depuis 3 sprints)", status: "Bloqué", points: 13, assignee: "???", priority: "🔴" },
+    { id: "PROJ-4268", title: "Mettre à jour la doc (si le temps)", status: "Annulé", points: 2, assignee: "—", priority: "🟢" },
+  ];
+  const statusColors: Record<string, string> = { "En cours": "#0065ff", "Todo": "#555", "Bloqué": "#ff5630", "Annulé": "#888" };
+
+  return (
+    <div style={{ position: "absolute", inset: 0, background: "#0052cc", padding: 16, display: "flex", flexDirection: "column", gap: 10 }}>
+      <div style={{ color: "#fff", fontSize: "clamp(10px,1.5vw,18px)", fontWeight: "bold" }}>🎫 Sprint 47 — PROJ</div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {tickets.map(t => (
+          <div key={t.id} style={{ background: "rgba(255,255,255,0.92)", borderRadius: 4, padding: "8px 12px", display: "flex", alignItems: "center", gap: 10, justifyContent: "space-between" }}>
+            <div style={{ display: "flex", gap: 8, alignItems: "center", flex: 1, minWidth: 0 }}>
+              <span style={{ fontSize: 12 }}>{t.priority}</span>
+              <div>
+                <div style={{ fontSize: "clamp(7px,0.9vw,11px)", color: "#0052cc", fontWeight: "bold" }}>{t.id}</div>
+                <div style={{ fontSize: "clamp(8px,1vw,12px)", color: "#1a1a1a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "clamp(100px,18vw,220px)" }}>{t.title}</div>
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: 6, alignItems: "center", flexShrink: 0 }}>
+              <span style={{ background: statusColors[t.status], color: "#fff", borderRadius: 3, padding: "1px 6px", fontSize: "clamp(6px,0.8vw,10px)", whiteSpace: "nowrap" }}>{t.status}</span>
+              <span style={{ background: "#e0e0e0", borderRadius: "50%", width: 20, height: 20, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "clamp(7px,0.9vw,11px)", fontWeight: "bold" }}>{t.points}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div style={{ color: "rgba(255,255,255,0.5)", fontSize: "clamp(7px,0.8vw,10px)", marginTop: "auto" }}>Vélocité estimée: 24 pts · Réalisée: 3 pts · Sprint termine dans 2 jours</div>
+    </div>
+  );
+}
+
+/* ─── Microwave Office ────────────────────────────────────────── */
+function MicrowaveOfficeWallpaper() {
+  const [seconds, setSeconds] = useState(180);
+  const [angry, setAngry] = useState(false);
+  useEffect(() => {
+    const id = setInterval(() => {
+      setSeconds(s => {
+        if (s <= 0) { setAngry(a => !a); return 180; }
+        return s - 1;
+      });
+    }, 100);
+    return () => clearInterval(id);
+  }, []);
+  const mins = String(Math.floor(seconds / 60)).padStart(2, "0");
+  const secs = String(seconds % 60).padStart(2, "0");
+
+  return (
+    <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, #e8e0c8 0%, #ccc0a0 100%)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 20 }}>
+      <div style={{ fontSize: "clamp(30px,6vw,72px)", filter: angry ? "hue-rotate(180deg)" : "none", transition: "filter 0.5s" }}>🐟</div>
+      <div style={{ background: "#333", borderRadius: 8, padding: "12px 24px", color: "#00ff88", fontFamily: "monospace", fontSize: "clamp(18px,3vw,40px)", letterSpacing: 4 }}>{mins}:{secs}</div>
+      <div style={{ color: "#5a4020", fontSize: "clamp(9px,1.2vw,14px)", textAlign: "center", maxWidth: 280 }}>
+        {angry ? "⚠️ ODEUR DE POISSON DÉTECTÉE ⚠️" : "Réchauffage poisson en cours..."}
+      </div>
+      <div style={{ position: "absolute", bottom: 16, color: "#9a7a50", fontSize: "clamp(7px,0.9vw,11px)", textAlign: "center" }}>
+        Cuisine · Niveau 3 · Micro-ondes du bureau<br/>
+        <span style={{ color: "#cc4400" }}>3 collègues mécontents</span>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Dark Mode Extreme ───────────────────────────────────────── */
+function DarkModeExtremeWallpaper() {
+  return (
+    <div style={{ position: "absolute", inset: 0, background: "#000000", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16 }}>
+      <div style={{ color: "#0a0a0a", fontSize: "clamp(24px,4vw,56px)" }}>🕳️</div>
+      <div style={{ color: "#0d0d0d", fontSize: "clamp(10px,1.5vw,18px)", textAlign: "center" }}>
+        #000000
+      </div>
+      <div style={{ color: "#080808", fontSize: "clamp(8px,1vw,12px)" }}>Pour toujours.</div>
+      <div style={{ position: "absolute", bottom: 16, color: "#050505", fontSize: "clamp(7px,0.8vw,10px)" }}>
+        Contraste: 1.0001 : 1 · WCAG: ✗ · Parfait.
+      </div>
+    </div>
+  );
+}
+
+/* ─── Crypto Bro ──────────────────────────────────────────────── */
+function CryptoBroWallpaper() {
+  const coins = [
+    { name: "MOON", price: "0.000042", change: "+420%", emoji: "🚀" },
+    { name: "RUGPULL", price: "0.00000001", change: "-99.9%", emoji: "💀" },
+    { name: "WAGMI", price: "69,420", change: "+69%", emoji: "🪙" },
+    { name: "NGMI", price: "0.000001", change: "-88%", emoji: "📉" },
+  ];
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setTick(t => t + 1), 800);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, #000 0%, #0a0a00 100%)", padding: 16, display: "flex", flexDirection: "column", gap: 10 }}>
+      <div style={{ color: "#ffd700", fontSize: "clamp(10px,1.5vw,18px)", fontWeight: "bold", textAlign: "center" }}>
+        GM ser 🌅 · NFA · DYOR {tick % 2 === 0 ? "🚀" : "🌕"}
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        {coins.map(c => (
+          <div key={c.name} style={{ background: "rgba(255,215,0,0.05)", border: "1px solid rgba(255,215,0,0.2)", borderRadius: 6, padding: "8px 12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <span style={{ fontSize: "clamp(14px,2vw,22px)" }}>{c.emoji}</span>
+              <span style={{ color: "#ffd700", fontSize: "clamp(9px,1.1vw,14px)", fontWeight: "bold" }}>{c.name}</span>
+            </div>
+            <div style={{ textAlign: "right" }}>
+              <div style={{ color: "#cc9900", fontSize: "clamp(8px,1vw,12px)" }}>${c.price}</div>
+              <div style={{ color: c.change.startsWith("+") ? "#00ff88" : "#ff4444", fontSize: "clamp(7px,0.9vw,11px)" }}>{c.change}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div style={{ color: "rgba(255,215,0,0.3)", fontSize: "clamp(6px,0.8vw,10px)", textAlign: "center", marginTop: "auto" }}>
+        Not financial advice. This is not financial advice. NFA. DYOR. Wen lambo.
+      </div>
+    </div>
+  );
+}
+
+/* ─── GDPR Popup ──────────────────────────────────────────────── */
+function GdprPopupWallpaper() {
+  const [dismissed, setDismissed] = useState<number[]>([]);
+  const popups = [
+    { id: 0, top: "5%", left: "5%", title: "Nous utilisons des cookies 🍪", partners: 847, zIndex: 10 },
+    { id: 1, top: "15%", left: "20%", title: "Vos préférences publicitaires", partners: 2341, zIndex: 11 },
+    { id: 2, top: "25%", left: "10%", title: "Consentement RGPD requis", partners: 156, zIndex: 12 },
+    { id: 3, top: "35%", left: "30%", title: "Paramètres de confidentialité", partners: 423, zIndex: 13 },
+  ];
+
+  return (
+    <div style={{ position: "absolute", inset: 0, background: "#fff", overflow: "hidden" }}>
+      <div style={{ padding: 16, color: "#888", fontSize: "clamp(8px,1vw,12px)" }}>Ce site respecte votre vie privée.</div>
+      {popups.filter(p => !dismissed.includes(p.id)).map(p => (
+        <div key={p.id} style={{ position: "absolute", top: p.top, left: p.left, background: "#fff", border: "1px solid #ccc", borderRadius: 6, boxShadow: "0 4px 20px rgba(0,0,0,0.15)", padding: 12, zIndex: p.zIndex, width: "clamp(180px,28vw,300px)" }}>
+          <div style={{ fontSize: "clamp(8px,1vw,13px)", fontWeight: "bold", color: "#212121", marginBottom: 6 }}>{p.title}</div>
+          <div style={{ fontSize: "clamp(7px,0.85vw,10px)", color: "#666", marginBottom: 8 }}>
+            Ce site et ses {p.partners} partenaires de confiance utilisent des cookies pour personnaliser les publicités.
+          </div>
+          <div style={{ display: "flex", gap: 6 }}>
+            <button onClick={() => setDismissed(d => [...d, p.id])} style={{ background: "#007bff", color: "#fff", border: "none", borderRadius: 4, padding: "4px 10px", cursor: "pointer", fontSize: "clamp(7px,0.85vw,10px)" }}>Tout accepter</button>
+            <button style={{ background: "#f0f0f0", color: "#888", border: "1px solid #ddd", borderRadius: 4, padding: "4px 6px", cursor: "not-allowed", fontSize: "clamp(6px,0.75vw,9px)", opacity: 0.5 }}>Refuser</button>
+          </div>
+        </div>
+      ))}
+      {dismissed.length === popups.length && (
+        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ textAlign: "center" }}>
+            <div style={{ fontSize: 40 }}>🍪</div>
+            <div style={{ color: "#888", fontSize: "clamp(9px,1.2vw,14px)", marginTop: 8 }}>Merci d'avoir accepté.<br/>Un nouveau popup arrive.</div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─── Teams Mute ──────────────────────────────────────────────── */
+function TeamsMuteWallpaper() {
+  const [minutes, setMinutes] = useState(0);
+  const [speaking, setSpeaking] = useState(false);
+  useEffect(() => {
+    const id = setInterval(() => setMinutes(m => m + 1), 2000);
+    const id2 = setInterval(() => setSpeaking(s => !s), 1500);
+    return () => { clearInterval(id); clearInterval(id2); };
+  }, []);
+
+  const attendees = ["Vous 🔇", "Manager", "PO", "Dev 1", "Dev 2", "Quelqu'un d'inconnu"];
+
+  return (
+    <div style={{ position: "absolute", inset: 0, background: "#201f3c", display: "flex", flexDirection: "column", gap: 12, padding: 16 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ color: "#f3f2f1", fontSize: "clamp(9px,1.2vw,14px)", fontWeight: "bold" }}>Réunion hebdo — {minutes} min</div>
+        <div style={{ background: "#c4314b", color: "#fff", borderRadius: 4, padding: "2px 8px", fontSize: "clamp(7px,0.9vw,11px)" }}>🔴 En direct</div>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, flex: 1 }}>
+        {attendees.map(a => (
+          <div key={a} style={{ background: a === "Vous 🔇" ? "#3a3870" : "#2d2b50", borderRadius: 6, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, border: a === "Vous 🔇" ? "2px solid #c4314b" : "1px solid #4b53bc", minHeight: 50 }}>
+            <div style={{ fontSize: "clamp(12px,2vw,24px)" }}>{a === "Vous 🔇" ? (speaking ? "🗣️" : "😶") : "👤"}</div>
+            <div style={{ color: "#a8a8b8", fontSize: "clamp(6px,0.8vw,10px)", textAlign: "center" }}>{a}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ background: "#c4314b", borderRadius: 6, padding: "8px 12px", textAlign: "center" }}>
+        <div style={{ color: "#fff", fontSize: "clamp(9px,1.1vw,14px)", fontWeight: "bold" }}>🔇 VOUS ÊTES EN SOURDINE</div>
+        <div style={{ color: "rgba(255,255,255,0.7)", fontSize: "clamp(7px,0.9vw,11px)" }}>Vous parlez depuis {minutes} min. Personne ne vous entend.</div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Regex Hell ──────────────────────────────────────────────── */
+function RegexHellWallpaper() {
+  const regexes = [
+    { pattern: "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", label: "email (probablement)", status: "✓" },
+    { pattern: "^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{12,}$", label: "mot de passe sécurisé", status: "✓" },
+    { pattern: "^(\\+33|0)[1-9]([-. ]?[0-9]{2}){4}$", label: "téléphone FR", status: "?" },
+    { pattern: "(?<!\\\\)(?:\\\\\\\\)*(?:(?!\\[)[^\\[\\]\\\\]|(?:\\[(?:[^\\]\\\\]|\\\\.)*\\]))+", label: "???", status: "💀" },
+    { pattern: "^(?:(?:31(\\/|-|\\.)(?:0?[13578]|1[02]))\\1|(?:(?:29|30)(\\/|-|\\.)(?:0?[13-9]|1[0-2])\\2))", label: "date FR (non)", status: "💀" },
+  ];
+  const [highlighted, setHighlighted] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setHighlighted(h => (h + 1) % regexes.length), 1200);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, #0d001a 0%, #060010 100%)", padding: 16, display: "flex", flexDirection: "column", gap: 8 }}>
+      <div style={{ color: "#cc44ff", fontSize: "clamp(10px,1.4vw,16px)", fontWeight: "bold" }}>⚡ Expression Régulière Hell</div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        {regexes.map((r, i) => (
+          <div key={i} style={{ background: i === highlighted ? "rgba(204,68,255,0.1)" : "rgba(255,255,255,0.03)", border: `1px solid ${i === highlighted ? "#cc44ff" : "rgba(204,68,255,0.2)"}`, borderRadius: 4, padding: "6px 10px" }}>
+            <div style={{ color: "#cc44ff", fontFamily: "monospace", fontSize: "clamp(6px,0.75vw,9px)", wordBreak: "break-all", marginBottom: 2 }}>{r.pattern}</div>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <div style={{ color: "rgba(204,68,255,0.6)", fontSize: "clamp(6px,0.8vw,10px)" }}>{r.label}</div>
+              <div style={{ fontSize: "clamp(8px,1vw,12px)" }}>{r.status}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div style={{ color: "rgba(204,68,255,0.3)", fontSize: "clamp(6px,0.8vw,10px)", marginTop: "auto", textAlign: "center" }}>
+        Copié de StackOverflow. Fonctionne. Ne pas toucher.
+      </div>
+    </div>
+  );
+}
+
+/* ─── 404 Not Found ───────────────────────────────────────────── */
+function NotFound404Wallpaper() {
+  const suggestions = [
+    "Avez-vous vérifié l'URL ?",
+    "La page a peut-être été déplacée.",
+    "Ou supprimée.",
+    "Probablement supprimée.",
+    "Définitivement supprimée.",
+    "Comme vos données.",
+  ];
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setIdx(i => (i + 1) % suggestions.length), 1800);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <div style={{ position: "absolute", inset: 0, background: "#fafafa", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16 }}>
+      <div style={{ fontSize: "clamp(40px,8vw,100px)", fontWeight: "bold", color: "#eeeeee", lineHeight: 1 }}>404</div>
+      <div style={{ color: "#bbbbbb", fontSize: "clamp(10px,1.5vw,18px)" }}>Page Introuvable</div>
+      <div style={{ color: "#cccccc", fontSize: "clamp(8px,1.1vw,13px)", textAlign: "center", minHeight: 20 }}>{suggestions[idx]}</div>
+      <div style={{ background: "#ff6b6b", color: "#fff", borderRadius: 4, padding: "6px 16px", fontSize: "clamp(8px,1vw,12px)", cursor: "default" }}>
+        Retour à l'accueil
+      </div>
+      <div style={{ position: "absolute", bottom: 16, color: "#dddddd", fontSize: "clamp(7px,0.8vw,10px)" }}>
+        HTTP 404 · Ce fond d'écran n'existe pas non plus.
+      </div>
     </div>
   );
 }
