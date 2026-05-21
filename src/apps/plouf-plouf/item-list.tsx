@@ -25,6 +25,13 @@ export function ItemList({
     el?.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }, [highlightedIndex]);
 
+  // Scroll to winner on mount / mode switch (after draw is complete).
+  useEffect(() => {
+    if (highlightedIndex >= 0 || winnerIndex < 0) return;
+    const el = listRef.current?.children[winnerIndex] as HTMLElement | undefined;
+    el?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [winnerIndex]);
+
   if (games.length === 0) {
     return (
       <div

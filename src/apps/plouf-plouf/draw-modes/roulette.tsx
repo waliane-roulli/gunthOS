@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useCallback } from "react";
 
 interface RouletteWheelProps {
   games: string[];
@@ -25,32 +25,28 @@ export function RouletteWheel({
   const stripRef = useRef<HTMLDivElement>(null);
   const currentYRef = useRef(0);
 
+  const snapToIndex = useCallback((index: number) => {
+    const strip = stripRef.current;
+    if (!strip || games.length === 0) return;
+    const band = 2;
+    const targetReal = band * games.length + index;
+    const targetY = CENTER - targetReal * STEP;
+    strip.style.transform = `translateY(${targetY}px)`;
+    currentYRef.current = targetY;
+  }, [games.length]);
+
   // Snap to position — no interpolation during drawing.
   // Animation would lag because ticks arrive faster than the animation duration.
   useEffect(() => {
-    if (highlightedIndex < 0 || games.length === 0) return;
+    snapToIndex(highlightedIndex);
+  }, [highlightedIndex, isDrawing, snapToIndex]);
 
-    const strip = stripRef.current;
-    if (!strip) return;
-
-    const band = 2;
-    const targetReal = band * games.length + highlightedIndex;
-    const targetY = CENTER - targetReal * STEP;
-
-    strip.style.transform = `translateY(${targetY}px)`;
-    currentYRef.current = targetY;
-  }, [highlightedIndex, isDrawing, games.length]);
-
-  // Initial position
+  // Show winner on mount / mode switch (after draw is complete).
   useEffect(() => {
-    if (games.length === 0) return;
-    const strip = stripRef.current;
-    if (!strip) return;
-    const band = 2;
-    const y = CENTER - band * games.length * STEP;
-    strip.style.transform = `translateY(${y}px)`;
-    currentYRef.current = y;
-  }, [games.length]);
+    if (highlightedIndex >= 0 || winnerIndex < 0) return;
+    snapToIndex(winnerIndex);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [winnerIndex, snapToIndex]);
 
   if (games.length === 0) {
     return (

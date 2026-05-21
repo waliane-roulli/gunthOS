@@ -36,6 +36,13 @@ export function HorizontalPicker({
     el?.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }, [highlightedIndex]);
 
+  // Scroll to winner on mount / mode switch (after draw is complete).
+  useEffect(() => {
+    if (highlightedIndex >= 0 || winnerIndex < 0) return;
+    const el = containerRef.current?.children[winnerIndex] as HTMLElement | undefined;
+    el?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [winnerIndex]);
+
   if (games.length === 0) {
     return (
       <div
@@ -126,13 +133,6 @@ export function HorizontalPicker({
         })}
       </div>
 
-      {/* Winner name display */}
-      {winnerIndex >= 0 && (
-        <div className="text-center mt-3 font-bold text-xl animate-[pop_0.5s_ease] text-[var(--t-accent)]"
-          style={{ fontFamily: "var(--t-font-display)" }}>
-          ★ {games[winnerIndex]} ★
-        </div>
-      )}
     </div>
   );
 }
