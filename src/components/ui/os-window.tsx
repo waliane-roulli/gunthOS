@@ -117,8 +117,6 @@ export function OsWindow({ win, children }: OsWindowProps) {
     };
   }, [win.id, moveWindow, resizeWindow]);
 
-  if (win.state === "minimized") return null;
-
   const windowStyle: React.CSSProperties = isMaximized
     ? {
         position: "fixed",
@@ -146,6 +144,7 @@ export function OsWindow({ win, children }: OsWindowProps) {
     <div
       style={{
         ...windowStyle,
+        ...(win.state === "minimized" ? { display: "none" } : {}),
         backgroundColor: "var(--t-glass-bg)",
         backdropFilter: "var(--t-glass-blur)",
         WebkitBackdropFilter: "var(--t-glass-blur)",

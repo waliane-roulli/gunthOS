@@ -639,7 +639,6 @@ export function WindowLayer() {
   return (
     <>
       {windows.map((win) => {
-        if (win.state === "minimized") return null;
         return (
           <OsWindow key={win.id} win={win}>
             <WindowContent win={win} />
