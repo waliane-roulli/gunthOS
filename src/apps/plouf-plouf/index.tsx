@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import type { AppProps } from "@/types";
 
 const PloufApp = dynamic(
-  () => import("@/components/plouf-plouf/plouf-app").then((m) => ({ default: m.PloufApp })),
+  () => import("./plouf-app").then((m) => ({ default: m.PloufApp })),
   { ssr: false }
 );
 
