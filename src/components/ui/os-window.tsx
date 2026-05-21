@@ -25,7 +25,7 @@ const MIN_H = 160;
 export function OsWindow({ win, children }: OsWindowProps) {
   const { closeWindow, minimizeWindow, maximizeWindow, focusWindow, moveWindow, resizeWindow } = useWindowActions();
   const { activeWindowId } = useWindowState();
-  const { playWindowClose, playWindowMinimize, playWindowOpen } = useSoundContext();
+  const { playWindowClose, playWindowMinimize, playWindowOpen, stopAppSounds } = useSoundContext();
 
   const dragging = useRef(false);
   const dragOffset = useRef({ x: 0, y: 0 });
@@ -202,7 +202,7 @@ export function OsWindow({ win, children }: OsWindowProps) {
           <RetroTitlebarBtn size={20} isActive={isActive} onClick={(e) => { e.stopPropagation(); playWindowOpen(); maximizeWindow(win.id); }} title={isMaximized ? "Restaurer" : "Agrandir"}>
             {isMaximized ? "❐" : "□"}
           </RetroTitlebarBtn>
-          <RetroTitlebarBtn size={20} isActive={isActive} close onClick={(e) => { e.stopPropagation(); playWindowClose(); closeWindow(win.id); }} title="Fermer">✕</RetroTitlebarBtn>
+          <RetroTitlebarBtn size={20} isActive={isActive} close onClick={(e) => { e.stopPropagation(); playWindowClose(); stopAppSounds(win.appSlug); closeWindow(win.id); }} title="Fermer">✕</RetroTitlebarBtn>
         </div>
       </div>
 

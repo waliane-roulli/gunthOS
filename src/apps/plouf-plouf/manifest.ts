@@ -10,5 +10,6 @@ export const manifest: AppManifest = {
   showInLauncher: true,
   href: "/plouf-plouf",
   badge: "NEW",
+  audioChannels: ["music"],
   component: PloufPloufApp,
 };

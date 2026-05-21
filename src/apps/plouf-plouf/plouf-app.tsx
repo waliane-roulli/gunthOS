@@ -8,7 +8,7 @@ import { RetroTitlebarBtn } from "@/components/ui/retro-titlebar-btn";
 import { RetroInput } from "@/components/ui/retro-input";
 import { useItemList } from "@/lib/hooks/use-item-list";
 import { useDrawing } from "@/lib/hooks/use-drawing";
-import { useSound } from "@/lib/hooks/use-sound";
+import { useSoundContext } from "@/lib/contexts/sound-context";
 import { useCelebration } from "@/lib/hooks/use-celebration";
 import { useCelebrationEffects } from "@/lib/hooks/use-celebration-effects";
 import { useLocalStorage } from "@/lib/hooks/use-local-storage";
@@ -22,7 +22,7 @@ const WATER_DROP = <WaterDropSVG />;
 export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
   const [inputValue, setInputValue] = useState("");
   const [optionsOpen, setOptionsOpen] = useState(false);
-  const [muted, setMuted] = useState(false);
+  const [sfxMuted, setSfxMuted] = useState(false);
   const [musicMuted, setMusicMuted] = useState(false);
   const [options, setOptions] = useLocalStorage<CelebrationOptions>(
     "ploufPloufOptions",
@@ -43,30 +43,34 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
 
   const visitorCount = useVisitorCount();
   const { games, inputError, addGame, removeGame, clearGames, importGames } = useItemList();
-  const sound = useSound(muted);
+  const sound = useSoundContext();
   const { canvasRef, start: startCelebration, stop: stopCelebration } = useCelebration();
 
-  const drawing = useDrawing(games.length, sound.playBip, undefined);
+  const playBip = useCallback(() => { if (!sfxMuted) sound.playBip(); }, [sfxMuted, sound]);
+  const drawing = useDrawing(games.length, playBip, undefined);
 
   const [winnerName, setWinnerName] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
 
-  // Démarre la musique au premier geste, coupe à la fermeture
+  // Stoppe la musique au démontage (fermeture de fenêtre).
   useEffect(() => {
-    sound.setOnFirstInit(() => { sound.startPloufPlouf(); });
     return () => { sound.stopPloufPlouf(); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Sync musicMuted avec la musique d'ambiance
+  // Démarre / stoppe la musique selon le mute, avec cleanup garanti au démontage.
   useEffect(() => {
     if (musicMuted) {
       sound.stopPloufPlouf();
     } else {
+      sound.setOnFirstInit(() => { sound.startPloufPlouf(); });
       sound.startPloufPlouf();
     }
+    return () => { sound.stopPloufPlouf(); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [musicMuted]);
+
+  const soundForCelebration = { ...sound, playVictory: () => { if (!sfxMuted) sound.playVictory(); } };
 
   const { trigger: triggerCelebration } = useCelebrationEffects({
     flashRef,
@@ -75,7 +79,7 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
     winnerSubRef,
     marqueeTopRef,
     marqueeBottomRef,
-    sound,
+    sound: soundForCelebration,
     startCelebration,
   });
 
@@ -88,32 +92,32 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
       setWinnerName(null);
       drawing.reset();
     } else if (inputError !== "duplicate") {
-      sound.playPop();
+      if (!sfxMuted) sound.playPop();
     }
-  }, [sound, addGame, inputValue, inputError, drawing]);
+  }, [sound, sfxMuted, addGame, inputValue, inputError, drawing]);
 
   const handleRemove = useCallback(
     (index: number) => {
       if (drawing.isDrawing) return;
       sound.init();
-      sound.playDelete();
+      if (!sfxMuted) sound.playDelete();
       removeGame(index);
       setShowResult(false);
       setWinnerName(null);
       drawing.reset();
     },
-    [drawing, sound, removeGame]
+    [drawing, sound, sfxMuted, removeGame]
   );
 
   const handleClear = useCallback(() => {
     if (drawing.isDrawing || games.length === 0) return;
     sound.init();
-    sound.playDelete();
+    if (!sfxMuted) sound.playDelete();
     clearGames();
     setShowResult(false);
     setWinnerName(null);
     drawing.reset();
-  }, [drawing, sound, clearGames, games.length]);
+  }, [drawing, sound, sfxMuted, clearGames, games.length]);
 
   const handlePlouf = useCallback(async () => {
     if (drawing.isDrawing || games.length < 2) return;
@@ -142,12 +146,12 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
   const handleRemoveWinner = useCallback(() => {
     if (drawing.winnerIndex < 0 || drawing.isDrawing) return;
     sound.init();
-    sound.playDelete();
+    if (!sfxMuted) sound.playDelete();
     removeGame(drawing.winnerIndex);
     drawing.reset();
     setShowResult(false);
     setWinnerName(null);
-  }, [drawing, sound, removeGame]);
+  }, [drawing, sound, sfxMuted, removeGame]);
 
   const handleExport = useCallback(() => {
     if (games.length === 0) return;
@@ -291,8 +295,8 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
           >
             <span>🎮 PloufPlouf.exe — Tirage au sort</span>
             <div className="flex gap-0.5">
-              <RetroTitlebarBtn onClick={() => { sound.init(); setMuted((m) => !m); }} title="Couper les sons UI">
-                {muted ? "🔇" : "🔊"}
+              <RetroTitlebarBtn onClick={() => { sound.init(); setSfxMuted((m) => !m); }} title="Couper les effets sonores">
+                {sfxMuted ? "🔇" : "🔊"}
               </RetroTitlebarBtn>
               <RetroTitlebarBtn onClick={() => { sound.init(); setMusicMuted((m) => !m); }} title="Couper la musique">
                 {musicMuted ? "🎵" : "🎶"}
@@ -316,8 +320,8 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
               borderBottomColor: "var(--t-border-dark)",
             }}
           >
-            <RetroTitlebarBtn onClick={() => { sound.init(); setMuted((m) => !m); }} title="Couper les sons UI">
-              {muted ? "🔇" : "🔊"}
+            <RetroTitlebarBtn onClick={() => { sound.init(); setSfxMuted((m) => !m); }} title="Couper les effets sonores">
+              {sfxMuted ? "🔇" : "🔊"}
             </RetroTitlebarBtn>
             <RetroTitlebarBtn onClick={() => { sound.init(); setMusicMuted((m) => !m); }} title="Couper la musique">
               {musicMuted ? "🎵" : "🎶"}

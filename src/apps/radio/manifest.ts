@@ -11,4 +11,5 @@ export const manifest: AppManifest = {
   href: "/radio",
   badge: "NEW",
   component: RadioApp,
+  persistAudio: true,
 };

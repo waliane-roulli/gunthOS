@@ -1,56 +1,58 @@
 "use client";
 
 import { useRef, useCallback } from "react";
+import {
+  getContext,
+  getMasterGain,
+  setMasterVolume,
+  prefetch,
+  closeContext,
+} from "@/lib/audio/engine";
+import { getChannel, clearChannels, silenceChannel } from "@/lib/audio/channel";
+import { AudioPlayer } from "@/lib/audio/player";
+import { APP_REGISTRY } from "@/apps";
 
-// Précharge Boot.mp3 dans le cache HTTP dès le chargement du module (client uniquement)
-const bootRawBufferPromise: Promise<ArrayBuffer> =
-  typeof window !== "undefined"
-    ? fetch("/sounds/boot.mp3").then((r) => r.arrayBuffer()).catch(() => new ArrayBuffer(0))
-    : Promise.resolve(new ArrayBuffer(0));
+// Précharge boot dès le chargement du module (client uniquement)
+if (typeof window !== "undefined") prefetch("/sounds/boot.mp3");
+
+const supportsOpus =
+  typeof window !== "undefined" &&
+  document.createElement("audio").canPlayType("audio/ogg; codecs=opus") !== "";
 
 export function useSound(muted: boolean) {
-  const ctxRef = useRef<AudioContext | null>(null);
-  const masterGainRef = useRef<GainNode | null>(null);
-  const masterVolumeRef = useRef<number>(100);
-  const bootLoadPromiseRef = useRef<Promise<void> | null>(null);
   const onFirstInitRef = useRef<(() => void) | null>(null);
+  const initializedRef = useRef(false);
 
-  const init = useCallback(() => {
-    if (ctxRef.current) {
-      if (ctxRef.current.state === "suspended") ctxRef.current.resume();
-      return;
-    }
-    const ctx = new AudioContext();
-    const masterGain = ctx.createGain();
-    masterGain.gain.value = masterVolumeRef.current / 100;
-    masterGain.connect(ctx.destination);
-    masterGainRef.current = masterGain;
-    ctxRef.current = ctx;
-    onFirstInitRef.current?.();
-    onFirstInitRef.current = null;
-    bootLoadPromiseRef.current = bootRawBufferPromise
-      .then((ab) => ab.byteLength ? ctx.decodeAudioData(ab.slice(0)) : Promise.reject())
-      .then((buf) => { bootBufferRef.current = buf; })
-      .catch(() => {});
-    fetch("/sounds/run.mp3")
-      .then((r) => r.arrayBuffer())
-      .then((ab) => ctx.decodeAudioData(ab))
-      .then((buf) => { runBufferRef.current = buf; })
-      .catch(() => {});
-    fetch("/sounds/access_disk.mp3")
-      .then((r) => r.arrayBuffer())
-      .then((ab) => ctx.decodeAudioData(ab))
-      .then((buf) => { accessDiskBufferRef.current = buf; })
-      .catch(() => {});
-  }, []);
+  // Players pour les sons longs (un par type)
+  const bootPlayerRef = useRef<AudioPlayer | null>(null);
+  const runPlayerRef = useRef<AudioPlayer | null>(null);
+  const accessDiskPlayerRef = useRef<AudioPlayer | null>(null);
+  const ploufPlayerRef = useRef<AudioPlayer | null>(null);
+
+
+  // ── Helpers internes ────────────────────────────────────────────────────────
 
   const getCtx = useCallback(() => {
     if (muted) return null;
-    if (!ctxRef.current) init();
-    return ctxRef.current;
-  }, [muted, init]);
+    if (!initializedRef.current) {
+      initializedRef.current = true;
+      getContext(); // crée le singleton
+      prefetch("/sounds/run.mp3");
+      prefetch("/sounds/access_disk.mp3");
+      const ploufUrl = supportsOpus ? "/sounds/ploufplouf.opus" : "/sounds/ploufplouf.mp3";
+      prefetch(ploufUrl);
+      onFirstInitRef.current?.();
+      onFirstInitRef.current = null;
+    }
+    return getContext();
+  }, [muted]);
 
-  // ── Sons UI synthétiques (inchangés) ────────────────────────────────────────
+  const masterNode = useCallback(() => {
+    getCtx();
+    return getMasterGain();
+  }, [getCtx]);
+
+  // ── Sons synthétiques ────────────────────────────────────────────────────────
 
   const playTone = useCallback(
     (frequency: number, duration: number, type: OscillatorType, volume: number) => {
@@ -64,12 +66,12 @@ export function useSound(muted: boolean) {
         gain.gain.setValueAtTime(volume, ctx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
         osc.connect(gain);
-        gain.connect(masterGainRef.current ?? ctx.destination);
+        gain.connect(masterNode());
         osc.start();
         osc.stop(ctx.currentTime + duration);
       } catch {}
     },
-    [getCtx]
+    [getCtx, masterNode]
   );
 
   const playNoise = useCallback(
@@ -92,12 +94,12 @@ export function useSound(muted: boolean) {
         gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
         source.connect(filter);
         filter.connect(gain);
-        gain.connect(masterGainRef.current ?? ctx.destination);
+        gain.connect(masterNode());
         source.start();
         source.stop(ctx.currentTime + duration);
       } catch {}
     },
-    [getCtx]
+    [getCtx, masterNode]
   );
 
   const playPop = useCallback(() => playTone(1100, 0.12, "sine", 0.15), [playTone]);
@@ -117,11 +119,11 @@ export function useSound(muted: boolean) {
       gain.gain.setValueAtTime(0.09, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.14);
       osc.connect(gain);
-      gain.connect(masterGainRef.current ?? ctx.destination);
+      gain.connect(masterNode());
       osc.start();
       osc.stop(ctx.currentTime + 0.14);
     } catch {}
-  }, [getCtx]);
+  }, [getCtx, masterNode]);
 
   const playWindowClose = useCallback(() => {
     const ctx = getCtx();
@@ -135,11 +137,11 @@ export function useSound(muted: boolean) {
       gain.gain.setValueAtTime(0.09, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.17);
       osc.connect(gain);
-      gain.connect(masterGainRef.current ?? ctx.destination);
+      gain.connect(masterNode());
       osc.start();
       osc.stop(ctx.currentTime + 0.17);
     } catch {}
-  }, [getCtx]);
+  }, [getCtx, masterNode]);
 
   const playWindowMinimize = useCallback(() => {
     const ctx = getCtx();
@@ -153,11 +155,11 @@ export function useSound(muted: boolean) {
       gain.gain.setValueAtTime(0.07, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
       osc.connect(gain);
-      gain.connect(masterGainRef.current ?? ctx.destination);
+      gain.connect(masterNode());
       osc.start();
       osc.stop(ctx.currentTime + 0.12);
     } catch {}
-  }, [getCtx]);
+  }, [getCtx, masterNode]);
 
   const playModemDialup = useCallback(() => {
     const ctx = getCtx();
@@ -172,7 +174,7 @@ export function useSound(muted: boolean) {
       dialGain.gain.setValueAtTime(0.12, t + 0.4);
       dialGain.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
       dial.connect(dialGain);
-      dialGain.connect(masterGainRef.current ?? ctx.destination);
+      dialGain.connect(masterNode());
       dial.start(t);
       dial.stop(t + 0.5);
 
@@ -185,7 +187,7 @@ export function useSound(muted: boolean) {
         g.gain.setValueAtTime(0.1, t + 0.6 + i * 0.18);
         g.gain.exponentialRampToValueAtTime(0.001, t + 0.75 + i * 0.18);
         osc.connect(g);
-        g.connect(masterGainRef.current ?? ctx.destination);
+        g.connect(masterNode());
         osc.start(t + 0.6 + i * 0.18);
         osc.stop(t + 0.75 + i * 0.18);
       });
@@ -196,7 +198,7 @@ export function useSound(muted: boolean) {
         setTimeout(() => playNoise(0.2, 0.07, 2200), 470);
       }, 600 + freqs.length * 180);
     } catch {}
-  }, [getCtx, playNoise]);
+  }, [getCtx, masterNode, playNoise]);
 
   const playStartupChime = useCallback(() => {
     const ctx = getCtx();
@@ -219,55 +221,58 @@ export function useSound(muted: boolean) {
         gain.gain.linearRampToValueAtTime(0.18, t + start + 0.02);
         gain.gain.exponentialRampToValueAtTime(0.001, t + start + dur);
         osc.connect(gain);
-        gain.connect(masterGainRef.current ?? ctx.destination);
+        gain.connect(masterNode());
         osc.start(t + start);
         osc.stop(t + start + dur + 0.05);
       } catch {}
     });
-  }, [getCtx]);
+  }, [getCtx, masterNode]);
 
-  const playBiosBleep = useCallback((pattern: "ok" | "error" | "start" = "ok") => {
-    const ctx = getCtx();
-    if (!ctx) return;
-    const t = ctx.currentTime;
-    if (pattern === "ok") {
-      playTone(880, 0.08, "square", 0.1);
-    } else if (pattern === "error") {
-      [
-        { freq: 220, dur: 0.3, delay: 0 },
-        { freq: 220, dur: 0.3, delay: 0.4 },
-        { freq: 880, dur: 0.1, delay: 0.85 },
-      ].forEach(({ freq, dur, delay }) => {
-        try {
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.type = "square";
-          osc.frequency.setValueAtTime(freq, t + delay);
-          gain.gain.setValueAtTime(0.12, t + delay);
-          gain.gain.exponentialRampToValueAtTime(0.001, t + delay + dur);
-          osc.connect(gain);
-          gain.connect(masterGainRef.current ?? ctx.destination);
-          osc.start(t + delay);
-          osc.stop(t + delay + dur + 0.05);
-        } catch {}
-      });
-    } else if (pattern === "start") {
-      [0, 0.12].forEach((delay) => {
-        try {
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.type = "square";
-          osc.frequency.setValueAtTime(880, t + delay);
-          gain.gain.setValueAtTime(0.12, t + delay);
-          gain.gain.exponentialRampToValueAtTime(0.001, t + delay + 0.07);
-          osc.connect(gain);
-          gain.connect(masterGainRef.current ?? ctx.destination);
-          osc.start(t + delay);
-          osc.stop(t + delay + 0.1);
-        } catch {}
-      });
-    }
-  }, [getCtx, playTone]);
+  const playBiosBleep = useCallback(
+    (pattern: "ok" | "error" | "start" = "ok") => {
+      const ctx = getCtx();
+      if (!ctx) return;
+      const t = ctx.currentTime;
+      if (pattern === "ok") {
+        playTone(880, 0.08, "square", 0.1);
+      } else if (pattern === "error") {
+        [
+          { freq: 220, dur: 0.3, delay: 0 },
+          { freq: 220, dur: 0.3, delay: 0.4 },
+          { freq: 880, dur: 0.1, delay: 0.85 },
+        ].forEach(({ freq, dur, delay }) => {
+          try {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = "square";
+            osc.frequency.setValueAtTime(freq, t + delay);
+            gain.gain.setValueAtTime(0.12, t + delay);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + delay + dur);
+            osc.connect(gain);
+            gain.connect(masterNode());
+            osc.start(t + delay);
+            osc.stop(t + delay + dur + 0.05);
+          } catch {}
+        });
+      } else if (pattern === "start") {
+        [0, 0.12].forEach((delay) => {
+          try {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = "square";
+            osc.frequency.setValueAtTime(880, t + delay);
+            gain.gain.setValueAtTime(0.12, t + delay);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + delay + 0.07);
+            osc.connect(gain);
+            gain.connect(masterNode());
+            osc.start(t + delay);
+            osc.stop(t + delay + 0.1);
+          } catch {}
+        });
+      }
+    },
+    [getCtx, masterNode, playTone]
+  );
 
   const playVictory = useCallback(() => {
     const ctx = getCtx();
@@ -281,7 +286,7 @@ export function useSound(muted: boolean) {
       gain.gain.setValueAtTime(0.15, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
       osc.connect(gain);
-      gain.connect(masterGainRef.current ?? ctx.destination);
+      gain.connect(masterNode());
       osc.start();
       osc.stop(ctx.currentTime + 0.35);
     } catch {}
@@ -289,205 +294,132 @@ export function useSound(muted: boolean) {
     notes.forEach((freq, i) => {
       setTimeout(() => playTone(freq, 0.35, "sine", 0.22), 150 + i * 100);
     });
-  }, [getCtx, playTone]);
+  }, [getCtx, masterNode, playTone]);
 
-  // ── Audio MP3 : Boot (once) + Run (loop) + access_disk ──────────────────────
+  // ── Sons MP3 ─────────────────────────────────────────────────────────────────
 
-  const bootAudioRef = useRef<{
-    source: AudioBufferSourceNode;
-    gainNode: GainNode;
-  } | null>(null);
+  const uiChannel = useCallback(() => getChannel("ui", 1), []);
 
-  const runAudioRef = useRef<{
-    source: AudioBufferSourceNode;
-    gainNode: GainNode;
-  } | null>(null);
-
-  const accessDiskAudioRef = useRef<{
-    source: AudioBufferSourceNode;
-    gainNode: GainNode;
-  } | null>(null);
-
-  const bootBufferRef = useRef<AudioBuffer | null>(null);
-  const runBufferRef = useRef<AudioBuffer | null>(null);
-  const accessDiskBufferRef = useRef<AudioBuffer | null>(null);
-  const ploufploufBufferRef = useRef<AudioBuffer | null>(null);
-  const ploufploufAudioRef = useRef<{ source: AudioBufferSourceNode; gainNode: GainNode } | null>(null);
-
-  // Joue Boot.mp3 une fois, puis enchaîne Run.mp3 en boucle
   const startBootAudio = useCallback(async () => {
-    const ctx = getCtx();
-    if (!ctx || bootAudioRef.current || runAudioRef.current) return;
+    if (!getCtx()) return;
+    if (bootPlayerRef.current?.isPlaying || runPlayerRef.current?.isPlaying) return;
 
-    if (bootLoadPromiseRef.current) {
-      await bootLoadPromiseRef.current;
-    } else if (!bootBufferRef.current) {
-      try {
-        const ab = await bootRawBufferPromise;
-        if (ab.byteLength === 0) return;
-        bootBufferRef.current = await ctx.decodeAudioData(ab.slice(0));
-      } catch { return; }
-    }
-    const bootBuffer = bootBufferRef.current;
-    if (!bootBuffer) return;
+    const ch = uiChannel();
+    if (!bootPlayerRef.current) bootPlayerRef.current = new AudioPlayer(ch);
+    if (!runPlayerRef.current) runPlayerRef.current = new AudioPlayer(ch);
 
-    const gainNode = ctx.createGain();
-    gainNode.gain.setValueAtTime(1.5, ctx.currentTime);
-    gainNode.connect(masterGainRef.current ?? ctx.destination);
-
-    // Lecture de Boot.mp3 une seule fois
-    const bootSource = ctx.createBufferSource();
-    bootSource.buffer = bootBuffer;
-    bootSource.loop = false;
-    bootSource.connect(gainNode);
-    bootSource.start(ctx.currentTime, 0);
-    bootAudioRef.current = { source: bootSource, gainNode };
-
-    // À la fin de Boot, enchaîne Run.mp3 en boucle
-    bootSource.onended = async () => {
-      if (!bootAudioRef.current) return; // a été stoppé manuellement
-      bootAudioRef.current = null;
-
-      if (!runBufferRef.current) {
-        try {
-          const ab = await fetch("/sounds/run.mp3").then((r) => r.arrayBuffer());
-          runBufferRef.current = await ctx.decodeAudioData(ab);
-        } catch { return; }
-      }
-      const runBuffer = runBufferRef.current;
-      if (!runBuffer) return;
-
-      const runSource = ctx.createBufferSource();
-      runSource.buffer = runBuffer;
-      runSource.loop = true;
-      runSource.connect(gainNode);
-      runSource.start(ctx.currentTime, 0);
-      runAudioRef.current = { source: runSource, gainNode };
-    };
-  }, [getCtx]);
+    const run = runPlayerRef.current;
+    await bootPlayerRef.current.playOnce("/sounds/boot.mp3", {
+      volume: 1.5,
+      onEnded: () => run.play("/sounds/run.mp3", { loop: true, volume: 1.5 }),
+    });
+  }, [getCtx, uiChannel]);
 
   const stopBootAudio = useCallback(() => {
-    const ctx = ctxRef.current;
-    const fadeAndStop = (ref: React.RefObject<{ source: AudioBufferSourceNode; gainNode: GainNode } | null>) => {
-      if (!ref.current) return;
-      const { source, gainNode } = ref.current;
-      ref.current = null;
-      if (ctx) {
-        gainNode.gain.setValueAtTime(gainNode.gain.value, ctx.currentTime);
-        gainNode.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.4);
-      }
-      setTimeout(() => { try { source.stop(); } catch {} }, 500);
-    };
-    fadeAndStop(bootAudioRef);
-    fadeAndStop(runAudioRef);
+    bootPlayerRef.current?.fadeOutAndStop(0.4);
+    runPlayerRef.current?.fadeOutAndStop(0.4);
   }, []);
 
-  // Lance access_disk.mp3 en boucle jusqu'à stopAccessDisk()
   const startAccessDisk = useCallback(async () => {
     const ctx = getCtx();
     if (!ctx) return;
-    // Stop toute instance en cours avant d'en démarrer une nouvelle
-    if (accessDiskAudioRef.current) {
-      try { accessDiskAudioRef.current.source.stop(); } catch {}
-      accessDiskAudioRef.current = null;
+    if (!accessDiskPlayerRef.current) {
+      accessDiskPlayerRef.current = new AudioPlayer(uiChannel());
     }
-    // Charge si pas encore en cache
-    if (!accessDiskBufferRef.current) {
-      try {
-        const ab = await fetch("/sounds/access_disk.mp3").then((r) => r.arrayBuffer());
-        accessDiskBufferRef.current = await ctx.decodeAudioData(ab);
-      } catch { return; }
-    }
-    const buffer = accessDiskBufferRef.current;
-    if (!buffer) return;
-
-    const gainNode = ctx.createGain();
-    gainNode.gain.setValueAtTime(1.5, ctx.currentTime);
-    gainNode.connect(masterGainRef.current ?? ctx.destination);
-
-    const source = ctx.createBufferSource();
-    source.buffer = buffer;
-    source.loop = true;
-    source.connect(gainNode);
-    source.start(ctx.currentTime, 0);
-
-    accessDiskAudioRef.current = { source, gainNode };
-  }, [getCtx]);
+    await accessDiskPlayerRef.current.play("/sounds/access_disk.mp3", { loop: true, volume: 1.5 });
+  }, [getCtx, uiChannel]);
 
   const stopAccessDisk = useCallback(() => {
-    if (!accessDiskAudioRef.current) return;
-    const { source, gainNode } = accessDiskAudioRef.current;
-    accessDiskAudioRef.current = null;
-    const ctx = ctxRef.current;
-    if (ctx) {
-      gainNode.gain.setValueAtTime(gainNode.gain.value, ctx.currentTime);
-      gainNode.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.12);
-    }
-    try { source.stop(ctx ? ctx.currentTime + 0.15 : 0); } catch {}
+    if (!accessDiskPlayerRef.current) return;
+    accessDiskPlayerRef.current.fadeTo(0, 0.12);
+    setTimeout(() => accessDiskPlayerRef.current?.stop(), 200);
   }, []);
 
-  const supportsOpus = typeof window !== "undefined" && (() => {
-    const a = document.createElement("audio");
-    return a.canPlayType("audio/ogg; codecs=opus") !== "";
-  })();
-
-  const loadPloufPlouf = useCallback(async (ctx: AudioContext) => {
-    if (ploufploufBufferRef.current) return ploufploufBufferRef.current;
-    const url = supportsOpus ? "/sounds/ploufplouf.opus" : "/sounds/ploufplouf.mp3";
-    const ab = await fetch(url).then((r) => r.arrayBuffer());
-    const buf = await ctx.decodeAudioData(ab);
-    ploufploufBufferRef.current = buf;
-    return buf;
-  }, [supportsOpus]);
+  const ploufGenerationRef = useRef(0);
 
   const startPloufPlouf = useCallback(async () => {
-    const ctx = ctxRef.current;
+    const ctx = getCtx();
     if (!ctx) return;
-    if (ploufploufAudioRef.current) {
-      try { ploufploufAudioRef.current.source.stop(); } catch {}
-      ploufploufAudioRef.current = null;
+
+    // Stoppe tout ce qui joue déjà avant de démarrer
+    ploufPlayerRef.current?.stop();
+    ploufPlayerRef.current = null;
+
+    const generation = ++ploufGenerationRef.current;
+    const musicChannel = getChannel("music", 1);
+    musicChannel.setVolume(1);
+    const player = new AudioPlayer(musicChannel);
+
+    const url = supportsOpus ? "/sounds/ploufplouf.opus" : "/sounds/ploufplouf.mp3";
+    await player.play(url, { loop: true });
+
+    // Si une autre invocation a démarré ou stopPloufPlouf appelé entre temps, on abandonne
+    if (generation !== ploufGenerationRef.current) {
+      player.stop();
+      return;
     }
-    try {
-      const buffer = await loadPloufPlouf(ctx);
-      const gainNode = ctx.createGain();
-      gainNode.gain.setValueAtTime(1, ctx.currentTime);
-      gainNode.connect(masterGainRef.current ?? ctx.destination);
-      const source = ctx.createBufferSource();
-      source.buffer = buffer;
-      source.loop = true;
-      source.connect(gainNode);
-      source.start(ctx.currentTime, 0);
-      ploufploufAudioRef.current = { source, gainNode };
-    } catch {}
-  }, [getCtx, loadPloufPlouf]);
+
+    ploufPlayerRef.current = player;
+  }, [getCtx]);
 
   const stopPloufPlouf = useCallback(() => {
-    if (!ploufploufAudioRef.current) return;
-    const { source, gainNode } = ploufploufAudioRef.current;
-    ploufploufAudioRef.current = null;
-    const ctx = ctxRef.current;
-    if (ctx) {
-      gainNode.gain.setValueAtTime(gainNode.gain.value, ctx.currentTime);
-      gainNode.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.4);
-    }
-    setTimeout(() => { try { source.stop(); } catch {} }, 500);
+    ploufGenerationRef.current++; // invalide tout startPloufPlouf en cours
+    onFirstInitRef.current = null;
+    ploufPlayerRef.current?.stop();
+    ploufPlayerRef.current = null;
+    silenceChannel("music");
   }, []);
 
-  const closeContext = useCallback(() => {
-    ctxRef.current?.close();
-    ctxRef.current = null;
+  // ── Stop audio par app ───────────────────────────────────────────────────────
+
+  /**
+   * Stoppe tous les channels déclarés dans audioChannels du manifest de l'app.
+   * Appelé par OsWindow au clic ✕ — aucune app n'a besoin de s'enregistrer.
+   */
+  const stopAppSounds = useCallback((appSlug: string) => {
+    const manifest = APP_REGISTRY.find((a) => a.slug === appSlug);
+    for (const channelName of manifest?.audioChannels ?? []) {
+      silenceChannel(channelName);
+    }
+    // Stop propre du player plouf-plouf (invalide aussi tout startPloufPlouf en cours)
+    if (appSlug === "plouf-plouf") {
+      ploufGenerationRef.current++;
+      onFirstInitRef.current = null;
+      ploufPlayerRef.current?.stop();
+      ploufPlayerRef.current = null;
+    }
   }, []);
+
+  // ── Contrôles globaux ────────────────────────────────────────────────────────
+
+  const init = useCallback(() => {
+    if (muted) return;
+    getCtx();
+  }, [muted, getCtx]);
 
   const setOnFirstInit = useCallback((cb: () => void) => {
-    onFirstInitRef.current = cb;
+    if (initializedRef.current) {
+      cb();
+    } else {
+      onFirstInitRef.current = cb;
+    }
   }, []);
 
   const setMasterGain = useCallback((v: number) => {
-    masterVolumeRef.current = v;
-    if (masterGainRef.current) masterGainRef.current.gain.value = v / 100;
+    setMasterVolume(v);
   }, []);
 
-  // stubs vides pour ne pas casser les imports existants
+  const handleClose = useCallback(() => {
+    clearChannels();
+    closeContext();
+    initializedRef.current = false;
+    bootPlayerRef.current = null;
+    runPlayerRef.current = null;
+    accessDiskPlayerRef.current = null;
+    ploufPlayerRef.current = null;
+  }, []);
+
+  // stubs conservés pour compatibilité
   const startAmbient = useCallback(() => {}, []);
   const stopAmbient = useCallback(() => {}, []);
   const setAmbientVolume = useCallback((_volume: number) => {}, []);
@@ -495,7 +427,7 @@ export function useSound(muted: boolean) {
   return {
     init,
     setOnFirstInit,
-    closeContext,
+    closeContext: handleClose,
     playPop,
     playBip,
     playDelete,
@@ -513,6 +445,7 @@ export function useSound(muted: boolean) {
     stopAccessDisk,
     startPloufPlouf,
     stopPloufPlouf,
+    stopAppSounds,
     setMasterGain,
     startAmbient,
     stopAmbient,

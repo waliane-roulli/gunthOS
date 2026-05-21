@@ -5,6 +5,7 @@ import { useWindowState } from "@/lib/contexts/window-manager-context";
 import { getAppManifest } from "@/apps";
 import { OsWindow } from "./os-window";
 import { useSoundContext } from "@/lib/contexts/sound-context";
+import { APP_REGISTRY } from "@/apps";
 
 class AppErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
   constructor(props: { children: ReactNode }) {
