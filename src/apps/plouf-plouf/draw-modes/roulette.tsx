@@ -13,10 +13,7 @@ const ITEM_H = 52;
 const GAP = 6;
 const STEP = ITEM_H + GAP;
 const VIEWPORT_H = 280;
-const BORDER = 3;
-// center of the content area (viewport minus borders) relative to the container
-const CONTENT_CENTER = (VIEWPORT_H - BORDER * 2) / 2;
-const CENTER = CONTENT_CENTER - ITEM_H / 2;
+const CENTER = (VIEWPORT_H - ITEM_H) / 2;
 const COPIES = 5;
 
 export function RouletteWheel({
@@ -26,11 +23,10 @@ export function RouletteWheel({
   isDrawing,
 }: RouletteWheelProps) {
   const stripRef = useRef<HTMLDivElement>(null);
-  const rafRef = useRef(0);
   const currentYRef = useRef(0);
 
-  // Imperative scroll: mutates the DOM directly — no React re-render.
-  // The indicator is a sibling of the strip; it never moves.
+  // Snap to position — no interpolation during drawing.
+  // Animation would lag because ticks arrive faster than the animation duration.
   useEffect(() => {
     if (highlightedIndex < 0 || games.length === 0) return;
 
@@ -41,29 +37,8 @@ export function RouletteWheel({
     const targetReal = band * games.length + highlightedIndex;
     const targetY = CENTER - targetReal * STEP;
 
-    cancelAnimationFrame(rafRef.current);
-
-    if (isDrawing) {
-      const startY = currentYRef.current;
-      const startTime = performance.now();
-      const duration = 50;
-
-      const anim = (now: number) => {
-        const t = Math.min((now - startTime) / duration, 1);
-        const y = startY + (targetY - startY) * t;
-        strip.style.transform = `translateY(${y}px)`;
-        currentYRef.current = y;
-        if (t < 1) {
-          rafRef.current = requestAnimationFrame(anim);
-        }
-      };
-      rafRef.current = requestAnimationFrame(anim);
-    } else {
-      strip.style.transform = `translateY(${targetY}px)`;
-      currentYRef.current = targetY;
-    }
-
-    return () => cancelAnimationFrame(rafRef.current);
+    strip.style.transform = `translateY(${targetY}px)`;
+    currentYRef.current = targetY;
   }, [highlightedIndex, isDrawing, games.length]);
 
   // Initial position
