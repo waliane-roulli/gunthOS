@@ -56,7 +56,17 @@ export type WallpaperId =
   | "captcha_hell"
   | "nokia3310"
   | "fax_2024"
-  | "windows_update_forced";
+  | "windows_update_forced"
+  | "zoom_meeting"
+  | "linkedin_cringe"
+  | "jira_ticket"
+  | "microwave_office"
+  | "dark_mode_extreme"
+  | "crypto_bro"
+  | "gdpr_popup"
+  | "teams_mute"
+  | "regex_hell"
+  | "404_not_found";
 
 export interface Wallpaper {
   id: WallpaperId;
@@ -588,6 +598,96 @@ export const WALLPAPERS: Wallpaper[] = [
     animated: true,
     style: { background: "#0078d4" },
     decorationKey: "windows_update_forced",
+  },
+  {
+    id: "zoom_meeting",
+    name: "Fond Zoom Virtuel",
+    emoji: "📹",
+    description: "Bureau en ordre. Vie réelle: chaos.",
+    animated: true,
+    style: { background: "linear-gradient(135deg, #1c1c1c 0%, #2a2a2a 100%)" },
+    decorationKey: "zoom_meeting",
+  },
+  {
+    id: "linkedin_cringe",
+    name: "Post LinkedIn",
+    emoji: "💼",
+    description: "Humbled. Grateful. Blessed. 47k impressions.",
+    animated: true,
+    style: { background: "linear-gradient(135deg, #f3f6f8 0%, #dce6ed 100%)" },
+    decorationKey: "linkedin_cringe",
+  },
+  {
+    id: "jira_ticket",
+    name: "Sprint Planning",
+    emoji: "🎫",
+    description: "JIRA-4269: Définir les critères d'acceptance",
+    animated: true,
+    style: { background: "linear-gradient(135deg, #0052cc 0%, #003e99 100%)" },
+    decorationKey: "jira_ticket",
+  },
+  {
+    id: "microwave_office",
+    name: "Pause Déjeuner",
+    emoji: "🐟",
+    description: "L'odeur du poisson au micro-ondes. Impardonnable.",
+    animated: true,
+    style: { background: "linear-gradient(135deg, #e8e0c8 0%, #ccc0a0 100%)" },
+    decorationKey: "microwave_office",
+  },
+  {
+    id: "dark_mode_extreme",
+    name: "Abysse Total",
+    emoji: "🕳️",
+    description: "#000000. Pour toujours.",
+    animated: false,
+    style: { background: "#000000" },
+    decorationKey: "dark_mode_extreme",
+  },
+  {
+    id: "crypto_bro",
+    name: "To The Moon 🚀",
+    emoji: "🪙",
+    description: "GM. Wen lambo. Not financial advice.",
+    animated: true,
+    style: { background: "linear-gradient(180deg, #000000 0%, #0a0a00 100%)" },
+    decorationKey: "crypto_bro",
+  },
+  {
+    id: "gdpr_popup",
+    name: "Bannière Cookies",
+    emoji: "🍪",
+    description: "Veuillez accepter nos 2847 partenaires de confiance.",
+    animated: true,
+    style: { background: "#ffffff" },
+    decorationKey: "gdpr_popup",
+  },
+  {
+    id: "teams_mute",
+    name: "Micro Coupé",
+    emoji: "🔇",
+    description: "Vous parliez. En sourdine. Depuis le début.",
+    animated: true,
+    style: { background: "linear-gradient(135deg, #201f3c 0%, #141328 100%)" },
+    decorationKey: "teams_mute",
+  },
+  {
+    id: "regex_hell",
+    name: "Expression Régulière",
+    emoji: "⚡",
+    description: "(?:[a-z0-9!#$%&'*+/=?^_{|}~-]+) — copié de StackOverflow",
+    animated: true,
+    style: { background: "linear-gradient(135deg, #0d001a 0%, #060010 100%)" },
+    decorationKey: "regex_hell",
+  },
+  {
+    id: "404_not_found",
+    name: "Page Introuvable",
+    emoji: "🔍",
+    description: "Ce fond d'écran n'existe pas. Comme vos données.",
+    animated: false,
+    style: { background: "#fafafa" },
+    decorationKey: "404_not_found",
   },
 ];
 
