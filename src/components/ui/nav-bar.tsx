@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
-import { APPS } from "@/lib/apps";
+import type { Route } from "next";
+import { LAUNCHER_APPS } from "@/apps";
 
 const SEEN_BADGES_KEY = "gunth_seen_badges";
 
@@ -72,13 +73,13 @@ export function NavBar({ onSettingsClick }: NavBarProps) {
 
       {/* App switcher */}
       <div className="flex items-center gap-1 flex-wrap flex-1">
-        {APPS.map((app) => {
+        {LAUNCHER_APPS.filter((app) => app.href).map((app) => {
           const isActive = pathname === app.href;
           const showBadge = app.badge && !seen.has(app.slug);
           return (
             <Link
               key={app.slug}
-              href={app.href}
+              href={app.href as Route}
               onClick={() => { if (showBadge) markSeen(app.slug); }}
               className="flex items-center gap-1 px-2 py-0.5 border-[2px] tracking-wider select-none whitespace-nowrap transition-none"
               style={{

@@ -3,7 +3,7 @@
 import { useCallback, useRef, useState } from "react";
 import { MsnLogo } from "./msn-logo";
 import { useWindowManager } from "@/lib/contexts/window-manager-context";
-import { APPS } from "@/lib/apps";
+import { LAUNCHER_APPS } from "@/apps";
 import { useTheme, useSettings } from "@/lib/contexts/settings-context";
 import { THEMES, type ThemeId } from "@/lib/themes";
 import { GUNTH_SHUTDOWN_MESSAGES, GUNTH_REBOOT_MESSAGES, pickRandom } from "@/lib/gunth-jokes";
@@ -265,7 +265,7 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
 
           <div className="py-1">
             {/* Apps */}
-            {APPS.map((app) => (
+            {LAUNCHER_APPS.map((app) => (
               <StartMenuItem
                 key={app.slug}
                 icon={app.emoji}

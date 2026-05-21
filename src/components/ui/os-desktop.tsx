@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useWindowManager } from "@/lib/contexts/window-manager-context";
-import { APPS } from "@/lib/apps";
+import { LAUNCHER_APPS } from "@/apps";
 import { useSettings } from "@/lib/contexts/settings-context";
 import { useSoundContext } from "@/lib/contexts/sound-context";
 import { useUnread } from "@/lib/contexts/unread-context";
@@ -125,7 +125,7 @@ export function OsDesktop() {
   }, [openWindow, init, playWindowOpen]);
 
   const icons: IconDef[] = [
-    ...APPS.map((app) => ({
+    ...LAUNCHER_APPS.map((app) => ({
       id: app.slug,
       emoji: app.iconNode ?? app.emoji,
       label: app.name,

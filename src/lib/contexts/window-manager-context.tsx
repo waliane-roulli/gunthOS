@@ -9,7 +9,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { APPS } from "@/lib/apps";
+import { getAppManifest } from "@/apps";
 
 export type WindowState = "normal" | "minimized" | "maximized";
 
@@ -117,7 +117,7 @@ export function WindowManagerProvider({ children }: { children: ReactNode }) {
 
   const openApp = useCallback(
     (slug: string): string => {
-      const app = APPS.find((a) => a.slug === slug);
+      const app = getAppManifest(slug);
       if (!app) return "";
       return openWindow(app.slug, app.name, app.iconNode ?? app.emoji);
     },
