@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRadio, STATIONS, type StationId } from "@/lib/contexts/radio-context";
+import { useSettingsActions } from "@/lib/contexts/settings-context";
 import type { AppProps } from "@/types";
 
 const BUFFER_MESSAGES = [
@@ -92,7 +93,8 @@ function TrayBtn({ onClick, children, title }: { onClick: () => void; children: 
 }
 
 export function RadioApp(_: AppProps) {
-  const { currentStation, isBuffering, isPlaying, hasError, volume, playTime, play, stop, next, prev, setVolume } = useRadio();
+  const { currentStation, isBuffering, isPlaying, hasError, volume, playTime, play, stop, next, prev } = useRadio();
+  const { setMasterVolume: setVolume } = useSettingsActions();
   const [bufferMsg, setBufferMsg] = useState(BUFFER_MESSAGES[0]!);
   const [statusMsg, setStatusMsg] = useState(PLAYING_STATUSES[0]!);
   const [errorMsg] = useState(() => pickRandom(ERROR_MESSAGES));

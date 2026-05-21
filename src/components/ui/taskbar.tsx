@@ -2,21 +2,23 @@
 
 import { useCallback, useRef, useState } from "react";
 import { MsnLogo } from "./msn-logo";
-import { useWindowManager } from "@/lib/contexts/window-manager-context";
+import { useWindowState, useWindowActions } from "@/lib/contexts/window-manager-context";
 import { LAUNCHER_APPS } from "@/apps";
 import { useTheme, useSettings } from "@/lib/contexts/settings-context";
 import { THEMES, type ThemeId } from "@/lib/themes";
 import { GUNTH_SHUTDOWN_MESSAGES, GUNTH_REBOOT_MESSAGES, pickRandom } from "@/lib/gunth-jokes";
 import { useOsClock } from "@/lib/hooks/use-os-clock";
 import { useVisitorCountApi } from "@/lib/hooks/use-visitor-count-api";
+import { useOpenApp } from "@/lib/hooks/use-open-app";
 import { useSoundContext } from "@/lib/contexts/sound-context";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { useUnread } from "@/lib/contexts/unread-context";
 import { useRadio, type StationId } from "@/lib/contexts/radio-context";
 
 export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShutdown?: () => void }) {
-  const { windows, activeWindowId, focusWindow, restoreWindow, minimizeWindow, openWindow, openApp } =
-    useWindowManager();
+  const { windows, activeWindowId } = useWindowState();
+  const { focusWindow, restoreWindow, minimizeWindow } = useWindowActions();
+  const { openApp, openNamedWindow } = useOpenApp();
   const { themeId, setTheme } = useTheme();
   const { init, playClick, playWindowOpen, playWindowMinimize } = useSoundContext();
   const { user } = useAuth();
@@ -54,12 +56,10 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
 
   const handleOpenApp = useCallback(
     (slug: string) => {
-      init();
-      playWindowOpen();
       openApp(slug);
       setStartMenuOpen(false);
     },
-    [openApp, init, playWindowOpen]
+    [openApp]
   );
 
   return (
@@ -285,10 +285,7 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
             <StartMenuItem
               icon="⚙️"
               label="Paramètres"
-              onClick={() => {
-                openApp("settings");
-                setStartMenuOpen(false);
-              }}
+              onClick={() => handleOpenApp("settings")}
             />
             <StartMenuItem
               icon="🎨"
@@ -311,7 +308,7 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
               icon={user ? "👤" : "🔑"}
               label={user ? `Profil (${user.name})` : "Connexion / Inscription"}
               onClick={() => {
-                openWindow("login", "GUNTH.EXE — Connexion", "🔑");
+                openNamedWindow("login", "GUNTH.EXE — Connexion", "🔑");
                 setStartMenuOpen(false);
               }}
             />
@@ -480,7 +477,7 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
           )}
           <button
             title={user ? `Connecté : ${user.email}` : "Accès invité — cliquez pour vous connecter"}
-            onClick={() => { init(); openWindow("login", "GUNTH.EXE — Connexion", "🔑"); }}
+            onClick={() => openNamedWindow("login", "GUNTH.EXE — Connexion", "🔑")}
             className="border-r pr-2 cursor-pointer select-none hover:opacity-80"
             style={{ borderColor: "var(--t-border-dark)", background: "none", fontFamily: "var(--t-font-display)", color: "var(--t-text)", fontSize: "inherit" }}
           >
@@ -488,7 +485,7 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
           </button>
           <button
             title="GunthMessenger™ — Ouvrir la messagerie"
-            onClick={() => { init(); openApp("msn"); }}
+            onClick={() => openApp("msn")}
             className="cursor-pointer select-none hover:opacity-80 border-r pr-2"
             style={{ borderColor: "var(--t-border-dark)", background: "none", padding: 0, display: "flex", alignItems: "center", lineHeight: 0, position: "relative" }}
           >
@@ -676,8 +673,7 @@ function VolumeTray() {
 
 function RadioTrayPlayer() {
   const { currentStation, isPlaying, isBuffering, next, prev, stop, play } = useRadio();
-  const { openApp } = useWindowManager();
-  const { init } = useSoundContext();
+  const { openApp } = useOpenApp();
 
   const btnStyle: React.CSSProperties = {
     background: "none",
@@ -696,7 +692,7 @@ function RadioTrayPlayer() {
         title="GunthRadio™ — Ouvrir"
         style={{ ...btnStyle, opacity: 0.6 }}
         className="border-r pr-2 hover:opacity-100"
-        onClick={() => { init(); openApp("radio"); }}
+        onClick={() => openApp("radio")}
       >
         📻
       </button>
@@ -724,7 +720,7 @@ function RadioTrayPlayer() {
         className="text-xs tracking-wider max-w-[90px] truncate cursor-pointer"
         style={{ color: "var(--t-accent)", fontFamily: "var(--t-font-display)" }}
         title={`GunthRadio™ — ${currentStation?.name}`}
-        onClick={() => { init(); openApp("radio"); }}
+        onClick={() => openApp("radio")}
       >
         {currentStation?.emoji} {currentStation?.name}
       </span>

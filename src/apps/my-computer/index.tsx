@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useWindowManager } from "@/lib/contexts/window-manager-context";
+import { useWindowActions } from "@/lib/contexts/window-manager-context";
 import { GUNTH_STATUS, pickRandom } from "@/lib/gunth-jokes";
 import type { AppProps } from "@/types";
 
@@ -121,7 +121,7 @@ export function MyComputerApp(_: AppProps) {
   const [joke] = useState(() => pickRandom(MY_COMPUTER_JOKES));
   const [status] = useState(() => pickRandom(GUNTH_STATUS));
   const [dialog, setDialog] = useState<DialogConfig | null>(null);
-  const { openWindow } = useWindowManager();
+  const { openWindow } = useWindowActions();
 
   const ITEMS = [
     {

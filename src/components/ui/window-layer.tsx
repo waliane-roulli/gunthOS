@@ -1,10 +1,46 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useWindowManager } from "@/lib/contexts/window-manager-context";
+import { useState, useEffect, useRef, Component, type ReactNode, type ErrorInfo } from "react";
+import { useWindowState } from "@/lib/contexts/window-manager-context";
 import { getAppManifest } from "@/apps";
 import { OsWindow } from "./os-window";
 import { useSoundContext } from "@/lib/contexts/sound-context";
+
+class AppErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { error: null };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { error };
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error("[AppErrorBoundary]", error, info.componentStack);
+  }
+
+  render() {
+    if (this.state.error) {
+      return (
+        <div
+          className="flex-1 flex flex-col items-center justify-center gap-3 p-6 select-none"
+          style={{ background: "var(--t-bg)", fontFamily: "var(--t-font-display)" }}
+        >
+          <div className="text-4xl">💀</div>
+          <div className="text-base" style={{ color: "var(--t-text)" }}>Cette application a planté.</div>
+          <pre
+            className="text-xs max-w-xs overflow-auto p-2"
+            style={{ background: "var(--t-bg-dark)", color: "var(--t-text-muted)", borderRadius: 2 }}
+          >
+            {this.state.error.message}
+          </pre>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 const LOADING_MESSAGES = [
   "Lecture du disque dur...",
@@ -144,11 +180,15 @@ function WindowContent({ win }: { win: { id: string; appSlug: string } }) {
 
   if (!AppComponent) return null;
 
-  return <AppComponent windowId={win.appSlug.startsWith("profile:") ? win.appSlug : win.id} />;
+  return (
+    <AppErrorBoundary>
+      <AppComponent windowId={win.appSlug.startsWith("profile:") ? win.appSlug : win.id} />
+    </AppErrorBoundary>
+  );
 }
 
 export function WindowLayer() {
-  const { windows } = useWindowManager();
+  const { windows } = useWindowState();
 
   return (
     <>

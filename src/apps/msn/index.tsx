@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "@/lib/contexts/auth-context";
-import { useWindowManager } from "@/lib/contexts/window-manager-context";
+import { useWindowActions } from "@/lib/contexts/window-manager-context";
 import { useUnread } from "@/lib/contexts/unread-context";
 import { MsnLogo } from "@/components/ui/msn-logo";
 import type { AppProps } from "@/types";
@@ -459,7 +459,7 @@ function DraggableChatWindow({ contact, myId, myAvatar, onClose, onRead }: {
 
 export function MsnApp(_: AppProps) {
   const { user } = useAuth();
-  const { openWindow } = useWindowManager();
+  const { openWindow } = useWindowActions();
   const { setTotalUnread } = useUnread();
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);

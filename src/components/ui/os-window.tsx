@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef } from "react";
-import { useWindowManager } from "@/lib/contexts/window-manager-context";
+import { useWindowActions, useWindowState } from "@/lib/contexts/window-manager-context";
 import type { WindowInstance } from "@/lib/contexts/window-manager-context";
 import { RetroTitlebarBtn } from "./retro-titlebar-btn";
 import { useSoundContext } from "@/lib/contexts/sound-context";
@@ -23,8 +23,8 @@ const MIN_W = 240;
 const MIN_H = 160;
 
 export function OsWindow({ win, children }: OsWindowProps) {
-  const { closeWindow, minimizeWindow, maximizeWindow, focusWindow, moveWindow, resizeWindow, activeWindowId } =
-    useWindowManager();
+  const { closeWindow, minimizeWindow, maximizeWindow, focusWindow, moveWindow, resizeWindow } = useWindowActions();
+  const { activeWindowId } = useWindowState();
   const { playWindowClose, playWindowMinimize, playWindowOpen } = useSoundContext();
 
   const dragging = useRef(false);

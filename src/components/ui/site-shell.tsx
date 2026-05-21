@@ -30,14 +30,14 @@ export function SiteShell({ children: _children }: { children?: React.ReactNode 
       {shutdown && <ShutdownScreen onPowerOn={handleReboot} />}
       {!booted && !shutdown && <BootScreen key={bootKey} onComplete={() => setBooted(true)} />}
       <RadioProvider>
-      <WindowManagerProvider>
-        <GunthTitle />
-        <div className="fixed inset-0 flex flex-col overflow-hidden scanlines">
-          <Taskbar onReboot={handleReboot} onShutdown={handleShutdown} />
-          <OsDesktop />
-          <WindowLayer />
-        </div>
-      </WindowManagerProvider>
+        <WindowManagerProvider>
+          <GunthTitle />
+          <div className="fixed inset-0 flex flex-col overflow-hidden scanlines">
+            <Taskbar onReboot={handleReboot} onShutdown={handleShutdown} />
+            <OsDesktop />
+            <WindowLayer />
+          </div>
+        </WindowManagerProvider>
       </RadioProvider>
     </SoundProvider>
   );

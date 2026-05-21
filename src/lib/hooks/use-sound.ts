@@ -28,9 +28,8 @@ export function useSound(muted: boolean) {
     ctxRef.current = ctx;
     onFirstInitRef.current?.();
     onFirstInitRef.current = null;
-    bootLoadPromiseRef.current = fetch("/sounds/boot.mp3")
-      .then((r) => r.arrayBuffer())
-      .then((ab) => ctx.decodeAudioData(ab))
+    bootLoadPromiseRef.current = bootRawBufferPromise
+      .then((ab) => ab.byteLength ? ctx.decodeAudioData(ab.slice(0)) : Promise.reject())
       .then((buf) => { bootBufferRef.current = buf; })
       .catch(() => {});
     fetch("/sounds/run.mp3")
@@ -47,8 +46,9 @@ export function useSound(muted: boolean) {
 
   const getCtx = useCallback(() => {
     if (muted) return null;
+    if (!ctxRef.current) init();
     return ctxRef.current;
-  }, [muted]);
+  }, [muted, init]);
 
   // ── Sons UI synthétiques (inchangés) ────────────────────────────────────────
 

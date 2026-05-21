@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import { z } from "zod";
 import { signIn, signUp } from "@/lib/auth-client";
 import { useAuth } from "@/lib/contexts/auth-context";
-import { useWindowManager } from "@/lib/contexts/window-manager-context";
+import { useWindowActions } from "@/lib/contexts/window-manager-context";
 import type { AppProps } from "@/types";
 
 type Mode = "login" | "register" | "logged-in";
@@ -37,7 +37,7 @@ function getHint() {
 
 export function LoginApp({ windowId }: AppProps) {
   const { user, logout } = useAuth();
-  const { closeWindow } = useWindowManager();
+  const { closeWindow } = useWindowActions();
   const onClose = () => closeWindow(windowId);
 
   const [mode, setMode] = useState<Mode>(user ? "logged-in" : "login");

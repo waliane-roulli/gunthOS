@@ -1,10 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useWindowManager } from "@/lib/contexts/window-manager-context";
 import { LAUNCHER_APPS } from "@/apps";
 import { useSettings } from "@/lib/contexts/settings-context";
-import { useSoundContext } from "@/lib/contexts/sound-context";
+import { useOpenApp } from "@/lib/hooks/use-open-app";
 import { useUnread } from "@/lib/contexts/unread-context";
 import { WALLPAPER_MAP, DEFAULT_WALLPAPER_ID } from "@/lib/wallpapers";
 import { WallpaperDecoration } from "./wallpaper-decorations";
@@ -99,9 +98,8 @@ function findNearestFreeCell(
 }
 
 export function OsDesktop() {
-  const { openWindow, openApp } = useWindowManager();
   const { settings } = useSettings();
-  const { init, playWindowOpen } = useSoundContext();
+  const { openApp, openNamedWindow } = useOpenApp();
   const { totalUnread } = useUnread();
 
   const wallpaper =
@@ -110,19 +108,13 @@ export function OsDesktop() {
       : undefined) ?? WALLPAPER_MAP.get(DEFAULT_WALLPAPER_ID)!;
 
   const handleOpenApp = useCallback(
-    (slug: string) => {
-      init();
-      playWindowOpen();
-      openApp(slug);
-    },
-    [openApp, init, playWindowOpen]
+    (slug: string) => { openApp(slug); },
+    [openApp]
   );
 
   const handleOpenSettings = useCallback(() => {
-    init();
-    playWindowOpen();
-    openWindow("settings", "Paramètres GunthOS", "⚙️");
-  }, [openWindow, init, playWindowOpen]);
+    openNamedWindow("settings", "Paramètres GunthOS", "⚙️");
+  }, [openNamedWindow]);
 
   const icons: IconDef[] = [
     ...LAUNCHER_APPS.map((app) => ({
@@ -139,7 +131,7 @@ export function OsDesktop() {
       id: "my-computer",
       emoji: "🖥️",
       label: "Mon Ordi",
-      onOpen: () => openWindow("my-computer", "Mon Ordinateur", "🖥️"),
+      onOpen: () => openNamedWindow("my-computer", "Mon Ordinateur", "🖥️"),
     },
     {
       id: "settings",
@@ -151,7 +143,7 @@ export function OsDesktop() {
       id: "trash",
       emoji: "🗑️",
       label: "Corbeille",
-      onOpen: () => openWindow("trash", "Corbeille", "🗑️"),
+      onOpen: () => openNamedWindow("trash", "Corbeille", "🗑️"),
     },
   ];
 

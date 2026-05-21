@@ -9,7 +9,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { useSettings } from "@/lib/contexts/settings-context";
+import { useSettingsState } from "@/lib/contexts/settings-context";
 
 export const STATIONS = [
   {
@@ -76,7 +76,6 @@ interface RadioContextValue {
   stop: () => void;
   next: () => void;
   prev: () => void;
-  setVolume: (v: number) => void;
   audioRef: React.RefObject<HTMLAudioElement | null>;
 }
 
@@ -91,12 +90,11 @@ const RadioContext = createContext<RadioContextValue>({
   stop: () => {},
   next: () => {},
   prev: () => {},
-  setVolume: () => {},
   audioRef: { current: null },
 });
 
 export function RadioProvider({ children }: { children: ReactNode }) {
-  const { settings, setMasterVolume } = useSettings();
+  const { settings } = useSettingsState();
   const volume = settings.masterVolume;
 
   const [currentStationId, setCurrentStationId] = useState<StationId | null>(null);
@@ -169,10 +167,6 @@ export function RadioProvider({ children }: { children: ReactNode }) {
     play(prevStation.id);
   }, [currentStationId, play]);
 
-  const setVolume = useCallback((v: number) => {
-    setMasterVolume(v);
-  }, [setMasterVolume]);
-
   const handlePlaying = useCallback(() => {
     setIsBuffering(false);
   }, []);
@@ -184,7 +178,7 @@ export function RadioProvider({ children }: { children: ReactNode }) {
 
   return (
     <RadioContext.Provider
-      value={{ currentStation, isBuffering, isPlaying, hasError, volume, playTime, play, stop, next, prev, setVolume, audioRef }}
+      value={{ currentStation, isBuffering, isPlaying, hasError, volume, playTime, play, stop, next, prev, audioRef }}
     >
       <audio
         ref={audioRef}

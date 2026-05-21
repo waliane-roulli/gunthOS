@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, type ReactNode } from "react";
 import { useSound } from "@/lib/hooks/use-sound";
-import { useSettings } from "@/lib/contexts/settings-context";
+import { useSettingsState } from "@/lib/contexts/settings-context";
 
 
 type SoundContextValue = ReturnType<typeof useSound>;
@@ -10,7 +10,7 @@ type SoundContextValue = ReturnType<typeof useSound>;
 const SoundContext = createContext<SoundContextValue | null>(null);
 
 export function SoundProvider({ children }: { children: ReactNode }) {
-  const { settings } = useSettings();
+  const { settings } = useSettingsState();
   const sound = useSound(!settings.soundEnabled);
 
   useEffect(() => {

@@ -11,23 +11,26 @@ import {
   type ReactNode,
 } from "react";
 import { THEMES, type ThemeId, type Theme } from "@/lib/themes";
-import { CURSOR_MAP, type CursorId } from "@/lib/cursors";
+import { type CursorId } from "@/lib/cursors";
 import {
   loadSettings,
   saveSettings,
   DEFAULT_SETTINGS,
-  DENSITY_CSS,
   type AppSettings,
   type Density,
 } from "@/lib/settings";
 import { WALLPAPERS, WALLPAPER_MAP, type WallpaperId } from "@/lib/wallpapers";
 import { useAuth } from "@/lib/contexts/auth-context";
+import { useThemeApplication } from "@/lib/hooks/use-theme-application";
 
 const THEME_MAP = new Map(THEMES.map((t) => [t.id, t]));
 
-interface SettingsContextValue {
+interface SettingsStateContextValue {
   settings: AppSettings;
   theme: Theme;
+}
+
+interface SettingsActionsContextValue {
   setTheme: (id: ThemeId) => void;
   setSoundEnabled: (v: boolean) => void;
   setMasterVolume: (v: number) => void;
@@ -41,9 +44,12 @@ interface SettingsContextValue {
   updateSettings: (patch: Partial<AppSettings>) => void;
 }
 
-const SettingsContext = createContext<SettingsContextValue>({
+const SettingsStateContext = createContext<SettingsStateContextValue>({
   settings: DEFAULT_SETTINGS,
   theme: THEME_MAP.get(DEFAULT_SETTINGS.themeId) as Theme,
+});
+
+const SettingsActionsContext = createContext<SettingsActionsContextValue>({
   setTheme: () => {},
   setSoundEnabled: () => {},
   setMasterVolume: () => {},
@@ -63,16 +69,13 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prevUserIdRef = useRef<string | null>(null);
 
-  // Chargement initial depuis localStorage
   useEffect(() => {
     setSettings(loadSettings());
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
   }, []);
 
-  // Quand un user se connecte → on charge ses settings depuis l'API et on écrase le local
   useEffect(() => {
     if (!user) {
-      // Déconnexion → on recharge le localStorage
       if (prevUserIdRef.current !== null) {
         setSettings(loadSettings());
       }
@@ -112,63 +115,28 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     [settings.themeId]
   );
 
-  useEffect(() => {
-    const root = document.documentElement;
-    Object.entries(theme.vars).forEach(([k, v]) => root.style.setProperty(k, v));
-    root.setAttribute("data-theme", settings.themeId);
-  }, [theme, settings.themeId]);
+  useThemeApplication(settings, theme);
 
-  useEffect(() => {
-    const root = document.documentElement;
-    const vars = DENSITY_CSS[settings.density];
-    Object.entries(vars).forEach(([k, v]) => root.style.setProperty(k, v));
-    root.setAttribute("data-density", settings.density);
-  }, [settings.density]);
-
-  useEffect(() => {
-    document.documentElement.setAttribute(
-      "data-animations",
-      settings.animationsEnabled ? "on" : "off"
-    );
-  }, [settings.animationsEnabled]);
-
-  useEffect(() => {
-    const root = document.documentElement;
-    if (!settings.scanlinesEnabled) {
-      root.style.setProperty("--t-scanlines", "0");
-    } else {
-      // Restore the theme's original scanlines value
-      const themeVal = theme.vars["--t-scanlines"] ?? "0";
-      root.style.setProperty("--t-scanlines", themeVal);
-    }
-  }, [settings.scanlinesEnabled, theme]);
+  const syncToApi = useCallback((next: AppSettings) => {
+    if (!prevUserIdRef.current) return;
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      fetch("/api/user/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(next),
+      }).catch(() => {});
+    }, 600);
+  }, []);
 
   const updateSettings = useCallback((patch: Partial<AppSettings>) => {
     setSettings((prev) => {
       const next = { ...prev, ...patch };
       saveSettings(next);
-
-      // Si connecté, sync vers l'API en debounce 600ms
-      if (prevUserIdRef.current) {
-        if (debounceRef.current) clearTimeout(debounceRef.current);
-        debounceRef.current = setTimeout(() => {
-          fetch("/api/user/settings", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(next),
-          }).catch(() => {});
-        }, 600);
-      }
-
+      syncToApi(next);
       return next;
     });
-  }, []);
-
-  useEffect(() => {
-    const cursor = CURSOR_MAP.get(settings.cursorId);
-    document.documentElement.style.cursor = cursor?.css ?? "default";
-    return () => { document.documentElement.style.cursor = ""; };
-  }, [settings.cursorId]);
+  }, [syncToApi]);
 
   const setTheme = useCallback((id: ThemeId) => {
     const themeObj = THEME_MAP.get(id);
@@ -179,19 +147,10 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
           : {};
       const next = { ...prev, themeId: id, ...wallpaperPatch };
       saveSettings(next);
-      if (prevUserIdRef.current) {
-        if (debounceRef.current) clearTimeout(debounceRef.current);
-        debounceRef.current = setTimeout(() => {
-          fetch("/api/user/settings", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(next),
-          }).catch(() => {});
-        }, 600);
-      }
+      syncToApi(next);
       return next;
     });
-  }, []);
+  }, [syncToApi]);
 
   const setSoundEnabled = useCallback((v: boolean) => updateSettings({ soundEnabled: v }), [updateSettings]);
   const setMasterVolume = useCallback((v: number) => updateSettings({ masterVolume: Math.max(0, Math.min(100, v)) }), [updateSettings]);
@@ -210,28 +169,47 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
           : prev.wallpaperId;
       const next = { ...prev, wallpaperId, wallpaperOverridden: false };
       saveSettings(next);
+      syncToApi(next);
       return next;
     });
-  }, []);
+  }, [syncToApi]);
 
-  const contextValue = useMemo(
-    () => ({ settings, theme, setTheme, setSoundEnabled, setMasterVolume, setAmbientVolume, setAnimationsEnabled, setDensity, setScanlinesEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, updateSettings }),
-    [settings, theme, setTheme, setSoundEnabled, setMasterVolume, setAmbientVolume, setAnimationsEnabled, setDensity, setScanlinesEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, updateSettings]
+  const stateValue = useMemo(() => ({ settings, theme }), [settings, theme]);
+
+  const actionsValue = useMemo(
+    () => ({ setTheme, setSoundEnabled, setMasterVolume, setAmbientVolume, setAnimationsEnabled, setDensity, setScanlinesEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, updateSettings }),
+    [setTheme, setSoundEnabled, setMasterVolume, setAmbientVolume, setAnimationsEnabled, setDensity, setScanlinesEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, updateSettings]
   );
 
   return (
-    <SettingsContext.Provider value={contextValue}>
-      {children}
-    </SettingsContext.Provider>
+    <SettingsStateContext.Provider value={stateValue}>
+      <SettingsActionsContext.Provider value={actionsValue}>
+        {children}
+      </SettingsActionsContext.Provider>
+    </SettingsStateContext.Provider>
   );
 }
 
+/** State seulement — re-render à chaque changement de settings */
+export function useSettingsState() {
+  return useContext(SettingsStateContext);
+}
+
+/** Actions seulement — jamais de re-render */
+export function useSettingsActions() {
+  return useContext(SettingsActionsContext);
+}
+
+/** Full hook — state + actions (comportement identique à l'ancien useSettings) */
 export function useSettings() {
-  return useContext(SettingsContext);
+  const state = useContext(SettingsStateContext);
+  const actions = useContext(SettingsActionsContext);
+  return useMemo(() => ({ ...state, ...actions }), [state, actions]);
 }
 
 /** Compat shim — remplace useTheme() pour les composants qui ne lisent que le thème */
 export function useTheme() {
-  const { settings, theme, setTheme } = useSettings();
+  const { settings, theme } = useSettingsState();
+  const { setTheme } = useSettingsActions();
   return { theme, themeId: settings.themeId, setTheme };
 }

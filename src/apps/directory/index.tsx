@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { useWindowManager } from "@/lib/contexts/window-manager-context";
+import { useWindowActions } from "@/lib/contexts/window-manager-context";
 import { pickRandom } from "@/lib/gunth-jokes";
 import type { AppProps } from "@/types";
 import { PIXEL_AVATARS, getDaysSinceJoin, getGunthosRank, RetroInput } from "@/apps/profile/_shared";
@@ -19,7 +19,7 @@ export function DirectoryApp(_: AppProps) {
   const [users, setUsers] = useState<PublicUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const { openWindow } = useWindowManager();
+  const { openWindow } = useWindowActions();
 
   useEffect(() => {
     fetch("/api/profiles/list")

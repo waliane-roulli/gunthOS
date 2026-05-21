@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type CSSProperties } from "react";
-import { useWindowManager } from "@/lib/contexts/window-manager-context";
+import { useWindowActions } from "@/lib/contexts/window-manager-context";
 import { useSettings } from "@/lib/contexts/settings-context";
 import { THEMES, type ThemeId } from "@/lib/themes";
 import { CURSORS, type CursorId } from "@/lib/cursors";
@@ -20,7 +20,7 @@ const TABS: { id: Tab; label: string; icon: string }[] = [
 ];
 
 export function SettingsApp({ windowId }: AppProps) {
-  const { closeWindow } = useWindowManager();
+  const { closeWindow } = useWindowActions();
   const onClose = () => closeWindow(windowId);
   const { settings, setTheme, setSoundEnabled, setAmbientVolume, setAnimationsEnabled, setDensity, setScanlinesEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme } = useSettings();
   const [activeTab, setActiveTab] = useState<Tab>("theme");

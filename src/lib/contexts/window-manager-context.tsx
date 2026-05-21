@@ -9,7 +9,6 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { getAppManifest } from "@/apps";
 
 export type WindowState = "normal" | "minimized" | "maximized";
 
@@ -26,11 +25,13 @@ export interface WindowInstance {
   prevSize?: { w: number; h: number };
 }
 
-interface WindowManagerContextValue {
+interface WindowStateContextValue {
   windows: WindowInstance[];
   activeWindowId: string | null;
+}
+
+interface WindowActionsContextValue {
   openWindow: (appSlug: string, title: string, icon: ReactNode) => string;
-  openApp: (slug: string) => string;
   closeWindow: (id: string) => void;
   minimizeWindow: (id: string) => void;
   maximizeWindow: (id: string) => void;
@@ -40,11 +41,13 @@ interface WindowManagerContextValue {
   resizeWindow: (id: string, w: number, h: number, x?: number, y?: number) => void;
 }
 
-const WindowManagerContext = createContext<WindowManagerContextValue>({
+const WindowStateContext = createContext<WindowStateContextValue>({
   windows: [],
   activeWindowId: null,
+});
+
+const WindowActionsContext = createContext<WindowActionsContextValue>({
   openWindow: () => "",
-  openApp: () => "",
   closeWindow: () => {},
   minimizeWindow: () => {},
   maximizeWindow: () => {},
@@ -58,7 +61,7 @@ const BASE_Z = 100;
 
 function getDefaultPosition(index: number): { x: number; y: number } {
   const offset = (index % 8) * 32;
-  return { x: 80 + offset, y: 60 + offset }; // 40px taskbar + 20px margin
+  return { x: 80 + offset, y: 60 + offset };
 }
 
 function getDefaultSize(): { w: number; h: number } {
@@ -113,15 +116,6 @@ export function WindowManagerProvider({ children }: { children: ReactNode }) {
       return id;
     },
     []
-  );
-
-  const openApp = useCallback(
-    (slug: string): string => {
-      const app = getAppManifest(slug);
-      if (!app) return "";
-      return openWindow(app.slug, app.name, app.iconNode ?? app.emoji);
-    },
-    [openWindow]
   );
 
   const closeWindow = useCallback((id: string) => {
@@ -192,7 +186,14 @@ export function WindowManagerProvider({ children }: { children: ReactNode }) {
 
   const moveWindow = useCallback((id: string, x: number, y: number) => {
     setWindows((prev) =>
-      prev.map((w) => (w.id === id ? { ...w, position: { x, y } } : w))
+      prev.map((w) => {
+        if (w.id !== id) return w;
+        const vw = typeof window !== "undefined" ? window.innerWidth : 1280;
+        const vh = typeof window !== "undefined" ? window.innerHeight : 800;
+        const clampedX = Math.max(-(w.size.w - 80), Math.min(vw - 80, x));
+        const clampedY = Math.max(40, Math.min(vh - 40, y));
+        return { ...w, position: { x: clampedX, y: clampedY } };
+      })
     );
   }, []);
 
@@ -210,30 +211,38 @@ export function WindowManagerProvider({ children }: { children: ReactNode }) {
     );
   }, []);
 
-  const contextValue = useMemo(
-    () => ({
-      windows,
-      activeWindowId,
-      openWindow,
-      openApp,
-      closeWindow,
-      minimizeWindow,
-      maximizeWindow,
-      restoreWindow,
-      focusWindow,
-      moveWindow,
-      resizeWindow,
-    }),
-    [windows, activeWindowId, openWindow, openApp, closeWindow, minimizeWindow, maximizeWindow, restoreWindow, focusWindow, moveWindow, resizeWindow]
+  const stateValue = useMemo(
+    () => ({ windows, activeWindowId }),
+    [windows, activeWindowId]
+  );
+
+  const actionsValue = useMemo(
+    () => ({ openWindow, closeWindow, minimizeWindow, maximizeWindow, restoreWindow, focusWindow, moveWindow, resizeWindow }),
+    [openWindow, closeWindow, minimizeWindow, maximizeWindow, restoreWindow, focusWindow, moveWindow, resizeWindow]
   );
 
   return (
-    <WindowManagerContext.Provider value={contextValue}>
-      {children}
-    </WindowManagerContext.Provider>
+    <WindowStateContext.Provider value={stateValue}>
+      <WindowActionsContext.Provider value={actionsValue}>
+        {children}
+      </WindowActionsContext.Provider>
+    </WindowStateContext.Provider>
   );
 }
 
+/** State only — re-renders on every window change (position, size, z-index) */
+export function useWindowState() {
+  return useContext(WindowStateContext);
+}
+
+/** Actions only — never re-renders */
+export function useWindowActions() {
+  return useContext(WindowActionsContext);
+}
+
+/** Full context — use only when you need both state and actions in the same component */
 export function useWindowManager() {
-  return useContext(WindowManagerContext);
+  const state = useWindowState();
+  const actions = useWindowActions();
+  return useMemo(() => ({ ...state, ...actions }), [state, actions]);
 }
