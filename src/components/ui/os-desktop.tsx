@@ -155,31 +155,23 @@ export function OsDesktop() {
     },
   ];
 
-  const [positions, setPositions] = useState<Record<IconId, GridCell>>(() => {
+  const [positions, setPositions] = useState<Record<IconId, GridCell>>(() =>
+    getDefaultLayout(icons)
+  );
+
+  const [selectedId, setSelectedId] = useState<IconId | null>(null);
+
+  // Charger les positions sauvegardées côté client uniquement (après hydratation)
+  useEffect(() => {
     const saved = loadPositions();
     const defaults = getDefaultLayout(icons);
-    // Merge: keep saved positions, fill missing with defaults
     const merged = { ...defaults };
     for (const [id, cell] of Object.entries(saved)) {
       if (id in defaults) merged[id] = cell;
     }
-    return merged;
-  });
-
-  const [selectedId, setSelectedId] = useState<IconId | null>(null);
-
-  // Update positions when icons change (new app added)
-  useEffect(() => {
-    setPositions((prev) => {
-      const defaults = getDefaultLayout(icons);
-      const merged = { ...defaults };
-      for (const [id, cell] of Object.entries(prev)) {
-        if (id in defaults) merged[id] = cell;
-      }
-      return merged;
-    });
+    setPositions(merged);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [icons.length]);
+  }, []);
 
   const handleMove = useCallback(
     (id: IconId, newCell: GridCell) => {

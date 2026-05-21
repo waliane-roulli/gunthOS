@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, type ReactNode } from "react";
 import { useSound } from "@/lib/hooks/use-sound";
 import { useSettings } from "@/lib/contexts/settings-context";
 
+
 type SoundContextValue = ReturnType<typeof useSound>;
 
 const SoundContext = createContext<SoundContextValue | null>(null);
@@ -17,6 +18,11 @@ export function SoundProvider({ children }: { children: ReactNode }) {
   // sound est stable sur la durée de vie du provider — pas de re-run voulu
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Sync volume master sur les sons UI
+  useEffect(() => {
+    sound.setMasterGain(settings.masterVolume);
+  }, [settings.masterVolume, sound]);
 
   // Sync volume ambiant en temps réel depuis les settings
   useEffect(() => {

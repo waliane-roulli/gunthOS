@@ -10,6 +10,7 @@ const bootRawBufferPromise: Promise<ArrayBuffer> =
 
 export function useSound(muted: boolean) {
   const ctxRef = useRef<AudioContext | null>(null);
+  const masterGainRef = useRef<GainNode | null>(null);
   const bootLoadPromiseRef = useRef<Promise<void> | null>(null);
   const onFirstInitRef = useRef<(() => void) | null>(null);
 
@@ -19,6 +20,9 @@ export function useSound(muted: boolean) {
       return;
     }
     const ctx = new AudioContext();
+    const masterGain = ctx.createGain();
+    masterGain.connect(ctx.destination);
+    masterGainRef.current = masterGain;
     ctxRef.current = ctx;
     onFirstInitRef.current?.();
     onFirstInitRef.current = null;
@@ -58,7 +62,7 @@ export function useSound(muted: boolean) {
         gain.gain.setValueAtTime(volume, ctx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
         osc.connect(gain);
-        gain.connect(ctx.destination);
+        gain.connect(masterGainRef.current ?? ctx.destination);
         osc.start();
         osc.stop(ctx.currentTime + duration);
       } catch {}
@@ -86,7 +90,7 @@ export function useSound(muted: boolean) {
         gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
         source.connect(filter);
         filter.connect(gain);
-        gain.connect(ctx.destination);
+        gain.connect(masterGainRef.current ?? ctx.destination);
         source.start();
         source.stop(ctx.currentTime + duration);
       } catch {}
@@ -111,7 +115,7 @@ export function useSound(muted: boolean) {
       gain.gain.setValueAtTime(0.09, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.14);
       osc.connect(gain);
-      gain.connect(ctx.destination);
+      gain.connect(masterGainRef.current ?? ctx.destination);
       osc.start();
       osc.stop(ctx.currentTime + 0.14);
     } catch {}
@@ -129,7 +133,7 @@ export function useSound(muted: boolean) {
       gain.gain.setValueAtTime(0.09, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.17);
       osc.connect(gain);
-      gain.connect(ctx.destination);
+      gain.connect(masterGainRef.current ?? ctx.destination);
       osc.start();
       osc.stop(ctx.currentTime + 0.17);
     } catch {}
@@ -147,7 +151,7 @@ export function useSound(muted: boolean) {
       gain.gain.setValueAtTime(0.07, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
       osc.connect(gain);
-      gain.connect(ctx.destination);
+      gain.connect(masterGainRef.current ?? ctx.destination);
       osc.start();
       osc.stop(ctx.currentTime + 0.12);
     } catch {}
@@ -166,7 +170,7 @@ export function useSound(muted: boolean) {
       dialGain.gain.setValueAtTime(0.12, t + 0.4);
       dialGain.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
       dial.connect(dialGain);
-      dialGain.connect(ctx.destination);
+      dialGain.connect(masterGainRef.current ?? ctx.destination);
       dial.start(t);
       dial.stop(t + 0.5);
 
@@ -179,7 +183,7 @@ export function useSound(muted: boolean) {
         g.gain.setValueAtTime(0.1, t + 0.6 + i * 0.18);
         g.gain.exponentialRampToValueAtTime(0.001, t + 0.75 + i * 0.18);
         osc.connect(g);
-        g.connect(ctx.destination);
+        g.connect(masterGainRef.current ?? ctx.destination);
         osc.start(t + 0.6 + i * 0.18);
         osc.stop(t + 0.75 + i * 0.18);
       });
@@ -213,7 +217,7 @@ export function useSound(muted: boolean) {
         gain.gain.linearRampToValueAtTime(0.18, t + start + 0.02);
         gain.gain.exponentialRampToValueAtTime(0.001, t + start + dur);
         osc.connect(gain);
-        gain.connect(ctx.destination);
+        gain.connect(masterGainRef.current ?? ctx.destination);
         osc.start(t + start);
         osc.stop(t + start + dur + 0.05);
       } catch {}
@@ -240,7 +244,7 @@ export function useSound(muted: boolean) {
           gain.gain.setValueAtTime(0.12, t + delay);
           gain.gain.exponentialRampToValueAtTime(0.001, t + delay + dur);
           osc.connect(gain);
-          gain.connect(ctx.destination);
+          gain.connect(masterGainRef.current ?? ctx.destination);
           osc.start(t + delay);
           osc.stop(t + delay + dur + 0.05);
         } catch {}
@@ -255,7 +259,7 @@ export function useSound(muted: boolean) {
           gain.gain.setValueAtTime(0.12, t + delay);
           gain.gain.exponentialRampToValueAtTime(0.001, t + delay + 0.07);
           osc.connect(gain);
-          gain.connect(ctx.destination);
+          gain.connect(masterGainRef.current ?? ctx.destination);
           osc.start(t + delay);
           osc.stop(t + delay + 0.1);
         } catch {}
@@ -275,7 +279,7 @@ export function useSound(muted: boolean) {
       gain.gain.setValueAtTime(0.15, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
       osc.connect(gain);
-      gain.connect(ctx.destination);
+      gain.connect(masterGainRef.current ?? ctx.destination);
       osc.start();
       osc.stop(ctx.currentTime + 0.35);
     } catch {}
@@ -327,7 +331,7 @@ export function useSound(muted: boolean) {
 
     const gainNode = ctx.createGain();
     gainNode.gain.setValueAtTime(1.5, ctx.currentTime);
-    gainNode.connect(ctx.destination);
+    gainNode.connect(masterGainRef.current ?? ctx.destination);
 
     // Lecture de Boot.mp3 une seule fois
     const bootSource = ctx.createBufferSource();
@@ -397,7 +401,7 @@ export function useSound(muted: boolean) {
 
     const gainNode = ctx.createGain();
     gainNode.gain.setValueAtTime(1.5, ctx.currentTime);
-    gainNode.connect(ctx.destination);
+    gainNode.connect(masterGainRef.current ?? ctx.destination);
 
     const source = ctx.createBufferSource();
     source.buffer = buffer;
@@ -445,7 +449,7 @@ export function useSound(muted: boolean) {
       const buffer = await loadPloufPlouf(ctx);
       const gainNode = ctx.createGain();
       gainNode.gain.setValueAtTime(1, ctx.currentTime);
-      gainNode.connect(ctx.destination);
+      gainNode.connect(masterGainRef.current ?? ctx.destination);
       const source = ctx.createBufferSource();
       source.buffer = buffer;
       source.loop = true;
@@ -476,6 +480,10 @@ export function useSound(muted: boolean) {
     onFirstInitRef.current = cb;
   }, []);
 
+  const setMasterGain = useCallback((v: number) => {
+    if (masterGainRef.current) masterGainRef.current.gain.value = v / 100;
+  }, []);
+
   // stubs vides pour ne pas casser les imports existants
   const startAmbient = useCallback(() => {}, []);
   const stopAmbient = useCallback(() => {}, []);
@@ -502,6 +510,7 @@ export function useSound(muted: boolean) {
     stopAccessDisk,
     startPloufPlouf,
     stopPloufPlouf,
+    setMasterGain,
     startAmbient,
     stopAmbient,
     setAmbientVolume,

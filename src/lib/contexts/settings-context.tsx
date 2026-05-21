@@ -30,6 +30,7 @@ interface SettingsContextValue {
   theme: Theme;
   setTheme: (id: ThemeId) => void;
   setSoundEnabled: (v: boolean) => void;
+  setMasterVolume: (v: number) => void;
   setAmbientVolume: (v: number) => void;
   setAnimationsEnabled: (v: boolean) => void;
   setDensity: (v: Density) => void;
@@ -45,6 +46,7 @@ const SettingsContext = createContext<SettingsContextValue>({
   theme: THEME_MAP.get(DEFAULT_SETTINGS.themeId) as Theme,
   setTheme: () => {},
   setSoundEnabled: () => {},
+  setMasterVolume: () => {},
   setAmbientVolume: () => {},
   setAnimationsEnabled: () => {},
   setDensity: () => {},
@@ -192,6 +194,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const setSoundEnabled = useCallback((v: boolean) => updateSettings({ soundEnabled: v }), [updateSettings]);
+  const setMasterVolume = useCallback((v: number) => updateSettings({ masterVolume: Math.max(0, Math.min(100, v)) }), [updateSettings]);
   const setAmbientVolume = useCallback((v: number) => updateSettings({ ambientVolume: Math.max(0, Math.min(1, v)) }), [updateSettings]);
   const setAnimationsEnabled = useCallback((v: boolean) => updateSettings({ animationsEnabled: v }), [updateSettings]);
   const setDensity = useCallback((v: Density) => updateSettings({ density: v }), [updateSettings]);
@@ -212,8 +215,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const contextValue = useMemo(
-    () => ({ settings, theme, setTheme, setSoundEnabled, setAmbientVolume, setAnimationsEnabled, setDensity, setScanlinesEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, updateSettings }),
-    [settings, theme, setTheme, setSoundEnabled, setAmbientVolume, setAnimationsEnabled, setDensity, setScanlinesEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, updateSettings]
+    () => ({ settings, theme, setTheme, setSoundEnabled, setMasterVolume, setAmbientVolume, setAnimationsEnabled, setDensity, setScanlinesEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, updateSettings }),
+    [settings, theme, setTheme, setSoundEnabled, setMasterVolume, setAmbientVolume, setAnimationsEnabled, setDensity, setScanlinesEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, updateSettings]
   );
 
   return (

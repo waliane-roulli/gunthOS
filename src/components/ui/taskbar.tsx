@@ -1,10 +1,10 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { MsnLogo } from "./msn-logo";
 import { useWindowManager } from "@/lib/contexts/window-manager-context";
 import { APPS } from "@/lib/apps";
-import { useTheme } from "@/lib/contexts/settings-context";
+import { useTheme, useSettings } from "@/lib/contexts/settings-context";
 import { THEMES, type ThemeId } from "@/lib/themes";
 import { GUNTH_SHUTDOWN_MESSAGES, GUNTH_REBOOT_MESSAGES, pickRandom } from "@/lib/gunth-jokes";
 import { useOsClock } from "@/lib/hooks/use-os-clock";
@@ -533,14 +533,23 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
 }
 
 function VolumeTray() {
-  const { volume, setVolume, currentStation } = useRadio();
+  const { settings, setMasterVolume } = useSettings();
+  const { currentStation } = useRadio();
+  const volume = settings.masterVolume;
+  const setVolume = setMasterVolume;
   const [open, setOpen] = useState(false);
+  const btnRef = useRef<HTMLButtonElement>(null);
 
   const icon = volume === 0 ? "🔇" : volume < 40 ? "🔈" : volume < 75 ? "🔉" : "🔊";
 
+  const btnRect = btnRef.current?.getBoundingClientRect();
+  const popupRight = btnRect ? window.innerWidth - btnRect.right - 8 : 8;
+  const popupTop = btnRect ? btnRect.bottom + 4 : 44;
+
   return (
-    <div className="relative border-l pl-2" style={{ borderColor: "var(--t-border-dark)" }}>
+    <div className="border-l pl-2" style={{ borderColor: "var(--t-border-dark)" }}>
       <button
+        ref={btnRef}
         title={`Volume : ${volume}%`}
         onClick={() => setOpen((o) => !o)}
         style={{
@@ -563,12 +572,12 @@ function VolumeTray() {
           {/* Backdrop */}
           <div className="fixed inset-0 z-[9000]" onClick={() => setOpen(false)} />
 
-          {/* Popup */}
+          {/* Popup — fixed pour échapper au stacking context de la taskbar (backdropFilter) */}
           <div
-            className="absolute border-[2px] z-[9001] flex flex-col items-center gap-2 py-3 px-3"
+            className="fixed border-[2px] z-[9001] flex flex-col items-center gap-2 py-3 px-3"
             style={{
-              bottom: 36,
-              right: -8,
+              top: popupTop,
+              right: popupRight,
               width: 44,
               backgroundColor: "var(--t-bg)",
               borderTopColor: "var(--t-border-light)",
@@ -579,10 +588,8 @@ function VolumeTray() {
               fontFamily: "var(--t-font-display)",
             }}
           >
-            {/* Valeur */}
-            <span className="text-xs tracking-widest tabular-nums" style={{ color: "var(--t-accent)" }}>
-              {volume}
-            </span>
+            {/* Icône haut */}
+            <span style={{ fontSize: "0.75rem" }}>{icon}</span>
 
             {/* Slider vertical */}
             <div
@@ -610,7 +617,7 @@ function VolumeTray() {
                   setVolume(Math.round(Math.max(0, Math.min(1, ratio)) * 100));
                 }}
               >
-                {/* Fill */}
+                {/* Fill — zone active en bas, monte quand le volume monte */}
                 <div
                   style={{
                     position: "absolute",
@@ -623,7 +630,7 @@ function VolumeTray() {
                 />
               </div>
 
-              {/* Draggable thumb */}
+              {/* Draggable thumb — en haut quand volume = 100, en bas quand volume = 0 */}
               <div
                 className="absolute border-[2px] cursor-pointer"
                 style={{
@@ -631,7 +638,7 @@ function VolumeTray() {
                   transform: "translateX(-50%)",
                   width: 16,
                   height: 8,
-                  bottom: `calc(${volume}% - 4px)`,
+                  top: `calc(${100 - volume}% - 4px)`,
                   backgroundColor: "var(--t-bg)",
                   borderTopColor: "var(--t-border-light)",
                   borderLeftColor: "var(--t-border-light)",
@@ -656,8 +663,10 @@ function VolumeTray() {
               />
             </div>
 
-            {/* Icône bas */}
-            <span style={{ fontSize: "0.75rem" }}>{icon}</span>
+            {/* Valeur */}
+            <span className="text-xs tracking-widest tabular-nums" style={{ color: "var(--t-accent)" }}>
+              {volume}
+            </span>
           </div>
         </>
       )}

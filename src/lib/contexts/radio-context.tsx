@@ -9,6 +9,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { useSettings } from "@/lib/contexts/settings-context";
 
 export const STATIONS = [
   {
@@ -95,10 +96,12 @@ const RadioContext = createContext<RadioContextValue>({
 });
 
 export function RadioProvider({ children }: { children: ReactNode }) {
+  const { settings, setMasterVolume } = useSettings();
+  const volume = settings.masterVolume;
+
   const [currentStationId, setCurrentStationId] = useState<StationId | null>(null);
   const [isBuffering, setIsBuffering] = useState(false);
   const [hasError, setHasError] = useState(false);
-  const [volume, setVolumeState] = useState(80);
   const [playTime, setPlayTime] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const timeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -117,6 +120,11 @@ export function RadioProvider({ children }: { children: ReactNode }) {
 
   const volumeRef = useRef(volume);
   useEffect(() => { volumeRef.current = volume; }, [volume]);
+
+  // Sync volume audio en temps réel quand masterVolume change
+  useEffect(() => {
+    if (audioRef.current) audioRef.current.volume = volume / 100;
+  }, [volume]);
 
   const play = useCallback((id: StationId) => {
     const audio = audioRef.current;
@@ -162,9 +170,8 @@ export function RadioProvider({ children }: { children: ReactNode }) {
   }, [currentStationId, play]);
 
   const setVolume = useCallback((v: number) => {
-    setVolumeState(v);
-    if (audioRef.current) audioRef.current.volume = v / 100;
-  }, []);
+    setMasterVolume(v);
+  }, [setMasterVolume]);
 
   const handlePlaying = useCallback(() => {
     setIsBuffering(false);
