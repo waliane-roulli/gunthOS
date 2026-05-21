@@ -46,6 +46,26 @@ export function WallpaperDecoration({ decorationKey, wallpaperId }: Props) {
     case "defrag": return <DefragWallpaper />;
     case "wifi_bars": return <WifiWallpaper />;
     case "boomer_forward": return <BoomerForwardWallpaper />;
+    case "minitel": return <MinitelWallpaper />;
+    case "excel": return <ExcelWallpaper />;
+    case "powerpoint": return <PowerpointWallpaper />;
+    case "minesweeper": return <MinesweeperWallpaper />;
+    case "geocities": return <GeocitiesWallpaper />;
+    case "ie6": return <Ie6Wallpaper />;
+    case "notepad": return <NotepadWallpaper />;
+    case "c64": return <C64Wallpaper />;
+    case "winamp": return <WinampWallpaper />;
+    case "ms_paint": return <MsPaintWallpaper />;
+    case "aol": return <AolWallpaper />;
+    case "tamagotchi_death": return <TamagotchiDeathWallpaper />;
+    case "solitaire": return <SolitaireWallpaper />;
+    case "nasa_panic": return <NasaPanicWallpaper />;
+    case "printer_rage": return <PrinterRageWallpaper />;
+    case "stackoverflow": return <StackOverflowWallpaper />;
+    case "captcha_hell": return <CaptchaHellWallpaper />;
+    case "nokia3310": return <Nokia3310Wallpaper />;
+    case "fax_2024": return <Fax2024Wallpaper />;
+    case "windows_update_forced": return <WindowsUpdateForcedWallpaper />;
     default: return null;
   }
 }
@@ -690,57 +710,169 @@ function StonksChart() {
 
 /* ─── XP Hill Decor ──────────────────────────────────────── */
 function XpHillDecor() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const draw = () => {
+      const W = canvas.offsetWidth;
+      const H = canvas.offsetHeight;
+      canvas.width = W;
+      canvas.height = H;
+
+      // ── Ciel Velvia : bleu intense hypersaturé, horizon brumeux clair ──
+      // La vraie Bliss : ~65% de ciel, horizon très bas
+      const sky = ctx.createLinearGradient(0, 0, 0, H);
+      sky.addColorStop(0,    "#3a8fd4"); // bleu cobalt intense (sommet)
+      sky.addColorStop(0.3,  "#5aacec"); // bleu ciel Velvia
+      sky.addColorStop(0.58, "#8ecef8"); // ciel pâle vers horizon
+      sky.addColorStop(0.65, "#b8dff8"); // haze à l'horizon
+      sky.addColorStop(1,    "#cce8f8"); // fond du reste (caché par herbe)
+      ctx.fillStyle = sky;
+      ctx.fillRect(0, 0, W, H);
+
+      // ── Brume d'horizon très légère ──
+      const haze = ctx.createLinearGradient(0, H * 0.55, 0, H * 0.68);
+      haze.addColorStop(0, "rgba(255,255,255,0)");
+      haze.addColorStop(0.5, "rgba(220,238,255,0.22)");
+      haze.addColorStop(1, "rgba(255,255,255,0)");
+      ctx.fillStyle = haze;
+      ctx.fillRect(0, H * 0.55, W, H * 0.13);
+
+      // ── Collines arrière-plan : légèrement derrière, plus sombres/bleues ──
+      // gauche — colline basse et douce
+      const bgL = ctx.createLinearGradient(0, H * 0.58, 0, H * 0.75);
+      bgL.addColorStop(0, "#3d8c22");
+      bgL.addColorStop(1, "#265e10");
+      ctx.beginPath();
+      ctx.moveTo(-W * 0.02, H);
+      ctx.bezierCurveTo(W * 0.02, H * 0.82, W * 0.10, H * 0.68, W * 0.20, H * 0.62);
+      ctx.bezierCurveTo(W * 0.28, H * 0.58, W * 0.36, H * 0.60, W * 0.48, H * 0.74);
+      ctx.lineTo(W * 0.48, H);
+      ctx.closePath();
+      ctx.fillStyle = bgL;
+      ctx.fill();
+
+      // droite — colline basse
+      const bgR = ctx.createLinearGradient(0, H * 0.56, 0, H * 0.72);
+      bgR.addColorStop(0, "#3d8c22");
+      bgR.addColorStop(1, "#265e10");
+      ctx.beginPath();
+      ctx.moveTo(W * 0.55, H);
+      ctx.bezierCurveTo(W * 0.58, H * 0.76, W * 0.66, H * 0.62, W * 0.74, H * 0.57);
+      ctx.bezierCurveTo(W * 0.83, H * 0.52, W * 0.93, H * 0.58, W * 1.03, H * 0.70);
+      ctx.lineTo(W * 1.03, H);
+      ctx.closePath();
+      ctx.fillStyle = bgR;
+      ctx.fill();
+
+      // ── Colline principale Bliss ──
+      // Sommet légèrement à droite du centre (~55%), horizon à ~62% de H
+      // Pente gauche douce et longue, pente droite plus abrupte
+      const hillPath = () => {
+        ctx.beginPath();
+        ctx.moveTo(-W * 0.02, H);
+        // montée douce depuis la gauche
+        ctx.bezierCurveTo(W * 0.05, H * 0.92, W * 0.16, H * 0.76, W * 0.28, H * 0.68);
+        // approche du sommet
+        ctx.bezierCurveTo(W * 0.38, H * 0.61, W * 0.47, H * 0.55, W * 0.55, H * 0.52);
+        // sommet (légèrement à droite du centre)
+        ctx.bezierCurveTo(W * 0.60, H * 0.50, W * 0.66, H * 0.52, W * 0.72, H * 0.57);
+        // descente droite plus rapide
+        ctx.bezierCurveTo(W * 0.80, H * 0.63, W * 0.89, H * 0.73, W * 0.97, H * 0.82);
+        ctx.lineTo(W * 1.02, H * 0.88);
+        ctx.lineTo(W * 1.02, H);
+        ctx.closePath();
+      };
+
+      // Dégradé Velvia : vert lime hypersaturé en haut, vert forêt en bas
+      const hill = ctx.createLinearGradient(0, H * 0.50, 0, H);
+      hill.addColorStop(0,    "#7ed62e"); // vert lime Velvia intense — crête ensoleillée
+      hill.addColorStop(0.15, "#65c420"); // vert vif
+      hill.addColorStop(0.40, "#4aaa18"); // vert moyen
+      hill.addColorStop(0.70, "#368010"); // vert sombre
+      hill.addColorStop(1,    "#245808"); // ombre profonde
+      hillPath();
+      ctx.fillStyle = hill;
+      ctx.fill();
+
+      // ── Lumière solaire sur la crête (le soleil vient de la droite dans Bliss) ──
+      const sunlight = ctx.createLinearGradient(W * 0.5, H * 0.50, W * 0.3, H * 0.62);
+      sunlight.addColorStop(0, "rgba(200,255,120,0.22)");
+      sunlight.addColorStop(0.5, "rgba(200,255,120,0.08)");
+      sunlight.addColorStop(1, "rgba(200,255,120,0)");
+      hillPath();
+      ctx.fillStyle = sunlight;
+      ctx.fill();
+
+      // ── Ombre légère sur le flanc droit ──
+      const shadow = ctx.createLinearGradient(W * 0.62, 0, W * 0.85, 0);
+      shadow.addColorStop(0, "rgba(0,30,0,0)");
+      shadow.addColorStop(1, "rgba(0,30,0,0.12)");
+      hillPath();
+      ctx.fillStyle = shadow;
+      ctx.fill();
+    };
+
+    draw();
+    window.addEventListener("resize", draw);
+    return () => window.removeEventListener("resize", draw);
+  }, []);
+
   return (
     <>
-      {/* Clouds */}
-      {[
-        { x: 10, y: 8, scale: 1.2, delay: 0 },
-        { x: 40, y: 5, scale: 0.8, delay: 2 },
-        { x: 70, y: 10, scale: 1, delay: 1 },
-      ].map((c, i) => (
-        <div
-          key={i}
-          className="absolute pointer-events-none select-none"
-          style={{
-            left: `${c.x}%`,
-            top: `${c.y}%`,
-            fontSize: 60 * c.scale,
-            filter: "drop-shadow(2px 4px 8px rgba(0,0,0,0.15))",
-            animation: `cloudDrift ${8 + i * 3}s ${c.delay}s infinite ease-in-out`,
-            zIndex: 0,
-          }}
-        >
-          ☁️
-        </div>
-      ))}
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 w-full h-full pointer-events-none"
+        style={{ zIndex: 0 }}
+      />
       <style>{`
-        @keyframes cloudDrift {
-          0%, 100% { transform: translateX(0); }
-          50% { transform: translateX(30px); }
-        }
+        @keyframes blissCloudA { 0%,100% { transform: translateX(0); } 50% { transform: translateX(20px); } }
+        @keyframes blissCloudB { 0%,100% { transform: translateX(0); } 50% { transform: translateX(-16px); } }
+        @keyframes blissCloudC { 0%,100% { transform: translateX(0); } 50% { transform: translateX(24px); } }
       `}</style>
-      {/* Sun */}
-      <div
-        className="absolute pointer-events-none select-none"
-        style={{ right: "8%", top: "6%", fontSize: 70, zIndex: 1, filter: "drop-shadow(0 0 20px rgba(255,220,0,0.6))" }}
-      >
-        ☀️
+
+      {/* Nuage 1 — grand, gauche */}
+      <div className="absolute pointer-events-none" style={{ left: "5%", top: "6%", zIndex: 1, animation: "blissCloudA 10s ease-in-out infinite" }}>
+        <svg width="180" height="76" viewBox="0 0 180 76" fill="none">
+          <ellipse cx="82" cy="58" rx="76" ry="22" fill="white" fillOpacity="0.96"/>
+          <ellipse cx="56" cy="46" rx="38" ry="32" fill="white" fillOpacity="0.96"/>
+          <ellipse cx="98" cy="38" rx="44" ry="36" fill="white" fillOpacity="0.96"/>
+          <ellipse cx="136" cy="52" rx="32" ry="22" fill="white" fillOpacity="0.96"/>
+        </svg>
       </div>
-      {/* Small flowers */}
-      {["🌼", "🌸", "🌻", "💐"].map((f, i) => (
-        <div
-          key={i}
-          className="absolute pointer-events-none select-none"
-          style={{
-            bottom: "8%",
-            left: `${20 + i * 18}%`,
-            fontSize: 24,
-            zIndex: 1,
-          }}
-        >
-          {f}
-        </div>
-      ))}
+
+      {/* Nuage 2 — moyen, centre */}
+      <div className="absolute pointer-events-none" style={{ left: "42%", top: "3%", zIndex: 1, animation: "blissCloudB 13s ease-in-out infinite" }}>
+        <svg width="130" height="56" viewBox="0 0 130 56" fill="none">
+          <ellipse cx="62" cy="44" rx="58" ry="16" fill="white" fillOpacity="0.93"/>
+          <ellipse cx="44" cy="34" rx="30" ry="26" fill="white" fillOpacity="0.93"/>
+          <ellipse cx="76" cy="28" rx="34" ry="28" fill="white" fillOpacity="0.93"/>
+          <ellipse cx="102" cy="40" rx="24" ry="18" fill="white" fillOpacity="0.93"/>
+        </svg>
+      </div>
+
+      {/* Nuage 3 — petit, droite */}
+      <div className="absolute pointer-events-none" style={{ right: "7%", top: "10%", zIndex: 1, animation: "blissCloudC 8s ease-in-out infinite" }}>
+        <svg width="100" height="44" viewBox="0 0 100 44" fill="none">
+          <ellipse cx="48" cy="34" rx="44" ry="14" fill="white" fillOpacity="0.90"/>
+          <ellipse cx="34" cy="26" rx="22" ry="20" fill="white" fillOpacity="0.90"/>
+          <ellipse cx="60" cy="22" rx="26" ry="22" fill="white" fillOpacity="0.90"/>
+        </svg>
+      </div>
+
+      {/* Nuage 4 — lointain, estompé */}
+      <div className="absolute pointer-events-none" style={{ left: "22%", top: "13%", zIndex: 1, animation: "blissCloudA 16s ease-in-out infinite", opacity: 0.55 }}>
+        <svg width="90" height="38" viewBox="0 0 90 38" fill="none">
+          <ellipse cx="42" cy="28" rx="38" ry="12" fill="white"/>
+          <ellipse cx="28" cy="22" rx="20" ry="18" fill="white"/>
+          <ellipse cx="56" cy="18" rx="24" ry="20" fill="white"/>
+        </svg>
+      </div>
     </>
   );
 }
@@ -2025,6 +2157,1585 @@ function BoomerForwardWallpaper() {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ─── Minitel Rose ──────────────────────────────────────────── */
+function MinitelWallpaper() {
+  const [line, setLine] = useState(0);
+  const lines = [
+    "   ╔══════════════════════════════╗",
+    "   ║   BIENVENUE SUR 3615 GUNTH   ║",
+    "   ╚══════════════════════════════╝",
+    "",
+    "   SERVICE MESSAGERIE ROSE",
+    "   Prix : 1,27 FF/min",
+    "",
+    "   > Connexion en cours......",
+    "   > Authentification...",
+    "   > GUNTH connecté à 1200 baud",
+    "",
+    "   [1] MESSAGERIE PERSONNELLE",
+    "   [2] ANNONCES RENCONTRES",
+    "   [3] HOROSCOPE DU JOUR",
+    "   [4] BLAGUES (interdit -18 ans)",
+    "   [5] DÉCONNEXION (impossible)",
+    "",
+    "   Votre choix : _",
+    "",
+    "   ⚠ AVERTISSEMENT : Ce service",
+    "   vous coûte 47FF/heure.",
+    "   Votre mère est au courant.",
+  ];
+
+  useEffect(() => {
+    const t = setInterval(() => setLine(l => (l + 1) % (lines.length + 8)), 180);
+    return () => clearInterval(t);
+  }, []);
+
+  return (
+    <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ zIndex: 0 }}>
+      <style>{`@keyframes mtCursor { 0%,49%{opacity:1} 50%,100%{opacity:0} }`}</style>
+      <div style={{ fontFamily: "\"Courier New\", monospace", color: "#ff40ff", fontSize: "clamp(9px,1.3vw,14px)", lineHeight: 1.7, maxWidth: 520, width: "90%" }}>
+        {lines.slice(0, Math.min(line, lines.length)).map((l, i) => (
+          <div key={i} style={{ opacity: i < line - 3 ? 0.6 : 1 }}>{l || " "}</div>
+        ))}
+        {line <= lines.length && (
+          <span style={{ animation: "mtCursor 1s step-end infinite", color: "#ff80ff" }}>█</span>
+        )}
+      </div>
+      <div className="absolute inset-0 pointer-events-none" style={{
+        backgroundImage: "repeating-linear-gradient(0deg, rgba(255,64,255,0.04) 0px, rgba(255,64,255,0.04) 1px, transparent 1px, transparent 3px)",
+        zIndex: 1,
+      }} />
+    </div>
+  );
+}
+
+/* ─── Excel Dépression ──────────────────────────────────────── */
+function ExcelWallpaper() {
+  const cols = ["A","B","C","D","E","F","G","H","I","J","K","L"];
+  const rows = Array.from({length: 22}, (_, i) => i + 1);
+  const funnyData: Record<string, string> = {
+    "B2": "Bonheur", "C2": "Motivation", "D2": "Café", "E2": "Résultat",
+    "B3": "0%", "C3": "2%", "D3": "500ml", "E3": "=SI(D3>200,\"Fonctionnel\",\"❌\")",
+    "B4": "0%", "C4": "0%", "D4": "1L", "E4": "=SI(D4>500,\"Survie\",\"❌\")",
+    "B5": "0%", "C5": "0%", "D5": "2L", "E5": "=\"ERREUR#REF\"",
+    "B6": "", "C6": "", "D6": "", "E6": "#DIV/0!",
+    "B8": "TOTAL BONHEUR:", "E8": "=SOMME(B3:B99)",
+    "B9": "RÉSULTAT:", "E9": "0",
+    "B11": "💡 Conseil:", "C11": "Avez-vous essayé d'éteindre et rallumer votre vie ?",
+    "B13": "Prochain objectif:", "C13": "Survivre jusqu'à vendredi",
+    "B14": "Deadline:", "C14": "Hier (en retard de 3 ans)",
+    "B16": "Réunion suivante:", "C16": "Dans 5 min (vous n'êtes pas prêt)",
+    "B17": "Ordre du jour:", "C17": "Faire une réunion sur les réunions",
+  };
+  const [selected, setSelected] = useState("B2");
+  useEffect(() => {
+    const cells = Object.keys(funnyData);
+    const t = setInterval(() => setSelected(cells[Math.floor(Math.random() * cells.length)]!), 1800);
+    return () => clearInterval(t);
+  }, []);
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 0, fontFamily: "\"Segoe UI\", Arial, sans-serif" }}>
+      {/* Ribbon */}
+      <div style={{ background: "#217346", color: "white", padding: "3px 8px", fontSize: "clamp(9px,1.1vw,12px)", display: "flex", gap: 16 }}>
+        {["Fichier","Accueil","Insertion","Mise en page","Formules","Données","Révision","Affichage"].map(m => (
+          <span key={m} style={{ opacity: m === "Accueil" ? 1 : 0.75 }}>{m}</span>
+        ))}
+      </div>
+      {/* Formula bar */}
+      <div style={{ background: "#f2f2f2", borderBottom: "1px solid #c0c0c0", padding: "2px 6px", fontSize: "clamp(9px,1.1vw,12px)", display: "flex", gap: 8, alignItems: "center" }}>
+        <span style={{ background: "white", border: "1px solid #c0c0c0", padding: "1px 6px", minWidth: 40, textAlign: "center" }}>{selected}</span>
+        <span style={{ color: "#666" }}>fx</span>
+        <span style={{ background: "white", flex: 1, border: "1px solid #c0c0c0", padding: "1px 6px", color: "#000" }}>{funnyData[selected] ?? ""}</span>
+      </div>
+      {/* Grid */}
+      <div style={{ overflowX: "auto" }}>
+        <table style={{ borderCollapse: "collapse", fontSize: "clamp(8px,1vw,11px)", width: "100%" }}>
+          <thead>
+            <tr>
+              <th style={{ background: "#f2f2f2", border: "1px solid #d0d0d0", width: 30, minWidth: 30 }} />
+              {cols.map(c => <th key={c} style={{ background: "#f2f2f2", border: "1px solid #d0d0d0", padding: "1px 8px", fontWeight: "normal", minWidth: 70 }}>{c}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map(r => (
+              <tr key={r}>
+                <td style={{ background: "#f2f2f2", border: "1px solid #d0d0d0", textAlign: "center", padding: "1px 4px", color: "#666" }}>{r}</td>
+                {cols.map(c => {
+                  const key = `${c}${r}`;
+                  const isSel = key === selected;
+                  return (
+                    <td key={c} style={{
+                      border: isSel ? "2px solid #217346" : "1px solid #d0d0d0",
+                      padding: "1px 4px", background: isSel ? "#e8f5ee" : "white",
+                      color: (funnyData[key] ?? "").startsWith("#") || funnyData[key] === "0" ? "#c00000" : "#000",
+                      whiteSpace: "nowrap", overflow: "hidden", maxWidth: 120,
+                    }}>
+                      {funnyData[key] ?? ""}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+/* ─── PowerPoint Enfer ──────────────────────────────────────── */
+function PowerpointWallpaper() {
+  const [slide, setSlide] = useState(0);
+  const slides = [
+    { title: "SYNERGISER LES SYNERGIES", body: "• Leverager nos assets\n• Paradigm shift disruptif\n• ROI+++++\n• Action items à définir", note: "Slide 1/87 — Comic Sans activé" },
+    { title: "NOTRE VISION 2025 2026 2027", body: "• Innovation™\n• Disruption™\n• Transformation™\n• [insérer buzzword ici]", note: "Transition: fondu enchaîné + son de gong" },
+    { title: "MERCI DE VOTRE ATTENTION", body: "Questions ?\n\n(personne ne pose de questions)\n(tout le monde regarde son téléphone)", note: "Durée réelle de la présentation : 3h47" },
+    { title: "LES CHIFFRES CLÉS 📊", body: "• +∞% de croissance\n• -100% de pauses\n• 47 réunions/semaine\n• 0 décisions prises", note: "Les chiffres sont entièrement inventés" },
+  ];
+  const current = slides[slide % slides.length]!;
+
+  useEffect(() => {
+    const t = setInterval(() => setSlide(s => s + 1), 4000);
+    return () => clearInterval(t);
+  }, []);
+
+  return (
+    <div className="absolute inset-0 flex flex-col pointer-events-none" style={{ zIndex: 0 }}>
+      <style>{`@keyframes ppIn { from{opacity:0;transform:scale(0.96)} to{opacity:1;transform:scale(1)} }`}</style>
+      {/* Barre PP */}
+      <div style={{ background: "#b7472a", padding: "3px 10px", fontSize: "clamp(9px,1.1vw,12px)", color: "white", display: "flex", gap: 12 }}>
+        {["Fichier","Accueil","Insertion","Création","Transitions","Animations","Diaporama"].map(m => <span key={m}>{m}</span>)}
+      </div>
+      {/* Slide */}
+      <div className="flex-1 flex items-center justify-center" style={{ background: "linear-gradient(135deg, #1e003a 0%, #3a0060 100%)", padding: 20 }}>
+        <div key={slide} style={{
+          background: "linear-gradient(135deg, #2d004a 0%, #1a0030 60%, #300010 100%)",
+          border: "1px solid #ff6030", borderRadius: 4, padding: "clamp(16px,3vw,32px)",
+          maxWidth: 600, width: "90%", animation: "ppIn 0.4s ease",
+          boxShadow: "0 8px 32px rgba(255,96,48,0.3)",
+        }}>
+          <div style={{ fontFamily: "\"Comic Sans MS\", cursive", fontSize: "clamp(14px,2.5vw,26px)", color: "#ff6030", fontWeight: "bold", marginBottom: 16, textShadow: "0 0 20px rgba(255,96,48,0.6)" }}>
+            {current.title}
+          </div>
+          <div style={{ fontFamily: "\"Comic Sans MS\", cursive", fontSize: "clamp(10px,1.6vw,15px)", color: "#ffeecc", lineHeight: 1.8, whiteSpace: "pre-line" }}>
+            {current.body}
+          </div>
+          <div style={{ marginTop: 20, paddingTop: 12, borderTop: "1px solid rgba(255,96,48,0.3)", fontSize: "clamp(8px,1.1vw,11px)", color: "rgba(255,180,100,0.5)", fontStyle: "italic" }}>
+            📝 {current.note}
+          </div>
+        </div>
+      </div>
+      {/* Barre status */}
+      <div style={{ background: "#b7472a", padding: "2px 10px", fontSize: "clamp(8px,1vw,11px)", color: "rgba(255,255,255,0.8)", display: "flex", justifyContent: "space-between" }}>
+        <span>Slide {(slide % slides.length) + 1} sur 87</span>
+        <span>🔊 Son activé · ✨ 34 animations · 💫 Transition : Tourbillon</span>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Minesweeper ───────────────────────────────────────────── */
+function MinesweeperWallpaper() {
+  const COLS = 16, ROWS = 10;
+  type Cell = { mine: boolean; revealed: boolean; flagged: boolean; count: number };
+  const [board, setBoard] = useState<Cell[][]>(() => {
+    const b: Cell[][] = Array.from({length: ROWS}, () =>
+      Array.from({length: COLS}, () => ({ mine: Math.random() < 0.18, revealed: false, flagged: false, count: 0 }))
+    );
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+      if (b[r]![c]!.mine) continue;
+      let n = 0;
+      for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) {
+        if (b[r+dr]?.[c+dc]?.mine) n++;
+      }
+      b[r]![c]!.count = n;
+    }
+    // Pre-reveal some safe cells
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+      if (!b[r]![c]!.mine && Math.random() < 0.35) b[r]![c]!.revealed = true;
+    }
+    return b;
+  });
+  const [exploded, setExploded] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      // Reveal a mine after 3s for drama
+      setBoard(prev => {
+        const next = prev.map(r => r.map(c => ({...c})));
+        for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+          if (next[r]![c]!.mine) { next[r]![c]!.revealed = true; break; }
+        }
+        return next;
+      });
+      setExploded(true);
+    }, 3000);
+    return () => clearTimeout(t);
+  }, []);
+
+  const numColors = ["","#0000ff","#008000","#ff0000","#000080","#800000","#008080","#000000","#808080"];
+
+  return (
+    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none" style={{ zIndex: 0, background: "#c0c0c0" }}>
+      <style>{`@keyframes boom { 0%{transform:scale(1)} 50%{transform:scale(1.3)} 100%{transform:scale(1)} }`}</style>
+      {/* Window chrome */}
+      <div style={{ border: "3px solid", borderTopColor: "#fff", borderLeftColor: "#fff", borderBottomColor: "#808080", borderRightColor: "#808080", boxShadow: "4px 4px 0 rgba(0,0,0,0.4)" }}>
+        <div style={{ background: "linear-gradient(to right, #000080, #1084d0)", color: "white", padding: "3px 8px", fontSize: "clamp(10px,1.3vw,13px)", fontFamily: "monospace", display: "flex", justifyContent: "space-between" }}>
+          <span>💣 Démineur</span>
+          <span style={{ display: "flex", gap: 4 }}>
+            {["_","□","✕"].map(b => <span key={b} style={{ border: "2px solid", borderTopColor: "#fff", borderLeftColor: "#fff", borderBottomColor: "#808080", borderRightColor: "#808080", background: "#c0c0c0", color: "#000", width: 16, height: 14, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9 }}>{b}</span>)}
+          </span>
+        </div>
+        <div style={{ padding: 8, background: "#c0c0c0" }}>
+          {/* Score bar */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8, background: "#808080", padding: "4px 8px", border: "2px solid", borderTopColor: "#808080", borderLeftColor: "#808080", borderBottomColor: "#fff", borderRightColor: "#fff" }}>
+            <span style={{ fontFamily: "\"Courier New\", monospace", fontSize: "clamp(14px,2vw,20px)", color: "#ff0000", background: "#000", padding: "2px 4px", letterSpacing: 2 }}>019</span>
+            <span style={{ fontSize: "clamp(20px,3vw,32px)", animation: exploded ? "boom 0.3s ease" : "none" }}>{exploded ? "😵" : "🙂"}</span>
+            <span style={{ fontFamily: "\"Courier New\", monospace", fontSize: "clamp(14px,2vw,20px)", color: "#ff0000", background: "#000", padding: "2px 4px", letterSpacing: 2 }}>042</span>
+          </div>
+          {/* Grid */}
+          <div style={{ display: "grid", gridTemplateColumns: `repeat(${COLS}, 1fr)`, gap: 1 }}>
+            {board.flat().map((cell, i) => (
+              <div key={i} style={{
+                width: "clamp(16px,1.8vw,22px)", height: "clamp(16px,1.8vw,22px)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: "clamp(8px,1vw,12px)", fontWeight: "bold", fontFamily: "monospace",
+                background: cell.revealed ? "#c0c0c0" : "#c0c0c0",
+                border: cell.revealed ? "1px solid #808080" : "2px solid",
+                borderTopColor: cell.revealed ? "#808080" : "#fff",
+                borderLeftColor: cell.revealed ? "#808080" : "#fff",
+                borderBottomColor: cell.revealed ? "#808080" : "#808080",
+                borderRightColor: cell.revealed ? "#808080" : "#808080",
+                color: cell.revealed && !cell.mine ? numColors[cell.count] ?? "#000" : "inherit",
+              }}>
+                {cell.revealed
+                  ? (cell.mine ? <span style={{ animation: exploded ? "boom 0.4s ease" : "none" }}>💥</span> : (cell.count > 0 ? cell.count : ""))
+                  : (cell.flagged ? "🚩" : "")}
+              </div>
+            ))}
+          </div>
+          {exploded && (
+            <div style={{ textAlign: "center", marginTop: 8, fontFamily: "monospace", fontSize: "clamp(10px,1.3vw,13px)", fontWeight: "bold" }}>
+              BOOM — Comme prévu. Réessayer ?
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Geocities 1999 ────────────────────────────────────────── */
+function GeocitiesWallpaper() {
+  const [blink, setBlink] = useState(true);
+  const [visitors, setVisitors] = useState(47);
+  useEffect(() => {
+    const b = setInterval(() => setBlink(v => !v), 600);
+    const v = setInterval(() => setVisitors(n => n + Math.floor(Math.random() * 3)), 2000);
+    return () => { clearInterval(b); clearInterval(v); };
+  }, []);
+
+  const gifs = ["🌟","💫","✨","⭐","🌈","🔥","💎","🎆","🎇","🌠"];
+  const marqueeItems = ["🚧 SITE EN CONSTRUCTION 🚧","📧 MON EMAIL : gunth@club-internet.fr","🎵 MUSIQUE : midi_gunth.mid","💌 LAISSEZ UN MESSAGE !","🏆 MEILLEUR SITE 1999"];
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 0, fontFamily: "\"Comic Sans MS\", cursive" }}>
+      <style>{`
+        @keyframes gcSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+        @keyframes gcRainbow { 0%{color:#ff0000} 16%{color:#ff8800} 33%{color:#ffff00} 50%{color:#00ff00} 66%{color:#0088ff} 83%{color:#ff00ff} 100%{color:#ff0000} }
+        @keyframes gcFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+        @keyframes gcMarquee { from{transform:translateX(100%)} to{transform:translateX(-100%)} }
+      `}</style>
+
+      {/* Fond étoiles */}
+      {Array.from({length: 20}, (_, i) => (
+        <div key={i} className="absolute" style={{ left: `${(i*13+7)%97}%`, top: `${(i*17+11)%90}%`, fontSize: 12 + (i%3)*6, opacity: 0.3, animation: `gcFloat ${2+i%3}s ease-in-out ${i*0.3}s infinite` }}>
+          {gifs[i % gifs.length]}
+        </div>
+      ))}
+
+      {/* Titre rainbow */}
+      <div style={{ textAlign: "center", paddingTop: "8%", position: "relative", zIndex: 2 }}>
+        <div style={{ fontSize: "clamp(20px,5vw,52px)", fontWeight: "bold", animation: "gcRainbow 1s linear infinite", textShadow: "3px 3px 0 rgba(0,0,0,0.5)" }}>
+          ★ BIENVENUE SUR MA PAGE ★
+        </div>
+        <div style={{ fontSize: "clamp(12px,2vw,20px)", color: blink ? "#ffff00" : "transparent", marginTop: 8 }}>
+          ⚡ EN CONSTRUCTION ⚡
+        </div>
+      </div>
+
+      {/* Compteur de visiteurs */}
+      <div style={{ textAlign: "center", marginTop: 16, position: "relative", zIndex: 2 }}>
+        <div style={{ display: "inline-block", background: "#000080", border: "3px solid #ffff00", padding: "6px 16px" }}>
+          <div style={{ color: "#ffff00", fontSize: "clamp(9px,1.2vw,12px)" }}>👁️ VISITEURS</div>
+          <div style={{ color: "#00ffff", fontFamily: "\"Courier New\", monospace", fontSize: "clamp(16px,2.5vw,28px)", letterSpacing: 4 }}>
+            {String(visitors).padStart(7, "0")}
+          </div>
+        </div>
+      </div>
+
+      {/* Marquee */}
+      <div style={{ background: "#000080", color: "#ffff00", overflow: "hidden", marginTop: 20, padding: "4px 0", position: "relative", zIndex: 2 }}>
+        <div style={{ whiteSpace: "nowrap", animation: "gcMarquee 12s linear infinite", fontSize: "clamp(10px,1.4vw,14px)" }}>
+          {marqueeItems.join("   ·   ")}
+        </div>
+      </div>
+
+      {/* Avertissement */}
+      <div style={{ textAlign: "center", marginTop: 20, fontSize: "clamp(8px,1.1vw,12px)", color: "#ff00ff", position: "relative", zIndex: 2 }}>
+        ⚠️ Ce site est optimisé pour <span style={{ color: "#00ffff" }}>Internet Explorer 4.0</span> — résolution 800×600
+      </div>
+
+      {/* GIF spinner */}
+      <div style={{ position: "absolute", right: "5%", top: "10%", fontSize: 40, animation: "gcSpin 2s linear infinite", zIndex: 3 }}>⭐</div>
+      <div style={{ position: "absolute", left: "5%", top: "12%", fontSize: 32, animation: "gcSpin 3s linear infinite reverse", zIndex: 3 }}>🌟</div>
+    </div>
+  );
+}
+
+/* ─── Internet Explorer 6 ───────────────────────────────────── */
+function Ie6Wallpaper() {
+  const [progress, setProgress] = useState(0);
+  const [msg, setMsg] = useState(0);
+  const msgs = [
+    "Connexion au site…",
+    "Recherche de www.gunth.com…",
+    "Téléchargement de la page…",
+    "Attente de la réponse…",
+    "Chargement des images (1 sur 47)…",
+    "Script Java non pris en charge",
+    "Erreur de certificat SSL — Continuer ?",
+    "Cette page contient des éléments non sécurisés",
+    "ActiveX bloqué. Débloquer ? (Oui / Non / Peut-être)",
+    "⏳ Ne pas éteindre IE pendant le chargement",
+  ];
+  const popups = [
+    "Vous êtes le 1 000 000e visiteur ! 🎉",
+    "Votre PC est infecté ! Appelez le 0800-GUNTH",
+    "Téléchargez notre barre d'outils GRATUITE",
+    "Agrandissez votre [publicité censurée]",
+    "Flash Player doit être mis à jour",
+  ];
+  const [popup, setPopup] = useState<string | null>(null);
+
+  useEffect(() => {
+    const p = setInterval(() => setProgress(v => v >= 100 ? 0 : v + 0.8), 60);
+    const m = setInterval(() => setMsg(v => (v + 1) % msgs.length), 2200);
+    const pp = setInterval(() => setPopup(popups[Math.floor(Math.random() * popups.length)]!), 5000);
+    return () => { clearInterval(p); clearInterval(m); clearInterval(pp); };
+  }, []);
+
+  return (
+    <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 0, background: "#ece9d8", fontFamily: "\"Tahoma\", sans-serif" }}>
+      {/* Chrome IE */}
+      <div style={{ background: "linear-gradient(to bottom, #e8e4d8, #d4d0c8)", borderBottom: "1px solid #808080", padding: "4px 8px", fontSize: "clamp(9px,1.1vw,12px)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+          <span style={{ fontSize: "clamp(14px,2vw,20px)" }}>🌐</span>
+          <div style={{ background: "white", flex: 1, border: "2px solid", borderTopColor: "#808080", borderLeftColor: "#808080", borderBottomColor: "#fff", borderRightColor: "#fff", padding: "2px 6px", fontSize: "clamp(9px,1.1vw,12px)" }}>
+            http://www.gunth.com/index.htm
+          </div>
+          <div style={{ background: "linear-gradient(to bottom, #ffffff, #d4d0c8)", border: "2px solid", borderTopColor: "#fff", borderLeftColor: "#fff", borderBottomColor: "#808080", borderRightColor: "#808080", padding: "2px 10px", fontSize: "clamp(9px,1.1vw,12px)" }}>
+            OK
+          </div>
+        </div>
+        {/* Progress bar */}
+        <div style={{ height: 4, background: "#d4d0c8", border: "1px solid #808080" }}>
+          <div style={{ height: "100%", width: `${progress}%`, background: "linear-gradient(to right, #0a246a, #a6caf0)", transition: "width 0.06s linear" }} />
+        </div>
+      </div>
+      {/* Page content */}
+      <div style={{ padding: 16, fontSize: "clamp(9px,1.2vw,13px)" }}>
+        <div style={{ color: "#0000ee", textDecoration: "underline", marginBottom: 8, fontSize: "clamp(11px,1.5vw,16px)" }}>
+          Bienvenue sur GunthOS™ Internet
+        </div>
+        <div style={{ color: "#333", marginBottom: 4 }}>Cette page utilise des technologies avancées :</div>
+        {["ActiveX ✓", "Java Applets ✓", "Flash 5 ✓", "Frames imbriquées ✓", "Tableaux dans tableaux ✓"].map(item => (
+          <div key={item} style={{ color: "#0000cc", marginLeft: 12, fontSize: "clamp(8px,1vw,11px)" }}>• {item}</div>
+        ))}
+        <div style={{ marginTop: 12, color: "#cc0000", fontSize: "clamp(8px,1vw,11px)" }}>
+          ⚠️ Erreur : {msgs[msg]}
+        </div>
+      </div>
+      {/* Status bar */}
+      <div className="absolute bottom-0 left-0 right-0" style={{ background: "linear-gradient(to bottom, #e8e4d8, #d4d0c8)", borderTop: "1px solid #808080", padding: "2px 8px", fontSize: "clamp(8px,1vw,11px)", display: "flex", justifyContent: "space-between" }}>
+        <span>🌐 {msgs[msg]}</span>
+        <span>Zone Internet | {Math.floor(progress)}%</span>
+      </div>
+      {/* Popup */}
+      {popup && (
+        <div className="absolute" style={{ top: "30%", left: "50%", transform: "translateX(-50%)", zIndex: 5, minWidth: 240 }}>
+          <div style={{ background: "#ece9d8", border: "3px solid", borderTopColor: "#fff", borderLeftColor: "#fff", borderBottomColor: "#808080", borderRightColor: "#808080", boxShadow: "4px 4px 0 rgba(0,0,0,0.4)" }}>
+            <div style={{ background: "linear-gradient(to right, #000080, #1084d0)", color: "white", padding: "3px 8px", fontSize: "clamp(9px,1.1vw,12px)", display: "flex", justifyContent: "space-between" }}>
+              <span>⚠️ Message de la page Web</span>
+              <span onClick={() => setPopup(null)} style={{ cursor: "default" }}>✕</span>
+            </div>
+            <div style={{ padding: "12px 16px", fontSize: "clamp(9px,1.2vw,13px)" }}>{popup}</div>
+            <div style={{ display: "flex", justifyContent: "center", gap: 8, paddingBottom: 10 }}>
+              {["OK","Annuler","Aide"].map(b => (
+                <div key={b} style={{ border: "2px solid", borderTopColor: "#fff", borderLeftColor: "#fff", borderBottomColor: "#808080", borderRightColor: "#808080", background: "#ece9d8", padding: "2px 14px", fontSize: "clamp(9px,1.1vw,12px)", cursor: "default" }}>{b}</div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─── Notepad.exe ───────────────────────────────────────────── */
+function NotepadWallpaper() {
+  const fullText = `Idées pour changer ma vie.txt - Bloc-notes
+══════════════════════════════════════════
+
+TODO:
+- Apprendre le Python (depuis 2018)
+- Finir ce projet (depuis 2019)
+- Rédiger le README (depuis 2020)
+- Supprimer ce fichier (ne jamais faire)
+- Être productif (définir "productif" d'abord)
+- Appeler maman
+- Arrêter de laisser 47 onglets ouverts
+- IMPORTANT: mot de passe wifi =
+  (j'ai oublié)
+
+Notes réunion 14h:
+- Réunion annulée → reportée à demain
+- Demain → reportée à la semaine prochaine
+- La semaine prochaine → annulée définitivement
+- Conclusion: parfait
+
+asdfghjkl
+asdfghjkl
+asdfghjkl
+(je testais le clavier)
+
+█`;
+
+  const [displayed, setDisplayed] = useState("");
+  useEffect(() => {
+    let i = 0;
+    const t = setInterval(() => {
+      if (i < fullText.length) { setDisplayed(fullText.slice(0, i + 1)); i++; }
+      else clearInterval(t);
+    }, 28);
+    return () => clearInterval(t);
+  }, []);
+
+  return (
+    <div className="absolute inset-0 flex flex-col pointer-events-none" style={{ zIndex: 0, background: "#f8f8f8", fontFamily: "\"Courier New\", monospace" }}>
+      {/* Window chrome */}
+      <div style={{ background: "linear-gradient(to right, #000080, #1084d0)", color: "white", padding: "3px 8px", fontSize: "clamp(9px,1.1vw,12px)", display: "flex", justifyContent: "space-between", flexShrink: 0 }}>
+        <span>📝 Idées pour changer ma vie.txt — Bloc-notes</span>
+        <span style={{ display: "flex", gap: 4 }}>
+          {["_","□","✕"].map(b => <span key={b} style={{ border: "2px solid", borderTopColor: "#fff", borderLeftColor: "#fff", borderBottomColor: "#808080", borderRightColor: "#808080", background: "#d4d0c8", width: 16, height: 14, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, color: "#000" }}>{b}</span>)}
+        </span>
+      </div>
+      <div style={{ background: "#d4d0c8", padding: "2px 8px", fontSize: "clamp(8px,1vw,11px)", display: "flex", gap: 16, flexShrink: 0 }}>
+        {["Fichier","Edition","Format","Affichage","?"].map(m => <span key={m}>{m}</span>)}
+      </div>
+      {/* Text area */}
+      <div className="flex-1 overflow-hidden" style={{ background: "white", border: "2px solid", borderTopColor: "#808080", borderLeftColor: "#808080", borderBottomColor: "#fff", borderRightColor: "#fff", padding: 8, fontSize: "clamp(9px,1.2vw,13px)", whiteSpace: "pre-wrap", lineHeight: 1.6, color: "#000" }}>
+        {displayed}
+      </div>
+      <div style={{ background: "#d4d0c8", borderTop: "1px solid #808080", padding: "1px 8px", fontSize: "clamp(8px,1vw,10px)", color: "#444" }}>
+        Ln 999   Col 1   Fichier non enregistré depuis 6 ans
+      </div>
+    </div>
+  );
+}
+
+/* ─── Commodore 64 ──────────────────────────────────────────── */
+function C64Wallpaper() {
+  const [cursor, setCursor] = useState(true);
+  const [line, setLine] = useState(0);
+  const boot = [
+    "    **** COMMODORE 64 BASIC V2 ****",
+    "",
+    " 64K RAM SYSTEM  38911 BASIC BYTES FREE",
+    "",
+    "READY.",
+    "",
+    "LOAD \"GUNTH_OS\",8,1",
+    "",
+    "SEARCHING FOR GUNTH_OS",
+    "LOADING",
+    "READY.",
+    "",
+    "RUN",
+    "",
+    "GUNTHOS V1.0",
+    "COPYRIGHT (C) 1982 COMMODORE",
+    "ALL RIGHTS RESERVED (HA)",
+    "",
+    "?SYNTAX ERROR IN 10",
+    "?SYNTAX ERROR IN 20",
+    "?OUT OF MEMORY ERROR IN 30",
+    "",
+    "READY.",
+    "> _",
+  ];
+  useEffect(() => {
+    const c = setInterval(() => setCursor(v => !v), 530);
+    const l = setInterval(() => setLine(v => Math.min(v + 1, boot.length)), 200);
+    return () => { clearInterval(c); clearInterval(l); };
+  }, []);
+
+  return (
+    <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ zIndex: 0, background: "#4040a0" }}>
+      <div style={{ background: "#4040a0", border: "8px solid #7878f0", padding: "20px 28px", maxWidth: 520, width: "90%", boxShadow: "0 0 0 3px #303090" }}>
+        {boot.slice(0, line).map((l, i) => (
+          <div key={i} style={{ fontFamily: "\"Courier New\", monospace", fontSize: "clamp(10px,1.4vw,15px)", color: "#7878f0", lineHeight: 1.5, letterSpacing: 1 }}>
+            {l === "> _"
+              ? <span>{'>'} <span style={{ opacity: cursor ? 1 : 0, background: "#7878f0", color: "#4040a0" }}> </span></span>
+              : (l || " ")}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Winamp Visualizer ─────────────────────────────────────── */
+function WinampWallpaper() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [track] = useState({ title: "Darude — Sandstorm", time: "1:47", total: "3:45" });
+  const [pos, setPos] = useState(0.47);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let frame = 0;
+    const draw = () => {
+      const W = canvas.offsetWidth; const H = canvas.offsetHeight;
+      canvas.width = W; canvas.height = H;
+      ctx.fillStyle = "#000";
+      ctx.fillRect(0, 0, W, H);
+
+      const bars = 64;
+      const bw = W / bars;
+      for (let i = 0; i < bars; i++) {
+        const h = (Math.sin(i * 0.4 + frame * 0.08) * 0.5 + 0.5) *
+                  (Math.sin(i * 0.15 + frame * 0.05) * 0.3 + 0.7) * H * 0.8;
+        const g = ctx.createLinearGradient(0, H - h, 0, H);
+        g.addColorStop(0, "#00ffaa");
+        g.addColorStop(0.5, "#00cc66");
+        g.addColorStop(1, "#004422");
+        ctx.fillStyle = g;
+        ctx.fillRect(i * bw + 1, H - h, bw - 2, h);
+      }
+      frame++;
+    };
+    const interval = setInterval(draw, 40);
+    const posInterval = setInterval(() => setPos(p => (p + 0.002) % 1), 100);
+    return () => { clearInterval(interval); clearInterval(posInterval); };
+  }, []);
+
+  const fmt = (p: number) => { const s = Math.floor(p * 225); return `${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`; };
+
+  return (
+    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none" style={{ zIndex: 0 }}>
+      {/* Player window */}
+      <div style={{ background: "#1a1a1a", border: "2px solid #00ff88", boxShadow: "0 0 24px rgba(0,255,136,0.4)", width: "min(480px,90%)" }}>
+        {/* Title bar */}
+        <div style={{ background: "linear-gradient(to right, #003322, #001a11)", padding: "4px 8px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{ fontFamily: "monospace", fontSize: "clamp(9px,1.1vw,11px)", color: "#00ff88", letterSpacing: 1 }}>WINAMP</span>
+          <span style={{ fontSize: "clamp(8px,1vw,10px)", color: "#00aa55" }}>▬ ❐ ✕</span>
+        </div>
+        {/* Track info */}
+        <div style={{ background: "#000", padding: "6px 10px", borderTop: "1px solid #004422", borderBottom: "1px solid #004422" }}>
+          <div style={{ fontFamily: "monospace", fontSize: "clamp(9px,1.2vw,13px)", color: "#00ff88", overflow: "hidden", whiteSpace: "nowrap" }}>
+            {track.title}
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "clamp(8px,1vw,11px)", color: "#00aa55", marginTop: 2 }}>
+            <span>{fmt(pos)}</span><span style={{ color: "#00ff88" }}>192 kbps  44100 Hz  Stereo</span><span>-{fmt(1 - pos)}</span>
+          </div>
+        </div>
+        {/* Visualizer */}
+        <canvas ref={canvasRef} style={{ width: "100%", height: "clamp(60px,8vw,100px)", display: "block" }} />
+        {/* Progress */}
+        <div style={{ padding: "6px 10px", background: "#111" }}>
+          <div style={{ height: 6, background: "#003322", borderRadius: 2, overflow: "hidden", marginBottom: 8 }}>
+            <div style={{ height: "100%", width: `${pos * 100}%`, background: "linear-gradient(to right, #00aa55, #00ff88)", transition: "width 0.1s linear" }} />
+          </div>
+          {/* Controls */}
+          <div style={{ display: "flex", justifyContent: "center", gap: 8 }}>
+            {["⏮","⏪","⏹","▶","⏩","⏭"].map(btn => (
+              <div key={btn} style={{ background: "#222", border: "1px solid #00ff88", color: "#00ff88", padding: "3px 8px", fontSize: "clamp(10px,1.4vw,14px)", cursor: "default" }}>{btn}</div>
+            ))}
+          </div>
+          {/* Volume */}
+          <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 8, fontSize: "clamp(8px,1vw,11px)", color: "#00aa55" }}>
+            <span>VOL</span>
+            <div style={{ flex: 1, height: 4, background: "#003322" }}>
+              <div style={{ width: "73%", height: "100%", background: "#00ff88" }} />
+            </div>
+            <span>EQ</span>
+            <div style={{ flex: 1, height: 4, background: "#003322" }}>
+              <div style={{ width: "50%", height: "100%", background: "#00ff88" }} />
+            </div>
+          </div>
+        </div>
+      </div>
+      {/* Playlist */}
+      <div style={{ background: "#0a0a0a", border: "2px solid #00ff88", marginTop: 2, width: "min(480px,90%)", padding: "4px 0" }}>
+        {["01. Darude — Sandstorm ▶","02. Eiffel 65 — Blue (da ba dee)","03. Aqua — Barbie Girl","04. Vengaboys — We Like to Party"].map((t, i) => (
+          <div key={i} style={{ padding: "2px 8px", fontSize: "clamp(8px,1vw,11px)", fontFamily: "monospace", color: i === 0 ? "#00ff88" : "#005522", background: i === 0 ? "#001a0a" : "transparent" }}>{t}</div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─── MS Paint ──────────────────────────────────────────────── */
+function MsPaintWallpaper() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const colors = ["#ff0000","#ff8800","#ffff00","#00ff00","#0000ff","#ff00ff","#00ffff","#ffffff","#000000","#808080","#804000","#008000","#000080","#800080","#008080","#c0c0c0"];
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const W = canvas.offsetWidth; const H = canvas.offsetHeight;
+    canvas.width = W; canvas.height = H;
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, 0, W, H);
+
+    // Dessin aléatoire "style enfant de 7 ans"
+    const strokes = [
+      { tool: "circle", x: 0.5, y: 0.45, r: 0.22, color: "#ffff00", fill: true },
+      { tool: "circle", x: 0.5, y: 0.45, r: 0.22, color: "#000000", fill: false },
+      // Yeux
+      { tool: "circle", x: 0.44, y: 0.39, r: 0.03, color: "#000000", fill: true },
+      { tool: "circle", x: 0.56, y: 0.39, r: 0.03, color: "#000000", fill: true },
+      // Sourire
+      { tool: "arc", x: 0.5, y: 0.46, r: 0.1, a1: 0.1, a2: Math.PI - 0.1, color: "#000000" },
+      // Corps rectangle
+      { tool: "rect", x: 0.38, y: 0.67, w: 0.24, h: 0.2, color: "#0000ff", fill: true },
+      // Bras
+      { tool: "line", x1: 0.38, y1: 0.70, x2: 0.25, y2: 0.78, color: "#0000ff" },
+      { tool: "line", x1: 0.62, y1: 0.70, x2: 0.75, y2: 0.78, color: "#0000ff" },
+      // Jambes
+      { tool: "line", x1: 0.44, y1: 0.87, x2: 0.40, y2: 1.0, color: "#0000ff" },
+      { tool: "line", x1: 0.56, y1: 0.87, x2: 0.60, y2: 1.0, color: "#0000ff" },
+      // Soleil
+      { tool: "circle", x: 0.12, y: 0.12, r: 0.07, color: "#ffff00", fill: true },
+      { tool: "circle", x: 0.12, y: 0.12, r: 0.07, color: "#ff8800", fill: false },
+      // Maison
+      { tool: "rect", x: 0.68, y: 0.6, w: 0.2, h: 0.18, color: "#ff8800", fill: true },
+      { tool: "triangle", x: 0.78, y: 0.47, color: "#ff0000" },
+      // Herbe
+      { tool: "rect", x: 0, y: 0.88, w: 1, h: 0.12, color: "#00aa00", fill: true },
+      // Nuages scribouillés
+      { tool: "scribble", x: 0.25, y: 0.15, color: "#c0c0c0" },
+      { tool: "scribble", x: 0.65, y: 0.12, color: "#c0c0c0" },
+    ];
+
+    ctx.lineWidth = 3;
+    ctx.lineJoin = "round";
+    ctx.lineCap = "round";
+
+    for (const s of strokes) {
+      ctx.strokeStyle = s.color;
+      ctx.fillStyle = s.color;
+      if (s.tool === "circle") {
+        ctx.beginPath();
+        ctx.arc(s.x! * W, s.y! * H, s.r! * Math.min(W, H), 0, Math.PI * 2);
+        if ((s as {fill?: boolean}).fill) ctx.fill(); else ctx.stroke();
+      } else if (s.tool === "arc") {
+        ctx.beginPath();
+        ctx.arc(s.x! * W, s.y! * H, s.r! * Math.min(W, H), (s as {a1?: number}).a1!, (s as {a2?: number}).a2!);
+        ctx.stroke();
+      } else if (s.tool === "rect") {
+        const rs = s as {x:number;y:number;w:number;h:number;fill?:boolean};
+        if (rs.fill) ctx.fillRect(rs.x*W, rs.y*H, rs.w*W, rs.h*H);
+        else ctx.strokeRect(rs.x*W, rs.y*H, rs.w*W, rs.h*H);
+      } else if (s.tool === "line") {
+        const ls = s as {x1:number;y1:number;x2:number;y2:number};
+        ctx.beginPath(); ctx.moveTo(ls.x1*W, ls.y1*H); ctx.lineTo(ls.x2*W, ls.y2*H); ctx.stroke();
+      } else if (s.tool === "triangle") {
+        ctx.beginPath();
+        ctx.moveTo(s.x! * W, s.y! * H);
+        ctx.lineTo((s.x! - 0.12) * W, (s.y! + 0.13) * H);
+        ctx.lineTo((s.x! + 0.12) * W, (s.y! + 0.13) * H);
+        ctx.closePath(); ctx.fill(); ctx.stroke();
+      } else if (s.tool === "scribble") {
+        ctx.beginPath();
+        ctx.ellipse(s.x! * W, s.y! * H, 0.07 * W, 0.04 * H, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // Texte "MAMAN"
+    ctx.fillStyle = "#ff00ff";
+    ctx.font = `bold ${Math.floor(H * 0.07)}px "Comic Sans MS", cursive`;
+    ctx.fillText("MAMAN", 0.03 * W, 0.98 * H);
+  }, []);
+
+  return (
+    <div className="absolute inset-0 flex flex-col pointer-events-none" style={{ zIndex: 0 }}>
+      {/* Window chrome */}
+      <div style={{ background: "linear-gradient(to right, #000080, #1084d0)", color: "white", padding: "3px 8px", fontSize: "clamp(9px,1.1vw,12px)", display: "flex", justifyContent: "space-between", flexShrink: 0 }}>
+        <span>🖌️ Sans titre — Paint</span>
+        <span style={{ display: "flex", gap: 4 }}>
+          {["_","□","✕"].map(b => <span key={b} style={{ border: "2px solid", borderTopColor: "#fff", borderLeftColor: "#fff", borderBottomColor: "#808080", borderRightColor: "#808080", background: "#d4d0c8", width: 16, height: 14, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, color: "#000" }}>{b}</span>)}
+        </span>
+      </div>
+      {/* Toolbar */}
+      <div style={{ background: "#d4d0c8", borderBottom: "1px solid #808080", padding: "3px 6px", display: "flex", gap: 4, flexWrap: "wrap", flexShrink: 0 }}>
+        {["✏️","🖌️","🗑️","📐","◯","▭","🪣","🔍","✂️","📋"].map(t => (
+          <div key={t} style={{ border: "2px solid", borderTopColor: "#fff", borderLeftColor: "#fff", borderBottomColor: "#808080", borderRightColor: "#808080", background: "#d4d0c8", padding: "2px 4px", fontSize: "clamp(10px,1.3vw,14px)" }}>{t}</div>
+        ))}
+        {/* Palette */}
+        <div style={{ display: "flex", flexWrap: "wrap", width: "clamp(80px,12vw,128px)", gap: 1, marginLeft: 8 }}>
+          {colors.map(c => <div key={c} style={{ width: "clamp(8px,1vw,12px)", height: "clamp(8px,1vw,12px)", background: c, border: "1px solid #808080" }} />)}
+        </div>
+      </div>
+      {/* Canvas */}
+      <div className="flex-1 overflow-hidden" style={{ background: "#808080", padding: 4 }}>
+        <canvas ref={canvasRef} style={{ width: "100%", height: "100%", display: "block", cursor: "crosshair" }} />
+      </div>
+      <div style={{ background: "#d4d0c8", borderTop: "1px solid #808080", padding: "1px 8px", fontSize: "clamp(7px,0.9vw,10px)", color: "#444" }}>
+        Pour obtenir de l&apos;aide, cliquez sur Rubriques d&apos;aide dans le menu ?
+      </div>
+    </div>
+  );
+}
+
+// ── VOL. 3 ───────────────────────────────────────────────────────────────────
+
+function AolWallpaper() {
+  const [dots, setDots] = useState(0);
+  const [percent, setPercent] = useState(0);
+  const [msgs, setMsgs] = useState<string[]>([]);
+  const [popup, setPopup] = useState(false);
+
+  const lines = [
+    "Initialisation du modem...",
+    "Numérotation: 0800 900 900...",
+    "Connexion au serveur AOL...",
+    "Vérification des paramètres...",
+    "Chargement de la session...",
+    "Bienvenue sur AOL !",
+  ];
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setDots(d => (d + 1) % 4);
+      setPercent(p => {
+        if (p >= 100) return 0;
+        return p + 1;
+      });
+    }, 120);
+    return () => clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    let i = 0;
+    const id = setInterval(() => {
+      if (i < lines.length) { setMsgs(m => [...m, lines[i] as string]); i++; }
+      else { setMsgs([]); i = 0; }
+    }, 800);
+    return () => clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    const id = setInterval(() => setPopup(p => !p), 4000);
+    return () => clearInterval(id);
+  }, []);
+
+  const dot = ".".repeat(dots);
+
+  return (
+    <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: '"Arial", sans-serif', gap: 16 }}>
+      {/* Logo AOL */}
+      <div style={{ fontSize: "clamp(32px,6vw,72px)", fontWeight: 900, color: "#ffcc00", textShadow: "3px 3px 0 #003087, 6px 6px 0 rgba(0,0,0,0.5)", letterSpacing: -2 }}>
+        AOL
+      </div>
+      <div style={{ color: "#aaccff", fontSize: "clamp(10px,1.4vw,16px)" }}>America Online™</div>
+
+      {/* Terminal */}
+      <div style={{ background: "#000f30", border: "2px solid #ffcc00", padding: "12px 20px", width: "clamp(260px,40vw,420px)", borderRadius: 4, fontFamily: '"Courier New", monospace', fontSize: "clamp(9px,1.1vw,13px)" }}>
+        {msgs.map((m, i) => <div key={i} style={{ color: i === msgs.length - 1 ? "#ffcc00" : "#6699cc", marginBottom: 2 }}>{m}</div>)}
+        <div style={{ color: "#ffcc00" }}>_{dot}</div>
+      </div>
+
+      {/* Barre de progression */}
+      <div style={{ width: "clamp(260px,40vw,420px)" }}>
+        <div style={{ background: "#001f5c", border: "1px solid #ffcc00", height: 16, borderRadius: 2, overflow: "hidden" }}>
+          <div style={{ height: "100%", width: `${percent}%`, background: "linear-gradient(to right, #003087, #ffcc00)", transition: "width 0.1s" }} />
+        </div>
+        <div style={{ color: "#aaccff", fontSize: "clamp(8px,1vw,11px)", marginTop: 4, textAlign: "center" }}>Connexion en cours{dot} {percent}%</div>
+      </div>
+
+      {/* Popup "You've Got Mail" */}
+      {popup && (
+        <div style={{ position: "absolute", top: "15%", right: "10%", background: "#fffde7", border: "2px solid #003087", borderRadius: 4, padding: "12px 20px", boxShadow: "4px 4px 0 rgba(0,0,0,0.5)", textAlign: "center", fontSize: "clamp(10px,1.2vw,14px)", color: "#003087", fontWeight: "bold", zIndex: 10 }}>
+          <div style={{ fontSize: "clamp(20px,3vw,36px)" }}>✉️</div>
+          <div>You&apos;ve Got Mail!</div>
+          <div style={{ fontSize: "clamp(8px,0.9vw,10px)", color: "#666", marginTop: 4 }}>247 nouveaux messages</div>
+          <div style={{ marginTop: 8, fontSize: "clamp(7px,0.8vw,9px)", background: "#003087", color: "#ffcc00", padding: "2px 8px", borderRadius: 2, cursor: "pointer" }}>OK</div>
+        </div>
+      )}
+
+      {/* CD AOL flottant */}
+      <div style={{ position: "absolute", bottom: "8%", left: "5%", width: "clamp(48px,7vw,80px)", height: "clamp(48px,7vw,80px)", borderRadius: "50%", background: "conic-gradient(#003087,#ffcc00,#0050c8,#aaccff,#003087)", boxShadow: "0 0 20px rgba(255,204,0,0.4)", animation: "spin 4s linear infinite" }} />
+      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
+    </div>
+  );
+}
+
+function TamagotchiDeathWallpaper() {
+  const [frame, setFrame] = useState(0);
+  const [phase, setPhase] = useState<"alive"|"dying"|"dead">("alive");
+  const [hunger, setHunger] = useState(3);
+  const [, setTimer] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setFrame(f => (f + 1) % 2);
+      setTimer(t => {
+        const next = t + 1;
+        if (next === 20) setHunger(2);
+        if (next === 40) setHunger(1);
+        if (next === 60) { setHunger(0); setPhase("dying"); }
+        if (next === 80) setPhase("dead");
+        if (next === 120) { setPhase("alive"); setHunger(3); return 0; }
+        return next;
+      });
+    }, 300);
+    return () => clearInterval(id);
+  }, []);
+
+  const aliveFrames: [string, string][] = [
+    ["  ","OO"],
+    ["  ","@@"],
+  ];
+  const dyingFrame: [string, string] = [";;","xx"];
+  const deadFrame: [string, string]  = ["  ","RIP"];
+
+  const face: [string, string] = phase === "dead" ? deadFrame : phase === "dying" ? dyingFrame : (aliveFrames[frame % aliveFrames.length]!);
+
+  return (
+    <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: '"Courier New", monospace', gap: 12 }}>
+      {/* Coquille */}
+      <div style={{ background: "linear-gradient(135deg, #ffb0d8 0%, #ff80c0 100%)", border: "8px solid #e060a0", borderRadius: "50% 50% 40% 40%", width: "clamp(140px,22vw,200px)", height: "clamp(160px,26vw,240px)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 8px 24px rgba(255,64,160,0.5)" }}>
+        {/* Écran LCD */}
+        <div style={{ background: phase === "dead" ? "#555" : "#9bbc0f", border: "3px solid #3a0020", borderRadius: 4, width: "60%", height: "clamp(60px,9vw,90px)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: '"Courier New", monospace', fontSize: "clamp(8px,1.3vw,16px)", lineHeight: 1.2 }}>
+          <div style={{ color: "#0f380f", fontSize: "clamp(16px,2.5vw,28px)", letterSpacing: 2 }}>{face[0]}</div>
+          <div style={{ color: "#0f380f", fontSize: "clamp(16px,2.5vw,28px)", letterSpacing: 2 }}>{face[1]}</div>
+          {phase === "dead" && <div style={{ color: "#ffffff", fontSize: "clamp(6px,0.8vw,9px)", marginTop: 4 }}>GAME OVER</div>}
+        </div>
+        {/* Faim */}
+        <div style={{ display: "flex", gap: 4 }}>
+          {[...Array(3)].map((_, i) => (
+            <div key={i} style={{ fontSize: "clamp(10px,1.5vw,18px)" }}>{i < hunger ? "❤️" : "🖤"}</div>
+          ))}
+        </div>
+        {/* Boutons */}
+        <div style={{ display: "flex", gap: 12, marginTop: 4 }}>
+          {["A","B","C"].map(b => <div key={b} style={{ background: "#e060a0", border: "2px solid #3a0020", borderRadius: "50%", width: "clamp(14px,2vw,22px)", height: "clamp(14px,2vw,22px)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "clamp(7px,1vw,11px)", color: "#fff", fontWeight: "bold" }}>{b}</div>)}
+        </div>
+      </div>
+
+      <div style={{ color: "#3a0020", fontSize: "clamp(9px,1.2vw,14px)", fontFamily: '"Fredoka One", sans-serif', textAlign: "center", maxWidth: "60%", opacity: 0.8 }}>
+        {phase === "dead" ? "💀 Il était 08:47. Tu étais en maths." : phase === "dying" ? "😵 Au secours... faim..." : "🐾 Nourris-moi !!!"}
+      </div>
+    </div>
+  );
+}
+
+function SolitaireWallpaper() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const suits = ["♠","♥","♦","♣"];
+    const colors = ["#cc0000","#cc0000","#000000","#000000"];
+    type Card = { x: number; y: number; vx: number; vy: number; suit: string; color: string; val: string; rot: number; vr: number };
+    const cards: Card[] = [];
+    const vals = ["A","2","3","4","5","6","7","8","9","10","J","Q","K"];
+
+    const resize = () => { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; };
+    resize();
+    const ro = new ResizeObserver(resize);
+    ro.observe(canvas);
+
+    let launched = false;
+    const launchTimeout = setTimeout(() => {
+      launched = true;
+      for (let i = 0; i < 52; i++) {
+        const si = i % 4;
+        cards.push({
+          x: canvas.width / 2,
+          y: canvas.height / 2,
+          vx: (Math.random() - 0.5) * 14,
+          vy: -(Math.random() * 12 + 4),
+          suit: suits[si]!,
+          color: colors[si]!,
+          val: vals[i % 13]!,
+          rot: 0,
+          vr: (Math.random() - 0.5) * 0.3,
+        });
+      }
+    }, 800);
+
+    const drawCard = (c: Card) => {
+      const W = Math.min(canvas.width * 0.06, 50);
+      const H = W * 1.4;
+      ctx.save();
+      ctx.translate(c.x, c.y);
+      ctx.rotate(c.rot);
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = "#cccccc";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(-W/2, -H/2, W, H, 3);
+      ctx.fill(); ctx.stroke();
+      ctx.fillStyle = c.color;
+      ctx.font = `bold ${W * 0.28}px Arial`;
+      ctx.textAlign = "left";
+      ctx.fillText(c.val + c.suit, -W/2 + 2, -H/2 + W * 0.3);
+      ctx.font = `${W * 0.4}px Arial`;
+      ctx.textAlign = "center";
+      ctx.fillText(c.suit, 0, H * 0.15);
+      ctx.restore();
+    };
+
+    const draw = () => {
+      ctx.fillStyle = "#35763a";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Fond tapis
+      ctx.strokeStyle = "rgba(255,255,255,0.08)";
+      ctx.lineWidth = 1;
+      for (let x = 0; x < canvas.width; x += 30) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke(); }
+      for (let y = 0; y < canvas.height; y += 30) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke(); }
+
+      if (!launched) {
+        ctx.fillStyle = "rgba(255,255,255,0.9)";
+        ctx.font = `bold ${Math.min(canvas.width * 0.03, 24)}px Arial`;
+        ctx.textAlign = "center";
+        ctx.fillText("🎉 FÉLICITATIONS ! 🎉", canvas.width / 2, canvas.height / 2 - 20);
+        ctx.font = `${Math.min(canvas.width * 0.02, 16)}px Arial`;
+        ctx.fillText("Vous avez gagné au Solitaire !", canvas.width / 2, canvas.height / 2 + 10);
+        ctx.fillText("(Pour la première fois depuis 2003)", canvas.width / 2, canvas.height / 2 + 32);
+      }
+
+      for (const c of cards) {
+        c.x += c.vx;
+        c.vy += 0.6;
+        c.y += c.vy;
+        c.rot += c.vr;
+        if (c.y > canvas.height + 60) {
+          c.x = canvas.width / 2;
+          c.y = canvas.height / 2;
+          c.vx = (Math.random() - 0.5) * 14;
+          c.vy = -(Math.random() * 12 + 4);
+          c.rot = 0;
+        }
+        drawCard(c);
+      }
+    };
+
+    let raf: number;
+    const loop = () => { draw(); raf = requestAnimationFrame(loop); };
+    loop();
+    return () => { cancelAnimationFrame(raf); clearTimeout(launchTimeout); ro.disconnect(); };
+  }, []);
+
+  return <canvas ref={canvasRef} style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} />;
+}
+
+function NasaPanicWallpaper() {
+  const [tick, setTick] = useState(0);
+  const [alarm, setAlarm] = useState(false);
+
+  const systems = [
+    { name: "MOTEUR PRINCIPAL", status: "CRITIQUE", color: "#ff4400" },
+    { name: "BOUCLIER THERMIQUE", status: "DÉFAILLANCE", color: "#ff4400" },
+    { name: "NAVIGATION", status: "OFFLINE", color: "#ff4400" },
+    { name: "COMMUNICATIONS", status: "STATIQUE", color: "#ffaa00" },
+    { name: "OXYGÈNE", status: "3h RESTANTES", color: "#ffaa00" },
+    { name: "CAFÉ DE BORD", status: "OK", color: "#00ff44" },
+  ];
+
+  useEffect(() => {
+    const id = setInterval(() => { setTick(t => t + 1); setAlarm(a => !a); }, 600);
+    return () => clearInterval(id);
+  }, []);
+
+  const countdown = Math.max(0, 99 - (tick % 100));
+
+  return (
+    <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", padding: "clamp(8px,2vw,24px)", fontFamily: '"Courier New", monospace', gap: 8, background: alarm ? "rgba(80,0,0,0.3)" : "transparent", transition: "background 0.3s" }}>
+      {/* Header */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #ff4400", paddingBottom: 8 }}>
+        <div style={{ color: "#ff4400", fontSize: "clamp(10px,1.5vw,18px)", fontWeight: "bold", letterSpacing: 2 }}>🚀 MISSION CONTROL — GUNTH-1</div>
+        <div style={{ color: alarm ? "#ff0000" : "#ff4400", fontSize: "clamp(16px,2.5vw,32px)", fontWeight: "bold", fontVariantNumeric: "tabular-nums" }}>T-{String(countdown).padStart(2,"0")}</div>
+      </div>
+
+      {/* Systèmes */}
+      <div style={{ flex: 1, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+        {systems.map(s => (
+          <div key={s.name} style={{ border: `1px solid ${s.color}`, padding: "6px 10px", borderRadius: 2, background: `${s.color}11` }}>
+            <div style={{ color: "#ff8800", fontSize: "clamp(7px,0.9vw,10px)", letterSpacing: 1 }}>{s.name}</div>
+            <div style={{ color: s.color, fontSize: "clamp(9px,1.2vw,14px)", fontWeight: "bold", marginTop: 2 }}>{s.status}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Message Houston */}
+      <div style={{ border: "1px solid #ff4400", padding: "8px 12px", textAlign: "center", background: "rgba(255,68,0,0.1)" }}>
+        <div style={{ color: alarm ? "#ff4400" : "#ff8800", fontSize: "clamp(9px,1.3vw,15px)", fontWeight: "bold" }}>
+          {alarm ? "⚠ HOUSTON, ON A UN PROBLÈME ⚠" : "✦ HOUSTON, ON A UN PROBLÈME ✦"}
+        </div>
+        <div style={{ color: "#cc6644", fontSize: "clamp(7px,0.9vw,10px)", marginTop: 4 }}>
+          {["Recalcul de trajectoire...", "Tentative de redémarrage...", "Lecture du manuel...", "Appel à la mère de l&apos;ingénieur...", "Prière collective en cours..."][tick % 5]}
+        </div>
+      </div>
+
+      {/* Grille de données */}
+      <div style={{ display: "flex", gap: 4, justifyContent: "center" }}>
+        {[...Array(20)].map((_, i) => (
+          <div key={i} style={{ width: "clamp(6px,1vw,12px)", height: "clamp(6px,1vw,12px)", background: Math.random() > 0.3 ? "#ff4400" : "#440000", borderRadius: 1 }} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PrinterRageWallpaper() {
+  const [phase, setPhase] = useState(0);
+  const [paperY, setPaperY] = useState(-20);
+  const [shake, setShake] = useState(false);
+
+  const phases = [
+    "Impression en cours...",
+    "PAPER JAM",
+    "Retrait du papier...",
+    "PAPER JAM (encore)",
+    "Redémarrage de l'imprimante...",
+    "PAPER JAM (toujours)",
+    "Achat d'une nouvelle imprimante recommandé",
+    "PAPER JAM",
+  ];
+
+  const isError = (phases[phase] ?? "").includes("PAPER JAM");
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setPhase(p => (p + 1) % phases.length);
+      setShake(true);
+      setTimeout(() => setShake(false), 200);
+    }, 1800);
+    return () => clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setPaperY(y => {
+        if (y > 60) return -20;
+        return y + 2;
+      });
+    }, 50);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, fontFamily: '"Courier New", monospace' }}>
+      {/* Imprimante */}
+      <div style={{ position: "relative", transform: shake && isError ? `translate(${(Math.random()-0.5)*4}px, ${(Math.random()-0.5)*4}px)` : "none", transition: "transform 0.05s" }}>
+        {/* Corps */}
+        <div style={{ width: "clamp(120px,18vw,200px)", height: "clamp(60px,9vw,100px)", background: "linear-gradient(to bottom, #f0f0f0, #d0d0d0)", border: "3px solid #808080", borderRadius: "8px 8px 4px 4px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", boxShadow: "3px 3px 0 rgba(0,0,0,0.3)" }}>
+          {/* Fente */}
+          <div style={{ width: "70%", height: 6, background: "#444", borderRadius: 2, position: "relative", overflow: "hidden" }}>
+            {/* Papier qui sort */}
+            <div style={{ position: "absolute", left: "10%", top: -paperY, width: "80%", height: 40, background: "#ffffff", border: "1px solid #cccccc" }}>
+              <div style={{ fontSize: 6, color: "#999", padding: 2, lineHeight: 1.2 }}>Lorem ipsum... PAPER JAM</div>
+            </div>
+          </div>
+          {/* Lumière */}
+          <div style={{ position: "absolute", top: 8, right: 12, width: 10, height: 10, borderRadius: "50%", background: isError ? "#ff2200" : "#00cc44", boxShadow: `0 0 8px ${isError ? "#ff2200" : "#00cc44"}` }} />
+          {/* Bouton */}
+          <div style={{ position: "absolute", top: 8, right: 28, width: 16, height: 16, borderRadius: "50%", background: "#c0c0c0", border: "2px solid #808080" }} />
+          {/* Panneau display */}
+          <div style={{ position: "absolute", bottom: 8, left: "50%", transform: "translateX(-50%)", width: "60%", height: 14, background: "#1a1a1a", borderRadius: 2, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ color: isError ? "#ff2200" : "#00cc44", fontSize: 6, fontFamily: '"Courier New", monospace', letterSpacing: 1 }}>
+              {isError ? "ERR:PAPER" : "READY"}
+            </div>
+          </div>
+        </div>
+        {/* Bac papier */}
+        <div style={{ width: "80%", margin: "0 auto", height: "clamp(10px,2vw,20px)", background: "#c0c0c0", borderRadius: "0 0 4px 4px", border: "2px solid #808080", borderTop: "none" }} />
+      </div>
+
+      {/* Message d'état */}
+      <div style={{ background: isError ? "#ffeeee" : "#eeffee", border: `2px solid ${isError ? "#ff2200" : "#00cc44"}`, padding: "8px 16px", borderRadius: 2, textAlign: "center", maxWidth: "80%", boxShadow: "2px 2px 0 rgba(0,0,0,0.2)" }}>
+        <div style={{ color: isError ? "#cc0000" : "#006600", fontSize: "clamp(10px,1.4vw,16px)", fontWeight: "bold" }}>{phases[phase]}</div>
+        <div style={{ color: "#666", fontSize: "clamp(7px,0.9vw,10px)", marginTop: 4 }}>
+          {isError ? "Retirez le papier coincé. (Bonne chance.)" : "Imprimante prête. Pour l'instant."}
+        </div>
+      </div>
+
+      {/* Compteur de bourrages */}
+      <div style={{ color: "#888", fontSize: "clamp(8px,1vw,11px)" }}>
+        Bourrages papier aujourd&apos;hui: {phase + 3} | Nerfs perdus: ∞
+      </div>
+    </div>
+  );
+}
+
+function StackOverflowWallpaper() {
+  const [lineIdx, setLineIdx] = useState(0);
+  const [typing, setTyping] = useState("");
+  const [charIdx, setCharIdx] = useState(0);
+  const [error, setError] = useState(false);
+  const [votes, setVotes] = useState(-3);
+
+  const snippets = [
+    "// Trouvé sur StackOverflow (2008)",
+    "// Réponse acceptée ✓  (746 votes)",
+    "function fixEverything() {",
+    "  return null; // TODO",
+    "}",
+    "",
+    "// Commentaire: 'Does not work'",
+    "// Réponse: 'works on my machine'",
+    "// Commentaire: 'what is machine'",
+    "",
+    "const solution = require('./node_modules/",
+    "  fix-everything-v2-final-FINAL/')",
+  ];
+
+  useEffect(() => {
+    const currentLine = snippets[lineIdx] ?? "";
+    if (charIdx < currentLine.length) {
+      const id = setTimeout(() => { setTyping(t => t + (currentLine[charIdx] ?? "")); setCharIdx(c => c + 1); }, 40 + Math.random() * 30);
+      return () => clearTimeout(id);
+    } else {
+      const id = setTimeout(() => {
+        setLineIdx(l => {
+          const next = (l + 1) % snippets.length;
+          if (next === 0) setTyping("");
+          return next;
+        });
+        setTyping(t => t + "\n");
+        setCharIdx(0);
+      }, 300);
+      return () => clearTimeout(id);
+    }
+  }, [charIdx, lineIdx]);
+
+  useEffect(() => {
+    const id = setInterval(() => { setError(e => !e); setVotes(v => v - 1); }, 3000);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", padding: "clamp(8px,2vw,20px)", gap: 10 }}>
+      {/* Header SO */}
+      <div style={{ display: "flex", alignItems: "center", gap: 12, borderBottom: "1px solid #f48024", paddingBottom: 8 }}>
+        <div style={{ color: "#f48024", fontSize: "clamp(14px,2vw,24px)", fontWeight: 900, letterSpacing: -1 }}>stack<span style={{ color: "#bcbbbb" }}>overflow</span></div>
+        <div style={{ color: "#666", fontSize: "clamp(8px,1vw,12px)" }}>Questions: 23,847,291</div>
+      </div>
+
+      {/* Question */}
+      <div style={{ border: "1px solid #3a3a3a", borderRadius: 2, padding: "8px 12px" }}>
+        <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2, minWidth: 32 }}>
+            <div style={{ color: "#666", fontSize: 16 }}>▲</div>
+            <div style={{ color: votes < 0 ? "#cc0000" : "#f48024", fontSize: "clamp(10px,1.3vw,16px)", fontWeight: "bold" }}>{votes}</div>
+            <div style={{ color: "#666", fontSize: 16 }}>▼</div>
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ color: "#e8e8e8", fontSize: "clamp(9px,1.2vw,14px)", fontWeight: "bold", marginBottom: 6 }}>
+              Pourquoi mon code ne fonctionne pas? [URGENT]
+            </div>
+            <div style={{ background: "#0d0d0d", border: "1px solid #333", borderRadius: 2, padding: "6px 10px", fontFamily: '"Courier New", monospace', fontSize: "clamp(7px,1vw,11px)", color: "#00ff88", whiteSpace: "pre", maxHeight: "clamp(80px,14vw,160px)", overflow: "hidden" }}>
+              {typing}
+              <span style={{ background: "#f48024", color: "#000", animation: "blink 1s step-end infinite" }}>_</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Réponse */}
+      <div style={{ border: `1px solid ${error ? "#cc0000" : "#3a3a3a"}`, borderRadius: 2, padding: "6px 10px" }}>
+        <div style={{ color: "#f48024", fontSize: "clamp(8px,1vw,11px)", marginBottom: 4 }}>✓ Réponse acceptée</div>
+        <div style={{ color: "#aaa", fontSize: "clamp(7px,0.9vw,10px)" }}>
+          {error ? "⚠ This answer is outdated. See comments." : "Essayez: stackoverflow.com/questions/this-question"}
+        </div>
+        <div style={{ color: "#666", fontSize: "clamp(7px,0.8vw,9px)", marginTop: 4 }}>
+          — answered Jun 12 &apos;08 at 3:47 AM &nbsp;|&nbsp; user: CrazyDev99
+        </div>
+      </div>
+
+      <div style={{ color: "#444", fontSize: "clamp(7px,0.9vw,10px)", textAlign: "center" }}>
+        Duplicate of: <span style={{ color: "#f48024" }}>stackoverflow.com/questions/1</span>
+      </div>
+      <style>{`@keyframes blink{50%{opacity:0}}`}</style>
+    </div>
+  );
+}
+
+function CaptchaHellWallpaper() {
+  const [selected, setSelected] = useState<number[]>([]);
+  const [attempt, setAttempt] = useState(1);
+  const [verified, setVerified] = useState(false);
+  const [challenge, setChallenge] = useState(0);
+
+  const challenges = [
+    "Sélectionnez tous les feux tricolores",
+    "Sélectionnez tous les bus",
+    "Sélectionnez tous les passages piétons",
+    "Sélectionnez toutes les bicyclettes",
+    "Sélectionnez tous les bateaux",
+  ];
+
+  const emojis = ["🚦","🚌","🚶","🚲","⛵","🚗","🏠","🌳","🐈","🚦","🚌","🚶","🚲","⛵","🚗","🌳"];
+
+  const handleClick = (i: number) => {
+    if (verified) return;
+    setSelected(s => s.includes(i) ? s.filter(x => x !== i) : [...s, i]);
+  };
+
+  const handleVerify = () => {
+    if (selected.length === 0) return;
+    setVerified(false);
+    setSelected([]);
+    setAttempt(a => a + 1);
+    setChallenge(c => (c + 1) % challenges.length);
+    if (attempt >= 5) { setVerified(true); setTimeout(() => { setVerified(false); setAttempt(1); }, 2000); }
+  };
+
+  return (
+    <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ background: "#ffffff", border: "1px solid #d3d3d3", borderRadius: 4, padding: "16px 20px", width: "clamp(240px,38vw,380px)", boxShadow: "0 4px 12px rgba(0,0,0,0.15)", fontFamily: '"Arial", sans-serif' }}>
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12, borderBottom: "1px solid #e0e0e0", paddingBottom: 8 }}>
+          <div style={{ width: 24, height: 24, background: "linear-gradient(135deg, #4a90d9, #5ba3e8)", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 14, fontWeight: "bold" }}>✓</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: "clamp(9px,1.1vw,13px)", fontWeight: "bold", color: "#333" }}>{challenges[challenge]}</div>
+            <div style={{ fontSize: "clamp(7px,0.9vw,10px)", color: "#999" }}>Tentative {attempt} sur ∞</div>
+          </div>
+        </div>
+
+        {/* Grille */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 3, marginBottom: 12 }}>
+          {emojis.map((e, i) => (
+            <div key={i} onClick={() => handleClick(i)} style={{ aspectRatio: "1", background: selected.includes(i) ? "#e8f0ff" : "#f8f8f8", border: `2px solid ${selected.includes(i) ? "#4a90d9" : "#e0e0e0"}`, borderRadius: 2, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "clamp(14px,2vw,24px)", cursor: "pointer", transition: "all 0.15s" }}>
+              {e}
+            </div>
+          ))}
+        </div>
+
+        {/* Bouton */}
+        <button onClick={handleVerify} style={{ width: "100%", padding: "8px", background: verified ? "#00cc44" : "#4a90d9", color: "#fff", border: "none", borderRadius: 3, fontSize: "clamp(9px,1.1vw,13px)", fontWeight: "bold", cursor: "pointer" }}>
+          {verified ? "✓ Vérifié ! (Pour l&apos;instant...)" : "VÉRIFIER"}
+        </button>
+
+        {attempt > 2 && !verified && (
+          <div style={{ marginTop: 8, color: "#cc0000", fontSize: "clamp(7px,0.9vw,10px)", textAlign: "center" }}>
+            ⚠ Comportement suspect détecté. Êtes-vous humain ?
+          </div>
+        )}
+
+        <div style={{ marginTop: 6, display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 4 }}>
+          <div style={{ color: "#999", fontSize: "clamp(7px,0.8vw,9px)" }}>reCAPTCHA</div>
+          <div style={{ color: "#999", fontSize: 8 }}>🔒</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Nokia3310Wallpaper() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const resize = () => { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; };
+    resize();
+    const ro = new ResizeObserver(resize);
+    ro.observe(canvas);
+
+    // Snake game state
+    const CELL = 12;
+    let snake = [{x: 5, y: 5}, {x: 4, y: 5}, {x: 3, y: 5}];
+    let food = {x: 10, y: 8};
+    let dir = {x: 1, y: 0};
+    let score = 0;
+    let dead = false;
+
+    const cols = () => Math.floor(canvas.width / CELL);
+    const rows = () => Math.floor(canvas.height / CELL);
+
+    const moveFood = () => { food = { x: Math.floor(Math.random() * (cols() - 2)) + 1, y: Math.floor(Math.random() * (rows() - 2)) + 1 }; };
+
+    const step = () => {
+      if (dead) { snake = [{x:5,y:5},{x:4,y:5},{x:3,y:5}]; dir={x:1,y:0}; score=0; dead=false; return; }
+      if (!snake[0]) return;
+      const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+      if (head.x <= 0 || head.x >= cols()-1 || head.y <= 0 || head.y >= rows()-1) { dead = true; return; }
+      if (snake.some(s => s.x === head.x && s.y === head.y)) { dead = true; return; }
+      snake.unshift(head);
+      if (head.x === food.x && head.y === food.y) { score++; moveFood(); } else { snake.pop(); }
+      // Auto-steer away from walls
+      const nx = head.x + dir.x; const ny = head.y + dir.y;
+      if (nx <= 0 || nx >= cols()-1 || ny <= 0 || ny >= rows()-1) {
+        const options = [{x:0,y:-1},{x:0,y:1},{x:-1,y:0},{x:1,y:0}].filter(d => {
+          const tx = head.x+d.x; const ty = head.y+d.y;
+          return tx>0&&tx<cols()-1&&ty>0&&ty<rows()-1&&!snake.some(s=>s.x===tx&&s.y===ty);
+        });
+        if (options.length) dir = options[Math.floor(Math.random()*options.length)]!;
+      }
+    };
+
+    const draw = () => {
+      const C = cols(); const R = rows();
+      // BG
+      ctx.fillStyle = "#9bbc0f";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // Grid dots
+      ctx.fillStyle = "#8aab0e";
+      for (let x = 0; x < C; x++) for (let y = 0; y < R; y++) ctx.fillRect(x*CELL+5, y*CELL+5, 2, 2);
+      // Border
+      ctx.strokeStyle = "#0f380f";
+      ctx.lineWidth = CELL;
+      ctx.strokeRect(CELL/2, CELL/2, canvas.width-CELL, canvas.height-CELL);
+      // Food
+      ctx.fillStyle = "#0f380f";
+      ctx.fillRect(food.x*CELL+1, food.y*CELL+1, CELL-2, CELL-2);
+      // Snake
+      for (const s of snake) {
+        ctx.fillStyle = dead ? "#aa0000" : "#306230";
+        ctx.fillRect(s.x*CELL, s.y*CELL, CELL, CELL);
+        ctx.fillStyle = dead ? "#cc0000" : "#0f380f";
+        ctx.fillRect(s.x*CELL+1, s.y*CELL+1, CELL-2, CELL-2);
+      }
+      // Score
+      ctx.fillStyle = "#0f380f";
+      ctx.font = `bold ${CELL}px "Courier New"`;
+      ctx.textAlign = "left";
+      ctx.fillText(`SCORE:${score}`, CELL*1.5, CELL*1.2);
+      if (dead) {
+        ctx.fillStyle = "rgba(15,56,15,0.7)";
+        ctx.fillRect(0, canvas.height/2-CELL*2, canvas.width, CELL*4);
+        ctx.fillStyle = "#9bbc0f";
+        ctx.font = `bold ${CELL*1.5}px "Courier New"`;
+        ctx.textAlign = "center";
+        ctx.fillText("GAME OVER", canvas.width/2, canvas.height/2+CELL*0.6);
+      }
+    };
+
+    let raf: number;
+    let lastStep = 0;
+    const loop = (ts: number) => {
+      if (ts - lastStep > 180) { step(); lastStep = ts; }
+      draw();
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+    return () => { cancelAnimationFrame(raf); ro.disconnect(); };
+  }, []);
+
+  return (
+    <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12 }}>
+      {/* Phone shell */}
+      <div style={{ background: "linear-gradient(to bottom, #2a3614, #1a2208)", border: "6px solid #1a2208", borderRadius: 16, padding: "12px 10px 20px", display: "flex", flexDirection: "column", alignItems: "center", gap: 8, boxShadow: "0 8px 24px rgba(0,0,0,0.7)", width: "clamp(160px,26vw,280px)" }}>
+        {/* Screen */}
+        <div style={{ width: "90%", borderRadius: 4, overflow: "hidden", border: "3px solid #0f380f" }}>
+          <canvas ref={canvasRef} style={{ width: "100%", height: "clamp(100px,14vw,160px)", display: "block" }} />
+        </div>
+        {/* Keypad */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 4, width: "80%" }}>
+          {["1","2","3","4","5","6","7","8","9","*","0","#"].map(k => (
+            <div key={k} style={{ background: "#2e3c16", border: "1px solid #4a5e28", borderRadius: 3, padding: "4px 0", textAlign: "center", color: "#9bbc0f", fontSize: "clamp(8px,1.2vw,14px)", fontFamily: '"Courier New", monospace' }}>{k}</div>
+          ))}
+        </div>
+        <div style={{ color: "#6a8c00", fontSize: "clamp(7px,0.9vw,10px)", fontFamily: '"Courier New", monospace' }}>NOKIA 3310 · batterie ▰▰▰▰▰</div>
+      </div>
+    </div>
+  );
+}
+
+function Fax2024Wallpaper() {
+  const [tick, setTick] = useState(0);
+  const [papers, setPapers] = useState<{id:number;y:number;msg:string}[]>([]);
+  const [nextId, setNextId] = useState(0);
+
+  const faxMessages = [
+    "URGENT: Reunion annulee",
+    "RE: RE: RE: Voir piece jointe",
+    "Confirmer reception SVP",
+    "Votre numero de fax est faux",
+    "Ce fax vous est parvenu par erreur",
+    "Merci de renvoyer ce fax en retour",
+    "NE PAS REPONDRE A CE FAX",
+    "Y2K: Tout va bien. (Non.)",
+  ];
+
+  useEffect(() => {
+    const id = setInterval(() => setTick(t => t + 1), 100);
+    return () => clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    if (tick % 25 === 0) {
+      const msg = faxMessages[Math.floor(Math.random() * faxMessages.length)] ?? "Fax reçu";
+      const newId = nextId;
+      setNextId(n => n + 1);
+      setPapers(p => [...p.slice(-4), { id: newId, y: -80, msg }]);
+    }
+    setPapers(p => p.map(pp => ({ ...pp, y: pp.y + 1.5 })).filter(pp => pp.y < 110) as {id:number;y:number;msg:string}[]);
+  }, [tick]);
+
+  return (
+    <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, fontFamily: '"Courier New", monospace' }}>
+      {/* Machine fax */}
+      <div style={{ position: "relative", width: "clamp(180px,28vw,300px)" }}>
+        {/* Corps principal */}
+        <div style={{ background: "linear-gradient(to bottom, #f0ece0, #d4ccbc)", border: "3px solid #a09080", borderRadius: "6px 6px 2px 2px", padding: "16px 12px 10px", boxShadow: "4px 4px 0 rgba(0,0,0,0.25)" }}>
+          {/* Écran LCD */}
+          <div style={{ background: "#c8d890", border: "2px inset #a09080", padding: "4px 8px", marginBottom: 8, fontFamily: '"Courier New", monospace', fontSize: "clamp(7px,0.9vw,11px)", color: "#2a3a10", letterSpacing: 1 }}>
+            {["LIGNE OCCUPEE","TRANSMISSION...","ERREUR P.04","EN ATTENTE...","BOURRAGE PAPIER"][tick % 5]}
+          </div>
+          {/* Fente de sortie */}
+          <div style={{ width: "80%", margin: "0 auto", height: 6, background: "#888", borderRadius: 1, position: "relative", overflow: "visible" }}>
+            {/* Papiers qui sortent */}
+            {papers.map(p => (
+              <div key={p.id} style={{ position: "absolute", left: "5%", top: -p.y, width: "90%", background: "#fffef8", border: "1px solid #ddd", padding: "3px 5px", fontSize: "clamp(5px,0.7vw,8px)", color: "#333", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", boxShadow: "0 2px 4px rgba(0,0,0,0.1)", zIndex: Math.floor(p.y) }}>
+                {p.msg}
+              </div>
+            ))}
+          </div>
+          {/* Boutons */}
+          <div style={{ display: "flex", gap: 6, marginTop: 12, justifyContent: "center" }}>
+            {["ENVOI","COPIE","STOP"].map(b => (
+              <div key={b} style={{ background: "#d4ccbc", border: "2px solid #a09080", borderRadius: 2, padding: "2px 6px", fontSize: "clamp(6px,0.8vw,9px)", color: "#2a1a00" }}>{b}</div>
+            ))}
+          </div>
+        </div>
+        {/* Bac papier */}
+        <div style={{ width: "70%", margin: "0 auto", height: "clamp(12px,2vw,20px)", background: "#e8e0d0", border: "2px solid #a09080", borderTop: "none", borderRadius: "0 0 4px 4px" }} />
+      </div>
+
+      <div style={{ color: "#604830", fontSize: "clamp(8px,1vw,12px)", textAlign: "center" }}>
+        📠 Fax reçus aujourd&apos;hui: {tick % 99 + 1} | Urgents: {tick % 99 + 1}
+      </div>
+      <div style={{ color: "#9a8060", fontSize: "clamp(7px,0.85vw,10px)" }}>
+        &quot;Avez-vous pensé à envoyer un email ?&quot; — Non.
+      </div>
+    </div>
+  );
+}
+
+function WindowsUpdateForcedWallpaper() {
+  const [percent, setPercent] = useState(0);
+  const [phase, setPhase] = useState(0);
+  const [countdown, setCountdown] = useState(30);
+
+  const phases = [
+    "Téléchargement des mises à jour",
+    "Installation en cours",
+    "Configuration des fonctionnalités",
+    "Optimisation de votre PC",
+    "Préparation de Windows",
+    "Redémarrage dans",
+  ];
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setPercent(p => {
+        if (p >= 100) {
+          setPhase(ph => Math.min(ph + 1, phases.length - 1));
+          return 0;
+        }
+        return p + (phase < 5 ? 0.4 : 0);
+      });
+    }, 60);
+    return () => clearInterval(id);
+  }, [phase]);
+
+  useEffect(() => {
+    if (phase === phases.length - 1) {
+      const id = setInterval(() => setCountdown(c => Math.max(0, c - 1)), 1000);
+      return () => clearInterval(id);
+    }
+    return undefined;
+  }, [phase]);
+
+  return (
+    <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 24, padding: 32 }}>
+      {/* Logo Windows */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4, width: "clamp(40px,6vw,80px)", height: "clamp(40px,6vw,80px)" }}>
+        {["#ff4444","#00cc44","#ffcc00","#4488ff"].map(c => (
+          <div key={c} style={{ background: c, borderRadius: 2, opacity: 0.9 }} />
+        ))}
+      </div>
+
+      {/* Message principal */}
+      <div style={{ textAlign: "center" }}>
+        <div style={{ color: "#ffffff", fontSize: "clamp(14px,2.2vw,28px)", fontWeight: 300, letterSpacing: 1 }}>
+          {phase < phases.length - 1 ? phases[phase] : `${phases[phase]} ${countdown}s`}
+          {phase === phases.length - 1 && countdown === 0 && " → Redémarrage !"}
+        </div>
+        <div style={{ color: "rgba(255,255,255,0.6)", fontSize: "clamp(9px,1.2vw,14px)", marginTop: 8 }}>
+          {phase < phases.length - 1
+            ? "Ne pas éteindre votre ordinateur"
+            : countdown > 0
+              ? "Enregistrez vos documents maintenant (trop tard en fait)"
+              : "⚠ REDÉMARRAGE EN COURS — TOUT EST PERDU"}
+        </div>
+      </div>
+
+      {/* Barre de progression */}
+      {phase < phases.length - 1 && (
+        <div style={{ width: "clamp(200px,35vw,400px)" }}>
+          <div style={{ background: "rgba(255,255,255,0.15)", height: 4, borderRadius: 2, overflow: "hidden" }}>
+            <div style={{ height: "100%", width: `${percent}%`, background: "#ffffff", borderRadius: 2, transition: "width 0.06s linear" }} />
+          </div>
+          <div style={{ color: "rgba(255,255,255,0.5)", fontSize: "clamp(8px,1vw,12px)", textAlign: "center", marginTop: 8 }}>{Math.round(percent)}%</div>
+        </div>
+      )}
+
+      {/* Spinner */}
+      {phase < phases.length - 1 && (
+        <div style={{ width: "clamp(24px,3vw,40px)", height: "clamp(24px,3vw,40px)", border: "3px solid rgba(255,255,255,0.2)", borderTopColor: "#ffffff", borderRadius: "50%", animation: "wuspin 1s linear infinite" }} />
+      )}
+
+      {/* Countdown bar */}
+      {phase === phases.length - 1 && countdown > 0 && (
+        <div style={{ width: "clamp(200px,35vw,400px)" }}>
+          <div style={{ background: "rgba(255,255,255,0.15)", height: 8, borderRadius: 4, overflow: "hidden" }}>
+            <div style={{ height: "100%", width: `${(countdown / 30) * 100}%`, background: countdown < 10 ? "#ff4444" : "#ffffff", borderRadius: 4, transition: "width 1s linear" }} />
+          </div>
+        </div>
+      )}
+
+      <div style={{ position: "absolute", bottom: 24, color: "rgba(255,255,255,0.3)", fontSize: "clamp(7px,0.9vw,11px)" }}>
+        Mise à jour 1 sur 847 — © Microsoft Corporation. Votre avis ne compte pas.
+      </div>
+
+      <style>{`@keyframes wuspin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
     </div>
   );
 }

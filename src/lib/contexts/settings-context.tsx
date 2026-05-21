@@ -20,7 +20,7 @@ import {
   type AppSettings,
   type Density,
 } from "@/lib/settings";
-import { WALLPAPERS, type WallpaperId } from "@/lib/wallpapers";
+import { WALLPAPERS, WALLPAPER_MAP, type WallpaperId } from "@/lib/wallpapers";
 import { useAuth } from "@/lib/contexts/auth-context";
 
 const THEME_MAP = new Map(THEMES.map((t) => [t.id, t]));
@@ -36,6 +36,7 @@ interface SettingsContextValue {
   setScanlinesEnabled: (v: boolean) => void;
   setCursorId: (v: CursorId) => void;
   setWallpaperId: (v: WallpaperId) => void;
+  resetWallpaperToTheme: () => void;
   updateSettings: (patch: Partial<AppSettings>) => void;
 }
 
@@ -50,6 +51,7 @@ const SettingsContext = createContext<SettingsContextValue>({
   setScanlinesEnabled: () => {},
   setCursorId: () => {},
   setWallpaperId: () => {},
+  resetWallpaperToTheme: () => {},
   updateSettings: () => {},
 });
 
@@ -166,18 +168,52 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     return () => { document.documentElement.style.cursor = ""; };
   }, [settings.cursorId]);
 
-  const setTheme = useCallback((id: ThemeId) => updateSettings({ themeId: id }), [updateSettings]);
+  const setTheme = useCallback((id: ThemeId) => {
+    const themeObj = THEME_MAP.get(id);
+    setSettings((prev) => {
+      const wallpaperPatch: Partial<AppSettings> =
+        !prev.wallpaperOverridden && themeObj?.defaultWallpaperId && WALLPAPER_MAP.has(themeObj.defaultWallpaperId)
+          ? { wallpaperId: themeObj.defaultWallpaperId }
+          : {};
+      const next = { ...prev, themeId: id, ...wallpaperPatch };
+      saveSettings(next);
+      if (prevUserIdRef.current) {
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+        debounceRef.current = setTimeout(() => {
+          fetch("/api/user/settings", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(next),
+          }).catch(() => {});
+        }, 600);
+      }
+      return next;
+    });
+  }, []);
+
   const setSoundEnabled = useCallback((v: boolean) => updateSettings({ soundEnabled: v }), [updateSettings]);
   const setAmbientVolume = useCallback((v: number) => updateSettings({ ambientVolume: Math.max(0, Math.min(1, v)) }), [updateSettings]);
   const setAnimationsEnabled = useCallback((v: boolean) => updateSettings({ animationsEnabled: v }), [updateSettings]);
   const setDensity = useCallback((v: Density) => updateSettings({ density: v }), [updateSettings]);
   const setScanlinesEnabled = useCallback((v: boolean) => updateSettings({ scanlinesEnabled: v }), [updateSettings]);
   const setCursorId = useCallback((v: CursorId) => updateSettings({ cursorId: v }), [updateSettings]);
-  const setWallpaperId = useCallback((v: WallpaperId) => updateSettings({ wallpaperId: v }), [updateSettings]);
+  const setWallpaperId = useCallback((v: WallpaperId) => updateSettings({ wallpaperId: v, wallpaperOverridden: true }), [updateSettings]);
+  const resetWallpaperToTheme = useCallback(() => {
+    setSettings((prev) => {
+      const themeObj = THEME_MAP.get(prev.themeId);
+      const wallpaperId =
+        themeObj?.defaultWallpaperId && WALLPAPER_MAP.has(themeObj.defaultWallpaperId)
+          ? themeObj.defaultWallpaperId
+          : prev.wallpaperId;
+      const next = { ...prev, wallpaperId, wallpaperOverridden: false };
+      saveSettings(next);
+      return next;
+    });
+  }, []);
 
   const contextValue = useMemo(
-    () => ({ settings, theme, setTheme, setSoundEnabled, setAmbientVolume, setAnimationsEnabled, setDensity, setScanlinesEnabled, setCursorId, setWallpaperId, updateSettings }),
-    [settings, theme, setTheme, setSoundEnabled, setAmbientVolume, setAnimationsEnabled, setDensity, setScanlinesEnabled, setCursorId, setWallpaperId, updateSettings]
+    () => ({ settings, theme, setTheme, setSoundEnabled, setAmbientVolume, setAnimationsEnabled, setDensity, setScanlinesEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, updateSettings }),
+    [settings, theme, setTheme, setSoundEnabled, setAmbientVolume, setAnimationsEnabled, setDensity, setScanlinesEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, updateSettings]
   );
 
   return (

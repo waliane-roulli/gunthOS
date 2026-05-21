@@ -4,7 +4,7 @@ import { useState, type CSSProperties } from "react";
 import { useSettings } from "@/lib/contexts/settings-context";
 import { THEMES, type ThemeId } from "@/lib/themes";
 import { CURSORS, type CursorId } from "@/lib/cursors";
-import { WALLPAPERS, type WallpaperId } from "@/lib/wallpapers";
+import { WALLPAPERS, WALLPAPER_MAP, type WallpaperId } from "@/lib/wallpapers";
 import { type Density } from "@/lib/settings";
 import { RetroTitlebarBtn } from "./retro-titlebar-btn";
 
@@ -23,7 +23,7 @@ interface SettingsPanelProps {
 }
 
 export function SettingsPanel({ onClose, embedded = false }: SettingsPanelProps) {
-  const { settings, setTheme, setSoundEnabled, setAmbientVolume, setAnimationsEnabled, setDensity, setScanlinesEnabled, setCursorId, setWallpaperId } = useSettings();
+  const { settings, setTheme, setSoundEnabled, setAmbientVolume, setAnimationsEnabled, setDensity, setScanlinesEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme } = useSettings();
   const [activeTab, setActiveTab] = useState<Tab>("theme");
 
   const content = (
@@ -60,7 +60,13 @@ export function SettingsPanel({ onClose, embedded = false }: SettingsPanelProps)
           <ThemeTab themeId={settings.themeId} setTheme={setTheme} />
         )}
         {activeTab === "wallpaper" && (
-          <WallpaperTab wallpaperId={settings.wallpaperId ?? "bliss"} setWallpaperId={setWallpaperId} />
+          <WallpaperTab
+            wallpaperId={settings.wallpaperId ?? "bliss"}
+            wallpaperOverridden={settings.wallpaperOverridden}
+            themeId={settings.themeId}
+            setWallpaperId={setWallpaperId}
+            resetWallpaperToTheme={resetWallpaperToTheme}
+          />
         )}
         {activeTab === "display" && (
           <DisplayTab
@@ -423,16 +429,74 @@ function DisplayTab({
 
 function WallpaperTab({
   wallpaperId,
+  wallpaperOverridden,
+  themeId,
   setWallpaperId,
+  resetWallpaperToTheme,
 }: {
   wallpaperId: WallpaperId;
+  wallpaperOverridden: boolean;
+  themeId: ThemeId;
   setWallpaperId: (id: WallpaperId) => void;
+  resetWallpaperToTheme: () => void;
 }) {
   const active = WALLPAPERS.find((w) => w.id === wallpaperId) ?? WALLPAPERS[0]!;
+  const currentTheme = THEMES.find((t) => t.id === themeId);
+  const themeDefaultWallpaper = currentTheme?.defaultWallpaperId
+    ? WALLPAPER_MAP.get(currentTheme.defaultWallpaperId)
+    : undefined;
 
   return (
     <>
       <SectionTitle>🖼️ FOND D&apos;ÉCRAN</SectionTitle>
+
+      {/* Bandeau liaison thème ↔ wallpaper */}
+      {themeDefaultWallpaper && (
+        <div
+          className="flex items-center justify-between gap-2 mb-3 px-3 py-2 border-[2px]"
+          style={{
+            backgroundColor: wallpaperOverridden ? "var(--t-bg-dark)" : "var(--t-card-hover)",
+            borderTopColor: wallpaperOverridden ? "var(--t-border-dark)" : "var(--t-accent)",
+            borderLeftColor: wallpaperOverridden ? "var(--t-border-dark)" : "var(--t-accent)",
+            borderBottomColor: "var(--t-border-dark)",
+            borderRightColor: "var(--t-border-dark)",
+          }}
+        >
+          <div>
+            <div
+              className="text-xs tracking-widest"
+              style={{ color: wallpaperOverridden ? "var(--t-text-subtle)" : "var(--t-accent)", fontFamily: "var(--t-font-display)" }}
+            >
+              {wallpaperOverridden ? "🔓 FOND PERSONNALISÉ" : `🔗 LIÉ AU THÈME ${currentTheme?.emoji ?? ""}`}
+            </div>
+            <div
+              className="text-xs mt-0.5"
+              style={{ color: "var(--t-text-muted)", fontFamily: "var(--t-font-body)" }}
+            >
+              {wallpaperOverridden
+                ? `Défaut du thème : ${themeDefaultWallpaper.emoji} ${themeDefaultWallpaper.name}`
+                : `Appliqué automatiquement avec ce thème`}
+            </div>
+          </div>
+          {wallpaperOverridden && (
+            <button
+              onClick={resetWallpaperToTheme}
+              className="shrink-0 px-2 py-1 border-[2px] text-xs tracking-wider cursor-pointer"
+              style={{
+                fontFamily: "var(--t-font-display)",
+                backgroundColor: "var(--t-bg)",
+                color: "var(--t-accent)",
+                borderTopColor: "var(--t-border-light)",
+                borderLeftColor: "var(--t-border-light)",
+                borderBottomColor: "var(--t-border-dark)",
+                borderRightColor: "var(--t-border-dark)",
+              }}
+            >
+              🔗 RELIER
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Preview */}
       <div

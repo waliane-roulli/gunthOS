@@ -36,7 +36,27 @@ export type WallpaperId =
   | "recycle_bin"
   | "defrag"
   | "wifi_bars"
-  | "boomer_forward";
+  | "boomer_forward"
+  | "minitel"
+  | "excel"
+  | "powerpoint"
+  | "minesweeper"
+  | "geocities"
+  | "ie6"
+  | "notepad"
+  | "c64"
+  | "winamp"
+  | "ms_paint"
+  | "aol"
+  | "tamagotchi_death"
+  | "solitaire"
+  | "nasa_panic"
+  | "printer_rage"
+  | "stackoverflow"
+  | "captcha_hell"
+  | "nokia3310"
+  | "fax_2024"
+  | "windows_update_forced";
 
 export interface Wallpaper {
   id: WallpaperId;
@@ -160,7 +180,7 @@ export const WALLPAPERS: Wallpaper[] = [
     description: "La colline authentique™",
     animated: false,
     style: {
-      background: `linear-gradient(to bottom, #5db8f0 0%, #87ceeb 30%, #b0dcf0 50%, #68b84a 50%, #4a9c2f 65%, #3a8020 100%)`,
+      background: `linear-gradient(to bottom, #3a8fd4 0%, #5aacec 30%, #8ecef8 58%, #b8dff8 65%, #4aaa18 65%, #245808 100%)`,
     },
     decorationKey: "xphill",
   },
@@ -388,6 +408,186 @@ export const WALLPAPERS: Wallpaper[] = [
     animated: true,
     style: { background: "#ece9d8" },
     decorationKey: "boomer_forward",
+  },
+  {
+    id: "minitel",
+    name: "3615 GUNTH",
+    emoji: "📟",
+    description: "Connexion Minitel Rose en cours...",
+    animated: true,
+    style: { background: "#050005" },
+    decorationKey: "minitel",
+  },
+  {
+    id: "excel",
+    name: "Tableur de la Mort",
+    emoji: "📊",
+    description: "Ligne 1048576 atteinte",
+    animated: true,
+    style: { background: "linear-gradient(135deg, #e8f0e8 0%, #d0e8d8 100%)" },
+    decorationKey: "excel",
+  },
+  {
+    id: "powerpoint",
+    name: "Slide de l'Enfer",
+    emoji: "📽️",
+    description: "87 slides. 0 contenu.",
+    animated: true,
+    style: { background: "linear-gradient(135deg, #1e003a 0%, #100020 100%)" },
+    decorationKey: "powerpoint",
+  },
+  {
+    id: "minesweeper",
+    name: "Démineur Fatal",
+    emoji: "💣",
+    description: "BOOM — comme prévu",
+    animated: true,
+    style: { background: "#c0c0c0" },
+    decorationKey: "minesweeper",
+  },
+  {
+    id: "geocities",
+    name: "Ma Page Perso!!!",
+    emoji: "🌐",
+    description: "VisiteurS: 0000047 — NE PAS VOLER MES GIFs",
+    animated: true,
+    style: { background: "#000000" },
+    decorationKey: "geocities",
+  },
+  {
+    id: "ie6",
+    name: "Internet Explorer 6",
+    emoji: "🌐",
+    description: "Chargement... (depuis 2003)",
+    animated: true,
+    style: { background: "linear-gradient(135deg, #ece9d8 0%, #d4d0c8 100%)" },
+    decorationKey: "ie6",
+  },
+  {
+    id: "notepad",
+    name: "Fichier Sans Titre",
+    emoji: "📝",
+    description: "Voulez-vous enregistrer les modifications ?",
+    animated: true,
+    style: { background: "#f8f8f8" },
+    decorationKey: "notepad",
+  },
+  {
+    id: "c64",
+    name: "C64 BASIC",
+    emoji: "🕹️",
+    description: "64K RAM SYSTEM  38911 BASIC BYTES FREE",
+    animated: true,
+    style: { background: "#4040a0" },
+    decorationKey: "c64",
+  },
+  {
+    id: "winamp",
+    name: "Winamp Visualizer",
+    emoji: "🎵",
+    description: "♫ Sandstorm — Darude (3:45)",
+    animated: true,
+    style: { background: "#000000" },
+    decorationKey: "winamp",
+  },
+  {
+    id: "ms_paint",
+    name: "Chef-d'Œuvre MS Paint",
+    emoji: "🖌️",
+    description: "Enregistré en BMP 24bit. 47 Mo.",
+    animated: true,
+    style: { background: "#d4d0c8" },
+    decorationKey: "ms_paint",
+  },
+  {
+    id: "aol",
+    name: "AOL Dial-Up",
+    emoji: "📧",
+    description: "You've Got Mail (depuis 1998)",
+    animated: true,
+    style: { background: "linear-gradient(135deg, #003087 0%, #0050c8 100%)" },
+    decorationKey: "aol",
+  },
+  {
+    id: "tamagotchi_death",
+    name: "Tamagotchi RIP",
+    emoji: "💀",
+    description: "Il avait faim. T'étais en cours.",
+    animated: true,
+    style: { background: "linear-gradient(135deg, #ffe0f0 0%, #ffb0d8 100%)" },
+    decorationKey: "tamagotchi_death",
+  },
+  {
+    id: "solitaire",
+    name: "Solitaire Victoire",
+    emoji: "🃏",
+    description: "Les cartes tombent. Enfin.",
+    animated: true,
+    style: { background: "#35763a" },
+    decorationKey: "solitaire",
+  },
+  {
+    id: "nasa_panic",
+    name: "Houston on a un problème",
+    emoji: "🚀",
+    description: "T-minus: trop tard",
+    animated: true,
+    style: { background: "linear-gradient(180deg, #000000 0%, #0a0a1a 100%)" },
+    decorationKey: "nasa_panic",
+  },
+  {
+    id: "printer_rage",
+    name: "Imprimante Enragée",
+    emoji: "🖨️",
+    description: "ERROR_PAPER_JAM_FOREVER",
+    animated: true,
+    style: { background: "linear-gradient(135deg, #e8e8e8 0%, #c8c8c8 100%)" },
+    decorationKey: "printer_rage",
+  },
+  {
+    id: "stackoverflow",
+    name: "StackOverflow 3h du mat",
+    emoji: "💻",
+    description: "Copié depuis 2008. Fonctionne pas.",
+    animated: true,
+    style: { background: "#1a1a1a" },
+    decorationKey: "stackoverflow",
+  },
+  {
+    id: "captcha_hell",
+    name: "Captcha de l'Enfer",
+    emoji: "🤖",
+    description: "Sélectionnez tous les feux tricolores",
+    animated: true,
+    style: { background: "#f5f5f5" },
+    decorationKey: "captcha_hell",
+  },
+  {
+    id: "nokia3310",
+    name: "Nokia 3310",
+    emoji: "📱",
+    description: "Batterie: 100%. Indestructible.",
+    animated: true,
+    style: { background: "#4a5e28" },
+    decorationKey: "nokia3310",
+  },
+  {
+    id: "fax_2024",
+    name: "Fax Machine 2024",
+    emoji: "📠",
+    description: "Confirmation de réception... en cours",
+    animated: true,
+    style: { background: "linear-gradient(135deg, #e8e0d0 0%, #d4ccbc 100%)" },
+    decorationKey: "fax_2024",
+  },
+  {
+    id: "windows_update_forced",
+    name: "Redémarrage Imminent",
+    emoji: "🔄",
+    description: "Ne pas éteindre. Trop tard.",
+    animated: true,
+    style: { background: "#0078d4" },
+    decorationKey: "windows_update_forced",
   },
 ];
 

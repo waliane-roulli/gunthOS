@@ -13,6 +13,8 @@ export interface AppSettings {
   scanlinesEnabled: boolean;
   cursorId: CursorId;
   wallpaperId: WallpaperId;
+  /** true = l'user a choisi manuellement un wallpaper, on ne le remplace plus automatiquement */
+  wallpaperOverridden: boolean;
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -24,6 +26,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   scanlinesEnabled: true,
   cursorId: DEFAULT_CURSOR_ID,
   wallpaperId: DEFAULT_WALLPAPER_ID,
+  wallpaperOverridden: false,
 };
 
 const STORAGE_KEY = "gunth-settings";
@@ -54,6 +57,7 @@ export function loadSettings(): AppSettings {
       wallpaperId: WALLPAPERS.some((w) => w.id === parsed.wallpaperId)
         ? (parsed.wallpaperId as WallpaperId)
         : DEFAULT_SETTINGS.wallpaperId,
+      wallpaperOverridden: parsed.wallpaperOverridden ?? DEFAULT_SETTINGS.wallpaperOverridden,
     };
   } catch {
     return DEFAULT_SETTINGS;
