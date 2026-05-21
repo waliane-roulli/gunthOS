@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { ItemList } from "./item-list";
 import { OptionsPanel } from "./options-panel";
+import { RouletteWheel, HorizontalPicker } from "./draw-modes";
 import { RetroButton } from "@/components/ui/retro-button";
 import { RetroTitlebarBtn } from "@/components/ui/retro-titlebar-btn";
 import { RetroInput } from "@/components/ui/retro-input";
@@ -15,7 +17,7 @@ import { useLocalStorage } from "@/lib/hooks/use-local-storage";
 import { useVisitorCount } from "@/lib/hooks/use-visitor-count";
 import { useDraggable } from "@/lib/hooks/use-draggable";
 import { DEFAULT_OPTIONS } from "@/types/plouf-plouf";
-import type { CelebrationOptions } from "@/types/plouf-plouf";
+import type { CelebrationOptions, DrawMode } from "@/types/plouf-plouf";
 
 const WATER_DROP = <WaterDropSVG />;
 
@@ -27,6 +29,10 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
   const [options, setOptions] = useLocalStorage<CelebrationOptions>(
     "ploufPloufOptions",
     DEFAULT_OPTIONS
+  );
+  const [drawMode, setDrawMode] = useLocalStorage<DrawMode>(
+    "ploufPloufDrawMode",
+    "vertical"
   );
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -126,7 +132,7 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
     setWinnerName(null);
     stopCelebration();
 
-    const idx = await drawing.draw();
+    const idx = await drawing.draw(drawMode === "horizontal");
     if (idx < 0) return;
 
     const name = games[idx] ?? "";
@@ -218,45 +224,51 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
   const canDraw = games.length >= 2 && !drawing.isDrawing;
 
   return (
-    <>
-      {/* Canvas particules */}
-      <canvas
-        ref={canvasRef}
-        className="fixed inset-0 w-screen h-screen pointer-events-none z-[9999]"
-        style={{ display: "block" }}
-      />
+  <>
+    {createPortal(
+      <>
+        {/* Canvas particules */}
+        <canvas
+          ref={canvasRef}
+          className="fixed inset-0 w-screen h-screen pointer-events-none z-[9999]"
+          style={{ display: "block" }}
+        />
 
-      {/* Flash overlay */}
-      <div
-        ref={flashRef}
-        className="fixed inset-0 bg-white opacity-0 pointer-events-none z-[9998] mix-blend-screen"
-      />
-
-      {/* Marquee banners */}
-      {(["top", "bottom"] as const).map((pos) => (
+        {/* Flash overlay */}
         <div
-          key={pos}
-          ref={pos === "top" ? marqueeTopRef : marqueeBottomRef}
-          className={`fixed ${pos === "top" ? "top-0" : "bottom-0"} left-0 w-full z-[9997] pointer-events-none hidden overflow-hidden whitespace-nowrap bg-[linear-gradient(90deg,#ff00ff,#00ffff,#ffff00,#ff00ff)] bg-[length:300%_100%] [animation:marqueeRainbow_1.5s_linear_infinite] text-white font-[family-name:var(--font-vt323)] font-bold text-2xl tracking-[3px] py-1.5 border-y-2 border-black`}
-          style={{ backgroundSize: "300% 100%" }}
-        >
-          <span className="inner inline-block pl-[100%] animate-[marqueeScroll_10s_linear_infinite]" />
-        </div>
-      ))}
+          ref={flashRef}
+          className="fixed inset-0 bg-white opacity-0 pointer-events-none z-[9998] mix-blend-screen"
+        />
 
-      {/* Winner big text */}
-      <div
-        ref={winnerBigRef}
-        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-[family-name:var(--font-fredoka)] font-bold text-[clamp(2rem,10vw,7rem)] z-[10000] pointer-events-none hidden text-center max-w-[95vw] px-5 leading-none word-break-break-word bg-[linear-gradient(90deg,#ff0000,#ff8800,#ffee00,#00ff00,#00ccff,#8800ff,#ff00ff,#ff0000)] bg-[length:400%_100%] [background-clip:text] [-webkit-background-clip:text] text-transparent [filter:drop-shadow(0_0_20px_#ffff00)_drop-shadow(0_0_40px_#ff00ff)]"
-        style={{ WebkitTextFillColor: "transparent" }}
-      />
+        {/* Marquee banners */}
+        {(["top", "bottom"] as const).map((pos) => (
+          <div
+            key={pos}
+            ref={pos === "top" ? marqueeTopRef : marqueeBottomRef}
+            className={`fixed ${pos === "top" ? "top-0" : "bottom-0"} left-0 w-full z-[99999] pointer-events-none hidden overflow-hidden whitespace-nowrap bg-[linear-gradient(90deg,#ff00ff,#00ffff,#ffff00,#ff00ff)] bg-[length:300%_100%] [animation:marqueeRainbow_1.5s_linear_infinite] text-white font-[family-name:var(--font-vt323)] font-bold text-2xl tracking-[3px] py-1.5 border-y-2 border-black`}
+            style={{ backgroundSize: "300% 100%" }}
+          >
+            <span className="inner inline-block pl-[100%] animate-[marqueeScroll_10s_linear_infinite]" />
+          </div>
+        ))}
 
-      {/* Winner sub text */}
-      <div
-        ref={winnerSubRef}
-        className="fixed left-1/2 -translate-x-1/2 font-[family-name:var(--font-vt323)] font-bold text-[clamp(1rem,4vw,2.5rem)] z-[10000] pointer-events-none hidden text-center tracking-[4px] text-[#ffff00] [text-shadow:3px_3px_0_#000,-2px_-2px_0_#000,2px_-2px_0_#000,-2px_2px_0_#000]"
-        style={{ top: "calc(50% - clamp(2rem, 10vw, 7rem) * 0.7)" }}
-      />
+        {/* Winner big text */}
+        <div
+          ref={winnerBigRef}
+          className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-[family-name:var(--font-fredoka)] font-bold text-[clamp(2rem,10vw,7rem)] z-[99999] pointer-events-none hidden text-center max-w-[95vw] px-5 leading-none word-break-break-word bg-[linear-gradient(90deg,#ff0000,#ff8800,#ffee00,#00ff00,#00ccff,#8800ff,#ff00ff,#ff0000)] bg-[length:400%_100%] [background-clip:text] [-webkit-background-clip:text] text-transparent [filter:drop-shadow(0_0_20px_#ffff00)_drop-shadow(0_0_40px_#ff00ff)]"
+          style={{ WebkitTextFillColor: "transparent" }}
+        />
+
+        {/* Winner sub text */}
+        <div
+          ref={winnerSubRef}
+          className="fixed left-1/2 -translate-x-1/2 font-[family-name:var(--font-vt323)] font-bold text-[clamp(1rem,4vw,2.5rem)] z-[99999] pointer-events-none hidden text-center tracking-[4px] text-[#ffff00] [text-shadow:3px_3px_0_#000,-2px_-2px_0_#000,2px_-2px_0_#000,-2px_2px_0_#000]"
+          style={{ top: "calc(50% - clamp(2rem, 10vw, 7rem) * 0.7)" }}
+        />
+      </>,
+      document.body
+    )}
+
 
       {/* Main window */}
       <div
@@ -332,10 +344,10 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
           </div>
         )}
 
-        <div className="p-4 sm:p-5">
+        <div className="p-3 sm:p-4">
           {/* Header */}
           <div
-            className="text-center mb-4 p-3.5 border-[2px]"
+            className="flex items-center justify-center gap-3 mb-2 p-2 border-[2px]"
             style={{
               background: "linear-gradient(to bottom, var(--t-inset-from), var(--t-inset-to))",
               borderTopColor: "var(--t-border-dark)",
@@ -344,23 +356,25 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
               borderRightColor: "var(--t-border-light)",
             }}
           >
-            <div className="inline-block animate-[float_4s_ease-in-out_infinite] cursor-pointer hover:scale-110 hover:-rotate-6 transition-none relative">
+            <div className="animate-[float_4s_ease-in-out_infinite] cursor-pointer hover:scale-110 hover:-rotate-6 transition-none shrink-0">
               {WATER_DROP}
             </div>
-            <h1 className="text-[2.6rem] font-bold font-[family-name:var(--font-fredoka)] tracking-[2px] mt-2.5 bg-[linear-gradient(90deg,#ff0000,#ff8800,#ffee00,#00ff00,#00ccff,#8800ff,#ff00ff,#ff0000)] bg-[length:300%_100%] [background-clip:text] [-webkit-background-clip:text] text-transparent animate-[rainbow_4s_linear_infinite] [filter:drop-shadow(2px_2px_0_rgba(0,0,0,0.2))]">
-              PLOUF PLOUF
-            </h1>
-            <p className="font-[family-name:var(--font-vt323)] text-[#000080] text-[1.2rem] tracking-[2px] mt-1">
-              ★ TIRAGE AU SORT ★
-              <span className="inline-block bg-red-600 text-yellow-300 font-bold text-xs px-1.5 border border-black ml-1.5 animate-[blink_0.8s_step-end_infinite] -rotate-3">
-                NEW!
-              </span>
-            </p>
+            <div className="text-center">
+              <h1 className="text-[1.7rem] font-bold font-[family-name:var(--font-fredoka)] tracking-[2px] leading-tight bg-[linear-gradient(90deg,#ff0000,#ff8800,#ffee00,#00ff00,#00ccff,#8800ff,#ff00ff,#ff0000)] bg-[length:300%_100%] [background-clip:text] [-webkit-background-clip:text] text-transparent animate-[rainbow_4s_linear_infinite] [filter:drop-shadow(2px_2px_0_rgba(0,0,0,0.2))]">
+                PLOUF PLOUF
+              </h1>
+              <p className="font-[family-name:var(--font-vt323)] text-[#000080] text-[0.9rem] tracking-[2px] leading-tight">
+                ★ TIRAGE AU SORT ★
+                <span className="inline-block bg-red-600 text-yellow-300 font-bold text-[0.65rem] px-1 border border-black ml-1 animate-[blink_0.8s_step-end_infinite] -rotate-3 align-middle">
+                  NEW!
+                </span>
+              </p>
+            </div>
           </div>
 
           {/* Marquee */}
           <div
-            className="py-1 overflow-hidden whitespace-nowrap border-[2px] text-base tracking-wider mb-3"
+            className="py-0.5 overflow-hidden whitespace-nowrap border-[2px] text-sm tracking-wider mb-2"
             style={{
               backgroundColor: "var(--t-marquee-bg)",
               color: "var(--t-marquee-text)",
@@ -379,7 +393,7 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
           </div>
 
           {/* Input */}
-          <div className="flex gap-1.5 mb-2.5">
+          <div className="flex gap-1.5 mb-2">
             <RetroInput
               ref={inputRef}
               value={inputValue}
@@ -411,9 +425,9 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
             </p>
           )}
 
-          {/* Status bar */}
+          {/* Mode selector + Status bar */}
           <div
-            className="flex items-center justify-between mb-2.5 border-[2px] px-2.5 py-1.5 gap-2 flex-wrap"
+            className="flex items-center justify-between mb-2 border-[2px] px-2 py-1 gap-1.5 flex-wrap"
             style={{
               backgroundColor: "var(--t-bg)",
               borderTopColor: "var(--t-border-dark)",
@@ -422,65 +436,141 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
               borderRightColor: "var(--t-border-light)",
             }}
           >
-            <span
-              className={`px-2.5 py-0.5 text-base tracking-wider border border-black ${games.length === 1 ? "animate-[blink_1s_step-end_infinite]" : ""}`}
-              style={{
-                backgroundColor: games.length === 1 ? "#f97316" : "var(--t-accent)",
-                color: "var(--t-titlebar-text)",
-                fontFamily: "var(--t-font-display)",
-              }}
-            >
-              {games.length} {games.length <= 1 ? "élément" : "éléments"}
-            </span>
-            <span
-              className="text-base tracking-wider"
-              style={{
-                color: "var(--t-text-muted)",
-                fontFamily: "var(--t-font-display)",
-              }}
-            >
-              {games.length === 0
-                ? "[ Pret a demarrer ]"
-                : games.length === 1
-                  ? "[ Ajoutez encore des éléments... ]"
-                  : "[ Pret pour le tirage ! ]"}
-            </span>
+            <div className="flex items-center gap-0.5">
+              {/* Draw mode buttons */}
+              {([
+                ["roulette", "🎡", "Roue du hasard"],
+                ["horizontal", "↔️", "Horizontal"],
+                ["vertical", "↕️", "Vertical"],
+              ] as const).map(([mode, icon, label]) => (
+                <button
+                  key={mode}
+                  onClick={() => { if (!drawing.isDrawing) setDrawMode(mode); }}
+                  disabled={drawing.isDrawing}
+                  title={`Mode ${label}`}
+                  className="px-1.5 py-0.5 text-xs font-bold tracking-wider border-[2px] transition-none"
+                  style={{
+                    backgroundColor: drawMode === mode ? "var(--t-accent)" : "var(--t-bg)",
+                    color: drawMode === mode ? "var(--t-titlebar-text)" : "var(--t-text-muted)",
+                    fontFamily: "var(--t-font-display)",
+                    borderTopColor: drawMode === mode ? "var(--t-border-dark)" : "var(--t-border-light)",
+                    borderLeftColor: drawMode === mode ? "var(--t-border-dark)" : "var(--t-border-light)",
+                    borderBottomColor: drawMode === mode ? "var(--t-border-light)" : "var(--t-border-dark)",
+                    borderRightColor: drawMode === mode ? "var(--t-border-light)" : "var(--t-border-dark)",
+                    opacity: drawing.isDrawing ? 0.5 : 1,
+                  }}
+                >
+                  {icon} {label}
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center gap-0.5 ml-auto">
+              <button
+                onClick={handleClear}
+                disabled={games.length === 0 || drawing.isDrawing}
+                title="Vider la liste"
+                className="px-1.5 py-0.5 text-xs font-bold tracking-wider border border-black transition-none disabled:opacity-40"
+                style={{
+                  backgroundColor: "var(--t-bg)",
+                  color: "var(--t-text)",
+                  fontFamily: "var(--t-font-display)",
+                }}
+              >
+                🗑
+              </button>
+              <button
+                onClick={handleExport}
+                disabled={games.length === 0}
+                title="Exporter la liste"
+                className="px-1.5 py-0.5 text-xs font-bold tracking-wider border border-black transition-none disabled:opacity-40"
+                style={{
+                  backgroundColor: "var(--t-bg)",
+                  color: "var(--t-text)",
+                  fontFamily: "var(--t-font-display)",
+                }}
+              >
+                📤
+              </button>
+              <button
+                onClick={handleImport}
+                disabled={drawing.isDrawing}
+                title="Importer une liste"
+                className="px-1.5 py-0.5 text-xs font-bold tracking-wider border border-black transition-none disabled:opacity-40"
+                style={{
+                  backgroundColor: "var(--t-bg)",
+                  color: "var(--t-text)",
+                  fontFamily: "var(--t-font-display)",
+                }}
+              >
+                📥
+              </button>
+              <span
+                className={`px-1.5 py-0 text-xs tracking-wider border border-black ${games.length === 1 ? "animate-[blink_1s_step-end_infinite]" : ""}`}
+                style={{
+                  backgroundColor: games.length === 1 ? "#f97316" : "var(--t-accent)",
+                  color: "var(--t-titlebar-text)",
+                  fontFamily: "var(--t-font-display)",
+                }}
+              >
+                {games.length} {games.length <= 1 ? "elem." : "elems."}
+              </span>
+            </div>
           </div>
 
-          {/* Game list */}
+          {/* Game list / Draw mode display */}
           <div
             ref={listContainerRef}
-            className="max-h-[380px] overflow-y-auto mb-3.5 border-[2px] p-1 min-h-[80px]"
+            className="mb-2 border-[2px] p-1 min-h-[80px]"
             style={{
               backgroundColor: "var(--t-card-bg)",
               borderTopColor: "var(--t-border-dark)",
               borderLeftColor: "var(--t-border-dark)",
               borderBottomColor: "var(--t-border-light)",
               borderRightColor: "var(--t-border-light)",
+              maxHeight: drawMode === "roulette" ? "none" : "380px",
+              overflowY: drawMode === "roulette" ? "visible" : "auto",
             }}
           >
-            <ItemList
-              games={games}
-              highlightedIndex={drawing.highlightedIndex}
-              winnerIndex={drawing.winnerIndex}
-              onRemove={handleRemove}
-              disabled={drawing.isDrawing}
-            />
+            {drawMode === "roulette" ? (
+              <RouletteWheel
+                games={games}
+                highlightedIndex={drawing.highlightedIndex}
+                winnerIndex={drawing.winnerIndex}
+                isDrawing={drawing.isDrawing}
+              />
+            ) : drawMode === "horizontal" ? (
+              <HorizontalPicker
+                games={games}
+                highlightedIndex={drawing.highlightedIndex}
+                winnerIndex={drawing.winnerIndex}
+                isDrawing={drawing.isDrawing}
+                onRemove={handleRemove}
+                disabled={drawing.isDrawing}
+              />
+            ) : (
+              <ItemList
+                games={games}
+                highlightedIndex={drawing.highlightedIndex}
+                winnerIndex={drawing.winnerIndex}
+                onRemove={handleRemove}
+                disabled={drawing.isDrawing}
+              />
+            )}
           </div>
 
           {/* Drawing indicator */}
           {drawing.isDrawing && (
-            <div className="text-center py-2.5 font-[family-name:var(--font-vt323)] text-[1.4rem] tracking-[2px] font-bold text-[#000080] bg-[#ffff00] border-[2px] border-dashed border-red-600 mb-2.5 animate-[blink_0.5s_step-end_infinite]">
+            <div className="text-center py-1 font-[family-name:var(--font-vt323)] text-[1.1rem] tracking-[2px] font-bold text-[#000080] bg-[#ffff00] border-[2px] border-dashed border-red-600 mb-2 animate-[blink_0.5s_step-end_infinite]">
               ★ TIRAGE EN COURS... ★
             </div>
           )}
 
           {/* Actions */}
-          <div className="flex gap-1.5 flex-wrap mb-3.5">
+          <div className="flex gap-1.5 flex-wrap mb-2.5">
             <button
               onClick={handlePlouf}
               disabled={!canDraw}
-              className={`flex-1 min-w-[200px] py-3.5 px-5 font-[family-name:var(--font-fredoka)] text-[1.3rem] font-bold tracking-wider cursor-pointer relative overflow-hidden border-[3px] transition-none
+              className={`flex-1 min-w-[200px] py-2.5 px-4 font-[family-name:var(--font-fredoka)] text-[1.1rem] font-bold tracking-wider cursor-pointer relative overflow-hidden border-[3px] transition-none
                 ${canDraw
                   ? "bg-gradient-to-b from-[#ff8800] via-[#ff0000] to-[#cc0000] text-[#ffff00] border-t-[#ffaa00] border-l-[#ffaa00] border-b-[#880000] border-r-[#880000] [text-shadow:2px_2px_0_#000,-1px_-1px_0_#000] hover:from-[#ffaa00] hover:via-[#ff2200] hover:to-[#dd0000] hover:shadow-[0_0_20px_rgba(255,100,0,0.7)] active:border-t-[#880000] active:border-l-[#880000]"
                   : "bg-gradient-to-b from-[#aaaaaa] to-[#888888] text-[#cccccc] border-[#999] cursor-not-allowed [text-shadow:1px_1px_0_#555]"
@@ -499,24 +589,6 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
                 </span>
               )}
             </button>
-            <RetroButton
-              onClick={handleClear}
-              disabled={games.length === 0 || drawing.isDrawing}
-            >
-              🗑 Vider
-            </RetroButton>
-            <RetroButton
-              onClick={handleExport}
-              disabled={games.length === 0}
-            >
-              📤 Export
-            </RetroButton>
-            <RetroButton
-              onClick={handleImport}
-              disabled={drawing.isDrawing}
-            >
-              📥 Import
-            </RetroButton>
             <input
               ref={fileInputRef}
               type="file"
@@ -529,7 +601,7 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
           {/* Result */}
           {showResult && winnerName && (
             <div
-              className={`text-center p-4 border-[3px] border-t-[#808080] border-l-[#808080] border-b-white border-r-white mb-3.5 animate-[fadeIn_0.4s_ease]
+              className={`text-center p-3 border-[3px] border-t-[#808080] border-l-[#808080] border-b-white border-r-white mb-2.5 animate-[fadeIn_0.4s_ease]
                 ${options.epicResult
                   ? "bg-[linear-gradient(135deg,#ff00ff,#00ffff,#ffff00,#ff00ff)] bg-[length:400%_400%] [animation:epicBg_2s_ease_infinite,fadeIn_0.4s_ease] border-black shadow-[0_0_30px_rgba(255,0,255,0.6),inset_0_0_0_3px_#ffff00]"
                   : "bg-[#c0c0c0]"
@@ -614,8 +686,8 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
 function WaterDropSVG() {
   return (
     <svg
-      width="60"
-      height="80"
+      width="42"
+      height="56"
       viewBox="0 0 60 80"
       xmlns="http://www.w3.org/2000/svg"
     >

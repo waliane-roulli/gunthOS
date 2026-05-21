@@ -8,6 +8,7 @@ export const manifest: AppManifest = {
   emoji: "💧",
   loadDuration: 1600,
   showInLauncher: true,
+  defaultSize: { w: 720, h: 9999 },
   href: "/plouf-plouf",
   badge: "NEW",
   audioChannels: ["music"],

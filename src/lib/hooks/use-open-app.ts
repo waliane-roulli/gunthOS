@@ -23,16 +23,17 @@ export function useOpenApp() {
       if (!app) return "";
       init();
       playWindowOpen();
-      return openWindow(app.slug, app.name, app.iconNode ?? app.emoji);
+      return openWindow(app.slug, app.name, app.iconNode ?? app.emoji, { startMaximized: app.startMaximized, defaultSize: app.defaultSize });
     },
     [openWindow, init, playWindowOpen]
   );
 
   const openNamedWindow = useCallback(
     (slug: string, title: string, icon: ReactNode): string => {
+      const app = getAppManifest(slug);
       init();
       playWindowOpen();
-      return openWindow(slug, title, icon);
+      return openWindow(slug, title, icon, { startMaximized: app?.startMaximized, defaultSize: app?.defaultSize });
     },
     [openWindow, init, playWindowOpen]
   );

@@ -1,3 +1,5 @@
+export type DrawMode = "roulette" | "horizontal" | "vertical";
+
 export type CelebType =
   | "confetti"
   | "fireworks"

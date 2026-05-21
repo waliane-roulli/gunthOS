@@ -31,7 +31,7 @@ interface WindowStateContextValue {
 }
 
 interface WindowActionsContextValue {
-  openWindow: (appSlug: string, title: string, icon: ReactNode) => string;
+  openWindow: (appSlug: string, title: string, icon: ReactNode, opts?: { startMaximized?: boolean; defaultSize?: { w: number; h: number } }) => string;
   closeWindow: (id: string) => void;
   minimizeWindow: (id: string) => void;
   maximizeWindow: (id: string) => void;
@@ -72,6 +72,15 @@ function getDefaultSize(): { w: number; h: number } {
   };
 }
 
+function getSizeForApp(defaultSize?: { w: number; h: number }): { w: number; h: number } {
+  if (!defaultSize) return getDefaultSize();
+  if (typeof window === "undefined") return defaultSize;
+  return {
+    w: defaultSize.w,
+    h: Math.min(defaultSize.h, window.innerHeight - 80),
+  };
+}
+
 export function WindowManagerProvider({ children }: { children: ReactNode }) {
   const [windows, setWindows] = useState<WindowInstance[]>([]);
   const [activeWindowId, setActiveWindowId] = useState<string | null>(null);
@@ -81,13 +90,14 @@ export function WindowManagerProvider({ children }: { children: ReactNode }) {
   windowsRef.current = windows;
 
   const openWindow = useCallback(
-    (appSlug: string, title: string, icon: ReactNode): string => {
+    (appSlug: string, title: string, icon: ReactNode, opts?: { startMaximized?: boolean; defaultSize?: { w: number; h: number } }): string => {
+      const startMaximized = opts?.startMaximized;
       const existing = windowsRef.current.find((w) => w.appSlug === appSlug);
       if (existing) {
         setWindows((prev) =>
           prev.map((w) =>
             w.id === existing.id
-              ? { ...w, state: "normal", zIndex: ++topZRef.current }
+              ? { ...w, state: startMaximized ? "maximized" : "normal", zIndex: ++topZRef.current }
               : w
           )
         );
@@ -97,7 +107,7 @@ export function WindowManagerProvider({ children }: { children: ReactNode }) {
 
       const id = `win-${++idCounterRef.current}`;
       const position = getDefaultPosition(windowsRef.current.length);
-      const size = getDefaultSize();
+      const size = getSizeForApp(opts?.defaultSize);
 
       setWindows((prev) => [
         ...prev,
@@ -106,7 +116,7 @@ export function WindowManagerProvider({ children }: { children: ReactNode }) {
           appSlug,
           title,
           icon,
-          state: "normal",
+          state: startMaximized ? "maximized" : "normal",
           zIndex: ++topZRef.current,
           position,
           size,

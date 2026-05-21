@@ -18,6 +18,8 @@ export interface AppManifest {
   iconNode?: ReactNode;
   /** Default window size in pixels */
   defaultSize?: { w: number; h: number };
+  /** Open the window maximized (full width, full height minus taskbar) */
+  startMaximized?: boolean;
   /** Fake loading duration in ms (default: 1500) */
   loadDuration?: number;
   /** Show in Start menu and desktop */

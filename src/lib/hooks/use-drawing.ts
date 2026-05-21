@@ -25,20 +25,34 @@ export function useDrawing(
 
   const abortRef = useRef(false);
 
-  const draw = useCallback(async (): Promise<number> => {
+  const draw = useCallback(async (random = false): Promise<number> => {
     if (gamesCount < 2) return -1;
 
     abortRef.current = false;
     const winnerIdx = Math.floor(Math.random() * gamesCount);
-    const totalSteps =
-      gamesCount * 3 + Math.floor(Math.random() * gamesCount) + winnerIdx;
+    const totalSteps = random
+      ? gamesCount * 3 + Math.floor(Math.random() * gamesCount) + winnerIdx
+      : gamesCount * 4 + winnerIdx;
 
     setState({ isDrawing: true, highlightedIndex: 0, winnerIndex: -1 });
 
+    let prevItemIndex = -1;
     for (let step = 0; step <= totalSteps; step++) {
       if (abortRef.current) return -1;
 
-      const itemIndex = step % gamesCount;
+      let itemIndex: number;
+      if (random) {
+        if (step === totalSteps) {
+          itemIndex = winnerIdx;
+        } else {
+          do {
+            itemIndex = Math.floor(Math.random() * gamesCount);
+          } while (itemIndex === prevItemIndex && gamesCount > 1);
+        }
+      } else {
+        itemIndex = step % gamesCount;
+      }
+      prevItemIndex = itemIndex;
       setState((prev) => ({ ...prev, highlightedIndex: itemIndex }));
       onBip();
 
