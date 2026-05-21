@@ -65,7 +65,5 @@ export function clearChannels() {
 export function silenceChannel(name: string) {
   const ch = channels.get(name);
   if (!ch) return;
-  const ctx = ch.gain.context;
-  ch.gain.gain.cancelScheduledValues(ctx.currentTime);
-  ch.gain.gain.setValueAtTime(0, ctx.currentTime);
+  ch.setVolume(0);
 }

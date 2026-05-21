@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useCallback } from "react";
+import { useRef, useCallback, useEffect } from "react";
 import {
   getContext,
   getMasterGain,
@@ -22,6 +22,11 @@ const supportsOpus =
 export function useSound(muted: boolean) {
   const onFirstInitRef = useRef<(() => void) | null>(null);
   const initializedRef = useRef(false);
+  const mutedRef = useRef(muted);
+
+  useEffect(() => {
+    mutedRef.current = muted;
+  }, [muted]);
 
   // Players pour les sons longs (un par type)
   const bootPlayerRef = useRef<AudioPlayer | null>(null);
@@ -33,7 +38,7 @@ export function useSound(muted: boolean) {
   // ── Helpers internes ────────────────────────────────────────────────────────
 
   const getCtx = useCallback(() => {
-    if (muted) return null;
+    if (mutedRef.current) return null;
     if (!initializedRef.current) {
       initializedRef.current = true;
       getContext(); // crée le singleton
@@ -45,7 +50,7 @@ export function useSound(muted: boolean) {
       onFirstInitRef.current = null;
     }
     return getContext();
-  }, [muted]);
+  }, []);
 
   const masterNode = useCallback(() => {
     getCtx();
@@ -311,7 +316,7 @@ export function useSound(muted: boolean) {
     const run = runPlayerRef.current;
     await bootPlayerRef.current.playOnce("/sounds/boot.mp3", {
       volume: 1.5,
-      onEnded: () => run.play("/sounds/run.mp3", { loop: true, volume: 1.5 }),
+      onEnded: () => run.play("/sounds/run.mp3", { loop: true, volume: 0.9 }),
     });
   }, [getCtx, uiChannel]);
 
@@ -330,9 +335,7 @@ export function useSound(muted: boolean) {
   }, [getCtx, uiChannel]);
 
   const stopAccessDisk = useCallback(() => {
-    if (!accessDiskPlayerRef.current) return;
-    accessDiskPlayerRef.current.fadeTo(0, 0.12);
-    setTimeout(() => accessDiskPlayerRef.current?.stop(), 200);
+    accessDiskPlayerRef.current?.fadeOutAndStop(0.12);
   }, []);
 
   const ploufGenerationRef = useRef(0);
@@ -393,9 +396,8 @@ export function useSound(muted: boolean) {
   // ── Contrôles globaux ────────────────────────────────────────────────────────
 
   const init = useCallback(() => {
-    if (muted) return;
     getCtx();
-  }, [muted, getCtx]);
+  }, [getCtx]);
 
   const setOnFirstInit = useCallback((cb: () => void) => {
     if (initializedRef.current) {
@@ -418,11 +420,6 @@ export function useSound(muted: boolean) {
     accessDiskPlayerRef.current = null;
     ploufPlayerRef.current = null;
   }, []);
-
-  // stubs conservés pour compatibilité
-  const startAmbient = useCallback(() => {}, []);
-  const stopAmbient = useCallback(() => {}, []);
-  const setAmbientVolume = useCallback((_volume: number) => {}, []);
 
   return {
     init,
@@ -447,8 +444,5 @@ export function useSound(muted: boolean) {
     stopPloufPlouf,
     stopAppSounds,
     setMasterGain,
-    startAmbient,
-    stopAmbient,
-    setAmbientVolume,
   };
 }

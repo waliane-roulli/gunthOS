@@ -15,6 +15,7 @@ interface ActiveSource {
 export class AudioPlayer {
   private active: ActiveSource | null = null;
   private channel: AudioChannel;
+  private stopToken = 0;
 
   constructor(channel: AudioChannel) {
     this.channel = channel;
@@ -23,6 +24,7 @@ export class AudioPlayer {
   /** Démarre la lecture. Si déjà en cours, stoppe avant de relancer. */
   async play(url: string, options: { loop?: boolean; volume?: number; offset?: number } = {}): Promise<void> {
     this.stop();
+    const token = ++this.stopToken;
 
     let buffer: AudioBuffer;
     try {
@@ -30,6 +32,9 @@ export class AudioPlayer {
     } catch {
       return;
     }
+
+    // stop() a été appelé pendant le chargement — on abandonne
+    if (token !== this.stopToken) return;
 
     const ctx = getContext();
     const gainNode = ctx.createGain();
@@ -51,8 +56,9 @@ export class AudioPlayer {
     }
   }
 
-  /** Stoppe immédiatement. */
+  /** Stoppe immédiatement (invalide aussi tout play() en cours de chargement). */
   stop() {
+    this.stopToken++;
     if (!this.active) return;
     try { this.active.source.stop(); } catch {}
     this.active = null;
@@ -92,6 +98,7 @@ export class AudioPlayer {
    */
   async playOnce(url: string, options: { volume?: number; onEnded?: () => void } = {}): Promise<void> {
     this.stop();
+    const token = ++this.stopToken;
 
     let buffer: AudioBuffer;
     try {
@@ -99,6 +106,8 @@ export class AudioPlayer {
     } catch {
       return;
     }
+
+    if (token !== this.stopToken) return;
 
     const ctx = getContext();
     const gainNode = ctx.createGain();

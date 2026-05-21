@@ -24,15 +24,6 @@ export function SoundProvider({ children }: { children: ReactNode }) {
     sound.setMasterGain(settings.masterVolume);
   }, [settings.masterVolume, sound]);
 
-  // Sync volume ambiant en temps réel depuis les settings
-  useEffect(() => {
-    if (!settings.soundEnabled) {
-      sound.stopAmbient();
-    } else {
-      sound.setAmbientVolume(settings.ambientVolume);
-    }
-  }, [settings.ambientVolume, settings.soundEnabled, sound]);
-
   return (
     <SoundContext.Provider value={sound}>
       {children}
