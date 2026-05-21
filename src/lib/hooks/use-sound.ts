@@ -11,6 +11,7 @@ const bootRawBufferPromise: Promise<ArrayBuffer> =
 export function useSound(muted: boolean) {
   const ctxRef = useRef<AudioContext | null>(null);
   const masterGainRef = useRef<GainNode | null>(null);
+  const masterVolumeRef = useRef<number>(100);
   const bootLoadPromiseRef = useRef<Promise<void> | null>(null);
   const onFirstInitRef = useRef<(() => void) | null>(null);
 
@@ -21,6 +22,7 @@ export function useSound(muted: boolean) {
     }
     const ctx = new AudioContext();
     const masterGain = ctx.createGain();
+    masterGain.gain.value = masterVolumeRef.current / 100;
     masterGain.connect(ctx.destination);
     masterGainRef.current = masterGain;
     ctxRef.current = ctx;
@@ -481,6 +483,7 @@ export function useSound(muted: boolean) {
   }, []);
 
   const setMasterGain = useCallback((v: number) => {
+    masterVolumeRef.current = v;
     if (masterGainRef.current) masterGainRef.current.gain.value = v / 100;
   }, []);
 
