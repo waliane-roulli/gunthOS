@@ -16,8 +16,8 @@ import { useCelebrationEffects } from "@/lib/hooks/use-celebration-effects";
 import { useLocalStorage } from "@/lib/hooks/use-local-storage";
 import { useVisitorCount } from "@/lib/hooks/use-visitor-count";
 import { useDraggable } from "@/lib/hooks/use-draggable";
-import { DEFAULT_OPTIONS } from "@/types/plouf-plouf";
-import type { CelebrationOptions, DrawMode } from "@/types/plouf-plouf";
+import { DEFAULT_OPTIONS, PRESETS } from "@/types/plouf-plouf";
+import type { CelebrationOptions, DrawMode, PresetName } from "@/types/plouf-plouf";
 
 const WATER_DROP = <WaterDropSVG />;
 
@@ -138,7 +138,14 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
     const name = games[idx] ?? "";
     setWinnerName(name);
     setShowResult(true);
-    triggerCelebration(name, options);
+    const ceOpts = options.randomPreset
+      ? (() => {
+          const names = Object.keys(PRESETS) as PresetName[];
+          const randomName = names[Math.floor(Math.random() * names.length)]!;
+          return { ...PRESETS[randomName], randomPreset: true };
+        })()
+      : options;
+    triggerCelebration(name, ceOpts);
   }, [drawing, games, sound, stopCelebration, triggerCelebration, options]);
 
   const handleRetry = useCallback(async () => {

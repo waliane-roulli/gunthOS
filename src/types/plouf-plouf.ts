@@ -7,7 +7,12 @@ export type CelebType =
   | "matrix"
   | "hearts"
   | "stars"
-  | "xp";
+  | "xp"
+  | "bubbles"
+  | "poop"
+  | "money"
+  | "alien"
+  | "flame";
 
 export interface CelebrationOptions {
   preset: string;
@@ -26,6 +31,7 @@ export interface CelebrationOptions {
   damageNumbers: boolean;
   bgPulse: boolean;
   epicResult: boolean;
+  randomPreset: boolean;
 }
 
 export const DEFAULT_OPTIONS: CelebrationOptions = {
@@ -45,6 +51,7 @@ export const DEFAULT_OPTIONS: CelebrationOptions = {
   damageNumbers: true,
   bgPulse: true,
   epicResult: true,
+  randomPreset: false,
 };
 
 export type PresetName =
@@ -53,7 +60,13 @@ export type PresetName =
   | "disco"
   | "chaos"
   | "zen"
-  | "retro";
+  | "retro"
+  | "kawaii"
+  | "glitch"
+  | "rave"
+  | "sadboi"
+  | "tropical"
+  | "pixel";
 
 export const PRESETS: Record<PresetName, CelebrationOptions> = {
   classic: { ...DEFAULT_OPTIONS, preset: "classic" },
@@ -126,5 +139,109 @@ export const PRESETS: Record<PresetName, CelebrationOptions> = {
     color2: "#ff00ff",
     color3: "#ff69b4",
     damageNumbers: false,
+  },
+  kawaii: {
+    ...DEFAULT_OPTIONS,
+    preset: "kawaii",
+    type: "bubbles",
+    text: "SUGOI!!",
+    density: 100,
+    duration: 5,
+    shake: 2,
+    color1: "#ff88c2",
+    color2: "#ffc0eb",
+    color3: "#fff0f5",
+    rainbow: true,
+    damageNumbers: false,
+    marquee: false,
+    epicResult: true,
+  },
+  glitch: {
+    ...DEFAULT_OPTIONS,
+    preset: "glitch",
+    type: "alien",
+    text: "H4CK3D!!",
+    density: 220,
+    duration: 4,
+    shake: 8,
+    color1: "#00ff41",
+    color2: "#9900ff",
+    color3: "#003b00",
+    rainbow: false,
+    flash: true,
+    marquee: true,
+    bigText: true,
+    damageNumbers: true,
+    bgPulse: false,
+  },
+  rave: {
+    ...DEFAULT_OPTIONS,
+    preset: "rave",
+    type: "flame",
+    text: "UNTZ UNTZ!!",
+    density: 350,
+    duration: 6,
+    shake: 10,
+    color1: "#ff00ff",
+    color2: "#ff6600",
+    color3: "#ffff00",
+    rainbow: false,
+    flash: true,
+    damageNumbers: true,
+    epicResult: true,
+  },
+  sadboi: {
+    ...DEFAULT_OPTIONS,
+    preset: "sadboi",
+    type: "rain",
+    text: "PLEURE...",
+    density: 45,
+    duration: 7,
+    shake: 1,
+    color1: "#4169e1",
+    color2: "#6495ed",
+    color3: "#87ceeb",
+    rainbow: false,
+    flash: false,
+    marquee: false,
+    bigText: false,
+    damageNumbers: false,
+    bgPulse: false,
+    epicResult: false,
+  },
+  tropical: {
+    ...DEFAULT_OPTIONS,
+    preset: "tropical",
+    type: "money",
+    text: "ALOHA!",
+    density: 180,
+    duration: 5,
+    shake: 4,
+    color1: "#ffd700",
+    color2: "#ff6b35",
+    color3: "#ff1493",
+    rainbow: true,
+    flash: true,
+    bigText: true,
+    damageNumbers: false,
+    epicResult: true,
+  },
+  pixel: {
+    ...DEFAULT_OPTIONS,
+    preset: "pixel",
+    type: "poop",
+    text: "GAME OVER!",
+    density: 200,
+    duration: 5,
+    shake: 6,
+    color1: "#8b4513",
+    color2: "#654321",
+    color3: "#d2691e",
+    rainbow: false,
+    flash: false,
+    marquee: true,
+    bigText: true,
+    damageNumbers: true,
+    bgPulse: false,
   },
 };

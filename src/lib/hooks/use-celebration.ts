@@ -189,6 +189,108 @@ function makeParticles(type: CelebType, o: CelebrationOptions): Particle[] {
         },
       ];
     }
+    case "bubbles":
+      return [
+        {
+          x: Math.random() * W,
+          y: H + 20,
+          vx: rand(-1.5, 1.5),
+          vy: rand(-4, -2),
+          size: rand(10, 40),
+          color: c,
+          life: 1,
+          shape: "circle",
+          gravity: -0.03,
+          rot: 0,
+          vrot: 0,
+          wobble: rand(0, Math.PI * 2),
+          wobbleSpeed: rand(0.03, 0.08),
+        },
+      ];
+    case "poop": {
+      const poops = ["💩", "🤎", "🟤"];
+      return [
+        {
+          x: Math.random() * W,
+          y: -20 - Math.random() * 200,
+          vx: rand(-2, 2),
+          vy: rand(3, 7),
+          size: rand(16, 36),
+          color: c,
+          life: 1,
+          shape: "char",
+          gravity: 0.12,
+          rot: rand(-0.3, 0.3),
+          vrot: rand(-0.15, 0.15),
+          wobble: rand(0, Math.PI * 2),
+          wobbleSpeed: rand(0.04, 0.12),
+          char: poops[Math.floor(Math.random() * poops.length)],
+        },
+      ];
+    }
+    case "money": {
+      const moneys = ["💰", "💵", "💸", "🪙", "💎"];
+      return [
+        {
+          x: Math.random() * W,
+          y: -20 - Math.random() * 200,
+          vx: rand(-2, 2),
+          vy: rand(2, 5),
+          size: rand(18, 38),
+          color: c,
+          life: 1,
+          shape: "char",
+          gravity: 0.08,
+          rot: rand(-0.4, 0.4),
+          vrot: rand(-0.2, 0.2),
+          wobble: rand(0, Math.PI * 2),
+          wobbleSpeed: rand(0.06, 0.14),
+          char: moneys[Math.floor(Math.random() * moneys.length)],
+        },
+      ];
+    }
+    case "alien": {
+      const aliens = ["👽", "🛸", "👾", "🖖", "🛸"];
+      return [
+        {
+          x: Math.random() * W,
+          y: rand(H * 0.1, H * 0.5),
+          vx: rand(-4, 4),
+          vy: rand(-2, 2),
+          size: rand(20, 40),
+          color: c,
+          life: 1,
+          shape: "char",
+          gravity: 0,
+          rot: 0,
+          vrot: rand(-0.1, 0.1),
+          wobble: rand(0, Math.PI * 2),
+          wobbleSpeed: rand(0.04, 0.1),
+          char: aliens[Math.floor(Math.random() * aliens.length)],
+        },
+      ];
+    }
+    case "flame": {
+      const flames = ["🔥", "💥", "✨", "💫", "⚡"];
+      return [
+        {
+          x: Math.random() * W,
+          y: H + 20 + Math.random() * 100,
+          vx: rand(-1, 1),
+          vy: rand(-10, -5),
+          size: rand(18, 40),
+          color: c,
+          life: 1,
+          shape: "char",
+          gravity: 0.25,
+          rot: rand(-0.5, 0.5),
+          vrot: rand(-0.3, 0.3),
+          wobble: rand(0, Math.PI * 2),
+          wobbleSpeed: rand(0.06, 0.15),
+          char: flames[Math.floor(Math.random() * flames.length)],
+        },
+      ];
+    }
   }
 }
 
@@ -379,7 +481,14 @@ export function useCelebration() {
           particlesRef.current.push(...batch);
         }
 
-        if (options.type === "fireworks" || options.type === "matrix") {
+        if (
+          options.type === "fireworks" ||
+          options.type === "matrix" ||
+          options.type === "alien" ||
+          options.type === "flame" ||
+          options.type === "money" ||
+          options.type === "poop"
+        ) {
           ctx.fillStyle = "rgba(0,0,0,0.15)";
           ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
         } else {

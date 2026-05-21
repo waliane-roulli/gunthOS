@@ -79,33 +79,6 @@ export function OptionsPanel({
           </span>
         </div>
 
-        {/* Thème */}
-        <OptGroup title="🖥️ Thème">
-          <div className="grid grid-cols-2 gap-[3px]">
-            {THEMES.map((t) => {
-              const isActive = themeId === t.id;
-              return (
-                <button
-                  key={t.id}
-                  onClick={() => setTheme(t.id as ThemeId)}
-                  className="border-[2px] px-1 py-[5px] text-sm font-bold cursor-pointer text-left transition-none"
-                  style={{
-                    fontFamily: "var(--t-font-body)",
-                    backgroundColor: isActive ? "var(--t-accent)" : "var(--t-bg)",
-                    color: isActive ? "var(--t-titlebar-text)" : "var(--t-text)",
-                    borderTopColor: isActive ? "var(--t-border-dark)" : "var(--t-border-light)",
-                    borderLeftColor: isActive ? "var(--t-border-dark)" : "var(--t-border-light)",
-                    borderBottomColor: isActive ? "var(--t-border-light)" : "var(--t-border-dark)",
-                    borderRightColor: isActive ? "var(--t-border-light)" : "var(--t-border-dark)",
-                  }}
-                >
-                  {t.emoji} {t.name}
-                </button>
-              );
-            })}
-          </div>
-        </OptGroup>
-
         {/* Presets */}
         <OptGroup title="🎨 Presets">
           <div className="grid grid-cols-3 gap-[3px]">
@@ -131,6 +104,18 @@ export function OptionsPanel({
               );
             })}
           </div>
+        </OptGroup>
+
+        {/* Aléatoire */}
+        <OptGroup title="🎲 Preset aléatoire">
+          <OptRow label="Surprise à chaque tirage">
+            <input
+              type="checkbox"
+              checked={options.randomPreset}
+              onChange={(e) => update({ randomPreset: e.target.checked })}
+              className="w-[18px] h-[18px] cursor-pointer accent-[color:var(--t-accent)]"
+            />
+          </OptRow>
         </OptGroup>
 
         {/* Type */}
@@ -159,6 +144,11 @@ export function OptionsPanel({
               <option value="hearts">❤ Cœurs</option>
               <option value="stars">✨ Étoiles</option>
               <option value="xp">🟢 XP Orbs</option>
+              <option value="bubbles">🫧 Bulles</option>
+              <option value="poop">💩 Caca</option>
+              <option value="money">💰 Money</option>
+              <option value="alien">👽 Aliens</option>
+              <option value="flame">🔥 Flammes</option>
             </select>
           </OptRow>
           <OptRow label="Sous-texte">
@@ -266,6 +256,33 @@ export function OptionsPanel({
               />
             </OptRow>
           ))}
+        </OptGroup>
+
+        {/* Theme */}
+        <OptGroup title="🖥️ Theme">
+          <div className="grid grid-cols-2 gap-[3px]">
+            {THEMES.map((t) => {
+              const isActive = themeId === t.id;
+              return (
+                <button
+                  key={t.id}
+                  onClick={() => setTheme(t.id as ThemeId)}
+                  className="border-[2px] px-1 py-[5px] text-sm font-bold cursor-pointer text-left transition-none"
+                  style={{
+                    fontFamily: "var(--t-font-body)",
+                    backgroundColor: isActive ? "var(--t-accent)" : "var(--t-bg)",
+                    color: isActive ? "var(--t-titlebar-text)" : "var(--t-text)",
+                    borderTopColor: isActive ? "var(--t-border-dark)" : "var(--t-border-light)",
+                    borderLeftColor: isActive ? "var(--t-border-dark)" : "var(--t-border-light)",
+                    borderBottomColor: isActive ? "var(--t-border-light)" : "var(--t-border-dark)",
+                    borderRightColor: isActive ? "var(--t-border-light)" : "var(--t-border-dark)",
+                  }}
+                >
+                  {t.emoji} {t.name}
+                </button>
+              );
+            })}
+          </div>
         </OptGroup>
 
         <div
