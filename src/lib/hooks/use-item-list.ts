@@ -32,21 +32,30 @@ export function useItemList() {
 
   const addGame = useCallback(
     (value: string): boolean => {
-      const trimmed = value.trim();
-      if (!trimmed) {
+      const parts = value
+        .split(",")
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0);
+      if (parts.length === 0) {
         setErrorFor("empty", 800);
         return false;
       }
-      const norm = normalize(trimmed);
-      let isDuplicate = false;
+      let anyDuplicate = false;
+      let addedCount = 0;
       setGames((prev) => {
-        if (prev.some((g) => normalize(g) === norm)) {
-          isDuplicate = true;
-          return prev;
+        let next = prev;
+        for (const part of parts) {
+          const norm = normalize(part);
+          if (next.some((g) => normalize(g) === norm)) {
+            anyDuplicate = true;
+            continue;
+          }
+          next = [...next, part];
+          addedCount++;
         }
-        return [...prev, trimmed];
+        return next;
       });
-      if (isDuplicate) {
+      if (addedCount === 0) {
         setErrorFor("duplicate", 2000);
         return false;
       }
@@ -55,11 +64,16 @@ export function useItemList() {
     [setErrorFor]
   );
 
+  const importGames = useCallback((items: string[]) => {
+    setGames(items.filter((s) => s.trim().length > 0));
+    clearError();
+  }, [clearError]);
+
   const removeGame = useCallback((index: number) => {
     setGames((prev) => prev.filter((_, i) => i !== index));
   }, []);
 
   const clearGames = useCallback(() => setGames([]), []);
 
-  return { games, inputError, addGame, removeGame, clearGames, clearError };
+  return { games, inputError, addGame, removeGame, clearGames, clearError, importGames };
 }

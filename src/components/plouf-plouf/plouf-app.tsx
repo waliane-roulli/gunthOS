@@ -23,12 +23,14 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
   const [inputValue, setInputValue] = useState("");
   const [optionsOpen, setOptionsOpen] = useState(false);
   const [muted, setMuted] = useState(false);
+  const [musicMuted, setMusicMuted] = useState(false);
   const [options, setOptions] = useLocalStorage<CelebrationOptions>(
     "ploufPloufOptions",
     DEFAULT_OPTIONS
   );
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const listContainerRef = useRef<HTMLDivElement>(null);
   const flashRef = useRef<HTMLDivElement>(null);
   const marqueeTopRef = useRef<HTMLDivElement>(null);
@@ -40,7 +42,7 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
   const drag = useDraggable();
 
   const visitorCount = useVisitorCount();
-  const { games, inputError, addGame, removeGame, clearGames } = useItemList();
+  const { games, inputError, addGame, removeGame, clearGames, importGames } = useItemList();
   const sound = useSound(muted);
   const { canvasRef, start: startCelebration, stop: stopCelebration } = useCelebration();
 
@@ -56,15 +58,15 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Sync mute avec la musique d'ambiance
+  // Sync musicMuted avec la musique d'ambiance
   useEffect(() => {
-    if (muted) {
+    if (musicMuted) {
       sound.stopPloufPlouf();
     } else {
       sound.startPloufPlouf();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [muted]);
+  }, [musicMuted]);
 
   const { trigger: triggerCelebration } = useCelebrationEffects({
     flashRef,
@@ -146,6 +148,47 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
     setShowResult(false);
     setWinnerName(null);
   }, [drawing, sound, removeGame]);
+
+  const handleExport = useCallback(() => {
+    if (games.length === 0) return;
+    const json = JSON.stringify(games, null, 2);
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "ploufplouf-list.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [games]);
+
+  const handleImport = useCallback(() => {
+    fileInputRef.current?.click();
+  }, []);
+
+  const handleFileChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        try {
+          const data = JSON.parse(evt.target?.result as string);
+          if (Array.isArray(data) && data.every((item) => typeof item === "string")) {
+            importGames(data);
+            setShowResult(false);
+            setWinnerName(null);
+            drawing.reset();
+          }
+        } catch {
+          // fichier invalide, on ignore
+        }
+      };
+      reader.readAsText(file);
+      // reset pour permettre de réimporter le même fichier
+      e.target.value = "";
+    },
+    [importGames, drawing]
+  );
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -248,8 +291,11 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
           >
             <span>🎮 PloufPlouf.exe — Tirage au sort</span>
             <div className="flex gap-0.5">
-              <RetroTitlebarBtn onClick={() => { sound.init(); setMuted((m) => !m); }}>
+              <RetroTitlebarBtn onClick={() => { sound.init(); setMuted((m) => !m); }} title="Couper les sons UI">
                 {muted ? "🔇" : "🔊"}
+              </RetroTitlebarBtn>
+              <RetroTitlebarBtn onClick={() => { sound.init(); setMusicMuted((m) => !m); }} title="Couper la musique">
+                {musicMuted ? "🎵" : "🎶"}
               </RetroTitlebarBtn>
               <RetroTitlebarBtn onClick={() => { setOptionsOpen((o) => !o); sound.init(); }}>
                 ⚙
@@ -270,8 +316,11 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
               borderBottomColor: "var(--t-border-dark)",
             }}
           >
-            <RetroTitlebarBtn onClick={() => { sound.init(); setMuted((m) => !m); }}>
+            <RetroTitlebarBtn onClick={() => { sound.init(); setMuted((m) => !m); }} title="Couper les sons UI">
               {muted ? "🔇" : "🔊"}
+            </RetroTitlebarBtn>
+            <RetroTitlebarBtn onClick={() => { sound.init(); setMusicMuted((m) => !m); }} title="Couper la musique">
+              {musicMuted ? "🎵" : "🎶"}
             </RetroTitlebarBtn>
             <RetroTitlebarBtn onClick={() => { setOptionsOpen((o) => !o); sound.init(); }}>
               ⚙
@@ -337,8 +386,8 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
                   handleAdd();
                 }
               }}
-              placeholder="✏️ Ajouter un élément…"
-              maxLength={100}
+              placeholder="✏️ Ajouter un élément (ou plusieurs séparés par des virgules)…"
+              maxLength={500}
               disabled={drawing.isDrawing}
               error={inputError}
               aria-label="Élément à ajouter"
@@ -452,6 +501,25 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
             >
               🗑 Vider
             </RetroButton>
+            <RetroButton
+              onClick={handleExport}
+              disabled={games.length === 0}
+            >
+              📤 Export
+            </RetroButton>
+            <RetroButton
+              onClick={handleImport}
+              disabled={drawing.isDrawing}
+            >
+              📥 Import
+            </RetroButton>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json"
+              className="hidden"
+              onChange={handleFileChange}
+            />
           </div>
 
           {/* Result */}

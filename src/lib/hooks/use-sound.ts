@@ -441,7 +441,7 @@ export function useSound(muted: boolean) {
   }, [supportsOpus]);
 
   const startPloufPlouf = useCallback(async () => {
-    const ctx = getCtx();
+    const ctx = ctxRef.current;
     if (!ctx) return;
     if (ploufploufAudioRef.current) {
       try { ploufploufAudioRef.current.source.stop(); } catch {}
