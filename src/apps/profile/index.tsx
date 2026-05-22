@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { authClient } from "@/lib/auth-client";
-import { pickRandom } from "@/lib/gunth-jokes";
+import { pickRandom, PROFILE_SAVE_MESSAGES } from "@/lib/gunth-jokes";
 import type { AppProps } from "@/types";
 import {
   type ProfileData, FAVORITE_APPS, STATUS_SUGGESTIONS, BIO_SUGGESTIONS,
@@ -53,7 +53,7 @@ export function ProfileApp(_: AppProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: editName, bio: editBio, statusMessage: editStatus, favoriteApp: editFavoriteApp }),
       });
-      setSaveMsg("✅ Sauvegardé dans C:\\USERS\\MOI\\PROFIL.txt");
+      setSaveMsg(pickRandom(PROFILE_SAVE_MESSAGES));
       await loadProfile();
       setTab("view");
     } finally {

@@ -1,8 +1,9 @@
 "use client";
 
-import { useRef, useCallback, useState } from "react";
+import { useRef, useCallback, useState, useEffect } from "react";
 import type { AppProps } from "@/types";
 import { useAuth } from "@/lib/contexts/auth-context";
+import { pickRandom, PEGGLE_TIPS } from "@/lib/gunth-jokes";
 import { useMusic } from "./useMusic";
 import { useGameLoop } from "./useGameLoop";
 import { GameHud } from "./components/GameHud";
@@ -28,6 +29,11 @@ export function PeggleApp({ windowId: _windowId }: AppProps) {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [lbLoading, setLbLoading] = useState(false);
   const [scoreSubmitted, setScoreSubmitted] = useState(false);
+  const [tip, setTip] = useState(() => pickRandom(PEGGLE_TIPS));
+
+  useEffect(() => {
+    if (ui.phase === "aim") setTip(pickRandom(PEGGLE_TIPS));
+  }, [ui.phase]);
 
   const fetchLeaderboard = useCallback(async () => {
     setLbLoading(true);
@@ -147,7 +153,7 @@ export function PeggleApp({ windowId: _windowId }: AppProps) {
           }}
         >
           {ui.phase === "aim"
-            ? "Cliquez pour tirer • Détruisez tous les pegs orange"
+            ? tip
             : ui.phase === "firing"
             ? "En vol..."
             : ""}

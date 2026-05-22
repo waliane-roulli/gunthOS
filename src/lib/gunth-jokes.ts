@@ -65,6 +65,56 @@ export const GUNTH_REBOOT_MESSAGES = [
   "GunthOS redémarre…\n\nRecalibrage du noyau. Résultat attendu : identique à avant. C'est rassurant.",
 ];
 
+export const PEGGLE_TIPS = [
+  "Astuce : viser sert parfois à quelque chose.",
+  "Astuce : les pegs orange bougent quand vous ne regardez pas.",
+  "Astuce : souffler sur l'écran améliore la précision de 0%.",
+  "Astuce : fermer les yeux au moment de tirer est une technique avancée.",
+  "Astuce : la physique est approximative. Faites-lui confiance quand même.",
+  "Astuce : chaque tir raté est une opportunité de blâmer le moteur.",
+  "Astuce : la balle fait ce qu'elle veut. Comme tout le monde.",
+  "Astuce : notre IA a prévu votre score depuis le début.",
+  "Astuce : appuyer plus fort sur la souris n'aide pas. Essayez quand même.",
+  "Astuce : les pros prétendent que c'était intentionnel.",
+];
+
+export const PLOUF_MARQUEES = [
+  "★ Bienvenue sur Plouf Plouf !! ★ Ajoutez vos éléments et laissez le destin décider ! ★ 100% GRATUIT ★ Sans inscription ★ Fonctionne même sur Netscape 4 !!",
+  "★ Plouf Plouf — décision impartiale depuis 1997 ★ Le hasard, c'est scientifique ★ Non validé par un comité d'éthique ★ Mais bon ★",
+  "★ Résultat garanti aléatoire ★ Sauf si l'algorithme a ses préférences ★ Aucun remboursement ★ Aucun appel possible ★ Bonne chance ★",
+  "★ 100% équitable ★ Ou presque ★ Conditions générales disponibles sur minitel ★ Délai de réponse : jamais ★ Merci de votre compréhension ★",
+  "★ Le hasard est notre ami ★ Sauf pour le perdant ★ Plouf Plouf décline toute responsabilité ★ Réclamations par fax au 0800-PLOUF ★",
+  "★ Tirage certifié aléatoire ★ Certifié par nous-mêmes ★ Algorithme breveté ★ Brevet déposé en 1998 ★ Toujours en attente d'approbation ★",
+];
+
+export const PROFILE_SAVE_MESSAGES = [
+  "✅ Sauvegardé dans C:\\USERS\\MOI\\PROFIL.txt",
+  "✅ Profil écrit sur la disquette 1 sur 1. Stockez-la en lieu sûr.",
+  "✅ Données envoyées au serveur. Réponse estimée dans 3 à 5 jours ouvrés.",
+  "✅ Profil compressé en ZIP protégé par un mot de passe qu'on a oublié.",
+  "✅ Modifications enregistrées sur bande magnétique. Quelque part.",
+  "✅ Sauvegarde effectuée sur le serveur principal (un Raspberry Pi dans un tiroir).",
+  "✅ Profil mis à jour. Ancienne version conservée sur disquette de secours.",
+];
+
+export const SETTINGS_RAM_STATUSES = [
+  "Mémoire : suffisante",
+  "RAM : 640 Ko (largement assez)",
+  "RAM : presque pleine (fermez le Solitaire)",
+  "Mémoire virtuelle : en cours de swap depuis 2002",
+  "RAM libre : 47 Ko. Évitez d'ouvrir d'autres fenêtres.",
+  "Mémoire : optimisée par l'IA (résultats non garantis)",
+];
+
+export const SETTINGS_LICENSES = [
+  "Licence : aucune",
+  "Licence : expirée en 2002",
+  "Licence : en cours de renouvellement depuis 1999",
+  "Licence : shareware — payez si vous aimez",
+  "Licence : creative commons © Gunth Corp™",
+  "Licence : volée. Nous nous en excusons.",
+];
+
 export function pickRandom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)]!;
 }

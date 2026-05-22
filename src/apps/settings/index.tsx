@@ -3,6 +3,7 @@
 import { useState, type CSSProperties } from "react";
 import { useWindowActions } from "@/lib/contexts/window-manager-context";
 import { useSettings } from "@/lib/contexts/settings-context";
+import { pickRandom, SETTINGS_RAM_STATUSES, SETTINGS_LICENSES } from "@/lib/gunth-jokes";
 import { THEMES, type ThemeId } from "@/lib/themes";
 import { CURSORS, type CursorId } from "@/lib/cursors";
 import { WALLPAPERS, WALLPAPER_MAP, type WallpaperId } from "@/lib/wallpapers";
@@ -315,6 +316,8 @@ function SystemTab({ soundEnabled, setSoundEnabled, ambientVolume, setAmbientVol
   performanceModeEnabled: boolean; setPerformanceModeEnabled: (v: boolean) => void;
 }) {
   const volumePct = Math.round(ambientVolume * 100);
+  const [ramStatus] = useState(() => pickRandom(SETTINGS_RAM_STATUSES));
+  const [licenseStatus] = useState(() => pickRandom(SETTINGS_LICENSES));
   const { playNotifyInfo, playNotifySuccess, playClick, playWindowOpen } = useSoundContext();
 
   const previewScheme = (id: SoundSchemeId) => {
@@ -377,8 +380,8 @@ function SystemTab({ soundEnabled, setSoundEnabled, ambientVolume, setAmbientVol
         <div className="text-sm tracking-widest mb-1" style={{ color: "var(--t-text-subtle)", fontFamily: "var(--t-font-display)" }}>ℹ️ INFO SYSTÈME</div>
         <div className="text-sm space-y-0.5" style={{ color: "var(--t-text-muted)", fontFamily: "var(--t-font-display)" }}>
           <div>GunthOS v1.0 — Build 19981225</div>
-          <div>Mémoire : suffisante</div>
-          <div>Licence : aucune</div>
+          <div>{ramStatus}</div>
+          <div>{licenseStatus}</div>
         </div>
       </div>
     </>
