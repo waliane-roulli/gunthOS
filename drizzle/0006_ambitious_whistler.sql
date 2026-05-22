@@ -8,5 +8,4 @@ CREATE TABLE `gunther_board_reactions` (
 	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `gunther_board_reactions_unique_idx` ON `gunther_board_reactions` (`ticket_id`,`user_id`,`emoji`);--> statement-breakpoint
-ALTER TABLE `gunther_board_tickets` ADD `scope` text;
+CREATE UNIQUE INDEX `gunther_board_reactions_unique_idx` ON `gunther_board_reactions` (`ticket_id`,`user_id`,`emoji`);
