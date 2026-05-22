@@ -270,16 +270,23 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
         />
 
         {/* Marquee banners */}
-        {(["top", "bottom"] as const).map((pos) => (
-          <div
-            key={pos}
-            ref={pos === "top" ? marqueeTopRef : marqueeBottomRef}
-            className={`fixed ${pos === "top" ? "top-0" : "bottom-0"} left-0 w-full z-[99999] pointer-events-none hidden overflow-hidden whitespace-nowrap bg-[linear-gradient(90deg,#ff00ff,#00ffff,#ffff00,#ff00ff)] bg-[length:300%_100%] [animation:marqueeRainbow_1.5s_linear_infinite] text-white font-[family-name:var(--font-vt323)] font-bold text-2xl tracking-[3px] py-1.5 border-y-2 border-black`}
-            style={{ backgroundSize: "300% 100%" }}
-          >
-            <span className="inner inline-block pl-[100%] animate-[marqueeScroll_10s_linear_infinite]" />
-          </div>
-        ))}
+        {(["top", "bottom"] as const).map((pos) => {
+          const isLnk = activeOpts.preset === "lnk";
+          return (
+            <div
+              key={pos}
+              ref={pos === "top" ? marqueeTopRef : marqueeBottomRef}
+              className={`fixed ${pos === "top" ? "top-0" : "bottom-0"} left-0 w-full z-[99999] pointer-events-none hidden overflow-hidden whitespace-nowrap text-white font-[family-name:var(--font-vt323)] font-bold text-2xl tracking-[3px] py-1.5 border-y-2 border-black ${
+                isLnk
+                  ? "bg-[#9146ff]"
+                  : "bg-[linear-gradient(90deg,#ff00ff,#00ffff,#ffff00,#ff00ff)] bg-[length:300%_100%] [animation:marqueeRainbow_1.5s_linear_infinite]"
+              }`}
+              style={isLnk ? undefined : { backgroundSize: "300% 100%" }}
+            >
+              <span className="inner inline-block pl-[100%] animate-[marqueeScroll_10s_linear_infinite]" />
+            </div>
+          );
+        })}
 
         {/* Winner big text */}
         <div
