@@ -75,9 +75,9 @@ function ScopeSelect({
 }
 
 const COLUMNS: { key: Status; label: string; icon: string; accentColor: string; emptyMsg: string }[] = [
-  { key: "todo", label: "À FAIRE", icon: "📥", accentColor: "var(--t-text-muted)", emptyMsg: "Rien ici.\nProfitez-en." },
-  { key: "in_progress", label: "EN COURS", icon: "⚙️", accentColor: "#c88a00", emptyMsg: "Personne ne travaille.\nC'est inhabituel." },
-  { key: "done", label: "TERMINÉ", icon: "✅", accentColor: "#2a6e28", emptyMsg: "Aucun ticket terminé.\nNormal." },
+  { key: "todo", label: "À FAIRE", icon: "📥", accentColor: "var(--t-text-muted)", emptyMsg: "Rien ici.\nProfitez-en, ça durera pas." },
+  { key: "in_progress", label: "EN COURS", icon: "⚙️", accentColor: "#c88a00", emptyMsg: "Personne ne travaille.\nC'est suspect." },
+  { key: "done", label: "TERMINÉ", icon: "✅", accentColor: "#2a6e28", emptyMsg: "Aucun ticket terminé.\nÇa arrive." },
 ];
 
 const PRIORITY_COLORS: Record<Priority, string> = {
@@ -96,16 +96,16 @@ const PRIORITY_BG: Record<Priority, string> = {
 
 const PRIORITY_LABELS: Record<Priority, string> = {
   low: "Pas urgent",
-  medium: "Moyen",
-  high: "Élevé",
+  medium: "Bof urgent",
+  high: "Assez urgent",
   critical: "🚨 PANIQUE",
 };
 
 const PRIORITY_LABELS_LONG: Record<Priority, string> = {
-  low: "Pas urgent (sauf si ça l'est)",
-  medium: "Moyen (comme toujours)",
-  high: "Élevé (vraiment cette fois)",
-  critical: "🚨 PANIQUE",
+  low: "Pas urgent (on verra jamais)",
+  medium: "Moyen (comme d'hab)",
+  high: "Élevé (pour de vrai cette fois)",
+  critical: "🚨 PANIQUE TOTALE",
 };
 
 const LABEL_COLORS: Record<Label, string> = {
@@ -127,10 +127,10 @@ const LABEL_ICONS: Record<Label, string> = {
 };
 
 const LABEL_NAMES: Record<Label, string> = {
-  bug: "bug (encore)",
-  feature: "feature",
+  bug: "bug (encore un)",
+  feature: "feature (optionnelle)",
   chore: "corvée",
-  ui: "esthétique",
+  ui: "esthétique (subjectif)",
   audio: "bruit suspect",
   db: "bdd (touchez pas)",
 };
@@ -290,9 +290,11 @@ export function GuntherBoardApp(_: AppProps) {
 
   const totalCount = tickets.length;
   const ticketCountLabel =
-    totalCount === 0 ? "0 ticket — miracle" :
-    totalCount > 20 ? `${totalCount} tickets — situation critique` :
-    `${totalCount} ticket${totalCount !== 1 ? "s" : ""}`;
+    totalCount === 0 ? "0 ticket — profitez-en" :
+    totalCount === 1 ? "1 ticket — c'est un début" :
+    totalCount > 30 ? `${totalCount} tickets — appelez des renforts` :
+    totalCount > 15 ? `${totalCount} tickets — situation tendue` :
+    `${totalCount} tickets`;
 
   if (loading) {
     return (
@@ -335,7 +337,7 @@ export function GuntherBoardApp(_: AppProps) {
             Synchronisation{".".repeat(loadDots)}
           </div>
           <div style={{ fontSize: "0.6rem", color: "var(--t-text-subtle)", fontStyle: "italic", marginTop: 4 }}>
-            (Le serveur répond rarement du premier coup.)
+            (Le serveur fait ce qu&apos;il peut.)
           </div>
         </div>
         <style>{`
@@ -393,7 +395,7 @@ export function GuntherBoardApp(_: AppProps) {
           <button
             onClick={() => { playClick(); setShowForm(true); }}
             disabled={!user}
-            title={!user ? "Connectez-vous pour signaler vos problèmes (ou les nôtres)" : undefined}
+            title={!user ? "Connectez-vous d'abord (sinon à qui on attribue la faute ?)" : "Créer un ticket (quelqu'un finira par le lire)"}
             style={{
               ...RAISED,
               padding: "2px 10px",
@@ -409,7 +411,7 @@ export function GuntherBoardApp(_: AppProps) {
           </button>
           <button
             onClick={() => { playClick(); fetchTickets(); }}
-            title="Rafraîchir"
+            title="Rafraîchir (ça changera rien)"
             style={{
               ...RAISED,
               padding: "2px 7px",
@@ -626,8 +628,8 @@ function TicketCard({
         backgroundColor: isSelected ? "var(--t-card-hover)" : "#fff",
         cursor: "grab",
         color: "var(--t-text)",
-        opacity: isDragging ? 0.3 : 1,
-        transition: "opacity 0.1s",
+        
+
         position: "relative",
         overflow: "hidden",
         flexShrink: 0,
@@ -758,7 +760,7 @@ function TicketCard({
           {prev ? (
             <button
               onClick={() => onMove(ticket.id, prev)}
-              title="Reculer"
+              title="Reculer (ça arrive)"
               style={{
                 ...RAISED,
                 fontSize: "0.65rem",
@@ -779,7 +781,7 @@ function TicketCard({
           {next ? (
             <button
               onClick={() => onMove(ticket.id, next)}
-              title="Avancer"
+              title="Avancer (enfin)"
               style={{
                 ...RAISED,
                 fontSize: "0.65rem",
@@ -801,7 +803,7 @@ function TicketCard({
 
           <button
             onClick={() => onDelete(ticket.id)}
-            title="Supprimer"
+            title="Supprimer (méthode Gunther de clôture de ticket)"
             style={{
               background: "none",
               border: "none",
@@ -980,7 +982,7 @@ function TicketDetail({
                   onChange={(e) => onChange({ assigneeId: e.target.value || null })}
                   style={{ ...fieldStyle, flex: 1, width: "auto" }}
                 >
-                  <option value="">— non assigné —</option>
+                  <option value="">— non assigné (problème collectif) —</option>
                   {currentUser && <option value={currentUser.id}>👤 {currentUser.name} (moi)</option>}
                   {users.filter((u) => u.id !== currentUser?.id).map((u) => (
                     <option key={u.id} value={u.id}>👤 {u.name}</option>
@@ -989,7 +991,7 @@ function TicketDetail({
                 {currentUser && (detailForm.assigneeId ?? ticket.assigneeId) !== currentUser.id && (
                   <button
                     onClick={() => onChange({ assigneeId: currentUser.id })}
-                    title="M'assigner"
+                    title="M'assigner ce ticket (courageusement)"
                     style={{
                       ...RAISED,
                       padding: "2px 5px",
@@ -1126,7 +1128,7 @@ function TicketDetail({
                     fontSize: "0.66rem",
                   }}
                 >
-                  Pas de description. Bonne chance.
+                  Aucune description. Bonne chance à celui qui reprend.
                 </div>
               )}
             </Fieldset>
@@ -1157,10 +1159,10 @@ function TicketDetail({
                       padding: 0,
                     }}
                   >
-                    + S&apos;assigner
+                    + M&apos;auto-infliger ce ticket
                   </button>
                 ) : (
-                  <span style={{ fontStyle: "italic" }}>Non assigné</span>
+                  <span style={{ fontStyle: "italic" }}>Personne (problème de tout le monde)</span>
                 )}
               </div>
             </Fieldset>
@@ -1174,7 +1176,7 @@ function TicketDetail({
                 fontStyle: "italic",
               }}
             >
-              Créé le {new Date(ticket.createdAt).toLocaleDateString("fr-FR")}
+              Ouvert le {new Date(ticket.createdAt).toLocaleDateString("fr-FR")} — toujours là
             </div>
 
             {/* Actions */}
@@ -1353,7 +1355,7 @@ function NewTicketModal({
               autoFocus
               value={form.title}
               onChange={(e) => onChange({ title: e.target.value })}
-              placeholder="Ex: Le Solitaire crashe à 98% de victoire"
+              placeholder="Ex: Le Solitaire crashe exactement à 98% de victoire"
               style={fieldStyle}
             />
           </Fieldset>
@@ -1363,7 +1365,7 @@ function NewTicketModal({
               value={form.description}
               onChange={(e) => onChange({ description: e.target.value })}
               rows={3}
-              placeholder="Étapes pour reproduire... (ça servira sûrement à rien mais quand même)"
+              placeholder="Étapes pour reproduire... (optionnel, mais ça aide quand même)"
               style={{ ...fieldStyle, resize: "none" }}
             />
           </Fieldset>
@@ -1413,8 +1415,8 @@ function NewTicketModal({
                 onChange={(e) => onChange({ assigneeId: e.target.value })}
                 style={{ ...fieldStyle, flex: 1, width: "auto" }}
               >
-                <option value="">— non assigné —</option>
-                {currentUser && <option value={currentUser.id}>👤 {currentUser.name} (moi)</option>}
+                <option value="">— à voir —</option>
+                {currentUser && <option value={currentUser.id}>👤 {currentUser.name} (moi, hélas)</option>}
                 {users.filter((u) => u.id !== currentUser?.id).map((u) => (
                   <option key={u.id} value={u.id}>👤 {u.name}</option>
                 ))}
@@ -1423,6 +1425,7 @@ function NewTicketModal({
                 <button
                   type="button"
                   onClick={() => onChange({ assigneeId: currentUser.id })}
+                  title="Vous assigner ça volontairement"
                   style={{
                     ...RAISED,
                     padding: "3px 6px",
@@ -1478,7 +1481,7 @@ function NewTicketModal({
                 fontWeight: "bold",
               }}
             >
-              {submitting ? "Envoi..." : "✔ Créer le ticket"}
+              {submitting ? "En cours d'envoi..." : "✔ Signaler ce problème"}
             </button>
           </div>
         </div>
