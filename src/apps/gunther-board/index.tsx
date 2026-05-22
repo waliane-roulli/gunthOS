@@ -63,7 +63,7 @@ function ScopeSelect({
     <select value={value} onChange={(e) => onChange(e.target.value)} style={style}>
       <option value="">— aucun —</option>
       <optgroup label="Apps">
-        {APP_REGISTRY.filter((a) => a.slug !== "gunther-board").map((a) => (
+        {APP_REGISTRY.map((a) => (
           <option key={a.slug} value={`app:${a.slug}`}>
             {a.emoji} {a.name}
           </option>
