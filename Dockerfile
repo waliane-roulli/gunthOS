@@ -15,6 +15,17 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN pnpm build
 
+# ---- studio ----
+FROM base AS studio
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY drizzle ./drizzle
+COPY src/lib/db ./src/lib/db
+COPY drizzle.config.ts ./
+COPY tsconfig.json ./
+EXPOSE 4983
+CMD ["pnpm", "drizzle-kit", "studio", "--host", "0.0.0.0"]
+
 # ---- runner ----
 FROM node:22-alpine AS runner
 WORKDIR /app
@@ -29,14 +40,13 @@ RUN addgroup --system --gid 1001 nodejs \
  && chown nextjs:nodejs /app/data
 
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static  ./.next/static
-COPY --from=builder --chown=nextjs:nodejs /app/public         ./public
-COPY --from=builder --chown=nextjs:nodejs /app/drizzle        ./drizzle
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static     ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/public           ./public
+COPY --from=builder --chown=nextjs:nodejs /app/drizzle          ./drizzle
 COPY --from=deps    --chown=nextjs:nodejs /app/node_modules/better-sqlite3 ./node_modules/better-sqlite3
 COPY --from=deps    --chown=nextjs:nodejs /app/node_modules/drizzle-orm    ./node_modules/drizzle-orm
 COPY --chown=nextjs:nodejs migrate.js ./
 
 USER nextjs
 EXPOSE 3000
-
 CMD ["sh", "-c", "node migrate.js && node server.js"]
