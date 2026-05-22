@@ -67,15 +67,15 @@ function makeParticles(type: CelebType, o: CelebrationOptions): Particle[] {
       const cx = rand(W * 0.2, W * 0.8);
       const cy = rand(H * 0.2, H * 0.5);
       const color = c;
-      return Array.from({ length: randInt(20, 40) }, (_, i) => {
-        const angle = (i / 35) * Math.PI * 2;
-        const speed = rand(2, 7);
+      return Array.from({ length: randInt(50, 80) }, (_, i) => {
+        const angle = (i / 50) * Math.PI * 2;
+        const speed = rand(3, 9);
         return {
           x: cx,
           y: cy,
           vx: Math.cos(angle) * speed,
           vy: Math.sin(angle) * speed,
-          size: rand(2, 5),
+          size: rand(3, 7),
           color: Math.random() > 0.7 ? getColor(o) : color,
           life: 1,
           shape: "circle",
@@ -214,12 +214,12 @@ function makeParticles(type: CelebType, o: CelebrationOptions): Particle[] {
           x: Math.random() * W,
           y: -20 - Math.random() * 200,
           vx: rand(-2, 2),
-          vy: rand(3, 7),
+          vy: rand(1.5, 3.5),
           size: rand(16, 36),
           color: c,
           life: 1,
           shape: "char",
-          gravity: 0.12,
+          gravity: 0.05,
           rot: rand(-0.3, 0.3),
           vrot: rand(-0.15, 0.15),
           wobble: rand(0, Math.PI * 2),
@@ -235,12 +235,12 @@ function makeParticles(type: CelebType, o: CelebrationOptions): Particle[] {
           x: Math.random() * W,
           y: -20 - Math.random() * 200,
           vx: rand(-2, 2),
-          vy: rand(2, 5),
+          vy: rand(1, 2.5),
           size: rand(18, 38),
           color: c,
           life: 1,
           shape: "char",
-          gravity: 0.08,
+          gravity: 0.04,
           rot: rand(-0.4, 0.4),
           vrot: rand(-0.2, 0.2),
           wobble: rand(0, Math.PI * 2),
@@ -251,11 +251,14 @@ function makeParticles(type: CelebType, o: CelebrationOptions): Particle[] {
     }
     case "alien": {
       const aliens = ["👽", "🛸", "👾", "🖖", "🛸"];
+      const fromLeft = Math.random() > 0.5;
+      const spawnX = fromLeft ? -50 : W + 50;
+      const vx = fromLeft ? rand(2, 5) : rand(-5, -2);
       return [
         {
-          x: Math.random() * W,
+          x: spawnX,
           y: rand(H * 0.1, H * 0.5),
-          vx: rand(-4, 4),
+          vx,
           vy: rand(-2, 2),
           size: rand(20, 40),
           color: c,
@@ -277,12 +280,12 @@ function makeParticles(type: CelebType, o: CelebrationOptions): Particle[] {
           x: Math.random() * W,
           y: H + 20 + Math.random() * 100,
           vx: rand(-1, 1),
-          vy: rand(-10, -5),
+          vy: rand(-14, -10),
           size: rand(18, 40),
           color: c,
           life: 1,
           shape: "char",
-          gravity: 0.25,
+          gravity: 0.18,
           rot: rand(-0.5, 0.5),
           vrot: rand(-0.3, 0.3),
           wobble: rand(0, Math.PI * 2),
@@ -292,6 +295,30 @@ function makeParticles(type: CelebType, o: CelebrationOptions): Particle[] {
       ];
     }
   }
+}
+
+// Pre-render text/emoji to offscreen canvases so the hot loop uses drawImage
+// instead of fillText — the latter re-rasterizes color emoji glyphs every frame.
+const charCanvasCache = new Map<string, HTMLCanvasElement>();
+
+function getCharCanvas(char: string, fontSize: number, color: string): HTMLCanvasElement {
+  const bucket = Math.round(fontSize / 4) * 4;
+  const key = `${char}|${bucket}|${color}`;
+  const cached = charCanvasCache.get(key);
+  if (cached) return cached;
+
+  const size = bucket * 2;
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d")!;
+  ctx.font = `bold ${bucket}px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", monospace, sans-serif`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillStyle = color;
+  ctx.fillText(char, size / 2, size / 2);
+  charCanvasCache.set(key, canvas);
+  return canvas;
 }
 
 function drawParticle(ctx: CanvasRenderingContext2D, p: Particle) {
@@ -330,12 +357,11 @@ function drawParticle(ctx: CanvasRenderingContext2D, p: Particle) {
       ctx.fill();
       break;
     }
-    case "char":
-      ctx.font = `bold ${p.size}px 'Courier New', monospace`;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(p.char ?? "?", 0, 0);
+    case "char": {
+      const cached = getCharCanvas(p.char ?? "?", p.size, p.color);
+      ctx.drawImage(cached, -p.size, -p.size, p.size * 2, p.size * 2);
       break;
+    }
   }
   ctx.restore();
 }

@@ -17,7 +17,19 @@ import { useLocalStorage } from "@/lib/hooks/use-local-storage";
 import { useVisitorCount } from "@/lib/hooks/use-visitor-count";
 import { useDraggable } from "@/lib/hooks/use-draggable";
 import { DEFAULT_OPTIONS, PRESETS } from "@/types/plouf-plouf";
-import type { CelebrationOptions, DrawMode, PresetName } from "@/types/plouf-plouf";
+import type { CelebrationOptions, DrawMode, PresetName, CelebType } from "@/types/plouf-plouf";
+
+const VALID_TYPES: Set<string> = new Set([
+  "confetti", "fireworks", "rain", "matrix", "hearts", "stars",
+  "xp", "bubbles", "poop", "money", "alien", "flame",
+] satisfies CelebType[]);
+
+function sanitizeOptions(raw: CelebrationOptions): CelebrationOptions {
+  if (!VALID_TYPES.has(raw.type)) {
+    return { ...raw, type: DEFAULT_OPTIONS.type, preset: "custom" };
+  }
+  return raw;
+}
 
 const WATER_DROP = <WaterDropSVG />;
 
@@ -26,9 +38,16 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
   const [optionsOpen, setOptionsOpen] = useState(false);
   const [sfxMuted, setSfxMuted] = useState(false);
   const [musicMuted, setMusicMuted] = useState(false);
-  const [options, setOptions] = useLocalStorage<CelebrationOptions>(
+  const [rawOptions, setRawOptions] = useLocalStorage<CelebrationOptions>(
     "ploufPloufOptions",
     DEFAULT_OPTIONS
+  );
+  const options = sanitizeOptions(rawOptions);
+  const setOptions = useCallback(
+    (value: CelebrationOptions | ((prev: CelebrationOptions) => CelebrationOptions)) => {
+      setRawOptions(value instanceof Function ? value(options) : value);
+    },
+    [setRawOptions, options]
   );
   const [drawMode, setDrawMode] = useLocalStorage<DrawMode>(
     "ploufPloufDrawMode",

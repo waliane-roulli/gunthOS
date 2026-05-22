@@ -138,17 +138,17 @@ export function OptionsPanel({
               }}
             >
               <option value="confetti">🎊 Confettis</option>
+              <option value="hearts">❤️ Cœurs</option>
+              <option value="matrix">💚 Matrix</option>
+              <option value="bubbles">🫧 Bulles</option>
               <option value="fireworks">🎆 Feu d&apos;artifice</option>
               <option value="rain">⭐ Pluie d&apos;or</option>
-              <option value="matrix">💚 Matrix</option>
-              <option value="hearts">❤ Cœurs</option>
-              <option value="stars">✨ Étoiles</option>
               <option value="xp">🟢 XP Orbs</option>
-              <option value="bubbles">🫧 Bulles</option>
-              <option value="poop">💩 Caca</option>
               <option value="money">💰 Money</option>
+              <option value="stars">✨ Étoiles</option>
               <option value="alien">👽 Aliens</option>
               <option value="flame">🔥 Flammes</option>
+              <option value="poop">💩 Caca</option>
             </select>
           </OptRow>
           <OptRow label="Sous-texte">

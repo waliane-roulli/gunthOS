@@ -2,17 +2,17 @@ export type DrawMode = "roulette" | "horizontal" | "vertical";
 
 export type CelebType =
   | "confetti"
+  | "hearts"
+  | "matrix"
+  | "bubbles"
   | "fireworks"
   | "rain"
-  | "matrix"
-  | "hearts"
-  | "stars"
   | "xp"
-  | "bubbles"
-  | "poop"
   | "money"
+  | "stars"
   | "alien"
-  | "flame";
+  | "flame"
+  | "poop";
 
 export interface CelebrationOptions {
   preset: string;
@@ -87,39 +87,44 @@ export const PRESETS: Record<PresetName, CelebrationOptions> = {
   disco: {
     ...DEFAULT_OPTIONS,
     preset: "disco",
-    type: "stars",
+    type: "fireworks",
     text: "DISCO!",
-    density: 200,
+    density: 220,
     duration: 6,
     shake: 3,
     color1: "#ff00ff",
     color2: "#ffea00",
     color3: "#00ffff",
     damageNumbers: false,
+    bgPulse: true,
   },
   chaos: {
     ...DEFAULT_OPTIONS,
     preset: "chaos",
-    type: "fireworks",
-    text: "CHAOS!!!",
-    density: 400,
+    type: "alien",
+    text: "INVASION!!",
+    density: 350,
     duration: 8,
     shake: 10,
-    color1: "#ff0000",
-    color2: "#00ff00",
-    color3: "#0000ff",
+    color1: "#00ff41",
+    color2: "#9900ff",
+    color3: "#ff0000",
+    rainbow: false,
+    flash: true,
+    marquee: false,
+    bgPulse: false,
   },
   zen: {
     ...DEFAULT_OPTIONS,
     preset: "zen",
-    type: "rain",
-    text: "✨",
-    density: 60,
-    duration: 3,
+    type: "bubbles",
+    text: "~ calme ~",
+    density: 50,
+    duration: 4,
     shake: 0,
-    color1: "#ffd700",
-    color2: "#fff5b0",
-    color3: "#ffe08a",
+    color1: "#b8e6ff",
+    color2: "#e0f0ff",
+    color3: "#ffffff",
     rainbow: false,
     flash: false,
     marquee: false,
@@ -143,9 +148,9 @@ export const PRESETS: Record<PresetName, CelebrationOptions> = {
   kawaii: {
     ...DEFAULT_OPTIONS,
     preset: "kawaii",
-    type: "bubbles",
+    type: "stars",
     text: "SUGOI!!",
-    density: 100,
+    density: 120,
     duration: 5,
     shake: 2,
     color1: "#ff88c2",
@@ -154,18 +159,18 @@ export const PRESETS: Record<PresetName, CelebrationOptions> = {
     rainbow: true,
     damageNumbers: false,
     marquee: false,
-    epicResult: true,
+    bgPulse: true,
   },
   glitch: {
     ...DEFAULT_OPTIONS,
     preset: "glitch",
-    type: "alien",
+    type: "matrix",
     text: "H4CK3D!!",
-    density: 220,
+    density: 300,
     duration: 4,
     shake: 8,
     color1: "#00ff41",
-    color2: "#9900ff",
+    color2: "#00cc33",
     color3: "#003b00",
     rainbow: false,
     flash: true,
@@ -214,9 +219,9 @@ export const PRESETS: Record<PresetName, CelebrationOptions> = {
     preset: "tropical",
     type: "money",
     text: "ALOHA!",
-    density: 180,
+    density: 150,
     duration: 5,
-    shake: 4,
+    shake: 3,
     color1: "#ffd700",
     color2: "#ff6b35",
     color3: "#ff1493",
@@ -231,7 +236,7 @@ export const PRESETS: Record<PresetName, CelebrationOptions> = {
     preset: "pixel",
     type: "poop",
     text: "GAME OVER!",
-    density: 200,
+    density: 180,
     duration: 5,
     shake: 6,
     color1: "#8b4513",

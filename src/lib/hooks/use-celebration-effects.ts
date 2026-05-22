@@ -98,7 +98,7 @@ export function useCelebrationEffects({
             winnerSubRef.current.style.display = "none";
           }
           big.style.display = "none";
-        }, Math.min(o.duration * 1000, 4000));
+        }, o.duration * 1000);
         timeoutsRef.current.push(id);
       }
 
