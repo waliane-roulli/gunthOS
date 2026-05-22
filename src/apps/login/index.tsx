@@ -20,7 +20,7 @@ const registerSchema = z.object({
     .min(2, "Votre pseudo doit faire au moins 2 caractères. Soyez créatif.")
     .max(32, "32 caractères max. GunthOS n'est pas un roman.")
     .regex(/^[a-zA-Z0-9_-]+$/, "Lettres, chiffres, _ et - uniquement. Pas de @#$%."),
-  password: z.string().min(8, "Minimum 8 caractères. Votre date de naissance ne compte pas."),
+  password: z.string().min(1, "Le mot de passe ne peut pas être vide, voyons."),
 });
 
 const LOGIN_HINTS = [
