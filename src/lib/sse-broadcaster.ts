@@ -1,11 +1,22 @@
 import type { NotificationType } from "@/lib/contexts/notification-context";
 
-export interface BroadcastPayload {
+export interface NotifPayload {
+  kind?: "notif";
   type: NotificationType;
   title: string;
   message?: string;
   duration: number | null;
 }
+
+export interface TtsPayload {
+  kind: "tts";
+  text: string;
+  lang?: string;
+  pitch?: number;
+  rate?: number;
+}
+
+export type BroadcastPayload = NotifPayload | TtsPayload;
 
 type Writer = (data: string) => void;
 

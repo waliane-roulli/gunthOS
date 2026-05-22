@@ -13,6 +13,17 @@ export function useLiveNotifications() {
     es.onmessage = (e) => {
       try {
         const payload = JSON.parse(e.data) as BroadcastPayload;
+        if (payload.kind === "tts") {
+          if ("speechSynthesis" in window) {
+            window.speechSynthesis.cancel();
+            const utt = new SpeechSynthesisUtterance(payload.text);
+            utt.lang = payload.lang ?? "fr-FR";
+            utt.pitch = payload.pitch ?? 1;
+            utt.rate = payload.rate ?? 1;
+            window.speechSynthesis.speak(utt);
+          }
+          return;
+        }
         notify({
           type: payload.type,
           title: payload.title,

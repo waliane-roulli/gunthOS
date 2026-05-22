@@ -54,7 +54,7 @@ const divider: React.CSSProperties = {
 
 // ─── nav sidebar ──────────────────────────────────────────────────────────────
 
-type Section = "live" | "users" | "database" | "notifications" | "broadcast";
+type Section = "live" | "users" | "database" | "notifications" | "broadcast" | "vocal";
 
 const NAV_ITEMS: { id: Section; label: string; icon: string }[] = [
   { id: "live",          label: "En direct",       icon: "🟢" },
@@ -62,6 +62,7 @@ const NAV_ITEMS: { id: Section; label: string; icon: string }[] = [
   { id: "database",      label: "Base de données", icon: "🗄️" },
   { id: "notifications", label: "Notifications",   icon: "🔔" },
   { id: "broadcast",     label: "Broadcast",       icon: "📢" },
+  { id: "vocal",         label: "Vocal TTS",       icon: "🔊" },
 ];
 
 function Sidebar({ active, onSelect }: { active: Section; onSelect: (s: Section) => void }) {
@@ -1030,6 +1031,205 @@ function BroadcastPanel() {
   );
 }
 
+// ─── vocal tts panel ─────────────────────────────────────────────────────────
+
+const TTS_PRANKS: { label: string; text: string; pitch?: number; rate?: number }[] = [
+  { label: "Réunion obligatoire",   text: "Attention, réunion obligatoire dans cinq minutes. Amenez votre chaise." },
+  { label: "Café terminé",          text: "Avertissement. La machine à café est en panne. Répétez. La machine à café est en panne." },
+  { label: "Informatique appelle",  text: "Ici le service informatique. Nous avons détecté un virus sur votre ordinateur. Ne touchez à rien." },
+  { label: "Big Brother",           text: "Vos écrans sont surveillés. Bonne journée.", pitch: 0.6, rate: 0.85 },
+  { label: "Mission impossible",    text: "Ce message va s'autodétruire dans trois secondes. Bonne chance.", pitch: 0.8, rate: 0.9 },
+  { label: "Fin de journée",        text: "Il est dix-sept heures. Vous pouvez rentrer chez vous. Le bureau est fermé.", rate: 0.95 },
+  { label: "Alerte incendie fake",  text: "Exercice incendie. Veuillez évacuer les locaux calmement. Ceci est un exercice." },
+  { label: "OVNI détecté",          text: "Alerte météo. Un objet non identifié a été détecté au-dessus du bâtiment. Restez calmes.", pitch: 1.2 },
+  { label: "Voix de robot",         text: "Bonjour humain. Je suis votre nouveau collègue virtuel. Ravi de vous rencontrer.", pitch: 0.5, rate: 0.7 },
+  { label: "Classique",             text: "Quelqu'un a oublié ses clés à l'accueil. Merci de passer les récupérer." },
+];
+
+function VocalPanel() {
+  const notify = useNotify();
+  const [sending, setSending] = useState(false);
+  const [text, setText] = useState("");
+  const [pitch, setPitch] = useState(1);
+  const [rate, setRate] = useState(1);
+  const [lastResult, setLastResult] = useState<{ reached: number; ts: number } | null>(null);
+
+  const panelBox: React.CSSProperties = {
+    border: "2px solid",
+    borderTopColor: "var(--t-border-light)",
+    borderLeftColor: "var(--t-border-light)",
+    borderBottomColor: "var(--t-border-dark)",
+    borderRightColor: "var(--t-border-dark)",
+    background: "var(--t-bg)",
+  };
+
+  const panelTitleStyle: React.CSSProperties = {
+    padding: "4px 8px",
+    background: "var(--t-inset-from)",
+    borderBottom: "1px solid var(--t-border-dark)",
+    fontFamily: "var(--t-font-display)",
+    fontSize: "var(--t-text-xs)",
+    color: "var(--t-text-muted)",
+  };
+
+  const labelStyle: React.CSSProperties = {
+    fontFamily: "var(--t-font-body)",
+    fontSize: "var(--t-text-xs)",
+    color: "var(--t-text-muted)",
+    marginBottom: 3,
+    display: "block",
+  };
+
+  async function send(payload: { text: string; pitch?: number; rate?: number }) {
+    setSending(true);
+    try {
+      const res = await fetch("/api/admin/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: payload.text, lang: "fr-FR", pitch: payload.pitch ?? 1, rate: payload.rate ?? 1 }),
+      });
+      const data = await res.json() as { ok?: boolean; reached?: number; error?: string };
+      if (data.ok) {
+        setLastResult({ reached: data.reached ?? 0, ts: Date.now() });
+        notify({ type: "success", title: `🔊 Vocal envoyé à ${data.reached} client${(data.reached ?? 0) !== 1 ? "s" : ""}` });
+      } else {
+        notify({ type: "error", title: "Erreur TTS", message: data.error });
+      }
+    } finally {
+      setSending(false);
+    }
+  }
+
+  function preview() {
+    if (!text.trim()) return;
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+      const utt = new SpeechSynthesisUtterance(text);
+      utt.lang = "fr-FR";
+      utt.pitch = pitch;
+      utt.rate = rate;
+      window.speechSynthesis.speak(utt);
+    }
+  }
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+      <SectionHeader
+        title="Synthèse vocale"
+        subtitle="Fais parler tous les navigateurs connectés"
+        actions={lastResult && (
+          <span style={{ fontFamily: "var(--t-font-body)", fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)" }}>
+            Dernier envoi : {lastResult.reached} client{lastResult.reached !== 1 ? "s" : ""}
+          </span>
+        )}
+      />
+      <div style={{ flex: 1, overflow: "auto", padding: 16, display: "flex", gap: 16 }}>
+
+        {/* Pranks prédéfinis */}
+        <div style={{ flex: 1 }}>
+          <div style={panelBox}>
+            <div style={panelTitleStyle}>Pranks prédéfinis 🎤</div>
+            <div style={{ padding: 8, display: "flex", flexDirection: "column", gap: 4 }}>
+              {TTS_PRANKS.map((p) => (
+                <button
+                  key={p.label}
+                  disabled={sending}
+                  onClick={() => send(p)}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    padding: "7px 10px",
+                    border: "2px solid",
+                    borderTopColor: "var(--t-border-light)",
+                    borderLeftColor: "var(--t-border-light)",
+                    borderBottomColor: "var(--t-border-dark)",
+                    borderRightColor: "var(--t-border-dark)",
+                    background: "var(--t-bg)",
+                    cursor: sending ? "wait" : "pointer",
+                    fontFamily: "var(--t-font-body)",
+                    fontSize: "var(--t-text-sm)",
+                    color: "var(--t-text)",
+                    textAlign: "left",
+                    opacity: sending ? 0.6 : 1,
+                  }}
+                >
+                  <span style={{ fontSize: "var(--t-text-base)" }}>🔊</span>
+                  <span style={{ flex: 1 }}>{p.label}</span>
+                  {(p.pitch !== undefined && p.pitch !== 1) && (
+                    <span style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)" }}>
+                      pitch {p.pitch}
+                    </span>
+                  )}
+                  {(p.rate !== undefined && p.rate !== 1) && (
+                    <span style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)" }}>
+                      ×{p.rate}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Composer custom */}
+        <div style={{ flex: 1, maxWidth: 340 }}>
+          <div style={panelBox}>
+            <div style={panelTitleStyle}>Message vocal personnalisé</div>
+            <div style={{ padding: 12, display: "flex", flexDirection: "column", gap: 10 }}>
+              <div>
+                <label style={labelStyle}>Texte à dire</label>
+                <textarea
+                  value={text}
+                  placeholder="Ce que tu veux faire dire aux navigateurs…"
+                  onChange={(e) => setText(e.target.value)}
+                  rows={5}
+                  style={{ ...inset, width: "100%", boxSizing: "border-box" as const, resize: "vertical" as const }}
+                />
+              </div>
+              <div>
+                <label style={labelStyle}>Tonalité (pitch) : {pitch}</label>
+                <input
+                  type="range" min="0.5" max="2" step="0.1"
+                  value={pitch}
+                  onChange={(e) => setPitch(Number(e.target.value))}
+                  style={{ width: "100%" }}
+                />
+              </div>
+              <div>
+                <label style={labelStyle}>Vitesse (rate) : {rate}</label>
+                <input
+                  type="range" min="0.5" max="2" step="0.1"
+                  value={rate}
+                  onChange={(e) => setRate(Number(e.target.value))}
+                  style={{ width: "100%" }}
+                />
+              </div>
+              <div style={{ display: "flex", gap: 6 }}>
+                <button
+                  onClick={preview}
+                  disabled={!text.trim()}
+                  style={{ ...btn(), flex: 1, opacity: !text.trim() ? 0.5 : 1 }}
+                >
+                  ▶ Prévisualiser
+                </button>
+                <button
+                  disabled={sending || !text.trim()}
+                  onClick={() => send({ text, pitch, rate })}
+                  style={{ ...btn("accent"), flex: 2, padding: "6px 0", textAlign: "center" as const, opacity: (sending || !text.trim()) ? 0.6 : 1 }}
+                >
+                  {sending ? "Envoi…" : "🔊 Broadcaster"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
 // ─── access denied ────────────────────────────────────────────────────────────
 
 function AccessDenied() {
@@ -1082,6 +1282,7 @@ export function DbAdmin({ windowId: _windowId }: AppProps) {
         {section === "database"      && <DatabasePanel />}
         {section === "notifications" && <NotificationsPanel />}
         {section === "broadcast"     && <BroadcastPanel />}
+        {section === "vocal"         && <VocalPanel />}
       </div>
     </div>
   );

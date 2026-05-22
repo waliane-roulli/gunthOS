@@ -5,7 +5,6 @@ import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { broadcast } from "@/lib/sse-broadcaster";
-import type { NotifPayload } from "@/lib/sse-broadcaster";
 
 export async function POST(req: Request) {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -14,18 +13,16 @@ export async function POST(req: Request) {
   const [caller] = await db().select({ role: user.role }).from(user).where(eq(user.id, session.user.id));
   if (caller?.role !== "admin") return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
 
-  const body = await req.json() as Partial<NotifPayload>;
-  if (!body.type || !body.title) {
-    return NextResponse.json({ error: "type et title requis" }, { status: 400 });
-  }
+  const body = await req.json() as { text?: string; lang?: string; pitch?: number; rate?: number };
+  if (!body.text?.trim()) return NextResponse.json({ error: "text requis" }, { status: 400 });
 
-  const payload: NotifPayload = {
-    type: body.type,
-    title: body.title,
-    message: body.message,
-    duration: body.duration ?? 6000,
-  };
+  const count = broadcast({
+    kind: "tts",
+    text: body.text.trim(),
+    lang: body.lang ?? "fr-FR",
+    pitch: body.pitch ?? 1,
+    rate: body.rate ?? 1,
+  });
 
-  const count = broadcast(payload);
   return NextResponse.json({ ok: true, reached: count });
 }
