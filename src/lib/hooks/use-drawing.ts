@@ -30,9 +30,12 @@ export function useDrawing(
 
     abortRef.current = false;
     const winnerIdx = Math.floor(Math.random() * gamesCount);
-    const totalSteps = random
-      ? gamesCount * 3 + Math.floor(Math.random() * gamesCount) + winnerIdx
-      : gamesCount * 4 + winnerIdx;
+    const totalSteps = Math.max(
+      random
+        ? gamesCount * 3 + Math.floor(Math.random() * gamesCount) + winnerIdx
+        : gamesCount * 4 + winnerIdx,
+      90 // ~7 secondes minimum
+    );
 
     setState({ isDrawing: true, highlightedIndex: 0, winnerIndex: -1 });
 
