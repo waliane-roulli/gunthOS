@@ -87,7 +87,7 @@ export function OptionsPanel({
               return (
                 <button
                   key={name}
-                  onClick={() => onChange({ ...PRESETS[name] })}
+                  onClick={() => onChange({ ...PRESETS[name], randomPreset: false })}
                   className="border-[2px] px-1 py-[5px] text-sm font-bold cursor-pointer text-center transition-none"
                   style={{
                     fontFamily: "var(--t-font-body)",

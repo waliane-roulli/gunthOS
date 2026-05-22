@@ -39,6 +39,55 @@ function getColor(o: CelebrationOptions): string {
   return [o.color1, o.color2, o.color3][Math.floor(Math.random() * 3)] ?? o.color1;
 }
 
+function makeTrophyParticle(W: number, H: number, color: string, trophies: string[]): Particle {
+  const edge = Math.floor(Math.random() * 4);
+  let x: number, y: number, vx: number, vy: number;
+
+  switch (edge) {
+    case 0: // top
+      x = Math.random() * W;
+      y = -40;
+      vx = rand(-1, 1);
+      vy = rand(0.8, 1.8);
+      break;
+    case 1: // right
+      x = W + 40;
+      y = Math.random() * H;
+      vx = rand(-1.8, -0.6);
+      vy = rand(-0.8, 0.8);
+      break;
+    case 2: // bottom
+      x = Math.random() * W;
+      y = H + 40;
+      vx = rand(-1, 1);
+      vy = rand(-1.8, -0.8);
+      break;
+    default: // left
+      x = -40;
+      y = Math.random() * H;
+      vx = rand(0.6, 1.8);
+      vy = rand(-0.8, 0.8);
+      break;
+  }
+
+  return {
+    x,
+    y,
+    vx,
+    vy,
+    size: rand(24, 46),
+    color,
+    life: 1,
+    shape: "char" as const,
+    gravity: 0,
+    rot: rand(-0.2, 0.2),
+    vrot: rand(-0.06, 0.06),
+    wobble: rand(0, Math.PI * 2),
+    wobbleSpeed: rand(0.02, 0.05),
+    char: trophies[Math.floor(Math.random() * trophies.length)],
+  };
+}
+
 function makeParticles(type: CelebType, o: CelebrationOptions): Particle[] {
   const c = getColor(o);
   const W = window.innerWidth;
@@ -293,6 +342,22 @@ function makeParticles(type: CelebType, o: CelebrationOptions): Particle[] {
           char: flames[Math.floor(Math.random() * flames.length)],
         },
       ];
+    }
+    case "trophy": {
+      const trophies = ["🏆", "🥇", "🥈", "🥉", "🎖️", "🏅", "👑"];
+      return [makeTrophyParticle(W, H, c, trophies)];
+    }
+    case "trophy-gold": {
+      const trophies = ["🏆", "🥇", "👑", "🏆", "🥇", "👑", "🌟", "💛", "⭐"];
+      return [makeTrophyParticle(W, H, c, trophies)];
+    }
+    case "trophy-silver": {
+      const trophies = ["🥈", "🎖️", "🥈", "🎖️", "🤍", "🪩", "💿", "🕶️", "🔩"];
+      return [makeTrophyParticle(W, H, c, trophies)];
+    }
+    case "trophy-bronze": {
+      const trophies = ["🥉", "🏅", "🥉", "🏅", "🤎", "🍂", "🔔", "🪙", "🧡"];
+      return [makeTrophyParticle(W, H, c, trophies)];
     }
   }
 }

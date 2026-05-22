@@ -21,7 +21,8 @@ import type { CelebrationOptions, DrawMode, PresetName, CelebType } from "@/type
 
 const VALID_TYPES: Set<string> = new Set([
   "confetti", "fireworks", "rain", "matrix", "hearts", "stars",
-  "xp", "bubbles", "poop", "money", "alien", "flame",
+  "xp", "bubbles", "poop", "money", "alien", "flame", "trophy",
+  "trophy-gold", "trophy-silver", "trophy-bronze",
 ] satisfies CelebType[]);
 
 function sanitizeOptions(raw: CelebrationOptions): CelebrationOptions {

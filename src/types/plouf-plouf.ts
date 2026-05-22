@@ -12,7 +12,11 @@ export type CelebType =
   | "stars"
   | "alien"
   | "flame"
-  | "poop";
+  | "poop"
+  | "trophy"
+  | "trophy-gold"
+  | "trophy-silver"
+  | "trophy-bronze";
 
 export interface CelebrationOptions {
   preset: string;
@@ -75,7 +79,10 @@ export type PresetName =
   | "vampire"
   | "gwak"
   | "kwag"
-  | "lnk";
+  | "lnk"
+  | "kiff-dor"
+  | "kiff-dargent"
+  | "kiff-de-bronze";
 
 export const PRESET_LABELS: Record<PresetName, string> = {
   classic: "Classic",
@@ -93,6 +100,9 @@ export const PRESET_LABELS: Record<PresetName, string> = {
   gwak: "Gwak",
   kwag: "Kwag",
   lnk: "LNK",
+  "kiff-dor": "Kiff d'Or",
+  "kiff-dargent": "Kiff d'Argent",
+  "kiff-de-bronze": "Kiff de Bronze",
 };
 
 /** Canonical text + colors for each celebration type. Kept in sync with PRESETS. */
@@ -112,6 +122,10 @@ export const TYPE_DEFAULTS: Record<
   money:     { text: "ALOHA!",      color1: "#ffd700", color2: "#ff6b35", color3: "#ff1493", rainbow: true,  winnerColor: "#ffffff", winnerSubColor: "#ffd700" },
   poop:      { text: "CACA D'OR ?", color1: "#8b4513", color2: "#654321", color3: "#d2691e", rainbow: false, winnerColor: "#00ffff", winnerSubColor: "#ffd700" },
   xp:        { text: "Le Sang !!!", color1: "#ff0000", color2: "#ffffff", color3: "#000000", rainbow: false, winnerColor: "#00ffcc", winnerSubColor: "#ffffff" },
+  trophy:    { text: "Kiff d'Or ?",  color1: "#ffd700", color2: "#ffaa00", color3: "#ffec00", rainbow: false, winnerColor: "#ffd700", winnerSubColor: "#ffaa00" },
+  "trophy-gold":   { text: "Kiff d'Or !",  color1: "#ffd700", color2: "#ffaa00", color3: "#ffec00", rainbow: false, winnerColor: "#ffd700", winnerSubColor: "#ffaa00" },
+  "trophy-silver": { text: "Kiff d'Argent !", color1: "#c0c0c0", color2: "#e8e8e8", color3: "#a0a0a0", rainbow: false, winnerColor: "#e8e8e8", winnerSubColor: "#c0c0c0" },
+  "trophy-bronze": { text: "Kiff de Bronze !", color1: "#cd7f32", color2: "#e8a860", color3: "#8b5a2b", rainbow: false, winnerColor: "#e8a860", winnerSubColor: "#cd7f32" },
 };
 
 export const PRESETS: Record<PresetName, CelebrationOptions> = {
@@ -380,5 +394,62 @@ export const PRESETS: Record<PresetName, CelebrationOptions> = {
     damageNumbers: true,
     bgPulse: true,
     epicResult: true,
+  },
+  "kiff-dor": {
+    ...DEFAULT_OPTIONS,
+    preset: "kiff-dor",
+    type: "trophy-gold",
+    text: "Kiff d'Or ?",
+    density: 120,
+    duration: 7,
+    shake: 4,
+    color1: "#ffd700",
+    color2: "#ffaa00",
+    color3: "#ffec00",
+    winnerColor: "#ffd700",
+    winnerSubColor: "#ffaa00",
+    rainbow: false,
+    marquee: true,
+    bigText: true,
+    damageNumbers: false,
+    epicResult: true,
+  },
+  "kiff-dargent": {
+    ...DEFAULT_OPTIONS,
+    preset: "kiff-dargent",
+    type: "trophy-silver",
+    text: "Kiff d'Argent ?",
+    density: 100,
+    duration: 7,
+    shake: 3,
+    color1: "#c0c0c0",
+    color2: "#e8e8e8",
+    color3: "#a0a0a0",
+    winnerColor: "#e8e8e8",
+    winnerSubColor: "#c0c0c0",
+    rainbow: false,
+    marquee: true,
+    bigText: true,
+    damageNumbers: false,
+    epicResult: false,
+  },
+  "kiff-de-bronze": {
+    ...DEFAULT_OPTIONS,
+    preset: "kiff-de-bronze",
+    type: "trophy-bronze",
+    text: "Kiff de Bronze ?",
+    density: 80,
+    duration: 7,
+    shake: 2,
+    color1: "#cd7f32",
+    color2: "#e8a860",
+    color3: "#8b5a2b",
+    winnerColor: "#e8a860",
+    winnerSubColor: "#cd7f32",
+    rainbow: false,
+    marquee: true,
+    bigText: true,
+    damageNumbers: false,
+    epicResult: false,
   },
 };
