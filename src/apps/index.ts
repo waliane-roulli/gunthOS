@@ -28,6 +28,7 @@ import { manifest as notepad } from "./notepad/manifest";
 import { manifest as printer } from "./printer/manifest";
 import { manifest as ie } from "./ie/manifest";
 import { manifest as linkedGunth } from "./linked-gunth/manifest";
+import { manifest as guntherBoard } from "./gunther-board/manifest";
 
 export const APP_REGISTRY: AppManifest[] = [
   // Apps visibles dans le launcher (Start menu + desktop)
@@ -37,6 +38,7 @@ export const APP_REGISTRY: AppManifest[] = [
   msn,
   radio,
   linkedGunth,
+  guntherBoard,
 
   // Apps système (ouvertes programmatiquement, pas dans le launcher)
   myComputer,

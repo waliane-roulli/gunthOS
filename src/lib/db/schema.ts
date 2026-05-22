@@ -194,6 +194,21 @@ export const linkedGunthRecommendations = sqliteTable("linked_gunth_recommendati
   uniqueIndex("linked_gunth_recommendations_pair_idx").on(t.fromUserId, t.toUserId),
 ]);
 
+// GuntherBoard — issue tracker interne GunthOS
+export const guntherBoardTickets = sqliteTable("gunther_board_tickets", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  title: text("title").notNull(),
+  description: text("description"),
+  status: text("status", { enum: ["todo", "in_progress", "done"] }).notNull().default("todo"),
+  priority: text("priority", { enum: ["low", "medium", "high", "critical"] }).notNull().default("medium"),
+  label: text("label", { enum: ["bug", "feature", "chore", "ui", "audio", "db"] }),
+  scope: text("scope"),
+  assigneeId: text("assignee_id").references(() => user.id, { onDelete: "set null" }),
+  createdById: text("created_by_id").references(() => user.id, { onDelete: "set null" }),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+});
+
 // validations de compétences entre vrais users
 export const linkedGunthEndorsements = sqliteTable("linked_gunth_endorsements", {
   id: integer("id").primaryKey({ autoIncrement: true }),
