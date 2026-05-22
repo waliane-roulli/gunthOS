@@ -230,6 +230,15 @@ export const guntherBoardReactions = sqliteTable("gunther_board_reactions", {
   uniqueIndex("gunther_board_reactions_unique_idx").on(t.ticketId, t.userId, t.emoji),
 ]);
 
+// Peggle 98 leaderboard
+export const peggleScores = sqliteTable("peggle_scores", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  score: integer("score").notNull(),
+  won: integer("won", { mode: "boolean" }).notNull().default(false),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+});
+
 // validations de compétences entre vrais users
 export const linkedGunthEndorsements = sqliteTable("linked_gunth_endorsements", {
   id: integer("id").primaryKey({ autoIncrement: true }),

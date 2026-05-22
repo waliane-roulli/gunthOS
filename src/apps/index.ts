@@ -23,6 +23,7 @@ import { manifest as login } from "./login/manifest";
 import { manifest as publicProfile } from "./public-profile/manifest";
 
 import { manifest as solitaire } from "./solitaire/manifest";
+import { manifest as peggle } from "./peggle/manifest";
 import { manifest as defrag } from "./defrag/manifest";
 import { manifest as notepad } from "./notepad/manifest";
 import { manifest as printer } from "./printer/manifest";
@@ -33,6 +34,7 @@ import { manifest as dbAdmin } from "./admin/manifest";
 
 export const APP_REGISTRY: AppManifest[] = [
   // Apps visibles dans le launcher (Start menu + desktop)
+  peggle,
   ploufPlouf,
   profile,
   directory,
