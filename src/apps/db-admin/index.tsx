@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { AppProps } from "@/types";
 
 type UserRow = {
@@ -216,6 +216,67 @@ function UsersPanel() {
   );
 }
 
+function DbToolbar() {
+  const [importing, setImporting] = useState(false);
+  const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  function showMsg(text: string, ok: boolean) {
+    setMsg({ text, ok });
+    setTimeout(() => setMsg(null), 4000);
+  }
+
+  async function handleImport(file: File) {
+    setImporting(true);
+    try {
+      const res = await fetch("/api/admin/db/import", {
+        method: "POST",
+        headers: { "Content-Type": "application/octet-stream" },
+        body: file,
+      });
+      const data = await res.json() as { ok?: boolean; error?: string };
+      if (data.ok) {
+        showMsg("✓ DB importée — rechargez la page", true);
+      } else {
+        showMsg(`❌ ${data.error ?? "Erreur"}`, false);
+      }
+    } finally {
+      setImporting(false);
+    }
+  }
+
+  return (
+    <div style={{ padding: "6px 10px", borderBottom: "1px solid var(--t-border-dark)", display: "flex", alignItems: "center", gap: 8, flexShrink: 0, background: "var(--t-bg)" }}>
+      <a
+        href="/api/admin/db/export"
+        download
+        style={{ ...btnStyle(), textDecoration: "none", display: "inline-block" }}
+      >
+        ⬇ Exporter DB
+      </a>
+      <button
+        style={btnStyle()}
+        disabled={importing}
+        onClick={() => fileRef.current?.click()}
+      >
+        {importing ? "…" : "⬆ Importer DB"}
+      </button>
+      <input
+        ref={fileRef}
+        type="file"
+        accept=".db,application/octet-stream"
+        style={{ display: "none" }}
+        onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImport(f); e.target.value = ""; }}
+      />
+      {msg && (
+        <span style={{ fontSize: "var(--t-text-xs)", fontFamily: "var(--t-font-body)", color: msg.ok ? "var(--t-accent)" : "red" }}>
+          {msg.text}
+        </span>
+      )}
+    </div>
+  );
+}
+
 export function DbAdmin({ windowId }: AppProps) {
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "var(--t-bg)" }}>
@@ -230,6 +291,7 @@ export function DbAdmin({ windowId }: AppProps) {
       }}>
         Admin — Gestion des utilisateurs
       </div>
+      <DbToolbar />
       <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
         <UsersPanel />
       </div>
