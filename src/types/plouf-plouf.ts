@@ -85,6 +85,25 @@ export const PRESET_LABELS: Record<PresetName, string> = {
   vampire: "Vampire",
 };
 
+/** Canonical text + colors for each celebration type. Kept in sync with PRESETS. */
+export const TYPE_DEFAULTS: Record<
+  CelebType,
+  Pick<CelebrationOptions, "text" | "color1" | "color2" | "color3" | "rainbow">
+> = {
+  confetti:  { text: "VICTOIRE!",   color1: "#ff0080", color2: "#00ffff", color3: "#ffee00", rainbow: true  },
+  fireworks: { text: "DISCO!",      color1: "#ff00ff", color2: "#ffea00", color3: "#00ffff", rainbow: false },
+  alien:     { text: "INVASION!!",  color1: "#00ff41", color2: "#9900ff", color3: "#ff0000", rainbow: false },
+  bubbles:   { text: "~ calme ~",   color1: "#b8e6ff", color2: "#e0f0ff", color3: "#ffffff", rainbow: false },
+  hearts:    { text: "♥ WIN! ♥",    color1: "#bb99aa", color2: "#ff00ff", color3: "#ff69b4", rainbow: false },
+  stars:     { text: "SUGOI!!",     color1: "#ff88c2", color2: "#ffc0eb", color3: "#fff0f5", rainbow: false },
+  matrix:    { text: "H4CK3D!!",    color1: "#00ff41", color2: "#00cc33", color3: "#003b00", rainbow: false },
+  flame:     { text: "UNTZ UNTZ!!", color1: "#ff00ff", color2: "#ff6600", color3: "#ffff00", rainbow: false },
+  rain:      { text: "PLEURE...",   color1: "#4169e1", color2: "#6495ed", color3: "#87ceeb", rainbow: false },
+  money:     { text: "ALOHA!",      color1: "#ffd700", color2: "#ff6b35", color3: "#ff1493", rainbow: true  },
+  poop:      { text: "CACA D'OR ?", color1: "#8b4513", color2: "#654321", color3: "#d2691e", rainbow: false },
+  xp:        { text: "Le Sang !!!", color1: "#ff0000", color2: "#ffffff", color3: "#000000", rainbow: false },
+};
+
 export const PRESETS: Record<PresetName, CelebrationOptions> = {
   classic: { ...DEFAULT_OPTIONS, preset: "classic" },
   disco: {

@@ -1,6 +1,6 @@
 "use client";
 
-import { PRESETS, PRESET_LABELS } from "@/types/plouf-plouf";
+import { PRESETS, PRESET_LABELS, TYPE_DEFAULTS } from "@/types/plouf-plouf";
 import type { CelebrationOptions, PresetName } from "@/types/plouf-plouf";
 import { useDraggable } from "@/lib/hooks/use-draggable";
 import { useTheme } from "@/lib/contexts/settings-context";
@@ -123,9 +123,11 @@ export function OptionsPanel({
           <OptRow label="Style">
             <select
               value={options.type}
-              onChange={(e) =>
-                update({ type: e.target.value as CelebrationOptions["type"] })
-              }
+              onChange={(e) => {
+                const newType = e.target.value as CelebrationOptions["type"];
+                const defaults = TYPE_DEFAULTS[newType];
+                update({ type: newType, ...defaults });
+              }}
               className="border-[2px] px-1.5 py-0.5 text-sm flex-1"
               style={{
                 fontFamily: "var(--t-font-body)",
