@@ -1,6 +1,6 @@
 "use client";
 
-import { PRESETS } from "@/types/plouf-plouf";
+import { PRESETS, PRESET_LABELS } from "@/types/plouf-plouf";
 import type { CelebrationOptions, PresetName } from "@/types/plouf-plouf";
 import { useDraggable } from "@/lib/hooks/use-draggable";
 import { useTheme } from "@/lib/contexts/settings-context";
@@ -99,7 +99,7 @@ export function OptionsPanel({
                     borderRightColor: isActive ? "var(--t-border-light)" : "var(--t-border-dark)",
                   }}
                 >
-                  {name.charAt(0).toUpperCase() + name.slice(1)}
+                  {PRESET_LABELS[name]}
                 </button>
               );
             })}

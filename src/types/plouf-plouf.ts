@@ -32,6 +32,7 @@ export interface CelebrationOptions {
   bgPulse: boolean;
   epicResult: boolean;
   randomPreset: boolean;
+  forceTransparent: boolean;
 }
 
 export const DEFAULT_OPTIONS: CelebrationOptions = {
@@ -52,38 +53,40 @@ export const DEFAULT_OPTIONS: CelebrationOptions = {
   bgPulse: true,
   epicResult: true,
   randomPreset: false,
+  forceTransparent: false,
 };
 
 export type PresetName =
   | "classic"
-  | "vampire"
   | "disco"
-  | "chaos"
+  | "invasion"
   | "zen"
-  | "retro"
+  | "plus-haut"
   | "kawaii"
   | "glitch"
-  | "rave"
-  | "sadboi"
-  | "tropical"
-  | "pixel";
+  | "fire"
+  | "winter"
+  | "moulaga"
+  | "caca-dor"
+  | "vampire";
+
+export const PRESET_LABELS: Record<PresetName, string> = {
+  classic: "Classic",
+  disco: "Disco",
+  invasion: "Invasion",
+  zen: "Zen",
+  "plus-haut": "Plus Haut",
+  kawaii: "Kawaii",
+  glitch: "Glitch",
+  fire: "Fire",
+  winter: "Winter",
+  moulaga: "Moulaga",
+  "caca-dor": "Caca d'Or",
+  vampire: "Vampire",
+};
 
 export const PRESETS: Record<PresetName, CelebrationOptions> = {
   classic: { ...DEFAULT_OPTIONS, preset: "classic" },
-  vampire: {
-    ...DEFAULT_OPTIONS,
-    preset: "vampire",
-    type: "xp",
-    text: "LOOT!",
-    density: 300,
-    duration: 5,
-    shake: 7,
-    color1: "#00ff41",
-    color2: "#ff00ff",
-    color3: "#ffea00",
-    rainbow: false,
-    marquee: false,
-  },
   disco: {
     ...DEFAULT_OPTIONS,
     preset: "disco",
@@ -98,9 +101,9 @@ export const PRESETS: Record<PresetName, CelebrationOptions> = {
     damageNumbers: false,
     bgPulse: true,
   },
-  chaos: {
+  invasion: {
     ...DEFAULT_OPTIONS,
-    preset: "chaos",
+    preset: "invasion",
     type: "alien",
     text: "INVASION!!",
     density: 350,
@@ -132,15 +135,15 @@ export const PRESETS: Record<PresetName, CelebrationOptions> = {
     damageNumbers: false,
     bgPulse: false,
   },
-  retro: {
+  "plus-haut": {
     ...DEFAULT_OPTIONS,
-    preset: "retro",
+    preset: "plus-haut",
     type: "hearts",
     text: "♥ WIN! ♥",
     density: 180,
     duration: 5,
     shake: 4,
-    color1: "#ff0080",
+    color1: "#bb99aa",
     color2: "#ff00ff",
     color3: "#ff69b4",
     damageNumbers: false,
@@ -156,7 +159,7 @@ export const PRESETS: Record<PresetName, CelebrationOptions> = {
     color1: "#ff88c2",
     color2: "#ffc0eb",
     color3: "#fff0f5",
-    rainbow: true,
+    rainbow: false,
     damageNumbers: false,
     marquee: false,
     bgPulse: true,
@@ -179,9 +182,9 @@ export const PRESETS: Record<PresetName, CelebrationOptions> = {
     damageNumbers: true,
     bgPulse: false,
   },
-  rave: {
+  fire: {
     ...DEFAULT_OPTIONS,
-    preset: "rave",
+    preset: "fire",
     type: "flame",
     text: "UNTZ UNTZ!!",
     density: 350,
@@ -195,9 +198,9 @@ export const PRESETS: Record<PresetName, CelebrationOptions> = {
     damageNumbers: true,
     epicResult: true,
   },
-  sadboi: {
+  winter: {
     ...DEFAULT_OPTIONS,
-    preset: "sadboi",
+    preset: "winter",
     type: "rain",
     text: "PLEURE...",
     density: 45,
@@ -214,9 +217,9 @@ export const PRESETS: Record<PresetName, CelebrationOptions> = {
     bgPulse: false,
     epicResult: false,
   },
-  tropical: {
+  moulaga: {
     ...DEFAULT_OPTIONS,
-    preset: "tropical",
+    preset: "moulaga",
     type: "money",
     text: "ALOHA!",
     density: 150,
@@ -231,11 +234,11 @@ export const PRESETS: Record<PresetName, CelebrationOptions> = {
     damageNumbers: false,
     epicResult: true,
   },
-  pixel: {
+  "caca-dor": {
     ...DEFAULT_OPTIONS,
-    preset: "pixel",
+    preset: "caca-dor",
     type: "poop",
-    text: "GAME OVER!",
+    text: "CACA D'OR ?",
     density: 180,
     duration: 5,
     shake: 6,
@@ -248,5 +251,19 @@ export const PRESETS: Record<PresetName, CelebrationOptions> = {
     bigText: true,
     damageNumbers: true,
     bgPulse: false,
+  },
+  vampire: {
+    ...DEFAULT_OPTIONS,
+    preset: "vampire",
+    type: "xp",
+    text: "Le Sang !!!",
+    density: 300,
+    duration: 5,
+    shake: 7,
+    color1: "#ff0000",
+    color2: "#ffffff",
+    color3: "#000000",
+    rainbow: false,
+    marquee: false,
   },
 };

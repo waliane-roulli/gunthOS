@@ -507,14 +507,7 @@ export function useCelebration() {
           particlesRef.current.push(...batch);
         }
 
-        if (
-          options.type === "fireworks" ||
-          options.type === "matrix" ||
-          options.type === "alien" ||
-          options.type === "flame" ||
-          options.type === "money" ||
-          options.type === "poop"
-        ) {
+        if (options.type === "matrix" && !options.forceTransparent) {
           ctx.fillStyle = "rgba(0,0,0,0.15)";
           ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
         } else {
