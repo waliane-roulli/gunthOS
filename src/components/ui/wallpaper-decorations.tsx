@@ -1307,6 +1307,7 @@ function NotFoundWallpaper() {
 function DialUpWallpaper() {
   const [dots, setDots] = useState(0);
   const [speed, setSpeed] = useState(0);
+  const [speedDecimal, setSpeedDecimal] = useState(0);
   const msgs = [
     "Connexion à Internet...",
     "Authentification...",
@@ -1320,7 +1321,10 @@ function DialUpWallpaper() {
   useEffect(() => {
     const d = setInterval(() => setDots((p) => (p + 1) % 4), 500);
     const m = setInterval(() => setMsgIdx((p) => (p + 1) % msgs.length), 2500);
-    const s = setInterval(() => setSpeed(Math.floor(Math.random() * 3 + 28)), 1000);
+    const s = setInterval(() => {
+      setSpeed(Math.floor(Math.random() * 3 + 28));
+      setSpeedDecimal(Math.floor(Math.random() * 9));
+    }, 1000);
     return () => { clearInterval(d); clearInterval(m); clearInterval(s); };
   }, []);
 
@@ -1355,7 +1359,7 @@ function DialUpWallpaper() {
         >
           <div style={{ display: "flex", justifyContent: "space-between", gap: 20, marginBottom: 4 }}>
             <span>Vitesse:</span>
-            <span>{speed}.{Math.floor(Math.random() * 9)}K bps</span>
+            <span>{speed}.{speedDecimal}K bps</span>
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", gap: 20, marginBottom: 4 }}>
             <span>Protocole:</span>
@@ -3173,6 +3177,7 @@ function SolitaireWallpaper() {
 function NasaPanicWallpaper() {
   const [tick, setTick] = useState(0);
   const [alarm, setAlarm] = useState(false);
+  const [gridColors] = useState(() => Array.from({ length: 20 }, () => Math.random() > 0.3 ? "#ff4400" : "#440000"));
 
   const systems = [
     { name: "MOTEUR PRINCIPAL", status: "CRITIQUE", color: "#ff4400" },
@@ -3220,8 +3225,8 @@ function NasaPanicWallpaper() {
 
       {/* Grille de données */}
       <div style={{ display: "flex", gap: 4, justifyContent: "center" }}>
-        {[...Array(20)].map((_, i) => (
-          <div key={i} style={{ width: "clamp(6px,1vw,12px)", height: "clamp(6px,1vw,12px)", background: Math.random() > 0.3 ? "#ff4400" : "#440000", borderRadius: 1 }} />
+        {gridColors.map((color, i) => (
+          <div key={i} style={{ width: "clamp(6px,1vw,12px)", height: "clamp(6px,1vw,12px)", background: color, borderRadius: 1 }} />
         ))}
       </div>
     </div>
@@ -3232,6 +3237,7 @@ function PrinterRageWallpaper() {
   const [phase, setPhase] = useState(0);
   const [paperY, setPaperY] = useState(-20);
   const [shake, setShake] = useState(false);
+  const [shakeOffset, setShakeOffset] = useState<[number, number]>([0, 0]);
 
   const phases = [
     "Impression en cours...",
@@ -3249,6 +3255,7 @@ function PrinterRageWallpaper() {
   useEffect(() => {
     const id = setInterval(() => {
       setPhase(p => (p + 1) % phases.length);
+      setShakeOffset([(Math.random() - 0.5) * 4, (Math.random() - 0.5) * 4]);
       setShake(true);
       setTimeout(() => setShake(false), 200);
     }, 1800);
@@ -3268,7 +3275,7 @@ function PrinterRageWallpaper() {
   return (
     <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, fontFamily: '"Courier New", monospace' }}>
       {/* Imprimante */}
-      <div style={{ position: "relative", transform: shake && isError ? `translate(${(Math.random()-0.5)*4}px, ${(Math.random()-0.5)*4}px)` : "none", transition: "transform 0.05s" }}>
+      <div style={{ position: "relative", transform: shake && isError ? `translate(${shakeOffset[0]}px, ${shakeOffset[1]}px)` : "none", transition: "transform 0.05s" }}>
         {/* Corps */}
         <div style={{ width: "clamp(120px,18vw,200px)", height: "clamp(60px,9vw,100px)", background: "linear-gradient(to bottom, #f0f0f0, #d0d0d0)", border: "3px solid #808080", borderRadius: "8px 8px 4px 4px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", boxShadow: "3px 3px 0 rgba(0,0,0,0.3)" }}>
           {/* Fente */}

@@ -297,7 +297,44 @@ function DbToolbar() {
   );
 }
 
+function AccessDenied() {
+  return (
+    <div style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      height: "100%",
+      gap: 12,
+      background: "var(--t-bg)",
+      fontFamily: "var(--t-font-body)",
+    }}>
+      <span style={{ fontSize: 48 }}>🔒</span>
+      <span style={{ fontSize: "var(--t-text-sm)", color: "var(--t-text-muted)" }}>
+        Accès réservé aux administrateurs
+      </span>
+    </div>
+  );
+}
+
 export function DbAdmin({ windowId }: AppProps) {
+  const [access, setAccess] = useState<"pending" | "granted" | "denied">("pending");
+
+  useEffect(() => {
+    fetch("/api/admin/users")
+      .then((r) => r.status === 403 ? "denied" : "granted")
+      .then(setAccess)
+      .catch(() => setAccess("denied"));
+  }, []);
+
+  if (access === "pending") return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", background: "var(--t-bg)", fontFamily: "var(--t-font-body)", fontSize: "var(--t-text-sm)", color: "var(--t-text-muted)" }}>
+      Vérification…
+    </div>
+  );
+
+  if (access === "denied") return <AccessDenied />;
+
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "var(--t-bg)" }}>
       <div style={{
