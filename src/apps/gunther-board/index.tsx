@@ -628,8 +628,8 @@ function TicketCard({
         backgroundColor: isSelected ? "var(--t-card-hover)" : "#fff",
         cursor: "grab",
         color: "var(--t-text)",
-        
-
+        opacity: isDragging ? 0.3 : 1,
+        transition: "opacity 0.1s",
         position: "relative",
         overflow: "hidden",
         flexShrink: 0,
