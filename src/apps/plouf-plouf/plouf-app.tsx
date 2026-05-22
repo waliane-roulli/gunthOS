@@ -302,7 +302,7 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
         {/* Winner container */}
         <div
           ref={winnerContainerRef}
-          className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 z-[99999] pointer-events-none hidden max-w-[95vw] px-5"
+          className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-[99999] pointer-events-none hidden max-w-[95vw] px-5"
         >
           {/* Winner big text */}
           <div
@@ -330,7 +330,7 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
           {/* Winner sub text */}
           <div
             ref={winnerSubRef}
-            className="font-[family-name:var(--font-vt323)] font-bold text-[clamp(1rem,4vw,2.5rem)] pointer-events-none text-center tracking-[4px]"
+            className="font-[family-name:var(--font-vt323)] font-bold text-[clamp(1rem,4vw,2.5rem)] pointer-events-none text-center tracking-[4px] whitespace-nowrap"
             style={{
               position: "relative",
               zIndex: -1,
