@@ -1,0 +1,2 @@
+CREATE UNIQUE INDEX `linked_gunth_endorsements_pair_idx` ON `linked_gunth_endorsements` (`from_user_id`,`to_user_id`,`skill_name`);--> statement-breakpoint
+CREATE UNIQUE INDEX `linked_gunth_recommendations_pair_idx` ON `linked_gunth_recommendations` (`from_user_id`,`to_user_id`);

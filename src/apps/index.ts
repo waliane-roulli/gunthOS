@@ -27,6 +27,7 @@ import { manifest as defrag } from "./defrag/manifest";
 import { manifest as notepad } from "./notepad/manifest";
 import { manifest as printer } from "./printer/manifest";
 import { manifest as ie } from "./ie/manifest";
+import { manifest as linkedGunth } from "./linked-gunth/manifest";
 
 export const APP_REGISTRY: AppManifest[] = [
   // Apps visibles dans le launcher (Start menu + desktop)
@@ -35,6 +36,7 @@ export const APP_REGISTRY: AppManifest[] = [
   directory,
   msn,
   radio,
+  linkedGunth,
 
   // Apps système (ouvertes programmatiquement, pas dans le launcher)
   myComputer,

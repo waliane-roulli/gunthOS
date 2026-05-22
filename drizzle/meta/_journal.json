@@ -22,6 +22,20 @@
       "when": 1779304359146,
       "tag": "0002_grey_carmella_unuscione",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1779436943275,
+      "tag": "0003_tranquil_marvel_apes",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1779438286753,
+      "tag": "0004_sharp_maelstrom",
+      "breakpoints": true
     }
   ]
 }

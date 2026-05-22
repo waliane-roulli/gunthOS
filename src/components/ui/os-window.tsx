@@ -31,6 +31,7 @@ export function OsWindow({ win, children }: OsWindowProps) {
   const dragOffset = useRef({ x: 0, y: 0 });
   const resizing = useRef<ResizeEdge | null>(null);
   const resizeStart = useRef({ mx: 0, my: 0, x: 0, y: 0, w: 0, h: 0 });
+  const contentRef = useRef<HTMLDivElement>(null);
   const winRef = useRef(win);
   winRef.current = win;
 
@@ -76,11 +77,13 @@ export function OsWindow({ win, children }: OsWindowProps) {
 
     const onMouseMove = (e: MouseEvent) => {
       if (dragging.current) {
+        if (contentRef.current) contentRef.current.style.pointerEvents = "none";
         const x = e.clientX - dragOffset.current.x;
         const y = Math.max(40, e.clientY - dragOffset.current.y);
         moveWindow(winId, x, y);
         return;
       }
+      if (resizing.current && contentRef.current) contentRef.current.style.pointerEvents = "none";
 
       if (!resizing.current) return;
       const edge = resizing.current;
@@ -93,27 +96,32 @@ export function OsWindow({ win, children }: OsWindowProps) {
       if (edge.includes("e")) newW = Math.max(MIN_W, w + dx);
       if (edge.includes("s")) newH = Math.max(MIN_H, h + dy);
       if (edge.includes("w")) {
-        newW = Math.max(MIN_W, w - dx);
-        newX = x + (w - newW);
+        const rawW = w - dx;
+        newW = Math.max(MIN_W, rawW);
+        newX = rawW < MIN_W ? x + w - MIN_W : x + dx;
       }
       if (edge.includes("n")) {
-        newH = Math.max(MIN_H, h - dy);
-        newY = Math.max(40, y + (h - newH));
+        const rawH = h - dy;
+        newH = Math.max(MIN_H, rawH);
+        newY = Math.max(40, rawH < MIN_H ? y + h - MIN_H : y + dy);
       }
 
       resizeWindow(winId, newW, newH, newX, newY);
     };
 
-    const onMouseUp = () => {
+    const resetDrag = () => {
       dragging.current = false;
       resizing.current = null;
+      if (contentRef.current) contentRef.current.style.pointerEvents = "";
     };
 
     window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
+    window.addEventListener("mouseup", resetDrag);
+    window.addEventListener("blur", resetDrag);
     return () => {
       window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
+      window.removeEventListener("mouseup", resetDrag);
+      window.removeEventListener("blur", resetDrag);
     };
   }, [win.id, moveWindow, resizeWindow]);
 
@@ -155,7 +163,6 @@ export function OsWindow({ win, children }: OsWindowProps) {
         borderRightColor: isActive ? "var(--t-border-dark)" : "var(--t-border-light)",
         borderRadius: "var(--t-window-radius)",
         boxShadow: isActive ? "var(--t-window-shadow)" : "none",
-        overflow: "hidden",
       }}
       onMouseDown={() => { if (!isActive) focusWindow(win.id); }}
     >
@@ -207,7 +214,11 @@ export function OsWindow({ win, children }: OsWindowProps) {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-auto">{children}</div>
+      <div
+        ref={contentRef}
+        className="flex-1 overflow-auto min-h-0"
+        style={{ borderRadius: "0 0 var(--t-window-radius) var(--t-window-radius)" }}
+      >{children}</div>
     </div>
   );
 }
