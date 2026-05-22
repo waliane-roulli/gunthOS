@@ -108,7 +108,7 @@ export const linkedGunthReactions = sqliteTable("linked_gunth_reactions", {
   userId: text("user_id").references(() => user.id, { onDelete: "cascade" }),
   // used when userId is null
   botName: text("bot_name"),
-  reaction: text("reaction", { enum: ["Inspirant", "Bravo", "Fascinant"] }).notNull(),
+  reaction: text("reaction", { enum: ["Inspirant", "Bravo", "Fascinant", "Instructif", "Drôle", "Soutien"] }).notNull(),
 });
 
 export const linkedGunthComments = sqliteTable("linked_gunth_comments", {
