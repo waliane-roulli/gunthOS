@@ -35,6 +35,18 @@ export async function GET(req: NextRequest) {
         .get()
     : false;
 
+  // If requesting own follows list (no target, just ?me=1)
+  const me = searchParams.get("me");
+  if (me && myId) {
+    const followingIds = db()
+      .select({ followedId: linkedGunthFollows.followedId })
+      .from(linkedGunthFollows)
+      .where(eq(linkedGunthFollows.followerId, myId))
+      .all()
+      .map((r) => r.followedId);
+    return NextResponse.json({ followingIds });
+  }
+
   return NextResponse.json({
     followers: followersRow?.count ?? 0,
     following: followingRow?.count ?? 0,

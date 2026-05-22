@@ -822,14 +822,36 @@ function PostCard({ post, user, expandedPosts, setExpandedPosts, handleReact, on
 
 // ── Profil Edit Dialog ─────────────────────────────────────────────────────────
 
-function ProfilEditDialog({ onClose, playClick, playPop }: { onClose: () => void; playClick: () => void; playPop: () => void; }) {
+function ProfilEditDialog({ initialHeadline, initialLocation, onClose, onSaved, playClick, playPop }: {
+  initialHeadline: string | null;
+  initialLocation: string | null;
+  onClose: () => void;
+  onSaved: (headline: string, location: string) => void;
+  playClick: () => void;
+  playPop: () => void;
+}) {
+  const [headline, setHeadline] = useState(initialHeadline ?? "");
+  const [location, setLocation] = useState(initialLocation ?? "");
+  const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const fields = [
-    { label: "Titre de poste", placeholder: "Chief Disruption Officer" },
-    { label: "Slogan personnel", placeholder: "Je ne cherche pas un emploi, je cherche un sens." },
-    { label: "Passion principale", placeholder: "Entrepreneuriat / Paddle / Méditation" },
-    { label: "Réalisations", placeholder: "J'ai transformé un Excel en startup." },
-  ];
+
+  async function handleSave() {
+    setSaving(true);
+    try {
+      const res = await fetch("/api/linked-gunth/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ headline: headline.trim() || null, location: location.trim() || null }),
+      });
+      if (res.ok) {
+        playPop();
+        setSaved(true);
+        onSaved(headline.trim(), location.trim());
+      }
+    } finally {
+      setSaving(false);
+    }
+  }
 
   return (
     <DialogShell title="✏️ Modifier le profil" onClose={() => { playClick(); onClose(); }} width="400px">
@@ -842,18 +864,40 @@ function ProfilEditDialog({ onClose, playClick, playPop }: { onClose: () => void
         </div>
       ) : (
         <>
-          {fields.map((f) => (
-            <div key={f.label} className="mb-2">
-              <div className="text-xs mb-0.5" style={{ color: "var(--t-text-muted)", fontFamily: "var(--t-font-display)" }}>{f.label}</div>
-              <div className="border-2" style={{ ...sunkenStyle() }}>
-                <input type="text" placeholder={f.placeholder} className="w-full border-none outline-none px-2 py-1 text-sm" style={{ fontFamily: "var(--t-font-body)", backgroundColor: "var(--t-app-bg)", color: "var(--t-app-text)" }} />
-              </div>
+          <div className="mb-2">
+            <div className="text-xs mb-0.5" style={{ color: "var(--t-text-muted)", fontFamily: "var(--t-font-display)" }}>Titre / Headline</div>
+            <div className="border-2" style={{ ...sunkenStyle() }}>
+              <input
+                type="text"
+                value={headline}
+                onChange={(e) => setHeadline(e.target.value)}
+                placeholder="Chief Disruption Officer | En recherche d'authenticité"
+                maxLength={120}
+                className="w-full border-none outline-none px-2 py-1 text-sm"
+                style={{ fontFamily: "var(--t-font-body)", backgroundColor: "var(--t-app-bg)", color: "var(--t-app-text)" }}
+              />
             </div>
-          ))}
+          </div>
+          <div className="mb-2">
+            <div className="text-xs mb-0.5" style={{ color: "var(--t-text-muted)", fontFamily: "var(--t-font-display)" }}>Localisation</div>
+            <div className="border-2" style={{ ...sunkenStyle() }}>
+              <input
+                type="text"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder="Paris, Île-de-France"
+                maxLength={80}
+                className="w-full border-none outline-none px-2 py-1 text-sm"
+                style={{ fontFamily: "var(--t-font-body)", backgroundColor: "var(--t-app-bg)", color: "var(--t-app-text)" }}
+              />
+            </div>
+          </div>
           <div className="text-xs mt-1 mb-2" style={{ color: "var(--t-text-subtle)", fontFamily: "var(--t-font-display)" }}>* Les champs vides seront remplis par l&apos;IA Premium (29,99€/mois)</div>
           <div className="flex gap-1.5 justify-end">
             <button onClick={() => { playClick(); onClose(); }} className="px-2 py-1 text-sm border-2" style={{ fontFamily: "var(--t-font-body)", ...raisedStyle() }}>Annuler</button>
-            <button onClick={() => { playPop(); setSaved(true); }} className="px-2 py-1 text-sm border-2" style={{ fontFamily: "var(--t-font-body)", ...raisedStyle(true) }}>💾 Enregistrer</button>
+            <button onClick={handleSave} disabled={saving} className="px-2 py-1 text-sm border-2 disabled:opacity-50" style={{ fontFamily: "var(--t-font-body)", ...raisedStyle(true) }}>
+              {saving ? "Enregistrement…" : "💾 Enregistrer"}
+            </button>
           </div>
         </>
       )}
@@ -1128,6 +1172,71 @@ function AddRecommendationDialog({ currentUserId, onClose, onSubmit, playClick, 
   );
 }
 
+// ── Inline Edit Field ─────────────────────────────────────────────────────────
+
+function InlineEditField({ value, placeholder, maxLength, disabled, onSave, style }: {
+  value: string;
+  placeholder: string;
+  maxLength: number;
+  disabled: boolean;
+  onSave: (val: string) => Promise<void>;
+  style?: React.CSSProperties;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value);
+  const [saving, setSaving] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => { setDraft(value); }, [value]);
+  useEffect(() => { if (editing) inputRef.current?.focus(); }, [editing]);
+
+  async function handleSave() {
+    if (saving) return;
+    setSaving(true);
+    await onSave(draft.trim());
+    setSaving(false);
+    setEditing(false);
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent) {
+    if (e.key === "Enter") { e.preventDefault(); handleSave(); }
+    if (e.key === "Escape") { setDraft(value); setEditing(false); }
+  }
+
+  if (editing) {
+    return (
+      <div className="flex items-center gap-1 my-0.5">
+        <div className="flex-1 border-2" style={{ ...sunkenStyle() }}>
+          <input
+            ref={inputRef}
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={handleKeyDown}
+            onBlur={handleSave}
+            maxLength={maxLength}
+            className="w-full border-none outline-none px-1.5 py-0.5"
+            style={{ ...style, backgroundColor: "var(--t-app-bg)", color: "var(--t-app-text)" }}
+          />
+        </div>
+        {saving && <span className="text-xs animate-[blink_0.5s_step-end_infinite]" style={{ color: "var(--t-text-muted)" }}>💾</span>}
+      </div>
+    );
+  }
+
+  const display = value || placeholder;
+  return (
+    <div
+      className={`my-0.5 truncate ${!disabled ? "cursor-pointer hover:underline hover:opacity-80" : ""}`}
+      style={{ ...style, opacity: value ? 1 : 0.5 }}
+      onClick={() => { if (!disabled) setEditing(true); }}
+      title={!disabled ? "Cliquer pour modifier" : undefined}
+    >
+      {display}
+      {!disabled && <span className="ml-1 text-[0.6rem] opacity-40">✏️</span>}
+    </div>
+  );
+}
+
 // ── Main Component ─────────────────────────────────────────────────────────────
 
 export function LinkedGunthApp(_: AppProps) {
@@ -1137,6 +1246,7 @@ export function LinkedGunthApp(_: AppProps) {
   const [tab, setTab] = useState<Tab>("feed");
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [posting, setPosting] = useState(false);
   const [newPostText, setNewPostText] = useState("");
   const [showCompose, setShowCompose] = useState(false);
@@ -1179,7 +1289,8 @@ export function LinkedGunthApp(_: AppProps) {
 
   const showToast = useCallback((msg: string) => { setToast(msg); }, []);
 
-  const fetchPosts = useCallback(async () => {
+  const fetchPosts = useCallback(async (isManualRefresh = false) => {
+    if (isManualRefresh) setRefreshing(true);
     try {
       const res = await fetch("/api/linked-gunth/posts?limit=30");
       if (!res.ok) return;
@@ -1187,6 +1298,7 @@ export function LinkedGunthApp(_: AppProps) {
       setPosts(data.posts);
     } catch { /* ignore */ } finally {
       setLoading(false);
+      if (isManualRefresh) setRefreshing(false);
     }
   }, []);
 
@@ -1203,10 +1315,18 @@ export function LinkedGunthApp(_: AppProps) {
   const fetchFollows = useCallback(async () => {
     if (!user) return;
     try {
-      const res = await fetch(`/api/linked-gunth/follows?userId=${user.id}`);
-      if (!res.ok) return;
-      const data = (await res.json()) as { followers: number };
-      setFollowersCount(data.followers);
+      const [countRes, meRes] = await Promise.all([
+        fetch(`/api/linked-gunth/follows?userId=${user.id}`),
+        fetch(`/api/linked-gunth/follows?me=1`),
+      ]);
+      if (countRes.ok) {
+        const data = (await countRes.json()) as { followers: number };
+        setFollowersCount(data.followers);
+      }
+      if (meRes.ok) {
+        const data = (await meRes.json()) as { followingIds?: string[] };
+        if (data.followingIds) setFollowedUsers(new Set(data.followingIds));
+      }
     } catch { /* ignore */ }
   }, [user]);
 
@@ -1552,10 +1672,23 @@ export function LinkedGunthApp(_: AppProps) {
           {/* FEED */}
           {tab === "feed" && (
             <>
-              {user && !showCompose && (
-                <button onClick={() => { playClick(); setShowCompose(true); }} className="w-full mb-2 py-2 text-sm border-2" style={{ fontFamily: "var(--t-font-display)", ...raisedStyle(true) }}>
-                  ✏️ Publier un post
-                </button>
+              {!showCompose && (
+                <div className="flex gap-1 mb-2">
+                  {user && (
+                    <button onClick={() => { playClick(); setShowCompose(true); }} className="flex-1 py-2 text-sm border-2" style={{ fontFamily: "var(--t-font-display)", ...raisedStyle(true) }}>
+                      ✏️ Publier un post
+                    </button>
+                  )}
+                  <button
+                    onClick={() => { playBip(); fetchPosts(true); }}
+                    disabled={refreshing}
+                    className="px-3 py-2 text-sm border-2 disabled:opacity-50"
+                    style={{ fontFamily: "var(--t-font-display)", ...raisedStyle(), transition: "transform 0.15s" }}
+                    title="Actualiser le fil"
+                  >
+                    <span className={refreshing ? "animate-spin inline-block" : "inline-block"}>⟳</span>
+                  </button>
+                </div>
               )}
 
               {showCompose && user && (
@@ -1741,14 +1874,30 @@ export function LinkedGunthApp(_: AppProps) {
               <div className="px-3 pb-3 -mt-5">
                 <Avatar src={avatarDataUrl} emoji="👤" size={52} />
                 <div className="mt-2 flex justify-between items-start gap-2">
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <div className="font-bold" style={{ color: "var(--t-text)", fontFamily: "var(--t-font-display)" }}>{user?.name ?? "Visiteur"}</div>
-                    <div className="text-sm" style={{ color: "var(--t-text-muted)", fontFamily: "var(--t-font-display)" }}>
-                      {profileData?.headline ?? "En recherche de nouvelles opportunités | Ouvert au monde 🌍"}
-                    </div>
-                    <div className="text-xs" style={{ color: "var(--t-text-subtle)", fontFamily: "var(--t-font-display)" }}>
-                      {profileData?.location ?? "Paris, Île-de-France"}
-                    </div>
+                    <InlineEditField
+                      value={profileData?.headline ?? ""}
+                      placeholder="En recherche de nouvelles opportunités | Ouvert au monde 🌍"
+                      maxLength={120}
+                      disabled={!user}
+                      onSave={async (val) => {
+                        setProfileData((prev) => prev ? { ...prev, headline: val || null } : prev);
+                        await fetch("/api/linked-gunth/profile", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ headline: val || null }) });
+                      }}
+                      style={{ color: "var(--t-text-muted)", fontFamily: "var(--t-font-display)", fontSize: "0.875rem" }}
+                    />
+                    <InlineEditField
+                      value={profileData?.location ?? ""}
+                      placeholder="Paris, Île-de-France"
+                      maxLength={80}
+                      disabled={!user}
+                      onSave={async (val) => {
+                        setProfileData((prev) => prev ? { ...prev, location: val || null } : prev);
+                        await fetch("/api/linked-gunth/profile", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ location: val || null }) });
+                      }}
+                      style={{ color: "var(--t-text-subtle)", fontFamily: "var(--t-font-display)", fontSize: "0.75rem" }}
+                    />
                     <div className="text-xs mt-0.5" style={{ color: "var(--t-accent)", fontFamily: "var(--t-font-display)" }}>
                       {followersCount} relations ·{" "}
                       <span className="cursor-pointer underline" onClick={() => { playBip(); setShowPremium(true); }}>🔒 500+ avec Premium</span>
@@ -1945,7 +2094,18 @@ export function LinkedGunthApp(_: AppProps) {
       {showConfetti && <Confetti onDone={() => setShowConfetti(false)} />}
 
       {/* ── Profil Edit dialog ── */}
-      {showProfilEdit && <ProfilEditDialog onClose={() => setShowProfilEdit(false)} playClick={playClick} playPop={playPop} />}
+      {showProfilEdit && (
+        <ProfilEditDialog
+          initialHeadline={profileData?.headline ?? null}
+          initialLocation={profileData?.location ?? null}
+          onClose={() => setShowProfilEdit(false)}
+          onSaved={(headline, location) => {
+            setProfileData((prev) => prev ? { ...prev, headline: headline || null, location: location || null } : prev);
+          }}
+          playClick={playClick}
+          playPop={playPop}
+        />
+      )}
 
       {/* ── Add Experience dialog ── */}
       {showAddExperience && (
