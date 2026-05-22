@@ -914,6 +914,31 @@ function BroadcastPanel() {
   const notify = useNotify();
   const [sending, setSending] = useState(false);
   const [lastResult, setLastResult] = useState<{ reached: number; ts: number } | null>(null);
+  const [versionStr, setVersionStr] = useState("");
+  const [changelog, setChangelog] = useState("");
+  const [sendingVersion, setSendingVersion] = useState(false);
+
+  async function sendVersion() {
+    if (!versionStr.trim()) { notify({ type: "warning", title: "Version requise" }); return; }
+    setSendingVersion(true);
+    try {
+      const res = await fetch("/api/admin/broadcast-version", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ version: versionStr.trim(), changelog: changelog.trim() || undefined }),
+      });
+      const data = await res.json() as { ok?: boolean; reached?: number; error?: string };
+      if (data.ok) {
+        notify({ type: "success", title: `Version ${versionStr} diffusée à ${data.reached} client${(data.reached ?? 0) !== 1 ? "s" : ""}` });
+        setVersionStr("");
+        setChangelog("");
+      } else {
+        notify({ type: "error", title: "Erreur", message: data.error });
+      }
+    } finally {
+      setSendingVersion(false);
+    }
+  }
 
   const panelBox: React.CSSProperties = {
     border: "2px solid",
@@ -1024,6 +1049,87 @@ function BroadcastPanel() {
               send(p);
             }}
           />
+        </div>
+
+        {/* Nouvelle version */}
+        <div style={{ flex: 1, maxWidth: 300 }}>
+          <div style={panelBox}>
+            <div style={panelTitle}>Nouvelle version 🚀</div>
+            <div style={{ padding: 8, display: "flex", flexDirection: "column", gap: 8 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                <label style={{ fontFamily: "var(--t-font-body)", fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)" }}>
+                  Numéro de version *
+                </label>
+                <input
+                  value={versionStr}
+                  onChange={(e) => setVersionStr(e.target.value)}
+                  placeholder="ex: 1.4.2"
+                  style={{
+                    fontFamily: "var(--t-font-body)",
+                    fontSize: "var(--t-text-sm)",
+                    color: "var(--t-text)",
+                    background: "var(--t-app-bg)",
+                    border: "2px solid",
+                    borderTopColor: "var(--t-border-dark)",
+                    borderLeftColor: "var(--t-border-dark)",
+                    borderBottomColor: "var(--t-border-light)",
+                    borderRightColor: "var(--t-border-light)",
+                    padding: "4px 6px",
+                    outline: "none",
+                    width: "100%",
+                    boxSizing: "border-box",
+                  }}
+                />
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                <label style={{ fontFamily: "var(--t-font-body)", fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)" }}>
+                  Changelog (optionnel)
+                </label>
+                <textarea
+                  value={changelog}
+                  onChange={(e) => setChangelog(e.target.value)}
+                  placeholder="Ce qui a changé…"
+                  rows={3}
+                  style={{
+                    fontFamily: "var(--t-font-body)",
+                    fontSize: "var(--t-text-sm)",
+                    color: "var(--t-text)",
+                    background: "var(--t-app-bg)",
+                    border: "2px solid",
+                    borderTopColor: "var(--t-border-dark)",
+                    borderLeftColor: "var(--t-border-dark)",
+                    borderBottomColor: "var(--t-border-light)",
+                    borderRightColor: "var(--t-border-light)",
+                    padding: "4px 6px",
+                    outline: "none",
+                    resize: "vertical",
+                    width: "100%",
+                    boxSizing: "border-box",
+                  }}
+                />
+              </div>
+              <button
+                disabled={sendingVersion}
+                onClick={sendVersion}
+                style={{
+                  fontFamily: "var(--t-font-display)",
+                  fontSize: "var(--t-text-sm)",
+                  color: "var(--t-text)",
+                  background: "var(--t-bg)",
+                  border: "2px solid",
+                  borderTopColor: "var(--t-border-light)",
+                  borderLeftColor: "var(--t-border-light)",
+                  borderBottomColor: "var(--t-border-dark)",
+                  borderRightColor: "var(--t-border-dark)",
+                  padding: "6px 10px",
+                  cursor: sendingVersion ? "wait" : "pointer",
+                  opacity: sendingVersion ? 0.6 : 1,
+                }}
+              >
+                {sendingVersion ? "Envoi…" : "🚀 Diffuser la version"}
+              </button>
+            </div>
+          </div>
         </div>
 
       </div>
