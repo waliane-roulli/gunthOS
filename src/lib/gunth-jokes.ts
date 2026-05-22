@@ -66,106 +66,107 @@ export const GUNTH_REBOOT_MESSAGES = [
 ];
 
 export const PEGGLE_TIPS = [
-  "Astuce : viser sert parfois à quelque chose.",
-  "Astuce : les pegs orange bougent quand vous ne regardez pas.",
-  "Astuce : souffler sur l'écran améliore la précision de 0%.",
-  "Astuce : fermer les yeux au moment de tirer est une technique avancée.",
-  "Astuce : la physique est approximative. Faites-lui confiance quand même.",
-  "Astuce : chaque tir raté est une opportunité de blâmer le moteur.",
-  "Astuce : la balle fait ce qu'elle veut. Comme tout le monde.",
-  "Astuce : notre IA a prévu votre score depuis le début.",
-  "Astuce : appuyer plus fort sur la souris n'aide pas. Essayez quand même.",
-  "Astuce : les pros prétendent que c'était intentionnel.",
+  "Cliquez pour tirer • votre précision est… caractéristique.",
+  "Cliquez pour tirer • les pegs orange prient pour vous. Ça ne suffira pas.",
+  "Cliquez pour tirer • l'IA a calculé votre score optimal. Elle ne le dira pas.",
+  "Cliquez pour tirer • ce niveau a été terminé en 3 coups. Pas par vous.",
+  "Cliquez pour tirer • fermer les yeux ne change rien. C'est reposant quand même.",
+  "Cliquez pour tirer • le record est 847 points. Bon courage.",
+  "Cliquez pour tirer • appuyer plus fort ne sert à rien. Mais continuez.",
+  "Cliquez pour tirer • la physique est configurable. Demandez à l'admin.",
+  "Cliquez pour tirer • essayez de viser. Pour changer.",
+  "Cliquez pour tirer • un enfant de 7 ans a fini ce niveau. Une seule fois. Mais quand même.",
 ];
 
 
 export const PROFILE_SAVE_MESSAGES = [
-  "✅ Sauvegardé dans C:\\USERS\\MOI\\PROFIL.txt",
-  "✅ Profil écrit sur la disquette 1 sur 1. Stockez-la en lieu sûr.",
-  "✅ Données envoyées au serveur. Réponse estimée dans 3 à 5 jours ouvrés.",
+  "✅ Profil sauvegardé. Personne ne lira votre bio mais elle est là.",
+  "✅ Modifications enregistrées. Le serveur a haussé les épaules.",
+  "✅ Sauvegardé sur le cloud (un Raspberry Pi dans un placard à Roubaix).",
   "✅ Profil compressé en ZIP protégé par un mot de passe qu'on a oublié.",
-  "✅ Modifications enregistrées sur bande magnétique. Quelque part.",
-  "✅ Sauvegarde effectuée sur le serveur principal (un Raspberry Pi dans un tiroir).",
-  "✅ Profil mis à jour. Ancienne version conservée sur disquette de secours.",
+  "✅ Données inscrites sur bande magnétique. Quelque part dans un tiroir.",
+  "✅ Sauvegardé dans C:\\USERS\\MOI\\PROFIL.txt",
+  "✅ Mis à jour. L'ancienne version est conservée par sécurité. (Non.)",
 ];
 
 export const SETTINGS_RAM_STATUSES = [
-  "Mémoire : suffisante",
-  "RAM : 640 Ko (largement assez)",
-  "RAM : presque pleine (fermez le Solitaire)",
-  "Mémoire virtuelle : en cours de swap depuis 2002",
-  "RAM libre : 47 Ko. Évitez d'ouvrir d'autres fenêtres.",
-  "Mémoire : optimisée par l'IA (résultats non garantis)",
+  "Mémoire : suffisante (ne demandez pas pour combien de temps)",
+  "RAM : au bord du gouffre. Fermez le Solitaire.",
+  "RAM : 640 Ko de libres. C'est largement suffisant pour 1998.",
+  "Mémoire virtuelle : en swap depuis 2002. Tout va bien.",
+  "RAM libre : 47 Ko. Évitez d'ouvrir quoi que ce soit.",
+  "Mémoire : optimisée par l'IA (résultats non garantis, remboursements refusés)",
 ];
 
 export const SETTINGS_LICENSES = [
-  "Licence : aucune",
   "Licence : expirée en 2002",
   "Licence : en cours de renouvellement depuis 1999",
-  "Licence : shareware — payez si vous aimez",
-  "Licence : creative commons © Gunth Corp™",
-  "Licence : volée. Nous nous en excusons.",
+  "Licence : transmise oralement de père en fils",
+  "Licence : achetée avec des points de fidélité Carrefour",
+  "Licence : creative commons © Gunth Corp™ — tous droits flous",
+  "Licence : shareware — payez si l'envie vous prend",
+  "Licence : aucune. Assumée.",
 ];
 
 export const GUNTHER_LOADING_HINTS = [
-  "(Le serveur fait ce qu'il peut.)",
-  "(Les tickets arrivent. Ou pas.)",
-  "(Connexion au sous-sol du bâtiment...)",
-  "(La base de données réfléchit encore.)",
-  "(Interrogation du serveur de 1998...)",
-  "(Patience — les données pédalent.)",
-  "(Le hamster tourne. Vite.)",
+  "(Le stand-up a pris du retard.)",
+  "(La story-pointing de cette tâche dure depuis 3h.)",
+  "(Le serveur est en télétravail aujourd'hui.)",
+  "(Sprint en cours. Les tickets pas vraiment.)",
+  "(Synchronisation avec les volontés de l'univers.)",
+  "(Le kanban réfléchit à sa vie.)",
+  "(Le serveur fait ce qu'il peut. Ce n'est pas beaucoup.)",
 ];
 
 export const DIRECTORY_LOADING_MSGS = [
-  "Téléchargement de l'annuaire...",
-  "Consultation du Minitel en cours...",
+  "Chargement de la liste des gens qui existent...",
+  "Interrogation du bottin 3617 GUNTH en cours...",
+  "Requête envoyée. Réponse attendue avant lundi.",
   "Chargement des profils depuis la disquette...",
-  "Interrogation du serveur annuaire... (composez le 3617)",
   "Récupération de l'annuaire pages jaunes...",
-  "Synchronisation du bottin avec le serveur de 1998...",
+  "Synchronisation des utilisateurs avec le serveur de 1998...",
 ];
 
 export const DIRECTORY_EMPTY_SEARCH_MSGS = [
-  "Aucun utilisateur trouvé. Vérifiez l'orthographe.",
-  "Introuvable. Avez-vous essayé sans fautes ?",
-  "Aucun résultat. Le secteur disque est peut-être corrompu.",
-  "Cet utilisateur n'existe pas — ou s'est défragmenté.",
-  "0 résultat. La recherche a quand même été facturée.",
-  "Personne par ce nom. Erreur de frappe ? De personne ?",
+  "Introuvable. Cette personne a peut-être changé de nom pour vous éviter.",
+  "0 résultat. Vérifiez que vous connaissez vraiment leur prénom.",
+  "Personne par ce nom. Le secteur disque est peut-être corrompu.",
+  "Aucun résultat. Essayez d'être moins précis.",
+  "Introuvable. Mais la recherche a quand même été décomptée.",
+  "Cet utilisateur n'existe pas — ou s'est défragmenté depuis.",
 ];
 
 export const DIRECTORY_NO_USERS_MSGS = [
-  "Aucun utilisateur inscrit. Soyez le premier !",
-  "Annuaire vide. Le serveur est bien seul.",
-  "0 utilisateur. Le modem doit être débranché.",
-  "Personne ici. C'est plus vide que votre corbeille.",
-  "L'annuaire existe. Les utilisateurs, non.",
+  "Aucun utilisateur inscrit. Soyez le premier — ou pas.",
+  "Annuaire vide. Le serveur se sent seul.",
+  "0 membre. Le modem est probablement débranché.",
+  "Personne ici. Plus vide que votre corbeille après une grosse semaine.",
+  "L'annuaire existe. Les habitants, non.",
 ];
 
 export const LNK_POST_PUBLISH_TOASTS = [
-  "🚀 Post publié ! Vos 3 relations sont notifiées.",
-  "📣 Post en ligne ! L'algorithme décidera du reste.",
-  "✅ Publié ! Sandrine R. l'a peut-être déjà ignoré.",
-  "🌍 Post live ! Portée estimée : 3 personnes.",
-  "🚀 Publié avec succès dans le vide intersidéral.",
+  "📈 Post publié. L'algorithme va décider si vous existez.",
+  "🚀 Publié ! Vos 3 relations l'ont vu. L'une d'elles était vous.",
+  "✅ En ligne ! Sandrine est en train de rédiger 'Tellement vrai.'",
+  "📣 Diffusé dans le vide professionnel. Quelqu'un réagira avec 🙏",
+  "🚀 Post live ! Jean-Kévin l'a déjà partagé sans le lire.",
 ];
 
 export const LNK_AI_TOASTS = [
-  "✨ L'IA a généré votre authenticité.",
-  "🤖 L'IA a pensé à votre place. Très professionnel.",
-  "✨ Contenu généré avec 100% d'authenticité artificielle.",
-  "🤖 Optimisé pour le reach et la disruption synergique.",
-  "✨ Votre essence entrepreneuriale a été capturée.",
-  "🤖 Post co-écrit avec une IA qui ne vous connaît pas.",
+  "🤖 L'IA a authentifié votre authenticité de manière authentique.",
+  "✨ Post rédigé en 1,1s par une IA formée sur 10 000 posts LinkedIn. Ça se voit.",
+  "🧠 Thought leadership généré automatiquement. Comme toujours.",
+  "🤖 Contenu co-écrit avec une IA qui ne vous connaît pas du tout.",
+  "✨ Votre essence disrupto-bienveillante a été capturée par l'algorithme.",
+  "🤖 Authenticité simulée avec succès. Personne ne verra la différence.",
 ];
 
 export const LNK_CONNECTION_TOASTS: ((n: number) => string)[] = [
   (n) => `🤝 Connexion acceptée ! Vous avez maintenant ${n} relations.`,
-  (n) => `🤝 +1 relation ! Bienvenue dans votre réseau de ${n} personnes.`,
-  (n) => `🤝 Connecté(e) ! Total : ${n} relations (qualité non garantie).`,
-  (n) => `🤝 Réseau étendu ! ${n} relations. La carrière va sûrement décoller.`,
-  (n) => `🤝 Accepté(e) ! ${n} relations maintenant. Sandrine est jalouse.`,
+  (n) => `🤝 +1 relation. ${n} personnes dont vous ne connaissez pas les prénoms.`,
+  (n) => `🤝 Accepté(e) ! ${n} relations. Qualité non vérifiée.`,
+  (n) => `🤝 Réseau étendu à ${n} personnes. La carrière va décoller. Sûrement.`,
+  (n) => `🤝 ${n} relations maintenant. Sandrine R. prend note.`,
 ];
 
 export function pickRandom<T>(arr: T[]): T {

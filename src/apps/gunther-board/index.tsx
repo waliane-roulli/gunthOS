@@ -81,22 +81,22 @@ function ScopeSelect({
 
 const COLUMNS: { key: Status; label: string; icon: string; accentColor: string; emptyMsgs: string[] }[] = [
   { key: "todo", label: "À FAIRE", icon: "📥", accentColor: "var(--t-text-muted)", emptyMsgs: [
+    "Backlog vide.\nQuelqu'un a tout mis en 'En cours'.",
     "Rien ici.\nProfitez-en, ça durera pas.",
-    "Colonne vide.\nAppréciez le calme.",
-    "Aucune tâche.\nQuelqu'un les planque.",
-    "Propre ici.\nC'est louche.",
+    "À faire : zéro.\nC'est statistiquement impossible.",
+    "Propre ici.\nC'est louche. Très louche.",
   ]},
   { key: "in_progress", label: "EN COURS", icon: "⚙️", accentColor: "#c88a00", emptyMsgs: [
+    "En cours : rien.\nL'équipe est en réunion à ce sujet.",
     "Personne ne travaille.\nC'est suspect.",
-    "En cours : rien.\nC'est une situation.",
-    "Vide ici.\nBonne productivité équipe.",
-    "Aucun travail en cours.\nBravo ou honte.",
+    "Vide.\nComme le compte rendu du dernier sprint.",
+    "Aucune tâche active.\nLe velocity chart va être intéressant.",
   ]},
   { key: "done", label: "TERMINÉ", icon: "✅", accentColor: "#2a6e28", emptyMsgs: [
-    "Aucun ticket terminé.\nÇa arrive.",
-    "0 tickets fermés.\nDéfragmentez l'équipe.",
-    "Rien de fait.\nMais on y croit.",
-    "Aucune victoire ici.\nPour l'instant.",
+    "0 tickets fermés.\nMais l'équipe était très busy.",
+    "Aucun ticket terminé.\nÇa arrive. Souvent.",
+    "Rien de livré.\nEn revanche le café a été bu.",
+    "Terminé : néant.\nLe retro va être intéressant.",
   ]},
 ];
 
