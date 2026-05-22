@@ -17,7 +17,6 @@ import { useLocalStorage } from "@/lib/hooks/use-local-storage";
 import { useVisitorCount } from "@/lib/hooks/use-visitor-count";
 import { useDraggable } from "@/lib/hooks/use-draggable";
 import { useWinnerHistory } from "./use-winner-history";
-import { pickRandom, PLOUF_MARQUEES } from "@/lib/gunth-jokes";
 import { DEFAULT_OPTIONS, PRESETS } from "@/types/plouf-plouf";
 import type { CelebrationOptions, DrawMode, PresetName, CelebType } from "@/types/plouf-plouf";
 import { THEMES } from "@/lib/themes";
@@ -75,7 +74,6 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const drag = useDraggable();
-  const [marqueeText] = useState(() => pickRandom(PLOUF_MARQUEES));
 
   const visitorCount = useVisitorCount();
   const winnerHistory = useWinnerHistory();
@@ -478,7 +476,9 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
             }}
           >
             <span className="inline-block pl-[100%] animate-[marqueeScroll_25s_linear_infinite]">
-              {marqueeText}
+              ★ Bienvenue sur Plouf Plouf !! ★ Ajoutez vos éléments et laissez le
+              destin décider ! ★ 100% GRATUIT ★ Sans inscription ★ Fonctionne
+              même sur Netscape 4 !!
             </span>
           </div>
 

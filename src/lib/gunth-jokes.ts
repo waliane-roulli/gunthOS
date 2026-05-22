@@ -78,14 +78,6 @@ export const PEGGLE_TIPS = [
   "Astuce : les pros prétendent que c'était intentionnel.",
 ];
 
-export const PLOUF_MARQUEES = [
-  "★ Bienvenue sur Plouf Plouf !! ★ Ajoutez vos éléments et laissez le destin décider ! ★ 100% GRATUIT ★ Sans inscription ★ Fonctionne même sur Netscape 4 !!",
-  "★ Plouf Plouf — décision impartiale depuis 1997 ★ Le hasard, c'est scientifique ★ Non validé par un comité d'éthique ★ Mais bon ★",
-  "★ Résultat garanti aléatoire ★ Sauf si l'algorithme a ses préférences ★ Aucun remboursement ★ Aucun appel possible ★ Bonne chance ★",
-  "★ 100% équitable ★ Ou presque ★ Conditions générales disponibles sur minitel ★ Délai de réponse : jamais ★ Merci de votre compréhension ★",
-  "★ Le hasard est notre ami ★ Sauf pour le perdant ★ Plouf Plouf décline toute responsabilité ★ Réclamations par fax au 0800-PLOUF ★",
-  "★ Tirage certifié aléatoire ★ Certifié par nous-mêmes ★ Algorithme breveté ★ Brevet déposé en 1998 ★ Toujours en attente d'approbation ★",
-];
 
 export const PROFILE_SAVE_MESSAGES = [
   "✅ Sauvegardé dans C:\\USERS\\MOI\\PROFIL.txt",
@@ -113,6 +105,67 @@ export const SETTINGS_LICENSES = [
   "Licence : shareware — payez si vous aimez",
   "Licence : creative commons © Gunth Corp™",
   "Licence : volée. Nous nous en excusons.",
+];
+
+export const GUNTHER_LOADING_HINTS = [
+  "(Le serveur fait ce qu'il peut.)",
+  "(Les tickets arrivent. Ou pas.)",
+  "(Connexion au sous-sol du bâtiment...)",
+  "(La base de données réfléchit encore.)",
+  "(Interrogation du serveur de 1998...)",
+  "(Patience — les données pédalent.)",
+  "(Le hamster tourne. Vite.)",
+];
+
+export const DIRECTORY_LOADING_MSGS = [
+  "Téléchargement de l'annuaire...",
+  "Consultation du Minitel en cours...",
+  "Chargement des profils depuis la disquette...",
+  "Interrogation du serveur annuaire... (composez le 3617)",
+  "Récupération de l'annuaire pages jaunes...",
+  "Synchronisation du bottin avec le serveur de 1998...",
+];
+
+export const DIRECTORY_EMPTY_SEARCH_MSGS = [
+  "Aucun utilisateur trouvé. Vérifiez l'orthographe.",
+  "Introuvable. Avez-vous essayé sans fautes ?",
+  "Aucun résultat. Le secteur disque est peut-être corrompu.",
+  "Cet utilisateur n'existe pas — ou s'est défragmenté.",
+  "0 résultat. La recherche a quand même été facturée.",
+  "Personne par ce nom. Erreur de frappe ? De personne ?",
+];
+
+export const DIRECTORY_NO_USERS_MSGS = [
+  "Aucun utilisateur inscrit. Soyez le premier !",
+  "Annuaire vide. Le serveur est bien seul.",
+  "0 utilisateur. Le modem doit être débranché.",
+  "Personne ici. C'est plus vide que votre corbeille.",
+  "L'annuaire existe. Les utilisateurs, non.",
+];
+
+export const LNK_POST_PUBLISH_TOASTS = [
+  "🚀 Post publié ! Vos 3 relations sont notifiées.",
+  "📣 Post en ligne ! L'algorithme décidera du reste.",
+  "✅ Publié ! Sandrine R. l'a peut-être déjà ignoré.",
+  "🌍 Post live ! Portée estimée : 3 personnes.",
+  "🚀 Publié avec succès dans le vide intersidéral.",
+];
+
+export const LNK_AI_TOASTS = [
+  "✨ L'IA a généré votre authenticité.",
+  "🤖 L'IA a pensé à votre place. Très professionnel.",
+  "✨ Contenu généré avec 100% d'authenticité artificielle.",
+  "🤖 Optimisé pour le reach et la disruption synergique.",
+  "✨ Votre essence entrepreneuriale a été capturée.",
+  "🤖 Post co-écrit avec une IA qui ne vous connaît pas.",
+];
+
+export const LNK_CONNECTION_TOASTS: ((n: number) => string)[] = [
+  (n) => `🤝 Connexion acceptée ! Vous avez maintenant ${n} relations.`,
+  (n) => `🤝 +1 relation ! Bienvenue dans votre réseau de ${n} personnes.`,
+  (n) => `🤝 Connecté(e) ! Total : ${n} relations (qualité non garantie).`,
+  (n) => `🤝 Réseau étendu ! ${n} relations. La carrière va sûrement décoller.`,
+  (n) => `🤝 Accepté(e) ! ${n} relations maintenant. Sandrine est jalouse.`,
 ];
 
 export function pickRandom<T>(arr: T[]): T {

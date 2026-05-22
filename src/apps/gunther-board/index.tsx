@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { useSoundContext } from "@/lib/contexts/sound-context";
+import { pickRandom, GUNTHER_LOADING_HINTS } from "@/lib/gunth-jokes";
 import { APP_REGISTRY } from "@/apps";
 import type { AppProps } from "@/types";
 
@@ -78,10 +79,25 @@ function ScopeSelect({
   );
 }
 
-const COLUMNS: { key: Status; label: string; icon: string; accentColor: string; emptyMsg: string }[] = [
-  { key: "todo", label: "À FAIRE", icon: "📥", accentColor: "var(--t-text-muted)", emptyMsg: "Rien ici.\nProfitez-en, ça durera pas." },
-  { key: "in_progress", label: "EN COURS", icon: "⚙️", accentColor: "#c88a00", emptyMsg: "Personne ne travaille.\nC'est suspect." },
-  { key: "done", label: "TERMINÉ", icon: "✅", accentColor: "#2a6e28", emptyMsg: "Aucun ticket terminé.\nÇa arrive." },
+const COLUMNS: { key: Status; label: string; icon: string; accentColor: string; emptyMsgs: string[] }[] = [
+  { key: "todo", label: "À FAIRE", icon: "📥", accentColor: "var(--t-text-muted)", emptyMsgs: [
+    "Rien ici.\nProfitez-en, ça durera pas.",
+    "Colonne vide.\nAppréciez le calme.",
+    "Aucune tâche.\nQuelqu'un les planque.",
+    "Propre ici.\nC'est louche.",
+  ]},
+  { key: "in_progress", label: "EN COURS", icon: "⚙️", accentColor: "#c88a00", emptyMsgs: [
+    "Personne ne travaille.\nC'est suspect.",
+    "En cours : rien.\nC'est une situation.",
+    "Vide ici.\nBonne productivité équipe.",
+    "Aucun travail en cours.\nBravo ou honte.",
+  ]},
+  { key: "done", label: "TERMINÉ", icon: "✅", accentColor: "#2a6e28", emptyMsgs: [
+    "Aucun ticket terminé.\nÇa arrive.",
+    "0 tickets fermés.\nDéfragmentez l'équipe.",
+    "Rien de fait.\nMais on y croit.",
+    "Aucune victoire ici.\nPour l'instant.",
+  ]},
 ];
 
 const PRIORITY_COLORS: Record<Priority, string> = {
@@ -197,6 +213,10 @@ export function GuntherBoardApp(_: AppProps) {
   const [draggedId, setDraggedId] = useState<number | null>(null);
   const [dragOverCol, setDragOverCol] = useState<Status | null>(null);
   const [loadDots, setLoadDots] = useState(0);
+  const [loadHint] = useState(() => pickRandom(GUNTHER_LOADING_HINTS));
+  const [colEmptyMsgs] = useState(() =>
+    Object.fromEntries(COLUMNS.map((col) => [col.key, pickRandom(col.emptyMsgs)])) as Record<Status, string>
+  );
 
   useEffect(() => {
     if (!loading) return;
@@ -341,7 +361,7 @@ export function GuntherBoardApp(_: AppProps) {
             Synchronisation{".".repeat(loadDots)}
           </div>
           <div style={{ fontSize: "1.08rem", color: "var(--t-text-subtle)", fontStyle: "italic", marginTop: 4 }}>
-            (Le serveur fait ce qu&apos;il peut.)
+            {loadHint}
           </div>
         </div>
         <style>{`
@@ -540,7 +560,7 @@ export function GuntherBoardApp(_: AppProps) {
                         lineHeight: 1.6,
                       }}
                     >
-                      {isOver && !sameCol ? "📥 Déposer ici" : col.emptyMsg}
+                      {isOver && !sameCol ? "📥 Déposer ici" : colEmptyMsgs[col.key]}
                     </div>
                   )}
                 </div>

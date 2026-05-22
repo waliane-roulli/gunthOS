@@ -236,3 +236,5 @@ export const RELATIONSHIP_SUGGESTIONS = [
   "Collègue disruptif(ve)", "Manager bienveillant(e)", "Subordonné(e) agile",
   "Partenaire de réunions debout", "Mentor du pivot permanent",
 ];
+
+export { LNK_POST_PUBLISH_TOASTS, LNK_AI_TOASTS, LNK_CONNECTION_TOASTS } from "@/lib/gunth-jokes";
