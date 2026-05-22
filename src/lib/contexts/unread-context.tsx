@@ -106,6 +106,8 @@ export function UnreadProvider({ children }: { children: React.ReactNode }) {
   // Global SSE handler — always active when user is logged in
   const handleSSE = useCallback((event: SSEEvent) => {
     if (event.type === "message") {
+      // Ignore messages sent by ourselves (e.g. multi-tab echo)
+      if (event.fromUserId === user?.id) return;
       const fromId = event.fromUserId;
       const api = chatApis.current[fromId];
       if (api) {
@@ -159,7 +161,7 @@ export function UnreadProvider({ children }: { children: React.ReactNode }) {
       const api = chatApis.current[event.fromUserId];
       api?.triggerEffect(event.effect, event.fromName);
     }
-  }, [notify]);
+  }, [notify, user]);
 
   useSSE(handleSSE, !!user);
 
