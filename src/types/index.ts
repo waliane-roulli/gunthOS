@@ -6,6 +6,7 @@ export interface App {
   description: string;
   emoji: string;
   iconNode?: ReactNode;
+  iconComponent?: ComponentType<{ size: number }>;
   href: string;
   badge?: string;
 }
@@ -16,6 +17,8 @@ export interface AppManifest {
   description: string;
   emoji: string;
   iconNode?: ReactNode;
+  /** Preferred over iconNode — receives a `size` prop so each context can scale it */
+  iconComponent?: ComponentType<{ size: number }>;
   /** Default window size in pixels */
   defaultSize?: { w: number; h: number };
   /** Open the window maximized (full width, full height minus taskbar) */

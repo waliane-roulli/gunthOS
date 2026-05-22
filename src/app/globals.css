@@ -83,6 +83,10 @@ html, body {
   /* Start button */
   --t-start-btn-bg: linear-gradient(to bottom, var(--t-bg-light), var(--t-bg));
   --t-start-btn-text: #000000;
+  /* Semantic status colors */
+  --t-success: #008000;
+  --t-warning: #a06000;
+  --t-error: #cc0000;
 }
 
 @theme {

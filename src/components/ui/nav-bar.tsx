@@ -69,7 +69,9 @@ export function NavBar({ onSettingsClick }: NavBarProps) {
                 cursor: isActive ? "default" : "pointer",
               }}
             >
-              <span>{app.iconNode ?? app.emoji}</span>
+              <span style={{ width: 18, height: 18, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                {app.iconComponent ? <app.iconComponent size={18} /> : (app.iconNode ?? app.emoji)}
+              </span>
               <span>{app.name.toUpperCase()}</span>
               {showBadge && (
                 <span

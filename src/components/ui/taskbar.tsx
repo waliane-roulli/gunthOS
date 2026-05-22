@@ -270,7 +270,7 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
             {LAUNCHER_APPS.map((app) => (
               <StartMenuItem
                 key={app.slug}
-                icon={app.iconNode ?? app.emoji}
+                icon={app.iconComponent ? <app.iconComponent size={18} /> : (app.iconNode ?? app.emoji)}
                 label={app.name}
                 onClick={() => handleOpenApp(app.slug)}
               />
@@ -756,7 +756,7 @@ function StartMenuItem({
         backgroundColor: active ? "var(--t-card-hover)" : "transparent",
       }}
     >
-      <span className="shrink-0">{icon}</span>
+      <span className="shrink-0 icon-constrained">{icon}</span>
       <span className="tracking-wider truncate">{label}</span>
       {active && <span className="ml-auto shrink-0">✓</span>}
     </button>

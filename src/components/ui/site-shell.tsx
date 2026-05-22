@@ -8,8 +8,16 @@ import { SeenAppsProvider } from "@/lib/contexts/seen-apps-context";
 import { OsDesktop } from "./os-desktop";
 import { Taskbar } from "./taskbar";
 import { WindowLayer } from "./window-layer";
+import { NotificationLayer } from "./notification-layer";
 import { GunthTitle } from "./gunth-title";
 import { BootScreen, ShutdownScreen } from "./boot-screen";
+import { NotificationProvider } from "@/lib/contexts/notification-context";
+import { useLiveNotifications } from "@/lib/hooks/use-live-notifications";
+
+function LiveNotificationsBridge() {
+  useLiveNotifications();
+  return null;
+}
 
 export function SiteShell({ children: _children }: { children?: React.ReactNode }) {
   const [bootKey, setBootKey] = useState(0);
@@ -33,12 +41,16 @@ export function SiteShell({ children: _children }: { children?: React.ReactNode 
       <RadioProvider>
         <SeenAppsProvider>
           <WindowManagerProvider>
-            <GunthTitle />
-            <div className="fixed inset-0 flex flex-col overflow-hidden scanlines">
-              <Taskbar onReboot={handleReboot} onShutdown={handleShutdown} />
-              <OsDesktop />
-              <WindowLayer />
-            </div>
+            <NotificationProvider>
+              <LiveNotificationsBridge />
+              <GunthTitle />
+              <div className="fixed inset-0 flex flex-col overflow-hidden scanlines">
+                <Taskbar onReboot={handleReboot} onShutdown={handleShutdown} />
+                <OsDesktop />
+                <WindowLayer />
+                <NotificationLayer />
+              </div>
+            </NotificationProvider>
           </WindowManagerProvider>
         </SeenAppsProvider>
       </RadioProvider>

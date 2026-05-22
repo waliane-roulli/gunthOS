@@ -26,7 +26,8 @@ export function useOpenApp() {
       init();
       playWindowOpen();
       markSeen(slug);
-      return openWindow(app.slug, app.name, app.iconNode ?? app.emoji, { startMaximized: app.startMaximized, defaultSize: app.defaultSize });
+      const icon = app.iconComponent ? <app.iconComponent size={20} /> : (app.iconNode ?? app.emoji);
+      return openWindow(app.slug, app.name, icon, { startMaximized: app.startMaximized, defaultSize: app.defaultSize });
     },
     [openWindow, init, playWindowOpen, markSeen]
   );

@@ -28,7 +28,9 @@ No test suite exists. Type-checking (`pnpm typecheck`) is the primary correctnes
 SoundProvider
   RadioProvider
     WindowManagerProvider
-      GunthTitle + Taskbar + OsDesktop + WindowLayer
+      NotificationProvider
+        LiveNotificationsBridge (SSE hook, renders null)
+        GunthTitle + Taskbar + OsDesktop + WindowLayer + NotificationLayer
 ```
 
 `SiteShell` (`src/components/ui/site-shell.tsx`) owns the boot/shutdown state machine and assembles this tree. The `WindowLayer` renders all open windows on top of the desktop using `OsWindow`.
@@ -258,7 +260,50 @@ useEffect(() => {
 
 For authenticated routes, use `auth.api.getSession` from `better-auth` server-side to validate the session.
 
-### 7. Retro styling conventions
+### 7. Showing a toast notification
+
+Use `useNotify()` — available anywhere inside `NotificationProvider` (i.e. everywhere in the OS).
+
+```tsx
+import { useNotify } from "@/lib/contexts/notification-context";
+
+export function MyApp({ windowId }: AppProps) {
+  const notify = useNotify();
+
+  return (
+    <button onClick={() => notify({ type: "success", title: "Sauvegardé !" })}>
+      Save
+    </button>
+  );
+}
+```
+
+`notify(opts)` options:
+
+| Field | Type | Default | Description |
+| --- | --- | --- | --- |
+| `type` | `"info" \| "success" \| "warning" \| "error"` | required | Controls color and icon |
+| `title` | `string` | required | Bold titlebar text |
+| `message` | `string` | — | Optional body text |
+| `duration` | `number \| null` | `4000` | Auto-dismiss delay in ms; `null` = persistent until closed |
+
+Returns the notification `id` (string) so you can `dismiss(id)` it early via `useNotificationActions()`.
+
+Max 5 notifications visible simultaneously (oldest is evicted). Persistent notifications (`duration: null`) stay until the user clicks ✕.
+
+#### Broadcasting to all connected users (admin only)
+
+`POST /api/notifications/broadcast` — requires admin session. Body: `{ type, title, message?, duration }`. Delivers via SSE to every connected client. Returns `{ ok: true, reached: number }`.
+
+The SSE stream is at `GET /api/notifications/stream` — connected automatically for all users via `useLiveNotifications()` in `LiveNotificationsBridge`.
+
+Semantic status CSS variables (used by the notification system, available everywhere):
+
+- `--t-success` — green
+- `--t-warning` — amber
+- `--t-error` — red
+
+### 8. Retro styling conventions
 
 All theme values are CSS variables on `:root`. Use them directly — never hardcode colors.
 

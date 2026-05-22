@@ -125,7 +125,7 @@ export function OsDesktop() {
   const icons: IconDef[] = [
     ...LAUNCHER_APPS.map((app) => ({
       id: app.slug,
-      emoji: app.iconNode ?? app.emoji,
+      emoji: app.iconComponent ? <app.iconComponent size={46} /> : (app.iconNode ?? app.emoji),
       label: app.name,
       badge:
         app.slug === "msn" && totalUnread > 0
