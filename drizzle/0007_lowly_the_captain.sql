@@ -27,7 +27,7 @@ CREATE TABLE `__new_user` (
 	`last_heartbeat` integer
 );
 --> statement-breakpoint
-INSERT INTO `__new_user`("id", "name", "email", "email_verified", "image", "username", "display_username", "created_at", "updated_at", "bio", "status_message", "avatar_data_url", "favorite_app", "gunthos_rank", "online_status", "last_heartbeat") SELECT "id", "name", "email", "email_verified", "image", "username", "display_username", "created_at", "updated_at", "bio", "status_message", "avatar_data_url", "favorite_app", "gunthos_rank", "online_status", "last_heartbeat" FROM `user`;--> statement-breakpoint
+INSERT INTO `__new_user`("id", "name", "email", "email_verified", "image", "username", "display_username", "created_at", "updated_at", "bio", "status_message", "avatar_data_url", "favorite_app", "gunthos_rank") SELECT "id", "name", "email", "email_verified", "image", "username", "display_username", "created_at", "updated_at", "bio", "status_message", "avatar_data_url", "favorite_app", "gunthos_rank" FROM `user`;--> statement-breakpoint
 DROP TABLE `user`;--> statement-breakpoint
 ALTER TABLE `__new_user` RENAME TO `user`;--> statement-breakpoint
 PRAGMA foreign_keys=ON;--> statement-breakpoint
