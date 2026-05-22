@@ -12,6 +12,7 @@ import { NotificationLayer } from "./notification-layer";
 import { GunthTitle } from "./gunth-title";
 import { BootScreen, ShutdownScreen } from "./boot-screen";
 import { NotificationProvider } from "@/lib/contexts/notification-context";
+import { UnreadProvider } from "@/lib/contexts/unread-context";
 import { useLiveNotifications } from "@/lib/hooks/use-live-notifications";
 
 function LiveNotificationsBridge() {
@@ -42,14 +43,16 @@ export function SiteShell({ children: _children }: { children?: React.ReactNode 
         <SeenAppsProvider>
           <WindowManagerProvider>
             <NotificationProvider>
-              <LiveNotificationsBridge />
-              <GunthTitle />
-              <div className="fixed inset-0 flex flex-col overflow-hidden scanlines">
-                <Taskbar onReboot={handleReboot} onShutdown={handleShutdown} />
-                <OsDesktop />
-                <WindowLayer />
-                <NotificationLayer />
-              </div>
+              <UnreadProvider>
+                <LiveNotificationsBridge />
+                <GunthTitle />
+                <div className="fixed inset-0 flex flex-col overflow-hidden scanlines">
+                  <Taskbar onReboot={handleReboot} onShutdown={handleShutdown} />
+                  <OsDesktop />
+                  <WindowLayer />
+                  <NotificationLayer />
+                </div>
+              </UnreadProvider>
             </NotificationProvider>
           </WindowManagerProvider>
         </SeenAppsProvider>

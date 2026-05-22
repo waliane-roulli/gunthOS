@@ -75,12 +75,14 @@ function NotificationToast({ notif, onDismiss }: { notif: Notification; onDismis
     >
       {/* Titlebar */}
       <div
+        onClick={notif.onClick && !notif.message ? () => { notif.onClick!(); handleDismiss(); } : undefined}
         style={{
           background: `linear-gradient(to right, ${accentColor}, color-mix(in srgb, ${accentColor} 60%, var(--t-bg)))`,
           display: "flex",
           alignItems: "center",
           gap: 6,
           padding: "3px 4px 3px 6px",
+          cursor: notif.onClick && !notif.message ? "pointer" : undefined,
         }}
       >
         <span
@@ -95,6 +97,9 @@ function NotificationToast({ notif, onDismiss }: { notif: Notification; onDismis
           }}
         >
           {ICONS[notif.type]}&nbsp;{notif.title}
+          {notif.onClick && !notif.message && (
+            <span style={{ fontSize: "var(--t-text-xs)", opacity: 0.8, marginLeft: 6 }}>→</span>
+          )}
         </span>
         <button
           onClick={handleDismiss}
@@ -126,14 +131,21 @@ function NotificationToast({ notif, onDismiss }: { notif: Notification; onDismis
       {/* Body */}
       {notif.message && (
         <div
+          onClick={notif.onClick ? () => { notif.onClick!(); handleDismiss(); } : undefined}
           style={{
             padding: "6px 8px",
             color: "var(--t-text)",
             fontSize: "var(--t-text-sm)",
             borderBottom: notif.duration !== null ? "1px solid var(--t-border-dark)" : undefined,
+            cursor: notif.onClick ? "pointer" : undefined,
           }}
         >
           {notif.message}
+          {notif.onClick && (
+            <div style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)", marginTop: 2 }}>
+              Cliquer pour ouvrir →
+            </div>
+          )}
         </div>
       )}
 

@@ -2,7 +2,7 @@
 // Each connected user has a Set of active listener callbacks.
 
 export type SSEEvent =
-  | { type: "message"; fromUserId: string; toUserId: string; messageId: number; content: string; createdAt: string }
+  | { type: "message"; fromUserId: string; toUserId: string; messageId: number; content: string; createdAt: string; fromName: string }
   | { type: "nudge"; fromUserId: string; toUserId: string; fromName: string }
   | { type: "status"; userId: string; status: "online" | "away" | "busy" | "offline" };
 

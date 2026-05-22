@@ -3,6 +3,8 @@
 import { createContext, useContext, useState, useCallback, useRef, useEffect } from "react";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { useSSE } from "@/lib/hooks/use-sse";
+import { useNotify } from "@/lib/contexts/notification-context";
+import { useOpenApp } from "@/lib/hooks/use-open-app";
 import type { SSEEvent } from "@/lib/sse-bus";
 
 export interface ChatAPI {
@@ -36,6 +38,8 @@ const MessengerContext = createContext<MessengerContextValue>({
 
 export function UnreadProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
+  const notify = useNotify();
+  const { openApp } = useOpenApp();
   const [totalUnread, setTotalUnread] = useState(0);
   const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
 
@@ -110,6 +114,13 @@ export function UnreadProvider({ children }: { children: React.ReactNode }) {
         });
       } else {
         setUnreadCounts(prev => ({ ...prev, [fromId]: (prev[fromId] ?? 0) + 1 }));
+        notify({
+          type: "info",
+          title: `💬 Message de ${event.fromName}`,
+          message: event.content.length > 60 ? event.content.slice(0, 60) + "…" : event.content,
+          duration: 5000,
+          onClick: () => openApp("msn"),
+        });
       }
     }
 
@@ -122,13 +133,19 @@ export function UnreadProvider({ children }: { children: React.ReactNode }) {
         // Store nudge — registerChat will fire it once the window mounts
         pendingNudges.current[fromId] = event.fromName;
         onNudgeOpen.current?.(fromId);
+        notify({
+          type: "warning",
+          title: `🫨 Nudge de ${event.fromName}`,
+          duration: 4000,
+          onClick: () => openApp("msn"),
+        });
       }
     }
 
     if (event.type === "status") {
       onStatusUpdate.current?.(event.userId, event.status);
     }
-  }, []);
+  }, [notify]);
 
   useSSE(handleSSE, !!user);
 

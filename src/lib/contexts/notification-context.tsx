@@ -18,6 +18,7 @@ export interface Notification {
   title: string;
   message?: string;
   duration: number | null; // ms, null = persist until dismissed
+  onClick?: () => void;
 }
 
 export type NotifyOptions = Omit<Notification, "id" | "duration"> & { duration?: number | null };

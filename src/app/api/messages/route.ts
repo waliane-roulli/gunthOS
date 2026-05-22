@@ -83,6 +83,7 @@ export async function POST(req: NextRequest) {
     messageId: msg.id,
     content: msg.content,
     createdAt: msg.createdAt.toISOString(),
+    fromName: session.user.name,
   });
 
   return NextResponse.json({ message: msg });
