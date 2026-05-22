@@ -9,6 +9,7 @@ import type { useCelebration } from "./use-celebration";
 interface UseCelebrationEffectsOptions {
   flashRef: RefObject<HTMLDivElement | null>;
   containerRef: RefObject<HTMLDivElement | null>;
+  winnerContainerRef: RefObject<HTMLDivElement | null>;
   winnerBigRef: RefObject<HTMLDivElement | null>;
   winnerSubRef: RefObject<HTMLDivElement | null>;
   marqueeTopRef: RefObject<HTMLDivElement | null>;
@@ -22,6 +23,7 @@ const DAMAGE_TEXTS = ["+999", "CRIT!", "+XP", "!!1!", "9999", "WIN", "x10", "+50
 export function useCelebrationEffects({
   flashRef,
   containerRef,
+  winnerContainerRef,
   winnerBigRef,
   winnerSubRef,
   marqueeTopRef,
@@ -78,8 +80,8 @@ export function useCelebrationEffects({
 
       if (o.bigText && winnerBigRef.current) {
         const big = winnerBigRef.current;
+        const container = winnerContainerRef.current;
         big.textContent = name;
-        big.style.display = "block";
         big.style.animation = "none";
         void big.offsetWidth;
         big.style.animation = "";
@@ -87,17 +89,17 @@ export function useCelebrationEffects({
 
         if (o.text && winnerSubRef.current) {
           winnerSubRef.current.textContent = `★ ${o.text} ★`;
-          winnerSubRef.current.style.display = "block";
           winnerSubRef.current.classList.add("active");
         }
+
+        if (container) container.style.display = "flex";
 
         const id = setTimeout(() => {
           big.classList.remove("active");
           if (winnerSubRef.current) {
             winnerSubRef.current.classList.remove("active");
-            winnerSubRef.current.style.display = "none";
           }
-          big.style.display = "none";
+          if (container) container.style.display = "none";
         }, o.duration * 1000);
         timeoutsRef.current.push(id);
       }

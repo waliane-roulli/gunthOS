@@ -67,6 +67,7 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
   const flashRef = useRef<HTMLDivElement>(null);
   const marqueeTopRef = useRef<HTMLDivElement>(null);
   const marqueeBottomRef = useRef<HTMLDivElement>(null);
+  const winnerContainerRef = useRef<HTMLDivElement>(null);
   const winnerBigRef = useRef<HTMLDivElement>(null);
   const winnerSubRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -108,6 +109,7 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
   const { trigger: triggerCelebration } = useCelebrationEffects({
     flashRef,
     containerRef,
+    winnerContainerRef,
     winnerBigRef,
     winnerSubRef,
     marqueeTopRef,
@@ -297,39 +299,46 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
           );
         })}
 
-        {/* Winner big text */}
+        {/* Winner container */}
         <div
-          ref={winnerBigRef}
-          className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-[family-name:var(--font-fredoka)] font-bold text-[clamp(2rem,10vw,7rem)] z-[99999] pointer-events-none hidden text-center max-w-[95vw] px-5 leading-none word-break-break-word"
-          style={
-            activeOpts.rainbow
-              ? {
-                  backgroundImage: "linear-gradient(90deg,#ff0000,#ff8800,#ffee00,#00ff00,#00ccff,#8800ff,#ff00ff,#ff0000)",
-                  backgroundSize: "400% 100%",
-                  backgroundClip: "text",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  filter: "drop-shadow(0 0 10px #ffff00) drop-shadow(0 0 20px #ff00ff)",
-                }
-              : {
-                  color: activeOpts.winnerColor,
-                  WebkitTextFillColor: activeOpts.winnerColor,
-                  textShadow: "2px 2px 0 #000, -2px 2px 0 #000, 2px -2px 0 #000, -2px -2px 0 #000",
-                  filter: "none",
-                }
-          }
-        />
+          ref={winnerContainerRef}
+          className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 z-[99999] pointer-events-none hidden max-w-[95vw] px-5"
+        >
+          {/* Winner big text */}
+          <div
+            ref={winnerBigRef}
+            className="font-[family-name:var(--font-fredoka)] font-bold text-[clamp(2rem,10vw,7rem)] pointer-events-none text-center max-w-[95vw] leading-none [word-break:break-word]"
+            style={
+              activeOpts.rainbow
+                ? {
+                    backgroundImage: "linear-gradient(90deg,#ff0000,#ff8800,#ffee00,#00ff00,#00ccff,#8800ff,#ff00ff,#ff0000)",
+                    backgroundSize: "400% 100%",
+                    backgroundClip: "text",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    filter: "drop-shadow(0 0 10px #ffff00) drop-shadow(0 0 20px #ff00ff)",
+                  }
+                : {
+                    color: activeOpts.winnerColor,
+                    WebkitTextFillColor: activeOpts.winnerColor,
+                    textShadow: "2px 2px 0 #000, -2px 2px 0 #000, 2px -2px 0 #000, -2px -2px 0 #000",
+                    filter: "none",
+                  }
+            }
+          />
 
-        {/* Winner sub text */}
-        <div
-          ref={winnerSubRef}
-          className="fixed left-1/2 -translate-x-1/2 font-[family-name:var(--font-vt323)] font-bold text-[clamp(1rem,4vw,2.5rem)] z-[99999] pointer-events-none hidden text-center tracking-[4px]"
-          style={{
-            top: "calc(50% - clamp(2rem, 10vw, 7rem) * 0.7)",
-            color: activeOpts.rainbow ? "#ffff00" : activeOpts.winnerSubColor,
-            textShadow: "2px 2px 0 #000, -2px 2px 0 #000, 2px -2px 0 #000, -2px -2px 0 #000",
-          }}
-        />
+          {/* Winner sub text */}
+          <div
+            ref={winnerSubRef}
+            className="font-[family-name:var(--font-vt323)] font-bold text-[clamp(1rem,4vw,2.5rem)] pointer-events-none text-center tracking-[4px]"
+            style={{
+              position: "relative",
+              zIndex: -1,
+              color: activeOpts.rainbow ? "#ffff00" : activeOpts.winnerSubColor,
+              textShadow: "2px 2px 0 #000, -2px 2px 0 #000, 2px -2px 0 #000, -2px -2px 0 #000",
+            }}
+          />
+        </div>
       </>,
       document.body
     )}
