@@ -38,11 +38,12 @@ export function RetroWindow({
       }}
     >
       <div
-        className="px-[10px] py-[6px] flex justify-between items-center border-b-2 border-black tracking-wider text-base"
+        className="px-[10px] py-[6px] flex justify-between items-center border-b-2 border-black tracking-wider"
         style={{
           background: "linear-gradient(to right, var(--t-titlebar-from), var(--t-titlebar-to))",
           color: "var(--t-titlebar-text)",
           fontFamily: "var(--t-font-display)",
+          fontSize: "var(--t-text-base)",
           borderRadius: "calc(var(--t-titlebar-radius) - 1px) calc(var(--t-titlebar-radius) - 1px) 0 0",
         }}
       >

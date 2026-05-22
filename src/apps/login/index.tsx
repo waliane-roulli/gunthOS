@@ -101,7 +101,7 @@ export function LoginApp({ windowId }: AppProps) {
           <div className="text-center">
             <div className="text-xl tracking-widest mb-1">{user.name}</div>
           </div>
-          <div className="text-sm tracking-wide text-center px-4 py-2 border" style={{ borderColor: "var(--t-border-dark)", backgroundColor: "var(--t-app-bg, var(--t-bg))", color: "var(--t-text-muted, #666)" }}>
+          <div className="tracking-wide text-center px-4 py-2 border" style={{ fontSize: "var(--t-text-sm)", borderColor: "var(--t-border-dark)", backgroundColor: "var(--t-app-bg, var(--t-bg))", color: "var(--t-text-muted, #666)" }}>
             ✅ Connecté à GunthOS. Vos données sont en sécurité.<br />
             <span style={{ color: "var(--t-text-muted, #888)", fontSize: "0.8em" }}>(Enfin, autant que peut l&apos;être un OS de 1998.)</span>
           </div>
@@ -117,12 +117,12 @@ export function LoginApp({ windowId }: AppProps) {
           </div>
 
           {successMsg && (
-            <div className="text-sm tracking-wide px-3 py-2 border-2" style={{ borderColor: "var(--t-accent, #000080)", backgroundColor: "var(--t-app-bg, #fff)", color: "var(--t-accent, #000080)" }}>
+            <div className="tracking-wide px-3 py-2 border-2" style={{ fontSize: "var(--t-text-sm)", borderColor: "var(--t-accent, #000080)", backgroundColor: "var(--t-app-bg, #fff)", color: "var(--t-accent, #000080)" }}>
               ✅ {successMsg}
             </div>
           )}
           {error && (
-            <div className="text-sm tracking-wide px-3 py-2 border-2" style={{ borderColor: "#c0392b", backgroundColor: "#fff0f0", color: "#c0392b" }}>
+            <div className="tracking-wide px-3 py-2 border-2" style={{ fontSize: "var(--t-text-sm)", borderColor: "#c0392b", backgroundColor: "#fff0f0", color: "#c0392b" }}>
               ⚠ {error}
             </div>
           )}
@@ -141,10 +141,10 @@ export function LoginApp({ windowId }: AppProps) {
             <RetroButton onClick={() => onClose()} disabled={loading} variant="secondary">👤 Continuer en invité</RetroButton>
           </div>
 
-          <div className="text-xs tracking-wide mt-2 px-2 py-1 border-l-4" style={{ borderLeftColor: "var(--t-border-dark)", color: "var(--t-text-muted, #808080)", fontFamily: "var(--font-vt323), monospace", fontSize: "0.95rem" }}>
+          <div className="tracking-wide mt-2 px-2 py-1 border-l-4" style={{ fontSize: "var(--t-text-sm)", borderLeftColor: "var(--t-border-dark)", color: "var(--t-text-muted, #808080)", fontFamily: "var(--t-font-display)" }}>
             💡 {hint}
           </div>
-          <div className="text-xs tracking-wide px-2" style={{ color: "var(--t-text-muted, #999)", fontFamily: "var(--font-vt323), monospace", fontSize: "0.85rem" }}>
+          <div className="tracking-wide px-2" style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-muted, #999)", fontFamily: "var(--t-font-display)" }}>
             Mode invité : vos paramètres restent en local, comme en 1998.
           </div>
         </div>
@@ -157,8 +157,9 @@ function TabButton({ active, onClick, children }: { active: boolean; onClick: ()
   return (
     <button
       onClick={onClick}
-      className="px-4 py-1.5 text-sm tracking-widest cursor-pointer border-t-2 border-x-2 -mb-0.5 select-none"
+      className="px-4 py-1.5 tracking-widest cursor-pointer border-t-2 border-x-2 -mb-0.5 select-none"
       style={{
+        fontSize: "var(--t-text-sm)",
         fontFamily: "var(--t-font-display)", color: "var(--t-text)",
         backgroundColor: active ? "var(--t-bg)" : "var(--t-bg-dark, #a0a0a0)",
         borderTopColor: active ? "var(--t-border-light)" : "var(--t-border-dark)",
@@ -176,7 +177,7 @@ function TabButton({ active, onClick, children }: { active: boolean; onClick: ()
 function FieldGroup({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-1">
-      <label className="text-xs tracking-widest select-none" style={{ color: "var(--t-text-muted, #666)", fontFamily: "var(--font-vt323), monospace", fontSize: "0.9rem" }}>
+      <label className="tracking-widest select-none" style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-muted, #666)", fontFamily: "var(--t-font-display)" }}>
         {label}
       </label>
       {children}
@@ -188,8 +189,9 @@ function RetroInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
       {...props}
-      className="w-full px-2 py-1 text-base border-2 outline-none"
+      className="w-full px-2 py-1 border-2 outline-none"
       style={{
+        fontSize: "var(--t-text-base)",
         fontFamily: "var(--t-font-display)", color: "var(--t-text)", backgroundColor: "var(--t-app-bg, #fff)",
         borderTopColor: "var(--t-border-dark)", borderLeftColor: "var(--t-border-dark)",
         borderBottomColor: "var(--t-border-light)", borderRightColor: "var(--t-border-light)",
@@ -208,8 +210,9 @@ function RetroButton({ onClick, children, disabled, variant = "secondary" }: {
   return (
     <button
       onClick={onClick} disabled={disabled}
-      className="px-4 py-1 border-2 text-sm tracking-widest cursor-pointer select-none shrink-0"
+      className="px-4 py-1 border-2 tracking-widest cursor-pointer select-none shrink-0"
       style={{
+        fontSize: "var(--t-text-sm)",
         fontFamily: "var(--t-font-display)", color: variant === "danger" ? "#fff" : "var(--t-text)", background: bg,
         borderTopColor: "var(--t-border-light)", borderLeftColor: "var(--t-border-light)",
         borderBottomColor: "var(--t-border-dark)", borderRightColor: "var(--t-border-dark)",

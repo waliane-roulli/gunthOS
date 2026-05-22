@@ -1,6 +1,7 @@
 import { THEMES, DEFAULT_THEME_ID, type ThemeId } from "@/lib/themes";
 import { CURSORS, DEFAULT_CURSOR_ID, type CursorId } from "@/lib/cursors";
 import { WALLPAPERS, DEFAULT_WALLPAPER_ID, type WallpaperId } from "@/lib/wallpapers";
+import { FONT_PAIRS, DEFAULT_FONT_PAIR_ID, type FontPairId } from "@/lib/font-pairs";
 
 export type Density = "compact" | "normal" | "large";
 
@@ -16,6 +17,9 @@ export interface AppSettings {
   wallpaperId: WallpaperId;
   /** true = l'user a choisi manuellement un wallpaper, on ne le remplace plus automatiquement */
   wallpaperOverridden: boolean;
+  fontPairId: FontPairId;
+  /** Multiplicateur de taille de base 0.7–1.4, défaut 1.0 */
+  fontSize: number;
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -29,6 +33,8 @@ export const DEFAULT_SETTINGS: AppSettings = {
   cursorId: DEFAULT_CURSOR_ID,
   wallpaperId: DEFAULT_WALLPAPER_ID,
   wallpaperOverridden: false,
+  fontPairId: DEFAULT_FONT_PAIR_ID,
+  fontSize: 1.0,
 };
 
 const STORAGE_KEY = "gunth-settings";
@@ -63,6 +69,12 @@ export function loadSettings(): AppSettings {
         ? (parsed.wallpaperId as WallpaperId)
         : DEFAULT_SETTINGS.wallpaperId,
       wallpaperOverridden: parsed.wallpaperOverridden ?? DEFAULT_SETTINGS.wallpaperOverridden,
+      fontPairId: FONT_PAIRS.some((p) => p.id === parsed.fontPairId)
+        ? (parsed.fontPairId as FontPairId)
+        : DEFAULT_SETTINGS.fontPairId,
+      fontSize: typeof parsed.fontSize === "number"
+        ? Math.max(0.85, Math.min(1.3, parsed.fontSize))
+        : DEFAULT_SETTINGS.fontSize,
     };
   } catch {
     return DEFAULT_SETTINGS;

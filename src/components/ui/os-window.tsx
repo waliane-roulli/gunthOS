@@ -192,7 +192,7 @@ export function OsWindow({ win, children }: OsWindowProps) {
             : "linear-gradient(to right, var(--t-bg-dark), var(--t-bg-darker, #666))",
           color: isActive ? "var(--t-titlebar-text)" : "var(--t-text-subtle)",
           fontFamily: "var(--t-font-display)",
-          fontSize: "1rem",
+          fontSize: "var(--t-text-base)",
           letterSpacing: "0.08em",
           cursor: isMaximized ? "default" : "move",
           borderRadius: isMaximized ? "0" : "calc(var(--t-titlebar-radius) - 1px) calc(var(--t-titlebar-radius) - 1px) 0 0",

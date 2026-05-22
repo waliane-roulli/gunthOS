@@ -100,7 +100,7 @@ export function ShutdownScreen({ onPowerOn }: ShutdownScreenProps) {
         <div
           ref={terminalRef}
           className="flex-1 overflow-hidden p-4 leading-[1.4]"
-          style={{ color: "#c0c0c0", fontSize: "clamp(13px, 1.8vw, 18px)" }}
+          style={{ color: "#c0c0c0", fontSize: "calc(clamp(16px, 2.2vw, 22px) * var(--t-font-scale))" }}
         >
           {SHUTDOWN_LINES.slice(0, visibleLines).map((line, i) => (
             <div key={i} style={{ minHeight: "1.4em" }}>
@@ -120,7 +120,7 @@ export function ShutdownScreen({ onPowerOn }: ShutdownScreenProps) {
           <p
             style={{
               color: "#404040",
-              fontSize: "clamp(12px, 1.6vw, 16px)",
+              fontSize: "calc(clamp(15px, 2vw, 20px) * var(--t-font-scale))",
               letterSpacing: "0.15em",
               fontFamily: "var(--font-vt323), monospace",
             }}
@@ -130,7 +130,7 @@ export function ShutdownScreen({ onPowerOn }: ShutdownScreenProps) {
           <p
             style={{
               color: "#2a2a2a",
-              fontSize: "clamp(11px, 1.4vw, 14px)",
+              fontSize: "calc(clamp(14px, 1.8vw, 18px) * var(--t-font-scale))",
               letterSpacing: "0.1em",
               fontFamily: "var(--font-vt323), monospace",
               textAlign: "center",
@@ -142,7 +142,7 @@ export function ShutdownScreen({ onPowerOn }: ShutdownScreenProps) {
             onClick={onPowerOn}
             style={{
               fontFamily: "var(--font-vt323), monospace",
-              fontSize: "clamp(18px, 2.2vw, 26px)",
+              fontSize: "calc(clamp(18px, 2.2vw, 26px) * var(--t-font-scale))",
               color: "var(--t-text, #1a1a1a)",
               letterSpacing: "0.25em",
               cursor: "pointer",
@@ -359,7 +359,7 @@ export function BootScreen({ onComplete }: BootScreenProps) {
         <div
           ref={terminalRef}
           className="flex-1 overflow-hidden p-4 leading-[1.4]"
-          style={{ color: "#c0c0c0", fontSize: "clamp(13px, 1.8vw, 18px)" }}
+          style={{ color: "#c0c0c0", fontSize: "calc(clamp(16px, 2.2vw, 22px) * var(--t-font-scale))" }}
         >
           {BOOT_LINES.slice(0, visibleLines).map((line, i) => (
             <div key={i} style={{ minHeight: "1.4em" }}>
@@ -397,7 +397,7 @@ export function BootScreen({ onComplete }: BootScreenProps) {
                 background: "linear-gradient(90deg, var(--t-titlebar-from, #000080), var(--t-titlebar-to, #1084d0))",
                 color: "var(--t-titlebar-text, #ffffff)",
                 fontFamily: "var(--font-vt323), monospace",
-                fontSize: "clamp(16px, 2vw, 20px)",
+                fontSize: "calc(clamp(16px, 2vw, 20px) * var(--t-font-scale))",
               }}
             >
               <span>💾</span>
@@ -410,7 +410,7 @@ export function BootScreen({ onComplete }: BootScreenProps) {
                 style={{
                   color: "var(--t-accent, #000080)",
                   fontFamily: "var(--font-vt323), monospace",
-                  fontSize: "clamp(28px, 5vw, 52px)",
+                  fontSize: "calc(clamp(28px, 5vw, 52px) * var(--t-font-scale))",
                   lineHeight: 1,
                   textShadow: "2px 2px 0 var(--t-border-dark, #808080)",
                 }}
@@ -420,7 +420,7 @@ export function BootScreen({ onComplete }: BootScreenProps) {
               <div
                 style={{
                   color: "var(--t-text, #000000)",
-                  fontSize: "clamp(12px, 1.6vw, 16px)",
+                  fontSize: "calc(clamp(15px, 2vw, 20px) * var(--t-font-scale))",
                   fontFamily: "var(--font-vt323), monospace",
                 }}
               >
@@ -453,7 +453,7 @@ export function BootScreen({ onComplete }: BootScreenProps) {
                 </div>
                 <div
                   style={{
-                    fontSize: "clamp(11px, 1.4vw, 14px)",
+                    fontSize: "calc(clamp(14px, 1.8vw, 18px) * var(--t-font-scale))",
                     color: "var(--t-text-muted, #000000)",
                     fontFamily: "var(--font-vt323), monospace",
                     textAlign: "center",
@@ -468,7 +468,7 @@ export function BootScreen({ onComplete }: BootScreenProps) {
 
           <div
             style={{
-              fontSize: "clamp(11px, 1.3vw, 14px)",
+              fontSize: "calc(clamp(14px, 1.7vw, 18px) * var(--t-font-scale))",
               color: "var(--t-text-subtle, #808080)",
               fontFamily: "var(--font-vt323), monospace",
             }}

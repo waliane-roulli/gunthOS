@@ -47,9 +47,25 @@ html, body {
   --t-defrag-system: #808080;
   --t-defrag-mystery: #ffaa00;
   /* Fonts */
-  --t-font-display: var(--font-vt323);
-  --t-font-body: var(--font-fredoka);
+  --t-font-display: var(--font-vt323), monospace;
+  --t-font-body: var(--font-fredoka), sans-serif;
   --t-font-mono: "Courier New", monospace;
+  /* Font optical-size scale (overridden by font-pair JS) — 1.0 = VT323 baseline */
+  --t-font-scale: 1;
+  /* Global font size multiplier (overridden by settings JS via html font-size) — 1.0 = default */
+  --t-font-size: 1;
+  /* Semantic text sizes — font-scale × base rem.
+     Use these everywhere instead of hardcoding rem/px values.
+     They respond automatically to font-pair changes.
+     Global size scaling is handled by html font-size = t-font-size × 100%. */
+  --t-text-xs:   calc(0.70rem  * var(--t-font-scale));
+  --t-text-sm:   calc(0.85rem  * var(--t-font-scale));
+  --t-text-base: calc(1rem     * var(--t-font-scale));
+  --t-text-md:   calc(1.15rem  * var(--t-font-scale));
+  --t-text-lg:   calc(1.35rem  * var(--t-font-scale));
+  --t-text-xl:   calc(1.6rem   * var(--t-font-scale));
+  --t-text-2xl:  calc(2rem     * var(--t-font-scale));
+  --t-text-3xl:  calc(2.5rem   * var(--t-font-scale));
   /* Window chrome */
   --t-window-radius: 0px;
   --t-titlebar-radius: 0px;

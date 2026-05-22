@@ -84,10 +84,11 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
               borderRadius: "var(--t-window-radius)",
               boxShadow: "var(--t-dialog-shadow)",
               fontFamily: "var(--t-font-display)",
+              fontSize: "var(--t-text-base)",
             }}
           >
             <div
-              className="px-2 py-1 border-b-2 border-black text-base tracking-widest font-bold select-none"
+              className="px-2 py-1 border-b-2 border-black tracking-widest font-bold select-none"
               style={{
                 background: "linear-gradient(to right, var(--t-titlebar-from), var(--t-titlebar-to))",
                 color: "var(--t-titlebar-text)",
@@ -98,7 +99,7 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
             </div>
             <div className="flex gap-3 items-start p-4">
               <span className="text-3xl shrink-0">🔄</span>
-              <p className="text-sm tracking-wide leading-relaxed whitespace-pre-line" style={{ color: "var(--t-text)" }}>
+              <p className="tracking-wide leading-relaxed whitespace-pre-line" style={{ color: "var(--t-text)" }}>
                 {rebootMsg}
               </p>
             </div>
@@ -108,7 +109,7 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
                   setRebootMsg(null);
                   onReboot?.();
                 }}
-                className="px-6 py-1 border-[2px] text-base tracking-widest cursor-pointer"
+                className="px-6 py-1 border-[2px] tracking-widest cursor-pointer"
                 style={{
                   backgroundColor: "var(--t-bg)",
                   color: "var(--t-text)",
@@ -123,7 +124,7 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
               </button>
               <button
                 onClick={() => setRebootMsg(null)}
-                className="px-6 py-1 border-[2px] text-base tracking-widest cursor-pointer"
+                className="px-6 py-1 border-[2px] tracking-widest cursor-pointer"
                 style={{
                   backgroundColor: "var(--t-bg)",
                   color: "var(--t-text)",
@@ -161,10 +162,11 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
               borderRadius: "var(--t-window-radius)",
               boxShadow: "var(--t-dialog-shadow)",
               fontFamily: "var(--t-font-display)",
+              fontSize: "var(--t-text-base)",
             }}
           >
             <div
-              className="px-2 py-1 border-b-2 border-black text-base tracking-widest font-bold select-none"
+              className="px-2 py-1 border-b-2 border-black tracking-widest font-bold select-none"
               style={{
                 background: "linear-gradient(to right, var(--t-titlebar-from), var(--t-titlebar-to))",
                 color: "var(--t-titlebar-text)",
@@ -175,14 +177,14 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
             </div>
             <div className="flex gap-3 items-start p-4">
               <span className="text-3xl shrink-0">🔌</span>
-              <p className="text-sm tracking-wide leading-relaxed whitespace-pre-line" style={{ color: "var(--t-text)" }}>
+              <p className="tracking-wide leading-relaxed whitespace-pre-line" style={{ color: "var(--t-text)" }}>
                 {shutdownMsg}
               </p>
             </div>
             <div className="flex justify-center gap-3 pb-4">
               <button
                 onClick={handleShutdownConfirm}
-                className="px-6 py-1 border-[2px] text-base tracking-widest cursor-pointer"
+                className="px-6 py-1 border-[2px] tracking-widest cursor-pointer"
                 style={{
                   backgroundColor: "var(--t-bg)",
                   color: "var(--t-text)",
@@ -197,7 +199,7 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
               </button>
               <button
                 onClick={() => setShutdownMsg(null)}
-                className="px-6 py-1 border-[2px] text-base tracking-widest cursor-pointer"
+                className="px-6 py-1 border-[2px] tracking-widest cursor-pointer"
                 style={{
                   backgroundColor: "var(--t-bg)",
                   color: "var(--t-text)",
@@ -253,7 +255,7 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
             }}
           >
             <span
-              className="text-lg tracking-widest font-bold"
+              className="tracking-widest font-bold"
               style={{
                 color: "var(--t-titlebar-text)",
                 fontFamily: "var(--t-font-display)",
@@ -355,11 +357,12 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
           }}
         >
           <div
-            className="px-2 py-1.5 text-base tracking-widest border-b"
+            className="px-2 py-1.5 tracking-widest border-b"
             style={{
               background: "linear-gradient(to right, var(--t-titlebar-from), var(--t-titlebar-to))",
               color: "var(--t-titlebar-text)",
               fontFamily: "var(--t-font-display)",
+              fontSize: "var(--t-text-base)",
               borderBottomColor: "var(--t-border-dark)",
               borderRadius: "calc(var(--t-titlebar-radius) - 1px) calc(var(--t-titlebar-radius) - 1px) 0 0",
             }}
@@ -401,10 +404,11 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
             setStartMenuOpen((o) => !o);
             setThemeMenuOpen(false);
           }}
-          className="flex items-center gap-1.5 px-3 h-[30px] border-[2px] font-bold tracking-wider text-base shrink-0 cursor-pointer select-none"
+          className="flex items-center gap-1.5 px-3 h-[30px] border-[2px] font-bold tracking-wider shrink-0 cursor-pointer select-none"
           style={{
             background: startMenuOpen ? "var(--t-bg-dark)" : "var(--t-start-btn-bg)",
             fontFamily: "var(--t-font-display)",
+            fontSize: "var(--t-text-base)",
             color: "var(--t-start-btn-text)",
             borderTopColor: startMenuOpen ? "var(--t-border-dark)" : "var(--t-border-light)",
             borderLeftColor: startMenuOpen ? "var(--t-border-dark)" : "var(--t-border-light)",
@@ -433,9 +437,10 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
               <button
                 key={win.id}
                 onClick={() => handleTaskbarClick(win.id)}
-                className="flex items-center gap-1 px-2 h-[28px] border-[2px] text-sm tracking-wider truncate min-w-[100px] max-w-[180px] cursor-pointer select-none"
+                className="flex items-center gap-1 px-2 h-[28px] border-[2px] tracking-wider truncate min-w-[100px] max-w-[180px] cursor-pointer select-none"
                 style={{
                   fontFamily: "var(--t-font-display)",
+                  fontSize: "var(--t-text-sm)",
                   color: "var(--t-text)",
                   backgroundColor: isActive ? "var(--t-bg-dark)" : "var(--t-bg)",
                   borderTopColor: isActive ? "var(--t-border-dark)" : "var(--t-border-light)",
@@ -455,7 +460,7 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
 
         {/* System tray */}
         <div
-          className="flex items-center gap-2 px-2 h-[28px] border-[2px] shrink-0 ml-auto text-sm"
+          className="flex items-center gap-2 px-2 h-[28px] border-[2px] shrink-0 ml-auto"
           style={{
             backgroundColor: "var(--t-bg)",
             borderTopColor: "var(--t-border-dark)",
@@ -463,6 +468,7 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
             borderBottomColor: "var(--t-border-light)",
             borderRightColor: "var(--t-border-light)",
             fontFamily: "var(--t-font-display)",
+            fontSize: "var(--t-text-xs)",
             color: "var(--t-text)",
           }}
         >
@@ -479,7 +485,7 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
             title={user ? `Connecté : ${user.email}` : "Accès invité — cliquez pour vous connecter"}
             onClick={() => openNamedWindow("login", "GUNTH.EXE — Connexion", "🔑")}
             className="border-r pr-2 cursor-pointer select-none hover:opacity-80"
-            style={{ borderColor: "var(--t-border-dark)", background: "none", fontFamily: "var(--t-font-display)", color: "var(--t-text)", fontSize: "inherit" }}
+            style={{ borderColor: "var(--t-border-dark)", background: "none", fontFamily: "var(--t-font-display)", color: "var(--t-text)", fontSize: "var(--t-text-base)" }}
           >
             {user ? `👤 ${user.name}` : "👤 Invité"}
           </button>
@@ -555,7 +561,7 @@ function VolumeTray() {
           cursor: "pointer",
           color: "var(--t-text)",
           fontFamily: "var(--t-font-display)",
-          fontSize: "0.9rem",
+          fontSize: "var(--t-text-sm)",
           padding: 0,
           lineHeight: 1,
           opacity: currentStation ? 1 : 0.6,
@@ -586,7 +592,7 @@ function VolumeTray() {
             }}
           >
             {/* Icône haut */}
-            <span style={{ fontSize: "0.75rem" }}>{icon}</span>
+            <span style={{ fontSize: "var(--t-text-xs)" }}>{icon}</span>
 
             {/* Slider vertical */}
             <div
@@ -661,7 +667,7 @@ function VolumeTray() {
             </div>
 
             {/* Valeur */}
-            <span className="text-xs tracking-widest tabular-nums" style={{ color: "var(--t-accent)" }}>
+            <span className="tracking-widest tabular-nums" style={{ color: "var(--t-accent)" }}>
               {volume}
             </span>
           </div>
@@ -680,7 +686,7 @@ function RadioTrayPlayer() {
     border: "none",
     color: "var(--t-text)",
     fontFamily: "var(--t-font-display)",
-    fontSize: "0.75rem",
+    fontSize: "var(--t-text-xs)",
     cursor: "pointer",
     padding: "0 2px",
     lineHeight: 1,
@@ -717,7 +723,7 @@ function RadioTrayPlayer() {
       </button>
       <button style={btnStyle} title="Station suivante" onClick={next}>⏭</button>
       <span
-        className="text-xs tracking-wider max-w-[90px] truncate cursor-pointer"
+        className="tracking-wider max-w-[90px] truncate cursor-pointer"
         style={{ color: "var(--t-accent)", fontFamily: "var(--t-font-display)" }}
         title={`GunthRadio™ — ${currentStation?.name}`}
         onClick={() => openApp("radio")}
@@ -742,16 +748,16 @@ function StartMenuItem({
   return (
     <button
       onClick={onClick}
-      className="w-full flex items-center gap-2 px-3 py-1.5 text-base text-left cursor-pointer hover:opacity-90"
+      className="w-full flex items-center gap-2 px-3 py-1.5 text-left cursor-pointer hover:opacity-90"
       style={{
         fontFamily: "var(--t-font-display)",
         color: "var(--t-text)",
         backgroundColor: active ? "var(--t-card-hover)" : "transparent",
       }}
     >
-      <span className="text-base">{icon}</span>
+      <span>{icon}</span>
       <span className="tracking-wider">{label}</span>
-      {active && <span className="ml-auto text-xs">✓</span>}
+      {active && <span className="ml-auto">✓</span>}
     </button>
   );
 }

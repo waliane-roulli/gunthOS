@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Fredoka, VT323 } from "next/font/google";
+import { Fredoka, VT323, Press_Start_2P, Orbitron, Exo_2, Righteous, Nunito } from "next/font/google";
 import "./globals.css";
 import { SettingsProvider } from "@/lib/contexts/settings-context";
 import { AuthProvider } from "@/lib/contexts/auth-context";
@@ -18,6 +18,36 @@ const vt323 = VT323({
   variable: "--font-vt323",
 });
 
+const pressStart = Press_Start_2P({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-press-start",
+});
+
+const orbitron = Orbitron({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-orbitron",
+});
+
+const exo2 = Exo_2({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-exo2",
+});
+
+const righteous = Righteous({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-righteous",
+});
+
+const nunito = Nunito({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-nunito",
+});
+
 export const metadata: Metadata = {
   title: "GunthOS v1.0 — Chargement en cours… (depuis 1998)",
   description:
@@ -30,7 +60,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fr" className={`${fredoka.variable} ${vt323.variable}`}>
+    <html lang="fr" className={`${fredoka.variable} ${vt323.variable} ${pressStart.variable} ${orbitron.variable} ${exo2.variable} ${righteous.variable} ${nunito.variable}`}>
       <body>
         <AuthProvider>
           <UnreadProvider>

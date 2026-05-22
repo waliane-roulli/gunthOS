@@ -369,9 +369,10 @@ function DraggableDesktopIcon({
         )}
       </div>
       <span
-        className="text-center text-sm leading-tight px-0.5 max-w-full break-words"
+        className="text-center leading-tight px-0.5 max-w-full break-words"
         style={{
           fontFamily: "var(--t-font-display)",
+          fontSize: "var(--t-text-sm)",
           color: "white",
           textShadow:
             "1px 1px 3px rgba(0,0,0,0.9), 0 0 6px rgba(0,0,0,0.8)",

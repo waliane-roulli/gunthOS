@@ -95,6 +95,44 @@ All server-side DB access goes through API routes in `src/app/api/`. No direct D
 
 Tailwind CSS v4. Retro/Windows 98 aesthetic. Custom CSS cursor sets in `src/lib/cursors.ts`. Wallpapers in `src/lib/wallpapers.ts`. Themes in `src/lib/themes.ts` applied via `useThemeApplication` hook.
 
+#### Font pairs
+
+Font pairs are defined in `src/lib/font-pairs.ts`. Each pair has a `scale` (optical size correction — e.g. Press Start 2P = `0.6`, VT323 = `1.0`). When the user changes their font pair in Settings → Affichage, `useThemeApplication` injects two CSS variables on `:root`:
+
+- `--t-font-display` / `--t-font-body` — the font families
+- `--t-font-scale` — the optical scale factor (a plain number, e.g. `0.6`)
+
+#### Text size variables
+
+**Never hardcode font sizes.** Use the semantic `--t-text-*` variables defined in `globals.css` — they bake in `--t-font-scale` automatically via `calc()`:
+
+| Variable | Replaces |
+| --- | --- |
+| `--t-text-xs` | `0.75rem` / `text-xs` |
+| `--t-text-sm` | `0.875rem` / `text-sm` |
+| `--t-text-base` | `1rem` / `text-base` |
+| `--t-text-md` | `1.15rem` |
+| `--t-text-lg` | `1.35rem` / `text-lg` |
+| `--t-text-xl` | `1.6rem` / `text-xl` |
+| `--t-text-2xl` | `2rem` / `text-2xl` |
+| `--t-text-3xl` | `2.5rem` / `text-3xl` |
+
+```tsx
+// Correct — scales with the active font pair
+<div style={{ fontFamily: "var(--t-font-display)", fontSize: "var(--t-text-sm)" }}>
+
+// Wrong — breaks when the user switches to Press Start 2P
+<div className="text-sm" style={{ fontFamily: "var(--t-font-display)" }}>
+```
+
+For fluid/responsive sizes (boot screens, hero text), wrap `clamp()` with the scale:
+
+```tsx
+fontSize: "calc(clamp(12px, 1.6vw, 16px) * var(--t-font-scale))"
+```
+
+Fixed-size decorative elements (theme/wallpaper preview thumbnails that use `monospace` directly) are exempt — they intentionally ignore the font pair.
+
 ### Path aliases
 
 `@/` maps to `src/` (configured in `tsconfig.json`).

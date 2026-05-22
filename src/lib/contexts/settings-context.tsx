@@ -20,6 +20,7 @@ import {
   type Density,
 } from "@/lib/settings";
 import { WALLPAPERS, WALLPAPER_MAP, type WallpaperId } from "@/lib/wallpapers";
+import { FONT_PAIRS, type FontPairId } from "@/lib/font-pairs";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { useThemeApplication } from "@/lib/hooks/use-theme-application";
 
@@ -41,6 +42,8 @@ interface SettingsActionsContextValue {
   setCursorId: (v: CursorId) => void;
   setWallpaperId: (v: WallpaperId) => void;
   resetWallpaperToTheme: () => void;
+  setFontPairId: (v: FontPairId) => void;
+  setFontSize: (v: number) => void;
   updateSettings: (patch: Partial<AppSettings>) => void;
 }
 
@@ -60,6 +63,8 @@ const SettingsActionsContext = createContext<SettingsActionsContextValue>({
   setCursorId: () => {},
   setWallpaperId: () => {},
   resetWallpaperToTheme: () => {},
+  setFontPairId: () => {},
+  setFontSize: () => {},
   updateSettings: () => {},
 });
 
@@ -126,6 +131,14 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
               ? remote.wallpaperId
               : local.wallpaperId),
           wallpaperOverridden: local.wallpaperOverridden || (remote.wallpaperOverridden ?? false),
+          fontPairId: local.fontPairId !== DEFAULT_SETTINGS.fontPairId
+            ? local.fontPairId
+            : (remote.fontPairId && FONT_PAIRS.some((p) => p.id === remote.fontPairId)
+              ? remote.fontPairId as FontPairId
+              : DEFAULT_SETTINGS.fontPairId),
+          fontSize: local.fontSize !== DEFAULT_SETTINGS.fontSize
+            ? local.fontSize
+            : (typeof remote.fontSize === "number" ? Math.max(0.85, Math.min(1.3, remote.fontSize)) : DEFAULT_SETTINGS.fontSize),
         };
         setSettings(merged);
         saveSettings(merged);
@@ -195,6 +208,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const setScanlinesEnabled = useCallback((v: boolean) => updateSettings({ scanlinesEnabled: v }), [updateSettings]);
   const setCursorId = useCallback((v: CursorId) => updateSettings({ cursorId: v }), [updateSettings]);
   const setWallpaperId = useCallback((v: WallpaperId) => updateSettings({ wallpaperId: v, wallpaperOverridden: true }), [updateSettings]);
+  const setFontPairId = useCallback((v: FontPairId) => updateSettings({ fontPairId: v }), [updateSettings]);
+  const setFontSize = useCallback((v: number) => updateSettings({ fontSize: Math.max(0.85, Math.min(1.3, v)) }), [updateSettings]);
   const resetWallpaperToTheme = useCallback(() => {
     setSettings((prev) => {
       const themeObj = THEME_MAP.get(prev.themeId);
@@ -212,8 +227,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const stateValue = useMemo(() => ({ settings, theme }), [settings, theme]);
 
   const actionsValue = useMemo(
-    () => ({ setTheme, setSoundEnabled, setMasterVolume, setAmbientVolume, setAnimationsEnabled, setDensity, setScanlinesEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, updateSettings }),
-    [setTheme, setSoundEnabled, setMasterVolume, setAmbientVolume, setAnimationsEnabled, setDensity, setScanlinesEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, updateSettings]
+    () => ({ setTheme, setSoundEnabled, setMasterVolume, setAmbientVolume, setAnimationsEnabled, setDensity, setScanlinesEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, setFontPairId, setFontSize, updateSettings }),
+    [setTheme, setSoundEnabled, setMasterVolume, setAmbientVolume, setAnimationsEnabled, setDensity, setScanlinesEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, setFontPairId, setFontSize, updateSettings]
   );
 
   return (

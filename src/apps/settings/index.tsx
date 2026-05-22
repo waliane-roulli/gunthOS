@@ -7,6 +7,7 @@ import { THEMES, type ThemeId } from "@/lib/themes";
 import { CURSORS, type CursorId } from "@/lib/cursors";
 import { WALLPAPERS, WALLPAPER_MAP, type WallpaperId } from "@/lib/wallpapers";
 import { type Density } from "@/lib/settings";
+import { FONT_PAIRS, type FontPairId } from "@/lib/font-pairs";
 import { RetroTitlebarBtn } from "@/components/ui/retro-titlebar-btn";
 import type { AppProps } from "@/types";
 
@@ -22,7 +23,7 @@ const TABS: { id: Tab; label: string; icon: string }[] = [
 export function SettingsApp({ windowId }: AppProps) {
   const { closeWindow } = useWindowActions();
   const onClose = () => closeWindow(windowId);
-  const { settings, setTheme, setSoundEnabled, setAmbientVolume, setAnimationsEnabled, setDensity, setScanlinesEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme } = useSettings();
+  const { settings, setTheme, setSoundEnabled, setAmbientVolume, setAnimationsEnabled, setDensity, setScanlinesEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, setFontPairId, setFontSize } = useSettings();
   const [activeTab, setActiveTab] = useState<Tab>("theme");
 
   return (
@@ -33,7 +34,7 @@ export function SettingsApp({ windowId }: AppProps) {
           return (
             <button
               key={tab.id} onClick={() => setActiveTab(tab.id)}
-              className="px-4 py-2 text-sm tracking-widest border-r cursor-pointer"
+              className="px-4 py-2 tracking-widest border-r cursor-pointer"
               style={{ fontFamily: "var(--t-font-display)", color: isActive ? "var(--t-accent)" : "var(--t-text-muted)", backgroundColor: isActive ? "var(--t-bg)" : "var(--t-bg-dark)", borderRightColor: "var(--t-border-dark)", borderBottom: isActive ? "2px solid var(--t-bg)" : "none", marginBottom: isActive ? "-2px" : "0" }}
             >
               {tab.icon} {tab.label}
@@ -45,13 +46,13 @@ export function SettingsApp({ windowId }: AppProps) {
       <div className="p-5">
         {activeTab === "theme" && <ThemeTab themeId={settings.themeId} setTheme={setTheme} />}
         {activeTab === "wallpaper" && <WallpaperTab wallpaperId={settings.wallpaperId ?? "bliss"} wallpaperOverridden={settings.wallpaperOverridden} themeId={settings.themeId} setWallpaperId={setWallpaperId} resetWallpaperToTheme={resetWallpaperToTheme} />}
-        {activeTab === "display" && <DisplayTab density={settings.density} animationsEnabled={settings.animationsEnabled} scanlinesEnabled={settings.scanlinesEnabled} cursorId={settings.cursorId} setDensity={setDensity} setAnimationsEnabled={setAnimationsEnabled} setScanlinesEnabled={setScanlinesEnabled} setCursorId={setCursorId} />}
+        {activeTab === "display" && <DisplayTab density={settings.density} animationsEnabled={settings.animationsEnabled} scanlinesEnabled={settings.scanlinesEnabled} cursorId={settings.cursorId} fontPairId={settings.fontPairId} fontSize={settings.fontSize} setDensity={setDensity} setAnimationsEnabled={setAnimationsEnabled} setScanlinesEnabled={setScanlinesEnabled} setCursorId={setCursorId} setFontPairId={setFontPairId} setFontSize={setFontSize} />}
         {activeTab === "system" && <SystemTab soundEnabled={settings.soundEnabled} setSoundEnabled={setSoundEnabled} ambientVolume={settings.ambientVolume} setAmbientVolume={setAmbientVolume} />}
 
         <div className="flex justify-end mt-5">
           <button
             onClick={onClose}
-            className="px-6 py-1.5 border-[2px] tracking-wider cursor-pointer text-base"
+            className="px-6 py-1.5 border-[2px] tracking-wider cursor-pointer"
             style={{ backgroundColor: "var(--t-bg)", color: "var(--t-text)", fontFamily: "var(--t-font-display)", borderTopColor: "var(--t-border-light)", borderLeftColor: "var(--t-border-light)", borderBottomColor: "var(--t-border-dark)", borderRightColor: "var(--t-border-dark)" }}
           >
             OK
@@ -64,7 +65,7 @@ export function SettingsApp({ windowId }: AppProps) {
 
 // Keep non-embedded export for backwards compatibility (used by site-shell overlay)
 export function SettingsPanel({ onClose }: { onClose: () => void }) {
-  const { settings, setTheme, setSoundEnabled, setAmbientVolume, setAnimationsEnabled, setDensity, setScanlinesEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme } = useSettings();
+  const { settings, setTheme, setSoundEnabled, setAmbientVolume, setAnimationsEnabled, setDensity, setScanlinesEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, setFontPairId, setFontSize } = useSettings();
   const [activeTab, setActiveTab] = useState<Tab>("theme");
 
   const content = (
@@ -73,7 +74,7 @@ export function SettingsPanel({ onClose }: { onClose: () => void }) {
         {TABS.map((tab) => {
           const isActive = tab.id === activeTab;
           return (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)} className="px-4 py-2 text-sm tracking-widest border-r cursor-pointer"
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)} className="px-4 py-2 tracking-widest border-r cursor-pointer"
               style={{ fontFamily: "var(--t-font-display)", color: isActive ? "var(--t-accent)" : "var(--t-text-muted)", backgroundColor: isActive ? "var(--t-bg)" : "var(--t-bg-dark)", borderRightColor: "var(--t-border-dark)", borderBottom: isActive ? "2px solid var(--t-bg)" : "none", marginBottom: isActive ? "-2px" : "0" }}
             >
               {tab.icon} {tab.label}
@@ -84,10 +85,10 @@ export function SettingsPanel({ onClose }: { onClose: () => void }) {
       <div className="p-5">
         {activeTab === "theme" && <ThemeTab themeId={settings.themeId} setTheme={setTheme} />}
         {activeTab === "wallpaper" && <WallpaperTab wallpaperId={settings.wallpaperId ?? "bliss"} wallpaperOverridden={settings.wallpaperOverridden} themeId={settings.themeId} setWallpaperId={setWallpaperId} resetWallpaperToTheme={resetWallpaperToTheme} />}
-        {activeTab === "display" && <DisplayTab density={settings.density} animationsEnabled={settings.animationsEnabled} scanlinesEnabled={settings.scanlinesEnabled} cursorId={settings.cursorId} setDensity={setDensity} setAnimationsEnabled={setAnimationsEnabled} setScanlinesEnabled={setScanlinesEnabled} setCursorId={setCursorId} />}
+        {activeTab === "display" && <DisplayTab density={settings.density} animationsEnabled={settings.animationsEnabled} scanlinesEnabled={settings.scanlinesEnabled} cursorId={settings.cursorId} fontPairId={settings.fontPairId} fontSize={settings.fontSize} setDensity={setDensity} setAnimationsEnabled={setAnimationsEnabled} setScanlinesEnabled={setScanlinesEnabled} setCursorId={setCursorId} setFontPairId={setFontPairId} setFontSize={setFontSize} />}
         {activeTab === "system" && <SystemTab soundEnabled={settings.soundEnabled} setSoundEnabled={setSoundEnabled} ambientVolume={settings.ambientVolume} setAmbientVolume={setAmbientVolume} />}
         <div className="flex justify-end mt-5">
-          <button onClick={onClose} className="px-6 py-1.5 border-[2px] tracking-wider cursor-pointer text-base" style={{ backgroundColor: "var(--t-bg)", color: "var(--t-text)", fontFamily: "var(--t-font-display)", borderTopColor: "var(--t-border-light)", borderLeftColor: "var(--t-border-light)", borderBottomColor: "var(--t-border-dark)", borderRightColor: "var(--t-border-dark)" }}>OK</button>
+          <button onClick={onClose} className="px-6 py-1.5 border-[2px] tracking-wider cursor-pointer" style={{ backgroundColor: "var(--t-bg)", color: "var(--t-text)", fontFamily: "var(--t-font-display)", borderTopColor: "var(--t-border-light)", borderLeftColor: "var(--t-border-light)", borderBottomColor: "var(--t-border-dark)", borderRightColor: "var(--t-border-dark)" }}>OK</button>
         </div>
       </div>
     </div>
@@ -96,7 +97,7 @@ export function SettingsPanel({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center" style={{ backgroundColor: "rgba(0,0,0,0.4)" }} onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="w-full max-w-lg border-[3px] shadow-[8px_8px_0_rgba(0,0,0,0.5)] animate-[fadeIn_0.2s_ease]" style={{ backgroundColor: "var(--t-bg)", borderTopColor: "var(--t-border-light)", borderLeftColor: "var(--t-border-light)", borderRightColor: "var(--t-border-dark)", borderBottomColor: "var(--t-border-dark)" }}>
-        <div className="px-[10px] py-[6px] flex justify-between items-center border-b-2 border-black tracking-wider text-base select-none" style={{ background: "linear-gradient(to right, var(--t-titlebar-from), var(--t-titlebar-to))", color: "var(--t-titlebar-text)", fontFamily: "var(--t-font-display)" }}>
+        <div className="px-[10px] py-[6px] flex justify-between items-center border-b-2 border-black tracking-wider select-none" style={{ fontSize: "var(--t-text-base)", background: "linear-gradient(to right, var(--t-titlebar-from), var(--t-titlebar-to))", color: "var(--t-titlebar-text)", fontFamily: "var(--t-font-display)" }}>
           <span>⚙️ Paramètres GunthOS</span>
           <RetroTitlebarBtn onClick={onClose}>✕</RetroTitlebarBtn>
         </div>
@@ -108,7 +109,7 @@ export function SettingsPanel({ onClose }: { onClose: () => void }) {
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <div className="text-sm tracking-widest mb-3 pb-1 border-b" style={{ color: "var(--t-text-muted)", fontFamily: "var(--t-font-display)", borderBottomColor: "var(--t-border-dark)" }}>
+    <div className="tracking-widest mb-3 pb-1 border-b" style={{ fontSize: "var(--t-text-sm)", color: "var(--t-text-muted)", fontFamily: "var(--t-font-display)", borderBottomColor: "var(--t-border-dark)" }}>
       {children}
     </div>
   );
@@ -118,11 +119,11 @@ function RetroToggle({ value, onChange, label, description }: { value: boolean; 
   return (
     <div className="flex items-center justify-between py-2">
       <div>
-        <div className="text-sm tracking-wider" style={{ color: "var(--t-text)", fontFamily: "var(--t-font-display)" }}>{label}</div>
-        {description && <div className="text-sm" style={{ color: "var(--t-text-subtle)", fontFamily: "var(--t-font-body)" }}>{description}</div>}
+        <div className="tracking-wider" style={{ fontSize: "var(--t-text-sm)", color: "var(--t-text)", fontFamily: "var(--t-font-display)" }}>{label}</div>
+        {description && <div style={{ fontSize: "var(--t-text-sm)", color: "var(--t-text-subtle)", fontFamily: "var(--t-font-body)" }}>{description}</div>}
       </div>
-      <button onClick={() => onChange(!value)} className="flex items-center gap-1.5 px-3 py-1 border-[2px] text-sm tracking-wider cursor-pointer shrink-0"
-        style={{ backgroundColor: value ? "var(--t-accent)" : "var(--t-bg-dark)", color: value ? "var(--t-bg)" : "var(--t-text-muted)", fontFamily: "var(--t-font-display)", borderTopColor: value ? "var(--t-border-dark)" : "var(--t-border-light)", borderLeftColor: value ? "var(--t-border-dark)" : "var(--t-border-light)", borderBottomColor: value ? "var(--t-border-light)" : "var(--t-border-dark)", borderRightColor: value ? "var(--t-border-light)" : "var(--t-border-dark)" }}
+      <button onClick={() => onChange(!value)} className="flex items-center gap-1.5 px-3 py-1 border-[2px] tracking-wider cursor-pointer shrink-0"
+        style={{ fontSize: "var(--t-text-sm)", backgroundColor: value ? "var(--t-accent)" : "var(--t-bg-dark)", color: value ? "var(--t-bg)" : "var(--t-text-muted)", fontFamily: "var(--t-font-display)", borderTopColor: value ? "var(--t-border-dark)" : "var(--t-border-light)", borderLeftColor: value ? "var(--t-border-dark)" : "var(--t-border-light)", borderBottomColor: value ? "var(--t-border-light)" : "var(--t-border-dark)", borderRightColor: value ? "var(--t-border-light)" : "var(--t-border-dark)" }}
       >
         {value ? "✓ ON" : "✗ OFF"}
       </button>
@@ -161,7 +162,7 @@ function ThemeTab({ themeId, setTheme }: { themeId: ThemeId; setTheme: (id: Them
         })}
       </div>
       <div className="p-3 border-[2px]" style={{ backgroundColor: "var(--t-inset-from)", borderTopColor: "var(--t-border-dark)", borderLeftColor: "var(--t-border-dark)", borderBottomColor: "var(--t-border-light)", borderRightColor: "var(--t-border-light)" }}>
-        <div className="text-sm tracking-widest mb-2" style={{ color: "var(--t-text-subtle)", fontFamily: "var(--t-font-display)" }}>PALETTE ACTIVE</div>
+        <div className="tracking-widest mb-2" style={{ fontSize: "var(--t-text-sm)", color: "var(--t-text-subtle)", fontFamily: "var(--t-font-display)" }}>PALETTE ACTIVE</div>
         <div className="flex gap-1 flex-wrap">
           {["--t-bg", "--t-accent", "--t-titlebar-from", "--t-titlebar-to", "--t-marquee-text", "--t-card-hover-border", "--t-defrag-used", "--t-defrag-mystery"].map((v) => (
             <div key={v} className="w-6 h-6 border border-black/30" style={{ backgroundColor: `var(${v})` }} title={v.replace("--t-", "")} />
@@ -178,12 +179,50 @@ const DENSITY_OPTIONS: { id: Density; label: string; description: string }[] = [
   { id: "large", label: "LARGE", description: "Éléments agrandis" },
 ];
 
-function DisplayTab({ density, animationsEnabled, scanlinesEnabled, cursorId, setDensity, setAnimationsEnabled, setScanlinesEnabled, setCursorId }: {
-  density: Density; animationsEnabled: boolean; scanlinesEnabled: boolean; cursorId: CursorId;
-  setDensity: (v: Density) => void; setAnimationsEnabled: (v: boolean) => void; setScanlinesEnabled: (v: boolean) => void; setCursorId: (v: CursorId) => void;
+function DisplayTab({ density, animationsEnabled, scanlinesEnabled, cursorId, fontPairId, fontSize, setDensity, setAnimationsEnabled, setScanlinesEnabled, setCursorId, setFontPairId, setFontSize }: {
+  density: Density; animationsEnabled: boolean; scanlinesEnabled: boolean; cursorId: CursorId; fontPairId: FontPairId; fontSize: number;
+  setDensity: (v: Density) => void; setAnimationsEnabled: (v: boolean) => void; setScanlinesEnabled: (v: boolean) => void; setCursorId: (v: CursorId) => void; setFontPairId: (v: FontPairId) => void; setFontSize: (v: number) => void;
 }) {
   return (
     <>
+      <SectionTitle>🔤 TYPOGRAPHIE</SectionTitle>
+      <div className="grid grid-cols-2 gap-2 mb-6">
+        {FONT_PAIRS.map((pair) => {
+          const isActive = pair.id === fontPairId;
+          return (
+            <button key={pair.id} onClick={() => setFontPairId(pair.id)} className="flex flex-col gap-1 p-2.5 border-[2px] text-left cursor-pointer"
+              style={{ backgroundColor: isActive ? "var(--t-card-hover)" : "var(--t-bg-dark)", borderTopColor: isActive ? "var(--t-border-dark)" : "var(--t-border-light)", borderLeftColor: isActive ? "var(--t-border-dark)" : "var(--t-border-light)", borderBottomColor: isActive ? "var(--t-border-light)" : "var(--t-border-dark)", borderRightColor: isActive ? "var(--t-border-light)" : "var(--t-border-dark)" }}
+            >
+              <div className="leading-tight" style={{ fontSize: "var(--t-text-xl)", fontFamily: pair.displayVar, color: isActive ? "var(--t-accent)" : "var(--t-text)" }}>
+                {isActive ? "✓ " : ""}{pair.sample}
+              </div>
+              <div className="tracking-widest" style={{ fontSize: "var(--t-text-xs)", fontFamily: "var(--t-font-display)", color: isActive ? "var(--t-accent)" : "var(--t-text-muted)" }}>
+                {pair.emoji} {pair.name.toUpperCase()}
+              </div>
+              <div style={{ fontSize: "var(--t-text-xs)", fontFamily: pair.bodyVar, color: "var(--t-text-subtle)" }}>
+                {pair.description}
+              </div>
+            </button>
+          );
+        })}
+      </div>
+      <SectionTitle>🔡 TAILLE DU TEXTE</SectionTitle>
+      <div className="flex items-center gap-3 mb-6 py-2">
+        <span style={{ fontSize: "var(--t-text-xs)", fontFamily: "var(--t-font-display)", color: "var(--t-text-subtle)", minWidth: 20 }}>A</span>
+        <input
+          type="range" min={85} max={130} step={5} value={Math.round(fontSize * 100)}
+          onChange={(e) => setFontSize(Number(e.target.value) / 100)}
+          className="flex-1 cursor-pointer"
+          style={{ accentColor: "var(--t-accent)" }}
+        />
+        <span style={{ fontSize: "var(--t-text-lg)", fontFamily: "var(--t-font-display)", color: "var(--t-text-subtle)", minWidth: 20 }}>A</span>
+        <span className="tabular-nums w-10 text-right" style={{ fontSize: "var(--t-text-xs)", fontFamily: "var(--t-font-display)", color: "var(--t-text-muted)" }}>{Math.round(fontSize * 100)}%</span>
+        {fontSize !== 1 && (
+          <button onClick={() => setFontSize(1)} className="px-2 py-0.5 border-[2px] cursor-pointer"
+            style={{ fontSize: "var(--t-text-xs)", fontFamily: "var(--t-font-display)", color: "var(--t-accent)", backgroundColor: "var(--t-bg)", borderTopColor: "var(--t-border-light)", borderLeftColor: "var(--t-border-light)", borderBottomColor: "var(--t-border-dark)", borderRightColor: "var(--t-border-dark)" }}
+          >↺</button>
+        )}
+      </div>
       <SectionTitle>🖥️ DENSITÉ DE L&apos;INTERFACE</SectionTitle>
       <div className="flex gap-2 mb-6">
         {DENSITY_OPTIONS.map((opt) => {
@@ -192,8 +231,8 @@ function DisplayTab({ density, animationsEnabled, scanlinesEnabled, cursorId, se
             <button key={opt.id} onClick={() => setDensity(opt.id)} className="flex-1 py-2 border-[2px] text-center cursor-pointer"
               style={{ backgroundColor: isActive ? "var(--t-card-hover)" : "var(--t-bg-dark)", color: isActive ? "var(--t-accent)" : "var(--t-text-muted)", fontFamily: "var(--t-font-display)", borderTopColor: isActive ? "var(--t-border-dark)" : "var(--t-border-light)", borderLeftColor: isActive ? "var(--t-border-dark)" : "var(--t-border-light)", borderBottomColor: isActive ? "var(--t-border-light)" : "var(--t-border-dark)", borderRightColor: isActive ? "var(--t-border-light)" : "var(--t-border-dark)" }}
             >
-              <div className="text-sm tracking-widest">{isActive ? "✓ " : ""}{opt.label}</div>
-              <div className="text-xs mt-0.5" style={{ color: "var(--t-text-subtle)", fontFamily: "var(--t-font-body)" }}>{opt.description}</div>
+              <div className="tracking-widest" style={{ fontSize: "var(--t-text-sm)" }}>{isActive ? "✓ " : ""}{opt.label}</div>
+              <div className="mt-0.5" style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-subtle)", fontFamily: "var(--t-font-body)" }}>{opt.description}</div>
             </button>
           );
         })}
@@ -211,8 +250,8 @@ function DisplayTab({ density, animationsEnabled, scanlinesEnabled, cursorId, se
               style={{ backgroundColor: isActive ? "var(--t-card-hover)" : "var(--t-bg-dark)", color: isActive ? "var(--t-accent)" : "var(--t-text-muted)", fontFamily: "var(--t-font-display)", borderTopColor: isActive ? "var(--t-border-dark)" : "var(--t-border-light)", borderLeftColor: isActive ? "var(--t-border-dark)" : "var(--t-border-light)", borderBottomColor: isActive ? "var(--t-border-light)" : "var(--t-border-dark)", borderRightColor: isActive ? "var(--t-border-light)" : "var(--t-border-dark)" }}
             >
               <span style={{ fontSize: "20px", lineHeight: 1 }}>{c.emoji}</span>
-              <span className="text-xs tracking-wider" style={{ fontSize: "9px" }}>{isActive ? "✓ " : ""}{c.label}</span>
-              <span className="text-xs" style={{ color: "var(--t-text-subtle)", fontFamily: "var(--t-font-body)", fontSize: "8px", textAlign: "center" }}>{c.description}</span>
+              <span className="tracking-wider" style={{ fontSize: "var(--t-text-xs)" }}>{isActive ? "✓ " : ""}{c.label}</span>
+              <span style={{ color: "var(--t-text-subtle)", fontFamily: "var(--t-font-body)", fontSize: "var(--t-text-xs)", textAlign: "center" }}>{c.description}</span>
             </button>
           );
         })}
@@ -237,16 +276,16 @@ function WallpaperTab({ wallpaperId, wallpaperOverridden, themeId, setWallpaperI
           style={{ backgroundColor: wallpaperOverridden ? "var(--t-bg-dark)" : "var(--t-card-hover)", borderTopColor: wallpaperOverridden ? "var(--t-border-dark)" : "var(--t-accent)", borderLeftColor: wallpaperOverridden ? "var(--t-border-dark)" : "var(--t-accent)", borderBottomColor: "var(--t-border-dark)", borderRightColor: "var(--t-border-dark)" }}
         >
           <div>
-            <div className="text-xs tracking-widest" style={{ color: wallpaperOverridden ? "var(--t-text-subtle)" : "var(--t-accent)", fontFamily: "var(--t-font-display)" }}>
+            <div className="tracking-widest" style={{ fontSize: "var(--t-text-xs)", color: wallpaperOverridden ? "var(--t-text-subtle)" : "var(--t-accent)", fontFamily: "var(--t-font-display)" }}>
               {wallpaperOverridden ? "🔓 FOND PERSONNALISÉ" : `🔗 LIÉ AU THÈME ${currentTheme?.emoji ?? ""}`}
             </div>
-            <div className="text-xs mt-0.5" style={{ color: "var(--t-text-muted)", fontFamily: "var(--t-font-body)" }}>
+            <div className="mt-0.5" style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)", fontFamily: "var(--t-font-body)" }}>
               {wallpaperOverridden ? `Défaut du thème : ${themeDefaultWallpaper.emoji} ${themeDefaultWallpaper.name}` : `Appliqué automatiquement avec ce thème`}
             </div>
           </div>
           {wallpaperOverridden && (
-            <button onClick={resetWallpaperToTheme} className="shrink-0 px-2 py-1 border-[2px] text-xs tracking-wider cursor-pointer"
-              style={{ fontFamily: "var(--t-font-display)", backgroundColor: "var(--t-bg)", color: "var(--t-accent)", borderTopColor: "var(--t-border-light)", borderLeftColor: "var(--t-border-light)", borderBottomColor: "var(--t-border-dark)", borderRightColor: "var(--t-border-dark)" }}
+            <button onClick={resetWallpaperToTheme} className="shrink-0 px-2 py-1 border-[2px] tracking-wider cursor-pointer"
+              style={{ fontSize: "var(--t-text-xs)", fontFamily: "var(--t-font-display)", backgroundColor: "var(--t-bg)", color: "var(--t-accent)", borderTopColor: "var(--t-border-light)", borderLeftColor: "var(--t-border-light)", borderBottomColor: "var(--t-border-dark)", borderRightColor: "var(--t-border-dark)" }}
             >🔗 RELIER</button>
           )}
         </div>
@@ -256,8 +295,8 @@ function WallpaperTab({ wallpaperId, wallpaperOverridden, themeId, setWallpaperI
       >
         <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ zIndex: 2, pointerEvents: "none" }}>
           <span style={{ fontSize: 28 }}>{active.emoji}</span>
-          <span style={{ fontFamily: "var(--t-font-display)", fontSize: 12, color: "white", textShadow: "1px 1px 3px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.8)", marginTop: 4, letterSpacing: "0.1em" }}>{active.name}</span>
-          {active.animated && <span style={{ fontFamily: "var(--t-font-body)", fontSize: 9, color: "rgba(255,255,255,0.7)", marginTop: 2 }}>✨ Animé</span>}
+          <span style={{ fontFamily: "var(--t-font-display)", fontSize: "var(--t-text-xs)", color: "white", textShadow: "1px 1px 3px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.8)", marginTop: 4, letterSpacing: "0.1em" }}>{active.name}</span>
+          {active.animated && <span style={{ fontFamily: "var(--t-font-body)", fontSize: "var(--t-text-xs)", color: "rgba(255,255,255,0.7)", marginTop: 2 }}>✨ Animé</span>}
         </div>
       </div>
       <div className="grid grid-cols-3 gap-2 max-h-[280px] overflow-y-auto pr-1">
@@ -279,7 +318,7 @@ function WallpaperTab({ wallpaperId, wallpaperOverridden, themeId, setWallpaperI
         })}
       </div>
       <div className="mt-3 p-2 border-[2px]" style={{ backgroundColor: "var(--t-inset-from)", borderTopColor: "var(--t-border-dark)", borderLeftColor: "var(--t-border-dark)", borderBottomColor: "var(--t-border-light)", borderRightColor: "var(--t-border-light)" }}>
-        <div className="text-xs tracking-widest" style={{ color: "var(--t-text-subtle)", fontFamily: "var(--t-font-display)" }}>
+        <div className="tracking-widest" style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-subtle)", fontFamily: "var(--t-font-display)" }}>
           {active.emoji} {active.name.toUpperCase()} — {active.description}
         </div>
       </div>

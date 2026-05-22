@@ -43,7 +43,7 @@ export function RetroButton({
   return (
     <button
       className={cn(
-        "px-4 py-2 font-semibold text-[0.95rem] cursor-pointer",
+        "px-4 py-2 font-semibold cursor-pointer",
         "border-[2px]",
         "disabled:opacity-50 disabled:cursor-not-allowed",
         "transition-none select-none",
@@ -51,6 +51,7 @@ export function RetroButton({
       )}
       style={{
         fontFamily: "var(--t-font-body)",
+        fontSize: "var(--t-text-base)",
         ...variantStyle,
         ...style,
       }}

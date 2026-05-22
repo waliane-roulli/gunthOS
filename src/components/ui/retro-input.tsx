@@ -11,11 +11,12 @@ export const RetroInput = forwardRef<HTMLInputElement, RetroInputProps>(
       <input
         ref={ref}
         className={cn(
-          "flex-1 px-3 py-2 text-base outline-none border-[2px]",
+          "flex-1 px-3 py-2 outline-none border-[2px]",
           className
         )}
         style={{
           fontFamily: "var(--t-font-body)",
+          fontSize: "var(--t-text-base)",
           backgroundColor: error === "empty"
             ? "#ffeaea"
             : error === "duplicate"
