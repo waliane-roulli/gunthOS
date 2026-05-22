@@ -54,9 +54,10 @@ const divider: React.CSSProperties = {
 
 // ─── nav sidebar ──────────────────────────────────────────────────────────────
 
-type Section = "users" | "database" | "notifications" | "broadcast";
+type Section = "live" | "users" | "database" | "notifications" | "broadcast";
 
 const NAV_ITEMS: { id: Section; label: string; icon: string }[] = [
+  { id: "live",          label: "En direct",       icon: "🟢" },
   { id: "users",         label: "Utilisateurs",   icon: "👥" },
   { id: "database",      label: "Base de données", icon: "🗄️" },
   { id: "notifications", label: "Notifications",   icon: "🔔" },
@@ -144,6 +145,251 @@ function SectionHeader({ title, subtitle, actions }: {
         )}
       </div>
       {actions && <div style={{ display: "flex", gap: 6, alignItems: "center" }}>{actions}</div>}
+    </div>
+  );
+}
+
+// ─── live panel ───────────────────────────────────────────────────────────────
+
+type OnlineUser = {
+  id: string;
+  username: string | null;
+  onlineStatus: string | null;
+  lastHeartbeat: string | null;
+  role: string;
+};
+
+type StatsData = {
+  onlineUsers: OnlineUser[];
+  activeSessions: number;
+  counts: {
+    totalUsers: number;
+    totalMessages: number;
+    totalNudges: number;
+    totalPosts: number;
+    totalReactions: number;
+    totalComments: number;
+    totalFollows: number;
+    totalTickets: number;
+  };
+  topMessagers: { userId: string | null; username: string | null; msgCount: number }[];
+  topPosters: { userId: string | null; username: string | null; postCount: number }[];
+};
+
+const STATUS_COLOR: Record<string, string> = {
+  online: "var(--t-success)",
+  away: "var(--t-warning)",
+  busy: "var(--t-error)",
+  offline: "var(--t-text-subtle)",
+};
+
+const STATUS_LABEL: Record<string, string> = {
+  online: "en ligne",
+  away: "absent",
+  busy: "occupé",
+  offline: "hors ligne",
+};
+
+const STAT_ITEMS: { key: keyof StatsData["counts"]; label: string; emoji: string }[] = [
+  { key: "totalUsers",    label: "Utilisateurs",        emoji: "👤" },
+  { key: "totalMessages", label: "Messages MSN",        emoji: "💬" },
+  { key: "totalNudges",   label: "Nudges envoyés",      emoji: "👋" },
+  { key: "totalPosts",    label: "Posts LinkedGunth",   emoji: "📝" },
+  { key: "totalReactions",label: "Réactions LG",        emoji: "👍" },
+  { key: "totalComments", label: "Commentaires LG",     emoji: "💭" },
+  { key: "totalFollows",  label: "Follows LG",          emoji: "🔗" },
+  { key: "totalTickets",  label: "Tickets GuntherBoard",emoji: "🎫" },
+];
+
+function LivePanel() {
+  const [data, setData] = useState<StatsData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  function load() {
+    setLoading(true);
+    fetch("/api/admin/stats")
+      .then((r) => r.json())
+      .then((d) => { setData(d); setLoading(false); })
+      .catch(() => setLoading(false));
+  }
+
+  useEffect(load, []);
+
+  // Auto-refresh every 15s
+  useEffect(() => {
+    const t = setInterval(load, 15_000);
+    return () => clearInterval(t);
+  }, []);
+
+  const statCard: React.CSSProperties = {
+    border: "2px solid",
+    borderTopColor: "var(--t-border-light)",
+    borderLeftColor: "var(--t-border-light)",
+    borderBottomColor: "var(--t-border-dark)",
+    borderRightColor: "var(--t-border-dark)",
+    background: "var(--t-bg)",
+    padding: "10px 12px",
+    display: "flex",
+    flexDirection: "column",
+    gap: 2,
+    minWidth: 100,
+  };
+
+  const rankRow = (name: string | null, value: number, i: number): React.ReactNode => (
+    <div key={i} style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 8px", borderBottom: "1px solid var(--t-border-dark)" }}>
+      <span style={{ fontFamily: "var(--t-font-body)", fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)", width: 14, textAlign: "right" }}>
+        {i + 1}.
+      </span>
+      <span style={{ flex: 1, fontFamily: "var(--t-font-body)", fontSize: "var(--t-text-sm)", color: "var(--t-accent)" }}>
+        {name ?? "—"}
+      </span>
+      <span style={{ fontFamily: "var(--t-font-body)", fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)" }}>
+        {value}
+      </span>
+    </div>
+  );
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+      <SectionHeader
+        title="En direct"
+        subtitle={data ? `${data.onlineUsers.length} connecté${data.onlineUsers.length !== 1 ? "s" : ""} · ${data.activeSessions} session${data.activeSessions !== 1 ? "s" : ""} actives` : "Chargement…"}
+        actions={<button style={btn()} onClick={load}>↻ Rafraîchir</button>}
+      />
+      <div style={{ flex: 1, overflow: "auto", padding: 16, display: "flex", flexDirection: "column", gap: 16 }}>
+
+        {loading && !data ? (
+          <div style={{ fontFamily: "var(--t-font-body)", fontSize: "var(--t-text-sm)", color: "var(--t-text-muted)", padding: 8 }}>Chargement…</div>
+        ) : data ? (
+          <>
+            {/* Users online */}
+            <div style={{
+              border: "2px solid",
+              borderTopColor: "var(--t-border-light)",
+              borderLeftColor: "var(--t-border-light)",
+              borderBottomColor: "var(--t-border-dark)",
+              borderRightColor: "var(--t-border-dark)",
+              background: "var(--t-bg)",
+            }}>
+              <div style={{
+                padding: "4px 8px",
+                background: "var(--t-inset-from)",
+                borderBottom: "1px solid var(--t-border-dark)",
+                fontFamily: "var(--t-font-display)",
+                fontSize: "var(--t-text-xs)",
+                color: "var(--t-text-muted)",
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+              }}>
+                <span style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--t-success)", display: "inline-block" }} />
+                Utilisateurs connectés ({data.onlineUsers.length})
+              </div>
+              {data.onlineUsers.length === 0 ? (
+                <div style={{ padding: "10px 12px", fontFamily: "var(--t-font-body)", fontSize: "var(--t-text-sm)", color: "var(--t-text-muted)" }}>
+                  Personne en ligne pour l&apos;instant.
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 8, padding: 10 }}>
+                  {data.onlineUsers.map((u) => {
+                    const status = u.onlineStatus ?? "online";
+                    const color = STATUS_COLOR[status] ?? "var(--t-text-muted)";
+                    const hb = u.lastHeartbeat ? new Date(u.lastHeartbeat) : null;
+                    const seenAgo = hb ? Math.round((Date.now() - hb.getTime()) / 1000) : null;
+                    return (
+                      <div key={u.id} style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 6,
+                        padding: "5px 10px",
+                        border: "2px solid",
+                        borderTopColor: "var(--t-border-light)",
+                        borderLeftColor: "var(--t-border-light)",
+                        borderBottomColor: "var(--t-border-dark)",
+                        borderRightColor: "var(--t-border-dark)",
+                        background: "var(--t-app-bg)",
+                      }}>
+                        <span style={{ width: 8, height: 8, borderRadius: "50%", background: color, flexShrink: 0 }} />
+                        <span style={{ fontFamily: "var(--t-font-body)", fontSize: "var(--t-text-sm)", color: "var(--t-accent)" }}>
+                          {u.username ?? u.id.slice(0, 8)}
+                        </span>
+                        {u.role === "admin" && (
+                          <span style={{ background: "var(--t-accent)", color: "#fff", fontSize: "var(--t-text-xs)", padding: "0 4px", fontFamily: "var(--t-font-body)" }}>
+                            admin
+                          </span>
+                        )}
+                        <span style={{ fontFamily: "var(--t-font-body)", fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)" }}>
+                          {STATUS_LABEL[status] ?? status}
+                          {seenAgo !== null && ` · il y a ${seenAgo}s`}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Stats globales */}
+            <div style={{
+              border: "2px solid",
+              borderTopColor: "var(--t-border-light)",
+              borderLeftColor: "var(--t-border-light)",
+              borderBottomColor: "var(--t-border-dark)",
+              borderRightColor: "var(--t-border-dark)",
+              background: "var(--t-bg)",
+            }}>
+              <div style={{
+                padding: "4px 8px",
+                background: "var(--t-inset-from)",
+                borderBottom: "1px solid var(--t-border-dark)",
+                fontFamily: "var(--t-font-display)",
+                fontSize: "var(--t-text-xs)",
+                color: "var(--t-text-muted)",
+              }}>
+                Statistiques globales
+              </div>
+              <div style={{ padding: 10, display: "flex", flexWrap: "wrap" as const, gap: 8 }}>
+                {STAT_ITEMS.map(({ key, label, emoji }) => (
+                  <div key={key} style={statCard}>
+                    <span style={{ fontSize: "var(--t-text-md)" }}>{emoji}</span>
+                    <span style={{ fontFamily: "var(--t-font-display)", fontSize: "var(--t-text-lg)", color: "var(--t-accent)" }}>
+                      {data.counts[key]}
+                    </span>
+                    <span style={{ fontFamily: "var(--t-font-body)", fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)" }}>
+                      {label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Classements */}
+            <div style={{ display: "flex", gap: 12 }}>
+
+              {/* Top messageurs */}
+              <div style={{ flex: 1, border: "2px solid", borderTopColor: "var(--t-border-light)", borderLeftColor: "var(--t-border-light)", borderBottomColor: "var(--t-border-dark)", borderRightColor: "var(--t-border-dark)", background: "var(--t-bg)" }}>
+                <div style={{ padding: "4px 8px", background: "var(--t-inset-from)", borderBottom: "1px solid var(--t-border-dark)", fontFamily: "var(--t-font-display)", fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)" }}>
+                  💬 Top messageurs MSN
+                </div>
+                {data.topMessagers.length === 0 ? (
+                  <div style={{ padding: "8px 12px", fontFamily: "var(--t-font-body)", fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)" }}>Aucun message</div>
+                ) : data.topMessagers.map((m, i) => rankRow(m.username, m.msgCount, i))}
+              </div>
+
+              {/* Top posters LinkedGunth */}
+              <div style={{ flex: 1, border: "2px solid", borderTopColor: "var(--t-border-light)", borderLeftColor: "var(--t-border-light)", borderBottomColor: "var(--t-border-dark)", borderRightColor: "var(--t-border-dark)", background: "var(--t-bg)" }}>
+                <div style={{ padding: "4px 8px", background: "var(--t-inset-from)", borderBottom: "1px solid var(--t-border-dark)", fontFamily: "var(--t-font-display)", fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)" }}>
+                  📝 Top posters LinkedGunth
+                </div>
+                {data.topPosters.length === 0 ? (
+                  <div style={{ padding: "8px 12px", fontFamily: "var(--t-font-body)", fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)" }}>Aucun post</div>
+                ) : data.topPosters.map((p, i) => rankRow(p.username, p.postCount, i))}
+              </div>
+
+            </div>
+          </>
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -810,7 +1056,7 @@ function AccessDenied() {
 
 export function DbAdmin({ windowId: _windowId }: AppProps) {
   const [access, setAccess] = useState<"pending" | "granted" | "denied">("pending");
-  const [section, setSection] = useState<Section>("users");
+  const [section, setSection] = useState<Section>("live");
 
   useEffect(() => {
     fetch("/api/admin/users")
@@ -831,6 +1077,7 @@ export function DbAdmin({ windowId: _windowId }: AppProps) {
     <div style={{ display: "flex", height: "100%", background: "var(--t-bg)" }}>
       <Sidebar active={section} onSelect={setSection} />
       <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+        {section === "live"           && <LivePanel />}
         {section === "users"         && <UsersPanel />}
         {section === "database"      && <DatabasePanel />}
         {section === "notifications" && <NotificationsPanel />}
