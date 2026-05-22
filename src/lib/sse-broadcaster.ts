@@ -16,7 +16,13 @@ export interface TtsPayload {
   rate?: number;
 }
 
-export type BroadcastPayload = NotifPayload | TtsPayload;
+export interface ReloadPayload {
+  kind: "reload";
+  version: string;
+  changelog?: string;
+}
+
+export type BroadcastPayload = NotifPayload | TtsPayload | ReloadPayload;
 
 type Writer = (data: string) => void;
 
