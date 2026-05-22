@@ -58,11 +58,14 @@ export function useDrawing(
 
       const progress = step / totalSteps;
       let delay: number;
-      if (progress < 0.3) delay = 55 + progress * 30;
-      else if (progress < 0.7) delay = 30 + (progress - 0.3) * 80;
-      else {
+      if (progress < 0.1) {
+        const t = progress / 0.1;
+        delay = 50 + t * (30 - 50);
+      } else if (progress < 0.7) {
+        delay = 30;
+      } else {
         const s = (progress - 0.7) / 0.3;
-        delay = 62 + s * s * 438;
+        delay = 30 + s * s * 470;
       }
 
       await sleep(delay);

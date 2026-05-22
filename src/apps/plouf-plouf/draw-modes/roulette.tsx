@@ -13,7 +13,9 @@ const ITEM_H = 52;
 const GAP = 6;
 const STEP = ITEM_H + GAP;
 const VIEWPORT_H = 280;
-const CENTER = (VIEWPORT_H - ITEM_H) / 2;
+const BORDER_W = 3;
+const INNER_H = VIEWPORT_H - 2 * BORDER_W;
+const CENTER = (INNER_H - ITEM_H) / 2;
 const COPIES = 5;
 
 export function RouletteWheel({
