@@ -408,7 +408,7 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
           style={{
             background: startMenuOpen ? "var(--t-bg-dark)" : "var(--t-start-btn-bg)",
             fontFamily: "var(--t-font-display)",
-            fontSize: "var(--t-text-base)",
+            fontSize: "var(--t-text-sm)",
             color: "var(--t-start-btn-text)",
             borderTopColor: startMenuOpen ? "var(--t-border-dark)" : "var(--t-border-light)",
             borderLeftColor: startMenuOpen ? "var(--t-border-dark)" : "var(--t-border-light)",
@@ -748,16 +748,17 @@ function StartMenuItem({
   return (
     <button
       onClick={onClick}
-      className="w-full flex items-center gap-2 px-3 py-1.5 text-left cursor-pointer hover:opacity-90"
+      className="w-full flex items-center gap-2 px-3 py-1.5 text-left cursor-pointer hover:opacity-90 overflow-hidden"
       style={{
         fontFamily: "var(--t-font-display)",
+        fontSize: "var(--t-text-sm)",
         color: "var(--t-text)",
         backgroundColor: active ? "var(--t-card-hover)" : "transparent",
       }}
     >
-      <span>{icon}</span>
-      <span className="tracking-wider">{label}</span>
-      {active && <span className="ml-auto">✓</span>}
+      <span className="shrink-0">{icon}</span>
+      <span className="tracking-wider truncate">{label}</span>
+      {active && <span className="ml-auto shrink-0">✓</span>}
     </button>
   );
 }

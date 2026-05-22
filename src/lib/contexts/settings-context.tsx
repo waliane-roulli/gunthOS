@@ -17,7 +17,6 @@ import {
   saveSettings,
   DEFAULT_SETTINGS,
   type AppSettings,
-  type Density,
 } from "@/lib/settings";
 import { WALLPAPERS, WALLPAPER_MAP, type WallpaperId } from "@/lib/wallpapers";
 import { FONT_PAIRS, type FontPairId } from "@/lib/font-pairs";
@@ -37,7 +36,6 @@ interface SettingsActionsContextValue {
   setMasterVolume: (v: number) => void;
   setAmbientVolume: (v: number) => void;
   setAnimationsEnabled: (v: boolean) => void;
-  setDensity: (v: Density) => void;
   setScanlinesEnabled: (v: boolean) => void;
   setCursorId: (v: CursorId) => void;
   setWallpaperId: (v: WallpaperId) => void;
@@ -58,7 +56,6 @@ const SettingsActionsContext = createContext<SettingsActionsContextValue>({
   setMasterVolume: () => {},
   setAmbientVolume: () => {},
   setAnimationsEnabled: () => {},
-  setDensity: () => {},
   setScanlinesEnabled: () => {},
   setCursorId: () => {},
   setWallpaperId: () => {},
@@ -114,11 +111,6 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
           animationsEnabled: local.animationsEnabled !== DEFAULT_SETTINGS.animationsEnabled
             ? local.animationsEnabled
             : (remote.animationsEnabled ?? DEFAULT_SETTINGS.animationsEnabled),
-          density: local.density !== DEFAULT_SETTINGS.density
-            ? local.density
-            : ((["compact", "normal", "large"] as const).includes(remote.density as "compact" | "normal" | "large")
-              ? remote.density as "compact" | "normal" | "large"
-              : DEFAULT_SETTINGS.density),
           scanlinesEnabled: local.scanlinesEnabled !== DEFAULT_SETTINGS.scanlinesEnabled
             ? local.scanlinesEnabled
             : (remote.scanlinesEnabled ?? DEFAULT_SETTINGS.scanlinesEnabled),
@@ -204,7 +196,6 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const setMasterVolume = useCallback((v: number) => updateSettings({ masterVolume: Math.max(0, Math.min(100, v)) }), [updateSettings]);
   const setAmbientVolume = useCallback((v: number) => updateSettings({ ambientVolume: Math.max(0, Math.min(1, v)) }), [updateSettings]);
   const setAnimationsEnabled = useCallback((v: boolean) => updateSettings({ animationsEnabled: v }), [updateSettings]);
-  const setDensity = useCallback((v: Density) => updateSettings({ density: v }), [updateSettings]);
   const setScanlinesEnabled = useCallback((v: boolean) => updateSettings({ scanlinesEnabled: v }), [updateSettings]);
   const setCursorId = useCallback((v: CursorId) => updateSettings({ cursorId: v }), [updateSettings]);
   const setWallpaperId = useCallback((v: WallpaperId) => updateSettings({ wallpaperId: v, wallpaperOverridden: true }), [updateSettings]);
@@ -227,8 +218,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const stateValue = useMemo(() => ({ settings, theme }), [settings, theme]);
 
   const actionsValue = useMemo(
-    () => ({ setTheme, setSoundEnabled, setMasterVolume, setAmbientVolume, setAnimationsEnabled, setDensity, setScanlinesEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, setFontPairId, setFontSize, updateSettings }),
-    [setTheme, setSoundEnabled, setMasterVolume, setAmbientVolume, setAnimationsEnabled, setDensity, setScanlinesEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, setFontPairId, setFontSize, updateSettings]
+    () => ({ setTheme, setSoundEnabled, setMasterVolume, setAmbientVolume, setAnimationsEnabled, setScanlinesEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, setFontPairId, setFontSize, updateSettings }),
+    [setTheme, setSoundEnabled, setMasterVolume, setAmbientVolume, setAnimationsEnabled, setScanlinesEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, setFontPairId, setFontSize, updateSettings]
   );
 
   return (

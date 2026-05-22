@@ -3,15 +3,12 @@ import { CURSORS, DEFAULT_CURSOR_ID, type CursorId } from "@/lib/cursors";
 import { WALLPAPERS, DEFAULT_WALLPAPER_ID, type WallpaperId } from "@/lib/wallpapers";
 import { FONT_PAIRS, DEFAULT_FONT_PAIR_ID, type FontPairId } from "@/lib/font-pairs";
 
-export type Density = "compact" | "normal" | "large";
-
 export interface AppSettings {
   themeId: ThemeId;
   soundEnabled: boolean;
   masterVolume: number; // 0–100, volume général
   ambientVolume: number; // 0–1, volume du bruit de fond machine
   animationsEnabled: boolean;
-  density: Density;
   scanlinesEnabled: boolean;
   cursorId: CursorId;
   wallpaperId: WallpaperId;
@@ -28,7 +25,6 @@ export const DEFAULT_SETTINGS: AppSettings = {
   masterVolume: 80,
   ambientVolume: 0.5,
   animationsEnabled: true,
-  density: "normal",
   scanlinesEnabled: true,
   cursorId: DEFAULT_CURSOR_ID,
   wallpaperId: DEFAULT_WALLPAPER_ID,
@@ -58,9 +54,6 @@ export function loadSettings(): AppSettings {
         ? Math.max(0, Math.min(1, parsed.ambientVolume))
         : DEFAULT_SETTINGS.ambientVolume,
       animationsEnabled: parsed.animationsEnabled ?? DEFAULT_SETTINGS.animationsEnabled,
-      density: (["compact", "normal", "large"] as Density[]).includes(parsed.density as Density)
-        ? (parsed.density as Density)
-        : DEFAULT_SETTINGS.density,
       scanlinesEnabled: parsed.scanlinesEnabled ?? DEFAULT_SETTINGS.scanlinesEnabled,
       cursorId: CURSORS.some((c) => c.id === parsed.cursorId)
         ? (parsed.cursorId as CursorId)
@@ -94,20 +87,3 @@ export function saveSettings(settings: AppSettings): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
 }
 
-export const DENSITY_CSS: Record<Density, Record<string, string>> = {
-  compact: {
-    "--t-density-gap": "0.25rem",
-    "--t-density-pad": "0.5rem",
-    "--t-density-text": "0.8rem",
-  },
-  normal: {
-    "--t-density-gap": "0.5rem",
-    "--t-density-pad": "0.75rem",
-    "--t-density-text": "1rem",
-  },
-  large: {
-    "--t-density-gap": "0.75rem",
-    "--t-density-pad": "1rem",
-    "--t-density-text": "1.1rem",
-  },
-};

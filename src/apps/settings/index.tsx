@@ -6,7 +6,6 @@ import { useSettings } from "@/lib/contexts/settings-context";
 import { THEMES, type ThemeId } from "@/lib/themes";
 import { CURSORS, type CursorId } from "@/lib/cursors";
 import { WALLPAPERS, WALLPAPER_MAP, type WallpaperId } from "@/lib/wallpapers";
-import { type Density } from "@/lib/settings";
 import { FONT_PAIRS, type FontPairId } from "@/lib/font-pairs";
 import { RetroTitlebarBtn } from "@/components/ui/retro-titlebar-btn";
 import type { AppProps } from "@/types";
@@ -23,7 +22,7 @@ const TABS: { id: Tab; label: string; icon: string }[] = [
 export function SettingsApp({ windowId }: AppProps) {
   const { closeWindow } = useWindowActions();
   const onClose = () => closeWindow(windowId);
-  const { settings, setTheme, setSoundEnabled, setAmbientVolume, setAnimationsEnabled, setDensity, setScanlinesEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, setFontPairId, setFontSize } = useSettings();
+  const { settings, setTheme, setSoundEnabled, setAmbientVolume, setAnimationsEnabled, setScanlinesEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, setFontPairId, setFontSize } = useSettings();
   const [activeTab, setActiveTab] = useState<Tab>("theme");
 
   return (
@@ -46,7 +45,7 @@ export function SettingsApp({ windowId }: AppProps) {
       <div className="p-5">
         {activeTab === "theme" && <ThemeTab themeId={settings.themeId} setTheme={setTheme} />}
         {activeTab === "wallpaper" && <WallpaperTab wallpaperId={settings.wallpaperId ?? "bliss"} wallpaperOverridden={settings.wallpaperOverridden} themeId={settings.themeId} setWallpaperId={setWallpaperId} resetWallpaperToTheme={resetWallpaperToTheme} />}
-        {activeTab === "display" && <DisplayTab density={settings.density} animationsEnabled={settings.animationsEnabled} scanlinesEnabled={settings.scanlinesEnabled} cursorId={settings.cursorId} fontPairId={settings.fontPairId} fontSize={settings.fontSize} setDensity={setDensity} setAnimationsEnabled={setAnimationsEnabled} setScanlinesEnabled={setScanlinesEnabled} setCursorId={setCursorId} setFontPairId={setFontPairId} setFontSize={setFontSize} />}
+        {activeTab === "display" && <DisplayTab animationsEnabled={settings.animationsEnabled} scanlinesEnabled={settings.scanlinesEnabled} cursorId={settings.cursorId} fontPairId={settings.fontPairId} fontSize={settings.fontSize} setAnimationsEnabled={setAnimationsEnabled} setScanlinesEnabled={setScanlinesEnabled} setCursorId={setCursorId} setFontPairId={setFontPairId} setFontSize={setFontSize} />}
         {activeTab === "system" && <SystemTab soundEnabled={settings.soundEnabled} setSoundEnabled={setSoundEnabled} ambientVolume={settings.ambientVolume} setAmbientVolume={setAmbientVolume} />}
 
         <div className="flex justify-end mt-5">
@@ -65,7 +64,7 @@ export function SettingsApp({ windowId }: AppProps) {
 
 // Keep non-embedded export for backwards compatibility (used by site-shell overlay)
 export function SettingsPanel({ onClose }: { onClose: () => void }) {
-  const { settings, setTheme, setSoundEnabled, setAmbientVolume, setAnimationsEnabled, setDensity, setScanlinesEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, setFontPairId, setFontSize } = useSettings();
+  const { settings, setTheme, setSoundEnabled, setAmbientVolume, setAnimationsEnabled, setScanlinesEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, setFontPairId, setFontSize } = useSettings();
   const [activeTab, setActiveTab] = useState<Tab>("theme");
 
   const content = (
@@ -85,7 +84,7 @@ export function SettingsPanel({ onClose }: { onClose: () => void }) {
       <div className="p-5">
         {activeTab === "theme" && <ThemeTab themeId={settings.themeId} setTheme={setTheme} />}
         {activeTab === "wallpaper" && <WallpaperTab wallpaperId={settings.wallpaperId ?? "bliss"} wallpaperOverridden={settings.wallpaperOverridden} themeId={settings.themeId} setWallpaperId={setWallpaperId} resetWallpaperToTheme={resetWallpaperToTheme} />}
-        {activeTab === "display" && <DisplayTab density={settings.density} animationsEnabled={settings.animationsEnabled} scanlinesEnabled={settings.scanlinesEnabled} cursorId={settings.cursorId} fontPairId={settings.fontPairId} fontSize={settings.fontSize} setDensity={setDensity} setAnimationsEnabled={setAnimationsEnabled} setScanlinesEnabled={setScanlinesEnabled} setCursorId={setCursorId} setFontPairId={setFontPairId} setFontSize={setFontSize} />}
+        {activeTab === "display" && <DisplayTab animationsEnabled={settings.animationsEnabled} scanlinesEnabled={settings.scanlinesEnabled} cursorId={settings.cursorId} fontPairId={settings.fontPairId} fontSize={settings.fontSize} setAnimationsEnabled={setAnimationsEnabled} setScanlinesEnabled={setScanlinesEnabled} setCursorId={setCursorId} setFontPairId={setFontPairId} setFontSize={setFontSize} />}
         {activeTab === "system" && <SystemTab soundEnabled={settings.soundEnabled} setSoundEnabled={setSoundEnabled} ambientVolume={settings.ambientVolume} setAmbientVolume={setAmbientVolume} />}
         <div className="flex justify-end mt-5">
           <button onClick={onClose} className="px-6 py-1.5 border-[2px] tracking-wider cursor-pointer" style={{ backgroundColor: "var(--t-bg)", color: "var(--t-text)", fontFamily: "var(--t-font-display)", borderTopColor: "var(--t-border-light)", borderLeftColor: "var(--t-border-light)", borderBottomColor: "var(--t-border-dark)", borderRightColor: "var(--t-border-dark)" }}>OK</button>
@@ -173,15 +172,9 @@ function ThemeTab({ themeId, setTheme }: { themeId: ThemeId; setTheme: (id: Them
   );
 }
 
-const DENSITY_OPTIONS: { id: Density; label: string; description: string }[] = [
-  { id: "compact", label: "COMPACT", description: "Interface resserrée" },
-  { id: "normal", label: "NORMAL", description: "Taille standard" },
-  { id: "large", label: "LARGE", description: "Éléments agrandis" },
-];
-
-function DisplayTab({ density, animationsEnabled, scanlinesEnabled, cursorId, fontPairId, fontSize, setDensity, setAnimationsEnabled, setScanlinesEnabled, setCursorId, setFontPairId, setFontSize }: {
-  density: Density; animationsEnabled: boolean; scanlinesEnabled: boolean; cursorId: CursorId; fontPairId: FontPairId; fontSize: number;
-  setDensity: (v: Density) => void; setAnimationsEnabled: (v: boolean) => void; setScanlinesEnabled: (v: boolean) => void; setCursorId: (v: CursorId) => void; setFontPairId: (v: FontPairId) => void; setFontSize: (v: number) => void;
+function DisplayTab({ animationsEnabled, scanlinesEnabled, cursorId, fontPairId, fontSize, setAnimationsEnabled, setScanlinesEnabled, setCursorId, setFontPairId, setFontSize }: {
+  animationsEnabled: boolean; scanlinesEnabled: boolean; cursorId: CursorId; fontPairId: FontPairId; fontSize: number;
+  setAnimationsEnabled: (v: boolean) => void; setScanlinesEnabled: (v: boolean) => void; setCursorId: (v: CursorId) => void; setFontPairId: (v: FontPairId) => void; setFontSize: (v: number) => void;
 }) {
   return (
     <>
@@ -222,20 +215,6 @@ function DisplayTab({ density, animationsEnabled, scanlinesEnabled, cursorId, fo
             style={{ fontSize: "var(--t-text-xs)", fontFamily: "var(--t-font-display)", color: "var(--t-accent)", backgroundColor: "var(--t-bg)", borderTopColor: "var(--t-border-light)", borderLeftColor: "var(--t-border-light)", borderBottomColor: "var(--t-border-dark)", borderRightColor: "var(--t-border-dark)" }}
           >↺</button>
         )}
-      </div>
-      <SectionTitle>🖥️ DENSITÉ DE L&apos;INTERFACE</SectionTitle>
-      <div className="flex gap-2 mb-6">
-        {DENSITY_OPTIONS.map((opt) => {
-          const isActive = opt.id === density;
-          return (
-            <button key={opt.id} onClick={() => setDensity(opt.id)} className="flex-1 py-2 border-[2px] text-center cursor-pointer"
-              style={{ backgroundColor: isActive ? "var(--t-card-hover)" : "var(--t-bg-dark)", color: isActive ? "var(--t-accent)" : "var(--t-text-muted)", fontFamily: "var(--t-font-display)", borderTopColor: isActive ? "var(--t-border-dark)" : "var(--t-border-light)", borderLeftColor: isActive ? "var(--t-border-dark)" : "var(--t-border-light)", borderBottomColor: isActive ? "var(--t-border-light)" : "var(--t-border-dark)", borderRightColor: isActive ? "var(--t-border-light)" : "var(--t-border-dark)" }}
-            >
-              <div className="tracking-widest" style={{ fontSize: "var(--t-text-sm)" }}>{isActive ? "✓ " : ""}{opt.label}</div>
-              <div className="mt-0.5" style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-subtle)", fontFamily: "var(--t-font-body)" }}>{opt.description}</div>
-            </button>
-          );
-        })}
       </div>
       <SectionTitle>✨ ANIMATIONS</SectionTitle>
       <RetroToggle value={animationsEnabled} onChange={setAnimationsEnabled} label="Animations du système" description="Transitions, effets visuels, ouverture de fenêtres" />

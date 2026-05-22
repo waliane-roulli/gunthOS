@@ -2,12 +2,12 @@
 
 import { useEffect } from "react";
 import { CURSOR_MAP } from "@/lib/cursors";
-import { DENSITY_CSS, type AppSettings } from "@/lib/settings";
+import type { AppSettings } from "@/lib/settings";
 import type { Theme } from "@/lib/themes";
 import { FONT_PAIR_MAP, DEFAULT_FONT_PAIR_ID } from "@/lib/font-pairs";
 
 /**
- * Applique les CSS variables du thème, densité, animations, scanlines et curseur
+ * Applique les CSS variables du thème, animations, scanlines et curseur
  * sur document.documentElement.
  *
  * Extrait de SettingsContext pour isoler les effets de bord DOM.
@@ -18,13 +18,6 @@ export function useThemeApplication(settings: AppSettings, theme: Theme) {
     Object.entries(theme.vars).forEach(([k, v]) => root.style.setProperty(k, v));
     root.setAttribute("data-theme", settings.themeId);
   }, [theme, settings.themeId]);
-
-  useEffect(() => {
-    const root = document.documentElement;
-    const vars = DENSITY_CSS[settings.density];
-    Object.entries(vars).forEach(([k, v]) => root.style.setProperty(k, v));
-    root.setAttribute("data-density", settings.density);
-  }, [settings.density]);
 
   useEffect(() => {
     document.documentElement.setAttribute(
