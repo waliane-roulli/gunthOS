@@ -14,6 +14,7 @@ interface OptionsPanelProps {
   onClose: () => void;
   appThemeId: ThemeId | null;
   onThemeChange: (id: ThemeId | null) => void;
+  appThemeStyle: Record<string, string>;
 }
 
 export function OptionsPanel({
@@ -23,6 +24,7 @@ export function OptionsPanel({
   onClose,
   appThemeId,
   onThemeChange,
+  appThemeStyle,
 }: OptionsPanelProps) {
   const update = (patch: Partial<CelebrationOptions>) =>
     onChange({ ...options, ...patch, preset: "custom" });
@@ -38,6 +40,7 @@ export function OptionsPanel({
       ref={drag.elementRef}
       className={`fixed w-[380px] max-w-[calc(100vw-20px)] max-h-[90vh] overflow-y-auto border-[3px] shadow-[4px_4px_0_rgba(0,0,0,0.4)] z-[10001] ${!drag.isDragged ? "transition-[right] duration-300" : ""}`}
       style={{
+        ...appThemeStyle,
         ...asideStyle,
         backgroundColor: "var(--t-bg)",
         borderTopColor: "var(--t-border-light)",

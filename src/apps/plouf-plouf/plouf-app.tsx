@@ -745,6 +745,7 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
         onClose={() => setOptionsOpen(false)}
         appThemeId={appThemeId}
         onThemeChange={setAppThemeId}
+        appThemeStyle={appThemeStyle}
       />
     </>
   );
