@@ -2,16 +2,72 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { linkedGunthFollows, user } from "@/lib/db/schema";
 import { auth } from "@/lib/auth";
-import { and, eq, count } from "drizzle-orm";
+import { and, eq, count, inArray, notInArray } from "drizzle-orm";
 import { headers } from "next/headers";
 import { unauthorized, notFound, badRequest, notify } from "@/lib/api-utils";
 
 // GET /api/linked-gunth/follows?userId=X  — état follow + compteurs
+// GET /api/linked-gunth/follows?me=1       — liste des ids suivis
+// GET /api/linked-gunth/follows?network=1  — followers/following/suggestions avec infos user
 export async function GET(req: NextRequest) {
   const session = await auth.api.getSession({ headers: await headers() });
   const myId = session?.user?.id ?? null;
 
   const { searchParams } = new URL(req.url);
+
+  const me = searchParams.get("me");
+  if (me && myId) {
+    const followingIds = db()
+      .select({ followedId: linkedGunthFollows.followedId })
+      .from(linkedGunthFollows)
+      .where(eq(linkedGunthFollows.followerId, myId))
+      .all()
+      .map((r) => r.followedId);
+    return NextResponse.json({ followingIds });
+  }
+
+  const network = searchParams.get("network");
+  if (network && myId) {
+    const followingRows = db()
+      .select({ followedId: linkedGunthFollows.followedId })
+      .from(linkedGunthFollows)
+      .where(eq(linkedGunthFollows.followerId, myId))
+      .all();
+    const followingIds = followingRows.map((r) => r.followedId);
+
+    const followerRows = db()
+      .select({ followerId: linkedGunthFollows.followerId })
+      .from(linkedGunthFollows)
+      .where(eq(linkedGunthFollows.followedId, myId))
+      .all();
+    const followerIds = followerRows.map((r) => r.followerId);
+
+    const fetchUsers = (ids: string[]) => {
+      if (ids.length === 0) return [];
+      return db()
+        .select({ id: user.id, name: user.name, username: user.username, avatarDataUrl: user.avatarDataUrl })
+        .from(user)
+        .where(inArray(user.id, ids))
+        .all();
+    };
+
+    const excludeIds = [myId, ...followingIds];
+    const suggestions = db()
+      .select({ id: user.id, name: user.name, username: user.username, avatarDataUrl: user.avatarDataUrl })
+      .from(user)
+      .where(notInArray(user.id, excludeIds))
+      .limit(10)
+      .all();
+
+    return NextResponse.json({
+      following: fetchUsers(followingIds),
+      followers: fetchUsers(followerIds),
+      suggestions,
+      followingIds,
+      followerIds,
+    });
+  }
+
   const userId = searchParams.get("userId");
   if (!userId) return badRequest("userId requis");
 
@@ -34,18 +90,6 @@ export async function GET(req: NextRequest) {
         .where(and(eq(linkedGunthFollows.followerId, myId), eq(linkedGunthFollows.followedId, userId)))
         .get()
     : false;
-
-  // If requesting own follows list (no target, just ?me=1)
-  const me = searchParams.get("me");
-  if (me && myId) {
-    const followingIds = db()
-      .select({ followedId: linkedGunthFollows.followedId })
-      .from(linkedGunthFollows)
-      .where(eq(linkedGunthFollows.followerId, myId))
-      .all()
-      .map((r) => r.followedId);
-    return NextResponse.json({ followingIds });
-  }
 
   return NextResponse.json({
     followers: followersRow?.count ?? 0,

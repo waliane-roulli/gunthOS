@@ -4,11 +4,23 @@ import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { useSoundContext } from "@/lib/contexts/sound-context";
 import type { AppProps } from "@/types";
+import { VALID_SKILLS } from "@/lib/linked-gunth-constants";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
 type Reaction = "Inspirant" | "Bravo" | "Fascinant";
 type Tab = "feed" | "notifications" | "messages" | "profil";
+
+interface NetworkUser {
+  id: string;
+  name: string;
+  username: string | null;
+  avatarDataUrl: string | null;
+}
+
+type ViewedProfile =
+  | { kind: "bot"; name: string; title: string; emoji: string }
+  | { kind: "user"; userId: string; name: string };
 
 interface Experience {
   id: number;
@@ -407,7 +419,7 @@ function DialogShell({ title, onClose, children, width = "420px" }: {
 
 // ── Comment Section ────────────────────────────────────────────────────────────
 
-function CommentItem({ comment, user, onLike, playClick, playPop, replyingTo, setReplyingTo, onSubmitReply, replies }: {
+function CommentItem({ comment, user, onLike, playClick, playPop, replyingTo, setReplyingTo, onSubmitReply, replies, onOpenProfile }: {
   comment: Comment;
   user: { id: string } | null;
   onLike: (id: number) => void;
@@ -417,11 +429,21 @@ function CommentItem({ comment, user, onLike, playClick, playPop, replyingTo, se
   setReplyingTo: (id: number | null) => void;
   onSubmitReply: (parentId: number, text: string) => Promise<void>;
   replies: Comment[];
+  onOpenProfile: (p: ViewedProfile) => void;
 }) {
   const isBot = !comment.authorId;
   const name = isBot ? comment.botName : (comment.authorName ?? "Anonyme");
   const avatar = isBot ? comment.botAvatar : null;
   const avatarSrc = !isBot ? comment.authorAvatar : null;
+
+  function handleOpenProfile() {
+    playClick();
+    if (isBot) {
+      onOpenProfile({ kind: "bot", name: name ?? "", title: "", emoji: avatar ?? "👤" });
+    } else if (comment.authorId) {
+      onOpenProfile({ kind: "user", userId: comment.authorId, name: name ?? "" });
+    }
+  }
   const [replyText, setReplyText] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [likeAnim, setLikeAnim] = useState(false);
@@ -446,10 +468,12 @@ function CommentItem({ comment, user, onLike, playClick, playPop, replyingTo, se
   return (
     <div className="mb-1.5">
       <div className="flex gap-1.5 p-1.5 border-2" style={{ borderTopColor: "var(--t-border-dark)", borderLeftColor: "var(--t-border-dark)", borderBottomColor: "var(--t-border-light)", borderRightColor: "var(--t-border-light)", backgroundColor: "var(--t-app-bg)" }}>
-        <Avatar src={avatarSrc} emoji={avatar ?? "👤"} size={28} />
+        <button className="border-none bg-transparent p-0 cursor-pointer shrink-0" onClick={handleOpenProfile}>
+          <Avatar src={avatarSrc} emoji={avatar ?? "👤"} size={28} />
+        </button>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-xs font-bold" style={{ color: "var(--t-app-text)", fontFamily: "var(--t-font-display)" }}>{name}</span>
+            <button className="text-xs font-bold border-none bg-transparent p-0 cursor-pointer" style={{ color: "var(--t-app-text)", fontFamily: "var(--t-font-display)" }} onClick={handleOpenProfile}>{name}</button>
             {isBot && <span className="text-[0.6rem] px-0.5 border" style={{ borderColor: "var(--t-accent)", color: "var(--t-accent)", fontFamily: "var(--t-font-display)" }}>500+</span>}
             <span className="text-[0.65rem]" style={{ color: "var(--t-text-subtle)", fontFamily: "var(--t-font-display)" }}>{timeAgo(comment.createdAt)}</span>
           </div>
@@ -531,11 +555,12 @@ function CommentItem({ comment, user, onLike, playClick, playPop, replyingTo, se
 
 // ── Inline Comment Section ─────────────────────────────────────────────────────
 
-function InlineComments({ postId, user, playClick, playPop }: {
+function InlineComments({ postId, user, playClick, playPop, onOpenProfile }: {
   postId: number;
   user: { id: string; name?: string | null } | null;
   playClick: () => void;
   playPop: () => void;
+  onOpenProfile: (p: ViewedProfile) => void;
 }) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -673,6 +698,7 @@ function InlineComments({ postId, user, playClick, playPop }: {
               setReplyingTo={setReplyingTo}
               onSubmitReply={handleSubmitReply}
               replies={repliesMap.get(c.id) ?? []}
+              onOpenProfile={onOpenProfile}
             />
           ))
         )}
@@ -689,12 +715,13 @@ function InlineComments({ postId, user, playClick, playPop }: {
 
 // ── PostCard ───────────────────────────────────────────────────────────────────
 
-function PostCard({ post, user, expandedPosts, setExpandedPosts, handleReact, onShare, followedUsers, onFollowUser, playClick, playPop, viewCount }: {
+function PostCard({ post, user, expandedPosts, setExpandedPosts, handleReact, onShare, followedUsers, onFollowUser, onOpenProfile, playClick, playPop, viewCount }: {
   post: Post; user: { id: string } | null;
   expandedPosts: Set<number>; setExpandedPosts: React.Dispatch<React.SetStateAction<Set<number>>>;
   handleReact: (postId: number, reaction: Reaction) => void;
   onShare: () => void;
   followedUsers: Set<string>; onFollowUser: (authorId: string, authorName: string) => void;
+  onOpenProfile: (p: ViewedProfile) => void;
   playClick: () => void; playPop: () => void; viewCount: number;
 }) {
   const isBot = !post.authorId;
@@ -736,14 +763,25 @@ function PostCard({ post, user, expandedPosts, setExpandedPosts, handleReact, on
     onShare();
   }
 
+  function handleOpenAuthorProfile() {
+    playClick();
+    if (isBot) {
+      onOpenProfile({ kind: "bot", name: displayName ?? "", title: post.botTitle ?? "", emoji: post.botAvatar ?? "👤" });
+    } else if (post.authorId) {
+      onOpenProfile({ kind: "user", userId: post.authorId, name: displayName ?? "" });
+    }
+  }
+
   return (
     <div className="mb-1.5 overflow-hidden border-2" style={{ borderTopColor: "var(--t-border-light)", borderLeftColor: "var(--t-border-light)", borderBottomColor: "var(--t-border-dark)", borderRightColor: "var(--t-border-dark)", backgroundColor: "var(--t-bg)" }}>
       {/* Author */}
       <div className="flex items-start gap-2 p-2">
-        <Avatar src={post.authorAvatar} emoji={displayAvatar ?? "👤"} size={40} />
+        <button className="border-none bg-transparent p-0 cursor-pointer" onClick={handleOpenAuthorProfile}>
+          <Avatar src={post.authorAvatar} emoji={displayAvatar ?? "👤"} size={40} />
+        </button>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="font-bold" style={{ fontFamily: "var(--t-font-display)", color: "var(--t-text)" }}>{displayName}</span>
+            <button className="font-bold border-none bg-transparent p-0 cursor-pointer text-left" style={{ fontFamily: "var(--t-font-display)", color: "var(--t-text)" }} onClick={handleOpenAuthorProfile}>{displayName}</button>
             {isBot && <span className="text-[0.65rem] px-1 border" style={{ borderColor: "var(--t-accent)", color: "var(--t-accent)", fontFamily: "var(--t-font-display)" }}>500+</span>}
             {isMe && <span className="text-[0.65rem] px-1" style={{ backgroundColor: "var(--t-accent)", color: "var(--t-titlebar-text)", fontFamily: "var(--t-font-display)" }}>VOUS</span>}
           </div>
@@ -814,7 +852,7 @@ function PostCard({ post, user, expandedPosts, setExpandedPosts, handleReact, on
 
       {/* Inline comments */}
       {showComments && (
-        <InlineComments postId={post.id} user={user} playClick={playClick} playPop={playPop} />
+        <InlineComments postId={post.id} user={user} playClick={playClick} playPop={playPop} onOpenProfile={onOpenProfile} />
       )}
     </div>
   );
@@ -1237,6 +1275,210 @@ function InlineEditField({ value, placeholder, maxLength, disabled, onSave, styl
   );
 }
 
+// ── Bot profile generator ──────────────────────────────────────────────────────
+
+function seededPick<T>(arr: readonly T[], seed: number, offset = 0): T {
+  return arr[Math.abs(seed * 31 + offset) % arr.length] as T;
+}
+
+const BOT_FAKE_COMPANIES = [
+  "Synergy Corp", "Disruptive Solutions", "PivotTech", "BlueOcean SAS", "GreenLeap",
+  "InnoVenture", "AgileForge", "NextLevel Group", "Catalyst Partners", "HorizonLab",
+  "CoreValue Consulting", "ScaleUp Factory", "ImpactFirst", "VisionaryWorks", "LeapForward",
+] as const;
+
+const BOT_FAKE_TITLES = [
+  "Chief Everything Officer", "Head of Head of Things", "Directeur de la Direction",
+  "VP Something Strategic", "Lead Evangelist", "Senior Disruptor", "Growth Manager",
+  "Chief Happiness Officer", "Responsable de la Transformation", "Coach Agile Certifié",
+  "Consultant Indépendant", "Product Owner Visionnaire", "Digital Transformer",
+] as const;
+
+function generateBotExperiences(name: string): { title: string; company: string; startYear: number; endYear: number | null; isCurrent: boolean }[] {
+  const seed = name.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  const count = 2 + (seed % 2);
+  const exps = [];
+  let year = 2024;
+  for (let i = 0; i < count; i++) {
+    const duration = 1 + ((seed + i * 7) % 4);
+    const isCurrent = i === 0;
+    exps.push({
+      title: seededPick(BOT_FAKE_TITLES, seed, i * 3),
+      company: seededPick(BOT_FAKE_COMPANIES, seed, i * 7),
+      startYear: year - duration,
+      endYear: isCurrent ? null : year,
+      isCurrent,
+    });
+    year -= duration + 1;
+  }
+  return exps;
+}
+
+function generateBotSkills(name: string): { skill: string; count: number }[] {
+  const seed = name.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  const picked: { skill: string; count: number }[] = [];
+  const used = new Set<number>();
+  for (let i = 0; picked.length < 5; i++) {
+    const idx = Math.abs(seed * 13 + i * 17) % VALID_SKILLS.length;
+    if (!used.has(idx)) {
+      used.add(idx);
+      picked.push({ skill: VALID_SKILLS[idx] as string, count: 50 + Math.abs(seed * 7 + i * 11) % 450 });
+    }
+  }
+  return picked;
+}
+
+// ── ProfilePage ────────────────────────────────────────────────────────────────
+
+function ProfilePage({ profile, onBack, currentUserId, playClick, followedUsers, onFollowUser }: {
+  profile: ViewedProfile;
+  onBack: () => void;
+  currentUserId: string | null;
+  playClick: () => void;
+  followedUsers: Set<string>;
+  onFollowUser: (id: string, name: string) => void;
+}) {
+  const isBot = profile.kind === "bot";
+  const name = profile.name;
+  const emoji = isBot ? profile.emoji : "👤";
+  const title = isBot ? profile.title : null;
+
+  const [userData, setUserData] = useState<{
+    profile: { headline: string | null; location: string | null; openToWork: boolean };
+    experiences: { id: number; title: string; company: string; startYear: number; endYear: number | null; isCurrent: boolean }[];
+    endorsedSkills: string[];
+    followersCount: number;
+    user: { avatarDataUrl: string | null; username: string | null };
+  } | null>(null);
+  const [loadingUser, setLoadingUser] = useState(!isBot);
+
+  useEffect(() => {
+    if (isBot || profile.kind !== "user") return;
+    fetch(`/api/linked-gunth/public-profile?userId=${profile.userId}`)
+      .then((r) => r.json())
+      .then((d) => { setUserData(d); setLoadingUser(false); });
+  }, [isBot, profile]);
+
+  const botExps = useMemo(() => isBot ? generateBotExperiences(name) : null, [isBot, name]);
+  const botSkills = useMemo(() => isBot ? generateBotSkills(name) : null, [isBot, name]);
+
+  const headline = isBot ? title : (userData?.profile.headline ?? null);
+  const location = isBot ? "Paris, Île-de-France" : (userData?.profile.location ?? null);
+  const openToWork = isBot ? false : (userData?.profile.openToWork ?? false);
+  const experiences = isBot ? botExps! : (userData?.experiences ?? []);
+  const skills = isBot ? botSkills! : (userData?.endorsedSkills.map((s) => ({ skill: s, count: 1 })) ?? []);
+  const followersCount = isBot ? (name.length * 31 + 42) % 900 + 100 : (userData?.followersCount ?? 0);
+
+  const isFollowed = !isBot && profile.kind === "user" ? followedUsers.has(profile.userId) : false;
+  const isMe = !isBot && profile.kind === "user" && profile.userId === currentUserId;
+
+  function handleFollow() {
+    if (isBot || profile.kind !== "user") return;
+    playClick();
+    onFollowUser(profile.userId, name);
+  }
+
+  if (loadingUser) {
+    return (
+      <div className="flex flex-col h-full items-center justify-center" style={{ color: "var(--t-text-muted)", fontFamily: "var(--t-font-display)" }}>
+        <span className="animate-[blink_1s_step-end_infinite] text-2xl">⏳</span>
+        <div className="mt-2 text-xs">Chargement du profil…</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col h-full overflow-auto" style={{ backgroundColor: "var(--t-bg-dark)" }}>
+      {/* Back button */}
+      <div className="shrink-0 flex items-center gap-1 px-2 py-1 border-b-2" style={{ borderColor: "var(--t-border-dark)", backgroundColor: "var(--t-bg)" }}>
+        <button onClick={() => { playClick(); onBack(); }} className="px-2 py-0.5 text-xs border-2" style={{ fontFamily: "var(--t-font-display)", borderTopColor: "var(--t-border-light)", borderLeftColor: "var(--t-border-light)", borderBottomColor: "var(--t-border-dark)", borderRightColor: "var(--t-border-dark)", backgroundColor: "var(--t-bg)" }}>
+          ← Retour
+        </button>
+        <span className="text-xs ml-1" style={{ color: "var(--t-titlebar-text)", fontFamily: "var(--t-font-display)" }}>Profil de {name}</span>
+      </div>
+
+      <div className="flex-1 p-2">
+        <div className="max-w-xl mx-auto">
+          <div className="overflow-hidden border-2" style={{ borderTopColor: "var(--t-border-light)", borderLeftColor: "var(--t-border-light)", borderBottomColor: "var(--t-border-dark)", borderRightColor: "var(--t-border-dark)", backgroundColor: "var(--t-bg)" }}>
+            {/* Banner */}
+            <div className="h-14 relative" style={{ background: "linear-gradient(135deg, var(--t-titlebar-from), var(--t-titlebar-to))" }}>
+              {openToWork && (
+                <div className="absolute bottom-1 left-2 text-[0.6rem] px-1.5 py-0.5 animate-[blink_2s_step-end_infinite]" style={{ backgroundColor: "var(--t-accent)", color: "var(--t-titlebar-text)", fontFamily: "var(--t-font-display)" }}>
+                  🟢 OPEN TO WORK
+                </div>
+              )}
+              {isBot && (
+                <div className="absolute top-1 right-1 text-[0.6rem] px-1 border" style={{ borderColor: "var(--t-accent)", color: "var(--t-accent)", fontFamily: "var(--t-font-display)", backgroundColor: "var(--t-bg)" }}>
+                  500+ relations
+                </div>
+              )}
+            </div>
+
+            {/* Info */}
+            <div className="px-3 pb-3 -mt-5">
+              <Avatar src={!isBot ? (userData?.user.avatarDataUrl ?? null) : null} emoji={emoji} size={52} />
+              <div className="mt-2 flex justify-between items-start gap-2">
+                <div className="min-w-0 flex-1">
+                  <div className="font-bold" style={{ color: "var(--t-text)", fontFamily: "var(--t-font-display)" }}>{name}</div>
+                  {headline && <div className="text-sm leading-tight" style={{ color: "var(--t-text-muted)", fontFamily: "var(--t-font-display)" }}>{headline}</div>}
+                  {location && <div className="text-xs mt-0.5" style={{ color: "var(--t-text-subtle)", fontFamily: "var(--t-font-display)" }}>📍 {location}</div>}
+                  <div className="text-xs mt-0.5" style={{ color: "var(--t-accent)", fontFamily: "var(--t-font-display)" }}>
+                    {followersCount} relations
+                  </div>
+                </div>
+                {!isMe && !isBot && (
+                  <button onClick={handleFollow} className="shrink-0 px-2 py-0.5 text-xs border-2" style={{ fontFamily: "var(--t-font-display)", borderTopColor: isFollowed ? "var(--t-border-dark)" : "var(--t-border-light)", borderLeftColor: isFollowed ? "var(--t-border-dark)" : "var(--t-border-light)", borderBottomColor: isFollowed ? "var(--t-border-light)" : "var(--t-border-dark)", borderRightColor: isFollowed ? "var(--t-border-light)" : "var(--t-border-dark)", backgroundColor: isFollowed ? "rgba(0,0,0,0.1)" : "var(--t-bg)" }}>
+                    {isFollowed ? "✓ Abonné" : "+ Suivre"}
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Expériences */}
+            <div className="border-t px-3 py-2" style={{ borderColor: "var(--t-border-dark)" }}>
+              <div className="px-2 py-1 text-sm mb-2" style={{ background: "linear-gradient(90deg, var(--t-titlebar-from), var(--t-titlebar-to))", fontFamily: "var(--t-font-display)", color: "var(--t-titlebar-text)" }}>
+                💼 Expériences
+              </div>
+              {experiences.length === 0 ? (
+                <div className="text-xs text-center py-2" style={{ color: "var(--t-text-subtle)", fontFamily: "var(--t-font-display)" }}>Aucune expérience renseignée.</div>
+              ) : (
+                experiences.map((exp, i) => (
+                  <div key={i} className="mb-2 pb-2 border-b last:border-0" style={{ borderColor: "var(--t-border-dark)" }}>
+                    <div className="text-xs font-bold" style={{ color: "var(--t-text)", fontFamily: "var(--t-font-display)" }}>{exp.title}</div>
+                    <div className="text-xs" style={{ color: "var(--t-text-muted)", fontFamily: "var(--t-font-display)" }}>{exp.company}</div>
+                    <div className="text-[0.65rem]" style={{ color: "var(--t-text-subtle)", fontFamily: "var(--t-font-display)" }}>
+                      {exp.startYear} – {exp.isCurrent ? "présent" : exp.endYear}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Compétences */}
+            <div className="border-t px-3 py-2" style={{ borderColor: "var(--t-border-dark)" }}>
+              <div className="px-2 py-1 text-sm mb-2" style={{ background: "linear-gradient(90deg, var(--t-titlebar-from), var(--t-titlebar-to))", fontFamily: "var(--t-font-display)", color: "var(--t-titlebar-text)" }}>
+                🏅 Compétences
+              </div>
+              {skills.length === 0 ? (
+                <div className="text-xs text-center py-2" style={{ color: "var(--t-text-subtle)", fontFamily: "var(--t-font-display)" }}>Aucune compétence validée.</div>
+              ) : (
+                <div className="flex flex-wrap gap-1">
+                  {skills.map(({ skill, count }) => (
+                    <div key={skill} className="flex items-center gap-1 px-1.5 py-0.5 border-2 text-[0.65rem]" style={{ borderTopColor: "var(--t-border-light)", borderLeftColor: "var(--t-border-light)", borderBottomColor: "var(--t-border-dark)", borderRightColor: "var(--t-border-dark)", fontFamily: "var(--t-font-display)", color: "var(--t-text)" }}>
+                      {skill}
+                      {count > 1 && <span style={{ color: "var(--t-accent)" }}>· {count}</span>}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Main Component ─────────────────────────────────────────────────────────────
 
 export function LinkedGunthApp(_: AppProps) {
@@ -1278,9 +1520,11 @@ export function LinkedGunthApp(_: AppProps) {
   const [showAddExperience, setShowAddExperience] = useState(false);
   const [showAddRecommendation, setShowAddRecommendation] = useState(false);
   const [showViewers, setShowViewers] = useState(false);
+  const [network, setNetwork] = useState<{ following: NetworkUser[]; followers: NetworkUser[]; suggestions: NetworkUser[]; followingIds: string[]; followerIds: string[] } | null>(null);
   const [connectionRequest, setConnectionRequest] = useState<(typeof CONNECTION_REQUESTS)[number] | null>(null);
   const [typingIndicator, setTypingIndicator] = useState(false);
   const [sandrineSeen, setSandrineSeen] = useState(false);
+  const [viewedProfile, setViewedProfile] = useState<ViewedProfile | null>(null);
 
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const viewCountRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -1315,17 +1559,18 @@ export function LinkedGunthApp(_: AppProps) {
   const fetchFollows = useCallback(async () => {
     if (!user) return;
     try {
-      const [countRes, meRes] = await Promise.all([
+      const [countRes, networkRes] = await Promise.all([
         fetch(`/api/linked-gunth/follows?userId=${user.id}`),
-        fetch(`/api/linked-gunth/follows?me=1`),
+        fetch(`/api/linked-gunth/follows?network=1`),
       ]);
       if (countRes.ok) {
         const data = (await countRes.json()) as { followers: number };
         setFollowersCount(data.followers);
       }
-      if (meRes.ok) {
-        const data = (await meRes.json()) as { followingIds?: string[] };
-        if (data.followingIds) setFollowedUsers(new Set(data.followingIds));
+      if (networkRes.ok) {
+        const data = (await networkRes.json()) as { following: NetworkUser[]; followers: NetworkUser[]; suggestions: NetworkUser[]; followingIds: string[]; followerIds: string[] };
+        setNetwork(data);
+        setFollowedUsers(new Set(data.followingIds));
       }
     } catch { /* ignore */ }
   }, [user]);
@@ -1581,7 +1826,7 @@ export function LinkedGunthApp(_: AppProps) {
       body: JSON.stringify({ followedId: authorId }),
     });
     if (!wasFollowing) showToast(`✓ Vous suivez maintenant ${authorName}`);
-    await fetchFollows();
+    void fetchFollows();
   }
 
   function handleAcceptConnection() {
@@ -1631,6 +1876,19 @@ export function LinkedGunthApp(_: AppProps) {
     });
   }
 
+
+  if (viewedProfile) {
+    return (
+      <ProfilePage
+        profile={viewedProfile}
+        onBack={() => setViewedProfile(null)}
+        currentUserId={user?.id ?? null}
+        playClick={playClick}
+        followedUsers={followedUsers}
+        onFollowUser={handleFollowUser}
+      />
+    );
+  }
 
   return (
     <div className="flex flex-col h-full" style={{ fontFamily: "var(--t-font-body)", backgroundColor: "var(--t-bg)", minHeight: 0 }}>
@@ -1737,6 +1995,7 @@ export function LinkedGunthApp(_: AppProps) {
                       handleReact={handleReact}
                       onShare={() => showToast(pick(SHARE_TOASTS))}
                       followedUsers={followedUsers} onFollowUser={handleFollowUser}
+                      onOpenProfile={setViewedProfile}
                       playClick={playClick} playPop={playPop}
                       viewCount={postViewCounts[p.id] ?? Math.floor(1 + p.id * 7 + totalReactions(p.reactions) * 3)}
                     />
@@ -1942,10 +2201,19 @@ export function LinkedGunthApp(_: AppProps) {
                 {showViewers && profileViews.length > 0 && (
                   <div className="mt-1 border-2" style={{ ...sunkenStyle() }}>
                     {profileViews.slice(0, 8).map((v) => (
-                      <div key={v.id} className="flex items-center gap-1.5 px-2 py-1 border-b last:border-0" style={{ borderColor: "var(--t-border-dark)" }}>
+                      <div
+                        key={v.id}
+                        className="flex items-center gap-1.5 px-2 py-1 border-b last:border-0"
+                        style={{ borderColor: "var(--t-border-dark)", cursor: v.botName ? "pointer" : "default" }}
+                        onClick={() => {
+                          if (!v.botName) return;
+                          playClick();
+                          setViewedProfile({ kind: "bot", name: v.botName, title: v.botTitle ?? "", emoji: v.botEmoji ?? "👤" });
+                        }}
+                      >
                         <span className="text-base">{v.botEmoji ?? "👤"}</span>
                         <div className="min-w-0">
-                          <div className="text-xs font-bold truncate" style={{ color: "var(--t-app-text)", fontFamily: "var(--t-font-display)" }}>
+                          <div className="text-xs font-bold truncate" style={{ color: v.botName ? "var(--t-accent)" : "var(--t-app-text)", fontFamily: "var(--t-font-display)" }}>
                             {v.viewerUserId ? <span className="blur-[4px] select-none">🔒 Utilisateur Premium</span> : v.botName}
                           </div>
                           <div className="text-[0.6rem] truncate" style={{ color: "var(--t-text-subtle)", fontFamily: "var(--t-font-display)" }}>
@@ -2034,6 +2302,75 @@ export function LinkedGunthApp(_: AppProps) {
                     </div>
                   );
                 })}
+              </div>
+
+              {/* Réseau */}
+              <div className="border-t px-3 py-2" style={{ borderColor: "var(--t-border-dark)" }}>
+                <div className="px-2 py-1 text-sm mb-2" style={{ ...TITLEBAR_GRADIENT, fontFamily: "var(--t-font-display)" }}>
+                  🤝 Mon réseau
+                </div>
+                {!network ? (
+                  <div className="text-xs text-center py-2" style={{ color: "var(--t-text-subtle)", fontFamily: "var(--t-font-display)" }}>Chargement…</div>
+                ) : (
+                  <div className="space-y-2">
+                    {/* Abonnements */}
+                    <div className="text-xs mb-1" style={{ color: "var(--t-text-muted)", fontFamily: "var(--t-font-display)" }}>
+                      Abonnements ({network.following.length})
+                    </div>
+                    {network.following.length === 0 ? (
+                      <div className="text-xs py-1 text-center border-2 mb-1" style={{ ...sunkenStyle(), fontFamily: "var(--t-font-display)", color: "var(--t-text-subtle)" }}>
+                        Vous ne suivez personne. C&apos;est libérateur.
+                      </div>
+                    ) : (
+                      <div className="flex flex-wrap gap-1 mb-1">
+                        {network.following.map((u) => (
+                          <button key={u.id} onClick={() => { playClick(); setViewedProfile({ kind: "user", userId: u.id, name: u.name }); }} className="flex items-center gap-1 px-1.5 py-0.5 text-xs border-2" style={{ fontFamily: "var(--t-font-display)", ...raisedStyle() }}>
+                            <Avatar src={u.avatarDataUrl} emoji="👤" size={18} />
+                            <span style={{ color: "var(--t-text)" }}>{u.name}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {/* Abonnés */}
+                    <div className="text-xs mb-1" style={{ color: "var(--t-text-muted)", fontFamily: "var(--t-font-display)" }}>
+                      Abonnés ({network.followers.length})
+                    </div>
+                    {network.followers.length === 0 ? (
+                      <div className="text-xs py-1 text-center border-2 mb-1" style={{ ...sunkenStyle(), fontFamily: "var(--t-font-display)", color: "var(--t-text-subtle)" }}>
+                        Aucun abonné. Même votre mère ne vous suit pas.
+                      </div>
+                    ) : (
+                      <div className="flex flex-wrap gap-1 mb-1">
+                        {network.followers.map((u) => (
+                          <button key={u.id} onClick={() => { playClick(); setViewedProfile({ kind: "user", userId: u.id, name: u.name }); }} className="flex items-center gap-1 px-1.5 py-0.5 text-xs border-2" style={{ fontFamily: "var(--t-font-display)", ...raisedStyle() }}>
+                            <Avatar src={u.avatarDataUrl} emoji="👤" size={18} />
+                            <span style={{ color: "var(--t-text)" }}>{u.name}</span>
+                            {!followedUsers.has(u.id) && (
+                              <span className="text-[0.6rem] px-0.5 border" style={{ borderColor: "var(--t-accent)", color: "var(--t-accent)" }}>+</span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {/* Suggestions */}
+                    {network.suggestions.length > 0 && (
+                      <>
+                        <div className="text-xs mb-1" style={{ color: "var(--t-text-muted)", fontFamily: "var(--t-font-display)" }}>
+                          Suggestions
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {network.suggestions.map((u) => (
+                            <button key={u.id} onClick={() => { playClick(); handleFollowUser(u.id, u.name); }} className="flex items-center gap-1 px-1.5 py-0.5 text-xs border-2" style={{ fontFamily: "var(--t-font-display)", ...raisedStyle(false) }}>
+                              <Avatar src={u.avatarDataUrl} emoji="👤" size={18} />
+                              <span style={{ color: "var(--t-text)" }}>{u.name}</span>
+                              <span style={{ color: "var(--t-accent)" }}>+ Suivre</span>
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Recommandations */}
