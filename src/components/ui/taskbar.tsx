@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef, useState, type ReactNode } from "react";
 import { MsnLogo } from "./msn-logo";
 import { useWindowState, useWindowActions } from "@/lib/contexts/window-manager-context";
 import { LAUNCHER_APPS } from "@/apps";
@@ -270,7 +270,7 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
             {LAUNCHER_APPS.map((app) => (
               <StartMenuItem
                 key={app.slug}
-                icon={app.emoji}
+                icon={app.iconNode ?? app.emoji}
                 label={app.name}
                 onClick={() => handleOpenApp(app.slug)}
               />
@@ -369,7 +369,7 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
           >
             🎨 CHOISIR UN THÈME
           </div>
-          <div className="py-1">
+          <div className="py-1 overflow-y-auto" style={{ maxHeight: "calc(100vh - 80px)" }}>
             {THEMES.map((theme) => (
               <StartMenuItem
                 key={theme.id}
@@ -740,7 +740,7 @@ function StartMenuItem({
   onClick,
   active,
 }: {
-  icon: string;
+  icon: ReactNode;
   label: string;
   onClick: () => void;
   active?: boolean;

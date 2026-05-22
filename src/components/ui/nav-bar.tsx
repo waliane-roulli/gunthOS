@@ -69,7 +69,7 @@ export function NavBar({ onSettingsClick }: NavBarProps) {
                 cursor: isActive ? "default" : "pointer",
               }}
             >
-              <span>{app.emoji}</span>
+              <span>{app.iconNode ?? app.emoji}</span>
               <span>{app.name.toUpperCase()}</span>
               {showBadge && (
                 <span
