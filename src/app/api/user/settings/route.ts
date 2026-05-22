@@ -9,10 +9,15 @@ import { headers } from "next/headers";
 const settingsPatchSchema = z.object({
   themeId: z.string().optional(),
   soundEnabled: z.boolean().optional(),
+  masterVolume: z.number().min(0).max(100).optional(),
   ambientVolume: z.number().min(0).max(1).optional(),
   animationsEnabled: z.boolean().optional(),
   density: z.enum(["compact", "normal", "large"]).optional(),
   scanlinesEnabled: z.boolean().optional(),
+  cursorId: z.string().optional(),
+  wallpaperId: z.string().optional(),
+  wallpaperOverridden: z.boolean().optional(),
+  seenApps: z.array(z.string()).optional(),
 });
 
 async function getSession() {

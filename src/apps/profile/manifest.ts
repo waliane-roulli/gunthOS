@@ -8,6 +8,7 @@ export const manifest: AppManifest = {
   emoji: "👤",
   loadDuration: 1400,
   showInLauncher: true,
+  badge: "NEW",
   href: "/profile",
   component: ProfileApp,
 };

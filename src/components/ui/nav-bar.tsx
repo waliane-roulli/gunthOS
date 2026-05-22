@@ -2,34 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
 import type { Route } from "next";
 import { LAUNCHER_APPS } from "@/apps";
-
-const SEEN_BADGES_KEY = "gunth_seen_badges";
-
-function useSeenBadges() {
-  const [seen, setSeen] = useState<Set<string>>(new Set());
-
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(SEEN_BADGES_KEY);
-      if (stored) setSeen(new Set(JSON.parse(stored)));
-    } catch {}
-  }, []);
-
-  const markSeen = (slug: string) => {
-    setSeen((prev) => {
-      const next = new Set(prev).add(slug);
-      try {
-        localStorage.setItem(SEEN_BADGES_KEY, JSON.stringify([...next]));
-      } catch {}
-      return next;
-    });
-  };
-
-  return { seen, markSeen };
-}
+import { useSeenApps } from "@/lib/contexts/seen-apps-context";
 
 interface NavBarProps {
   onSettingsClick?: () => void;
@@ -37,7 +12,7 @@ interface NavBarProps {
 
 export function NavBar({ onSettingsClick }: NavBarProps) {
   const pathname = usePathname();
-  const { seen, markSeen } = useSeenBadges();
+  const { seen, markSeen } = useSeenApps();
 
   return (
     <div

@@ -89,22 +89,57 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     fetch("/api/user/settings", { signal: controller.signal })
       .then((r) => r.json())
       .then((data: { settings: Partial<AppSettings> | null }) => {
-        if (!data.settings) return;
+        const local = loadSettings();
+        const remote = data.settings ?? {};
+
+        // Local wins on a key if it differs from the default (user changed it anonymously)
         const merged: AppSettings = {
-          ...DEFAULT_SETTINGS,
-          ...data.settings,
-          themeId: THEMES.some((t) => t.id === data.settings!.themeId)
-            ? data.settings!.themeId!
-            : DEFAULT_SETTINGS.themeId,
-          ambientVolume: typeof data.settings.ambientVolume === "number"
-            ? Math.max(0, Math.min(1, data.settings.ambientVolume))
-            : DEFAULT_SETTINGS.ambientVolume,
-          wallpaperId: WALLPAPERS.some((w) => w.id === data.settings!.wallpaperId)
-            ? data.settings!.wallpaperId!
-            : DEFAULT_SETTINGS.wallpaperId,
+          themeId: local.themeId !== DEFAULT_SETTINGS.themeId
+            ? local.themeId
+            : (remote.themeId && THEMES.some((t) => t.id === remote.themeId) ? remote.themeId : DEFAULT_SETTINGS.themeId),
+          soundEnabled: local.soundEnabled !== DEFAULT_SETTINGS.soundEnabled
+            ? local.soundEnabled
+            : (remote.soundEnabled ?? DEFAULT_SETTINGS.soundEnabled),
+          masterVolume: local.masterVolume !== DEFAULT_SETTINGS.masterVolume
+            ? local.masterVolume
+            : (typeof remote.masterVolume === "number" ? Math.max(0, Math.min(100, remote.masterVolume)) : DEFAULT_SETTINGS.masterVolume),
+          ambientVolume: local.ambientVolume !== DEFAULT_SETTINGS.ambientVolume
+            ? local.ambientVolume
+            : (typeof remote.ambientVolume === "number" ? Math.max(0, Math.min(1, remote.ambientVolume)) : DEFAULT_SETTINGS.ambientVolume),
+          animationsEnabled: local.animationsEnabled !== DEFAULT_SETTINGS.animationsEnabled
+            ? local.animationsEnabled
+            : (remote.animationsEnabled ?? DEFAULT_SETTINGS.animationsEnabled),
+          density: local.density !== DEFAULT_SETTINGS.density
+            ? local.density
+            : ((["compact", "normal", "large"] as const).includes(remote.density as "compact" | "normal" | "large")
+              ? remote.density as "compact" | "normal" | "large"
+              : DEFAULT_SETTINGS.density),
+          scanlinesEnabled: local.scanlinesEnabled !== DEFAULT_SETTINGS.scanlinesEnabled
+            ? local.scanlinesEnabled
+            : (remote.scanlinesEnabled ?? DEFAULT_SETTINGS.scanlinesEnabled),
+          cursorId: local.cursorId !== DEFAULT_SETTINGS.cursorId
+            ? local.cursorId
+            : (remote.cursorId ?? DEFAULT_SETTINGS.cursorId),
+          wallpaperId: local.wallpaperOverridden
+            ? local.wallpaperId
+            : (remote.wallpaperId && WALLPAPERS.some((w) => w.id === remote.wallpaperId)
+              ? remote.wallpaperId
+              : local.wallpaperId),
+          wallpaperOverridden: local.wallpaperOverridden || (remote.wallpaperOverridden ?? false),
         };
         setSettings(merged);
         saveSettings(merged);
+        // Push local-originated changes back only if something actually differs from remote
+        const hasLocalChanges = (Object.keys(merged) as (keyof AppSettings)[]).some(
+          (k) => merged[k] !== (remote as Partial<AppSettings>)[k]
+        );
+        if (hasLocalChanges) {
+          fetch("/api/user/settings", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(merged),
+          }).catch(() => {});
+        }
       })
       .catch(() => {});
     return () => controller.abort();

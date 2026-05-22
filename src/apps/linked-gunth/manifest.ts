@@ -8,6 +8,7 @@ export const manifest: AppManifest = {
   emoji: "🔗",
   loadDuration: 1800,
   showInLauncher: true,
+  badge: "NEW",
   component: LinkedGunthApp,
   defaultSize: { w: 860, h: 600 },
 };

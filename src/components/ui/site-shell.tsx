@@ -4,6 +4,7 @@ import { useState } from "react";
 import { WindowManagerProvider } from "@/lib/contexts/window-manager-context";
 import { SoundProvider } from "@/lib/contexts/sound-context";
 import { RadioProvider } from "@/lib/contexts/radio-context";
+import { SeenAppsProvider } from "@/lib/contexts/seen-apps-context";
 import { OsDesktop } from "./os-desktop";
 import { Taskbar } from "./taskbar";
 import { WindowLayer } from "./window-layer";
@@ -30,14 +31,16 @@ export function SiteShell({ children: _children }: { children?: React.ReactNode 
       {shutdown && <ShutdownScreen onPowerOn={handleReboot} />}
       {!booted && !shutdown && <BootScreen key={bootKey} onComplete={() => setBooted(true)} />}
       <RadioProvider>
-        <WindowManagerProvider>
-          <GunthTitle />
-          <div className="fixed inset-0 flex flex-col overflow-hidden scanlines">
-            <Taskbar onReboot={handleReboot} onShutdown={handleShutdown} />
-            <OsDesktop />
-            <WindowLayer />
-          </div>
-        </WindowManagerProvider>
+        <SeenAppsProvider>
+          <WindowManagerProvider>
+            <GunthTitle />
+            <div className="fixed inset-0 flex flex-col overflow-hidden scanlines">
+              <Taskbar onReboot={handleReboot} onShutdown={handleShutdown} />
+              <OsDesktop />
+              <WindowLayer />
+            </div>
+          </WindowManagerProvider>
+        </SeenAppsProvider>
       </RadioProvider>
     </SoundProvider>
   );

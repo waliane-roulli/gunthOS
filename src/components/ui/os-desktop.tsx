@@ -5,6 +5,7 @@ import { LAUNCHER_APPS } from "@/apps";
 import { useSettings } from "@/lib/contexts/settings-context";
 import { useOpenApp } from "@/lib/hooks/use-open-app";
 import { useUnread } from "@/lib/contexts/unread-context";
+import { useSeenApps } from "@/lib/contexts/seen-apps-context";
 import { WALLPAPER_MAP, DEFAULT_WALLPAPER_ID } from "@/lib/wallpapers";
 import { WallpaperDecoration } from "./wallpaper-decorations";
 
@@ -101,6 +102,7 @@ export function OsDesktop() {
   const { settings } = useSettings();
   const { openApp, openNamedWindow } = useOpenApp();
   const { totalUnread } = useUnread();
+  const { seen } = useSeenApps();
 
   const wallpaper =
     (settings.wallpaperId
@@ -124,7 +126,7 @@ export function OsDesktop() {
       badge:
         app.slug === "msn" && totalUnread > 0
           ? String(totalUnread > 9 ? "9+" : totalUnread)
-          : app.badge,
+          : app.badge && !seen.has(app.slug) ? app.badge : undefined,
       onOpen: () => handleOpenApp(app.slug),
     })),
     {

@@ -8,6 +8,7 @@ export const manifest: AppManifest = {
   emoji: "📋",
   loadDuration: 1700,
   showInLauncher: true,
+  badge: "NEW",
   href: "/directory",
   component: DirectoryApp,
 };

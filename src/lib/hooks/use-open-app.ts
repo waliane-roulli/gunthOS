@@ -3,6 +3,7 @@
 import { useCallback } from "react";
 import { useWindowActions } from "@/lib/contexts/window-manager-context";
 import { useSoundContext } from "@/lib/contexts/sound-context";
+import { useSeenApps } from "@/lib/contexts/seen-apps-context";
 import { getAppManifest } from "@/apps";
 import type { ReactNode } from "react";
 
@@ -16,6 +17,7 @@ import type { ReactNode } from "react";
 export function useOpenApp() {
   const { openWindow } = useWindowActions();
   const { init, playWindowOpen } = useSoundContext();
+  const { markSeen } = useSeenApps();
 
   const openApp = useCallback(
     (slug: string): string => {
@@ -23,9 +25,10 @@ export function useOpenApp() {
       if (!app) return "";
       init();
       playWindowOpen();
+      markSeen(slug);
       return openWindow(app.slug, app.name, app.iconNode ?? app.emoji, { startMaximized: app.startMaximized, defaultSize: app.defaultSize });
     },
-    [openWindow, init, playWindowOpen]
+    [openWindow, init, playWindowOpen, markSeen]
   );
 
   const openNamedWindow = useCallback(
