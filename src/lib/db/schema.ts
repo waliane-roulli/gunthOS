@@ -81,6 +81,15 @@ export const messages = sqliteTable("messages", {
   createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
 });
 
+// Tracks when a user last read messages from a given contact
+export const messageReads = sqliteTable("message_reads", {
+  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  contactId: text("contact_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  readAt: integer("read_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+}, (t) => [
+  uniqueIndex("message_reads_pair_idx").on(t.userId, t.contactId),
+]);
+
 // Nudges MSN style (persistés pour que le destinataire les reçoive même via SSE ou polling)
 export const nudges = sqliteTable("nudges", {
   id: integer("id").primaryKey({ autoIncrement: true }),

@@ -24,9 +24,7 @@ interface MessengerContextValue {
   markRead: (contactId: string) => void;
   registerChat: (contactId: string, api: ChatAPI) => void;
   unregisterChat: (contactId: string) => void;
-  // set by MsnApp to open a chat window from SSE nudge
   onNudgeOpen: React.RefObject<((contactId: string) => void) | null>;
-  // set by MsnApp to handle real-time status updates
   onStatusUpdate: React.RefObject<((userId: string, status: "online" | "away" | "busy" | "offline") => void) | null>;
 }
 
@@ -47,13 +45,9 @@ export function UnreadProvider({ children }: { children: React.ReactNode }) {
   const [totalUnread, setTotalUnread] = useState(0);
   const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
 
-  // contactId → live ChatAPI of open window
   const chatApis = useRef<Record<string, ChatAPI>>({});
-  // contactId → pending nudge fromName, consumed when the chat window mounts
   const pendingNudges = useRef<Record<string, string>>({});
-  // set by MsnApp: called when SSE nudge arrives and chat is closed
   const onNudgeOpen = useRef<((contactId: string) => void) | null>(null);
-  // set by MsnApp: called on real-time status changes
   const onStatusUpdate = useRef<((userId: string, status: "online" | "away" | "busy" | "offline") => void) | null>(null);
 
   const markRead = useCallback((contactId: string) => {
@@ -61,70 +55,52 @@ export function UnreadProvider({ children }: { children: React.ReactNode }) {
       if (!prev[contactId]) return prev;
       return { ...prev, [contactId]: 0 };
     });
-    // Persist read timestamp so the next page load doesn't re-count old messages
-    try {
-      const key = `msn_read_${contactId}`;
-      localStorage.setItem(key, String(Date.now()));
-    } catch {}
+    // Persist to DB — fire and forget
+    fetch("/api/messages/read", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ contactId }),
+    });
   }, []);
 
   const registerChat = useCallback((contactId: string, api: ChatAPI) => {
     chatApis.current[contactId] = api;
-    // Clear badge when chat opens
-    setUnreadCounts(prev => prev[contactId] ? { ...prev, [contactId]: 0 } : prev);
-    // Fire any nudge that arrived before the window was mounted
+    // markRead handles both clearing the badge and persisting the receipt
+    markRead(contactId);
     const pending = pendingNudges.current[contactId];
     if (pending) {
       delete pendingNudges.current[contactId];
       api.triggerNudge(pending);
     }
-  }, []);
+  }, [markRead]);
 
   const unregisterChat = useCallback((contactId: string) => {
     delete chatApis.current[contactId];
   }, []);
 
-  // Sync totalUnread from unreadCounts
   useEffect(() => {
     setTotalUnread(Object.values(unreadCounts).reduce((a, b) => a + b, 0));
   }, [unreadCounts]);
 
-  // Initial fetch of unread counts — use per-contact read timestamps from localStorage
+  // Initial fetch — server already knows what's unread via read receipts
   useEffect(() => {
     if (!user) return;
-    const fallback = Date.now() - 24 * 60 * 60 * 1000;
-    fetch(`/api/messages/unread?since=${fallback}&rows=1`)
+    fetch("/api/messages/unread")
       .then(r => r.ok ? r.json() : null)
-      .then((data: { rows?: { fromUserId: string; createdAt: string }[] } | null) => {
-        if (!data?.rows) return;
-        // Group rows by sender and filter by per-contact read timestamp
-        const counts: Record<string, number> = {};
-        for (const row of data.rows) {
-          if (chatApis.current[row.fromUserId]) continue;
-          let readAt = 0;
-          try {
-            const stored = localStorage.getItem(`msn_read_${row.fromUserId}`);
-            if (stored) readAt = Number(stored);
-          } catch {}
-          const msgAt = new Date(row.createdAt).getTime();
-          if (msgAt > readAt) {
-            counts[row.fromUserId] = (counts[row.fromUserId] ?? 0) + 1;
-          }
-        }
+      .then((data: { counts?: Record<string, number> } | null) => {
+        if (!data?.counts) return;
         setUnreadCounts(prev => {
           const next = { ...prev };
-          for (const [id, count] of Object.entries(counts)) {
-            next[id] = count;
+          for (const [id, count] of Object.entries(data.counts!)) {
+            if (!chatApis.current[id]) next[id] = count;
           }
           return next;
         });
       });
   }, [user]);
 
-  // Global SSE handler — always active when user is logged in
   const handleSSE = useCallback((event: SSEEvent) => {
     if (event.type === "message") {
-      // Ignore messages sent by ourselves (e.g. multi-tab echo)
       if (event.fromUserId === user?.id) return;
       const fromId = event.fromUserId;
       const api = chatApis.current[fromId];
@@ -154,7 +130,6 @@ export function UnreadProvider({ children }: { children: React.ReactNode }) {
       if (api) {
         api.triggerNudge(event.fromName);
       } else {
-        // Store nudge — registerChat will fire it once the window mounts
         pendingNudges.current[fromId] = event.fromName;
         onNudgeOpen.current?.(fromId);
         notify({
@@ -171,15 +146,13 @@ export function UnreadProvider({ children }: { children: React.ReactNode }) {
     }
 
     if (event.type === "typing") {
-      const api = chatApis.current[event.fromUserId];
-      api?.triggerTyping();
+      chatApis.current[event.fromUserId]?.triggerTyping();
     }
 
     if (event.type === "effect") {
-      const api = chatApis.current[event.fromUserId];
-      api?.triggerEffect(event.effect, event.fromName);
+      chatApis.current[event.fromUserId]?.triggerEffect(event.effect, event.fromName);
     }
-  }, [notify, user]);
+  }, [notify, user, openApp]);
 
   useSSE(handleSSE, !!user);
 
