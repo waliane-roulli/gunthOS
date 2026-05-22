@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { useWindowActions } from "@/lib/contexts/window-manager-context";
-import { useMessenger, type ChatAPI } from "@/lib/contexts/unread-context";
+import { useMessenger, type ChatAPI, type ChatEffect } from "@/lib/contexts/unread-context";
 import { useSSE } from "@/lib/hooks/use-sse";
 import { MsnLogo } from "@/components/ui/msn-logo";
 import type { AppProps } from "@/types";
@@ -33,6 +33,56 @@ const MSN_WINKS = [
   "🫨 NUDGE REÇU !",
   "🫨 Ton écran tremble !",
   "🫨 NUDGE x3 — Au secours",
+  "🫨 Attention ! Nudge détecté !",
+  "🫨 GunthMessenger™ confirme : tu te fais nudger",
+  "🫨 ALERTE VIBRATION MAXIMALE",
+];
+
+// ── Easter eggs ────────────────────────────────────────────────────────────────
+
+const EASTER_EGGS: Array<{ triggers: RegExp; reaction: string; duration?: number }> = [
+  { triggers: /\blol\b|\blmao\b|\bptdr\b|\bmdr\b/i, reaction: "😂 GunthMessenger™ a détecté un fou rire", duration: 3000 },
+  { triggers: /\b<3\b|❤️|🧡|💛|💚|💙|💜/i, reaction: "💌 GunthMessenger™ rougit légèrement", duration: 3000 },
+  { triggers: /\bnudge\b/i, reaction: "🫨 Tu parles de nudge ? Essaie le vrai bouton !", duration: 3000 },
+  { triggers: /\bpizza\b|\bpizza🍕/i, reaction: "🍕 Commande pizza enregistrée (faux)", duration: 4000 },
+  { triggers: /\bsalut\b|\bbonjour\b|\bhello\b|\bhey\b|\bcoucou\b/i, reaction: "👋 GunthMessenger™ dit aussi bonjour !", duration: 2500 },
+  { triggers: /\bbye\b|\bauvoir\b|\bbonne nuit\b|\bà plus\b|\bciao\b/i, reaction: "😢 GunthMessenger™ est triste de te voir partir", duration: 3000 },
+  { triggers: /\bamour\b|\bje t'aime\b|\bjtm\b/i, reaction: "💘 GunthMessenger™ a transmis le message au Dieu des amours", duration: 4000 },
+  { triggers: /\bgunthos\b|\bgunth\b/i, reaction: "🖥️ GunthOS entend son nom…", duration: 3000 },
+  { triggers: /\b404\b/i, reaction: "⚠️ Erreur 404 : blague introuvable", duration: 3000 },
+  { triggers: /^!help$/i, reaction: "❓ Commandes : !pizza !vibe !bsod !matrix", duration: 4000 },
+  { triggers: /^!pizza$/i, reaction: "🍕 Livraison estimée : 45 min (connexion 56K)", duration: 5000 },
+  { triggers: /^!vibe$/i, reaction: "🎵 *GunthMessenger™ envoie des bonnes vibes*", duration: 4000 },
+  { triggers: /^!bsod$/i, reaction: "💀 BSOD ÉVITÉ DE JUSTESSE — Redémarrage annulé", duration: 5000 },
+  { triggers: /^!matrix$/i, reaction: "🟩 Tu as choisi la pilule rouge. Bienvenue dans GunthOS.", duration: 5000 },
+];
+
+function getEasterEgg(text: string): string | null {
+  for (const egg of EASTER_EGGS) {
+    if (egg.triggers.test(text)) return egg.reaction;
+  }
+  return null;
+}
+
+const TYPING_PHRASES = [
+  "est en train d'écrire...",
+  "réfléchit intensément...",
+  "appuie sur des touches au hasard...",
+  "compose un chef-d'œuvre...",
+  "tape et efface. tape et efface.",
+  "rédige un roman...",
+  "cherche ses mots...",
+  "tape avec ses coudes probablement...",
+];
+
+// Effets visuels envoyés en temps réel au destinataire
+const MSN_EFFECT_BUTTONS: Array<{ effect: ChatEffect; emoji: string; label: string; title: string }> = [
+  { effect: "confetti", emoji: "🎆", label: "Confetti", title: "Lancer des confettis chez l'autre !" },
+  { effect: "heart",    emoji: "💌", label: "Love",     title: "Envoyer de l'amour" },
+  { effect: "rain",     emoji: "🌧️", label: "Pluie",    title: "Faire pleuvoir sur l'autre" },
+  { effect: "shake",    emoji: "🌋", label: "Tremble",  title: "Faire trembler sa fenêtre" },
+  { effect: "matrix",   emoji: "🟩", label: "Matrix",   title: "Envoyer l'autre dans la Matrice" },
+  { effect: "bsod",     emoji: "💀", label: "BSOD",     title: "Provoquer un faux BSOD" },
 ];
 
 const MSN_AWAY_MESSAGES = [
@@ -141,6 +191,195 @@ function UnreadBadge({ count }: { count: number }) {
   );
 }
 
+// ── Effect overlays ───────────────────────────────────────────────────────────
+
+function ConfettiOverlay({ fromName }: { fromName: string }) {
+  const colors = ["#ff4444", "#ffbb33", "#00C851", "#33b5e5", "#ff69b4", "#aa66cc", "#ff8800"];
+  const pieces = useRef(Array.from({ length: 40 }, (_, i) => ({
+    left: Math.random() * 100,
+    rounded: Math.random() > 0.5,
+    dur: 1.5 + Math.random() * 2,
+    delay: Math.random() * 1.5,
+    rotate: Math.random() * 360,
+    color: colors[i % colors.length]!,
+  }))).current;
+  return (
+    <div style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden", zIndex: 10 }}>
+      <div style={{ position: "absolute", top: 8, left: 0, right: 0, textAlign: "center", fontSize: "var(--t-text-xs)", fontFamily: "var(--t-font-display)", color: "#ff4444", fontWeight: "bold", zIndex: 11, animation: "blink 0.5s step-end infinite" }}>
+        🎆 {fromName} t&apos;envoie des confettis !
+      </div>
+      {pieces.map((p, i) => (
+        <div key={i} style={{
+          position: "absolute",
+          left: `${p.left}%`,
+          top: "-10px",
+          width: 8, height: 8,
+          background: p.color,
+          borderRadius: p.rounded ? "50%" : "0",
+          animation: `confettiFall ${p.dur}s ${p.delay}s linear forwards`,
+          transform: `rotate(${p.rotate}deg)`,
+        }} />
+      ))}
+      <style>{`
+        @keyframes confettiFall {
+          0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+          100% { transform: translateY(500px) rotate(720deg); opacity: 0; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+function HeartOverlay({ fromName }: { fromName: string }) {
+  const HEART_EMOJIS = ["❤️","💕","💖","💗","💓"] as const;
+  const hearts = useRef(Array.from({ length: 20 }, (_, i) => ({
+    left: 5 + Math.random() * 90,
+    size: 14 + Math.random() * 20,
+    dur: 2 + Math.random() * 2,
+    delay: Math.random() * 1.5,
+    emoji: HEART_EMOJIS[i % 5]!,
+  }))).current;
+  return (
+    <div style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden", zIndex: 10 }}>
+      <div style={{ position: "absolute", top: 8, left: 0, right: 0, textAlign: "center", fontSize: "var(--t-text-xs)", fontFamily: "var(--t-font-display)", color: "#ff69b4", fontWeight: "bold", zIndex: 11, animation: "blink 0.5s step-end infinite" }}>
+        💌 {fromName} t&apos;envoie de l&apos;amour !
+      </div>
+      {hearts.map((h, i) => (
+        <div key={i} style={{
+          position: "absolute",
+          left: `${h.left}%`,
+          bottom: "-10px",
+          fontSize: `${h.size}px`,
+          animation: `heartFloat ${h.dur}s ${h.delay}s ease-in forwards`,
+        }}>
+          {h.emoji}
+        </div>
+      ))}
+      <style>{`
+        @keyframes heartFloat {
+          0%   { transform: translateY(0) scale(0.5); opacity: 1; }
+          100% { transform: translateY(-520px) scale(1.2); opacity: 0; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+function RainOverlay({ fromName }: { fromName: string }) {
+  const drops = useRef(Array.from({ length: 60 }, () => ({
+    left: Math.random() * 100,
+    height: 10 + Math.random() * 14,
+    dur: 0.4 + Math.random() * 0.4,
+    delay: Math.random(),
+  }))).current;
+  return (
+    <div style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden", zIndex: 10, background: "rgba(0,50,120,0.08)" }}>
+      <div style={{ position: "absolute", top: 8, left: 0, right: 0, textAlign: "center", fontSize: "var(--t-text-xs)", fontFamily: "var(--t-font-display)", color: "#4488ff", fontWeight: "bold", zIndex: 11, animation: "blink 0.5s step-end infinite" }}>
+        🌧️ {fromName} fait pleuvoir sur toi
+      </div>
+      {drops.map((d, i) => (
+        <div key={i} style={{
+          position: "absolute",
+          left: `${d.left}%`,
+          top: "-20px",
+          width: 1.5,
+          height: d.height,
+          background: "rgba(100,160,255,0.7)",
+          animation: `rainFall ${d.dur}s ${d.delay}s linear infinite`,
+        }} />
+      ))}
+      <style>{`
+        @keyframes rainFall {
+          0%   { transform: translateY(0); opacity: 0.8; }
+          100% { transform: translateY(520px); opacity: 0.2; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+function ShakeOverlay({ fromName }: { fromName: string }) {
+  return (
+    <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 10 }}>
+      <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", textAlign: "center", fontFamily: "var(--t-font-display)", zIndex: 11, padding: "8px 16px", background: "rgba(0,0,0,0.75)", color: "#ff4444", border: "3px solid #ff4444" }}>
+        <div style={{ fontSize: "var(--t-text-sm)", fontWeight: "bold", animation: "blink 0.3s step-end infinite" }}>🌋 SÉISME NIVEAU 9</div>
+        <div style={{ fontSize: "var(--t-text-xs)", marginTop: 4, color: "#fff" }}>{fromName} fait trembler GunthOS</div>
+      </div>
+    </div>
+  );
+}
+
+function MatrixOverlay({ fromName }: { fromName: string }) {
+  const chars = "アイウエオカキクケコ01010GUNTH10101ンソシ";
+  const cols = useRef(Array.from({ length: 18 }, (_, i) => ({
+    left: (i / 18) * 100,
+    dur: 1 + Math.random() * 1.5,
+    delay: Math.random(),
+    text: Array.from({ length: 12 }, () => chars[Math.floor(Math.random() * chars.length)]).join(""),
+  }))).current;
+  return (
+    <div style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden", zIndex: 10, background: "rgba(0,20,0,0.88)" }}>
+      <div style={{ position: "absolute", top: "38%", left: 0, right: 0, textAlign: "center", zIndex: 12, fontFamily: "monospace" }}>
+        <div style={{ color: "#00ff41", fontSize: "var(--t-text-md)", fontWeight: "bold", animation: "blink 0.4s step-end infinite" }}>WAKE UP, {fromName.toUpperCase()}</div>
+        <div style={{ color: "#00cc33", fontSize: "var(--t-text-xs)", marginTop: 6 }}>GunthOS has you.</div>
+      </div>
+      {cols.map((col, i) => (
+        <div key={i} style={{
+          position: "absolute",
+          left: `${col.left}%`,
+          top: 0,
+          fontSize: 11,
+          color: "#00ff41",
+          fontFamily: "monospace",
+          opacity: 0.7,
+          animation: `matrixDrop ${col.dur}s ${col.delay}s linear infinite`,
+          whiteSpace: "nowrap",
+          writingMode: "vertical-lr",
+          letterSpacing: 4,
+        }}>
+          {col.text}
+        </div>
+      ))}
+      <style>{`
+        @keyframes matrixDrop {
+          0%   { transform: translateY(-100%); opacity: 1; }
+          100% { transform: translateY(120%); opacity: 0; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+function BsodOverlay({ fromName }: { fromName: string }) {
+  return (
+    <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 10, background: "#0000AA", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, padding: 20 }}>
+      <div style={{ color: "#fff", fontFamily: "monospace", textAlign: "center", fontSize: 11, lineHeight: 1.8, userSelect: "none" }}>
+        <div style={{ fontSize: 14, fontWeight: "bold", marginBottom: 12 }}>Windows</div>
+        <div>A fatal exception 0xDEAD has occurred at</div>
+        <div>0028:{fromName.toUpperCase().replace(/ /g, "_")}_BAD_POOL_CALLER</div>
+        <div style={{ marginTop: 10 }}>The current application will be terminated.</div>
+        <div style={{ marginTop: 16, animation: "blink 1s step-end infinite" }}>
+          * Press any key to terminate the current application.<br />
+          * Press CTRL+ALT+DELETE to restart GunthOS.
+        </div>
+        <div style={{ marginTop: 16, opacity: 0.7, fontSize: 10 }}>
+          Envoyé par {fromName} avec amour 💀
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function EffectOverlay({ effect, fromName }: { effect: ChatEffect; fromName: string }) {
+  if (effect === "confetti") return <ConfettiOverlay fromName={fromName} />;
+  if (effect === "heart")    return <HeartOverlay fromName={fromName} />;
+  if (effect === "rain")     return <RainOverlay fromName={fromName} />;
+  if (effect === "shake")    return <ShakeOverlay fromName={fromName} />;
+  if (effect === "matrix")   return <MatrixOverlay fromName={fromName} />;
+  if (effect === "bsod")     return <BsodOverlay fromName={fromName} />;
+  return null;
+}
+
 // ── ChatWindow ─────────────────────────────────────────────────────────────────
 
 function ChatWindow({
@@ -156,8 +395,13 @@ function ChatWindow({
   const [isSending, setIsSending] = useState(false);
   const [nudgeActive, setNudgeActive] = useState(false);
   const [winkMsg, setWinkMsg] = useState<string | null>(null);
+  const [typingPhrase, setTypingPhrase] = useState<string | null>(null);
+  const [easterEgg, setEasterEgg] = useState<string | null>(null);
+  const [activeEffect, setActiveEffect] = useState<{ effect: ChatEffect; fromName: string } | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastTypingSentAt = useRef<number>(0);
 
   const triggerNudge = useCallback((fromName: string) => {
     const wink = MSN_WINKS[Math.floor(Math.random() * MSN_WINKS.length)] ?? MSN_WINKS[0]!;
@@ -165,6 +409,19 @@ function ChatWindow({
     setNudgeActive(true);
     setTimeout(() => setNudgeActive(false), 600);
     setTimeout(() => setWinkMsg(null), 3000);
+  }, []);
+
+  const triggerEffect = useCallback((effect: ChatEffect, fromName: string) => {
+    setActiveEffect({ effect, fromName });
+    const duration = effect === "bsod" ? 6000 : effect === "matrix" ? 5000 : 4000;
+    setTimeout(() => setActiveEffect(null), duration);
+  }, []);
+
+  const triggerTyping = useCallback(() => {
+    const phrase = TYPING_PHRASES[Math.floor(Math.random() * TYPING_PHRASES.length)]!;
+    setTypingPhrase(phrase);
+    if (typingTimer.current) clearTimeout(typingTimer.current);
+    typingTimer.current = setTimeout(() => setTypingPhrase(null), 3000);
   }, []);
 
   // Register this window's API globally so SSE can reach it
@@ -177,14 +434,17 @@ function ChatWindow({
             (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
           );
         });
+        setTypingPhrase(null);
         markRead(contact.id);
       },
       triggerNudge,
+      triggerTyping,
+      triggerEffect,
     };
     registerChat(contact.id, api);
     markRead(contact.id);
     return () => { unregisterChat(contact.id); };
-  }, [contact.id, registerChat, unregisterChat, markRead, triggerNudge]);
+  }, [contact.id, registerChat, unregisterChat, markRead, triggerNudge, triggerTyping, triggerEffect]);
 
   // Load history once on open
   useEffect(() => {
@@ -195,11 +455,37 @@ function ChatWindow({
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs]);
 
+  useEffect(() => {
+    return () => { if (typingTimer.current) clearTimeout(typingTimer.current); };
+  }, []);
+
+  function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setInput(e.target.value);
+    const now = Date.now();
+    // throttle: send typing event max every 2s
+    if (now - lastTypingSentAt.current > 2000 && e.target.value.trim()) {
+      lastTypingSentAt.current = now;
+      fetch("/api/messages/typing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ toUserId: contact.id }),
+      });
+    }
+  }
+
   async function send() {
     const text = input.trim();
     if (!text || isSending) return;
     setInput("");
     setIsSending(true);
+
+    // Easter egg check
+    const egg = getEasterEgg(text);
+    if (egg) {
+      setEasterEgg(egg);
+      setTimeout(() => setEasterEgg(null), 5000);
+    }
+
     try {
       const res = await fetch("/api/messages", {
         method: "POST",
@@ -214,6 +500,17 @@ function ChatWindow({
       setIsSending(false);
       inputRef.current?.focus();
     }
+  }
+
+  async function sendEffect(effect: ChatEffect) {
+    // preview local immédiat
+    setActiveEffect({ effect, fromName: "Toi" });
+    setTimeout(() => setActiveEffect(null), effect === "bsod" ? 6000 : effect === "matrix" ? 5000 : 4000);
+    await fetch("/api/messages/effect", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ toUserId: contact.id, effect }),
+    });
   }
 
   async function sendNudge() {
@@ -239,7 +536,7 @@ function ChatWindow({
         border: "3px solid",
         borderTopColor: "var(--t-border-light)", borderLeftColor: "var(--t-border-light)",
         borderBottomColor: "var(--t-border-dark)", borderRightColor: "var(--t-border-dark)",
-        animation: nudgeActive ? "nudge 0.1s ease infinite" : "none",
+        animation: nudgeActive || activeEffect?.effect === "shake" ? "nudge 0.08s ease infinite" : "none",
         position: "relative", overflow: "hidden",
       }}
     >
@@ -285,12 +582,23 @@ function ChatWindow({
         </div>
       </div>
 
+      {activeEffect && <EffectOverlay effect={activeEffect.effect} fromName={activeEffect.fromName} />}
+
       {winkMsg && (
         <div
           className="text-center tracking-widest py-1 shrink-0"
           style={{ fontSize: "var(--t-text-xs)", background: "var(--t-accent)", color: "var(--t-titlebar-text)", animation: "blink 0.5s step-end infinite" }}
         >
           {winkMsg}
+        </div>
+      )}
+
+      {easterEgg && (
+        <div
+          className="text-center tracking-widest py-1 shrink-0"
+          style={{ fontSize: "var(--t-text-xs)", background: "#4a0080", color: "#fff", animation: "blink 0.4s step-end infinite" }}
+        >
+          {easterEgg}
         </div>
       )}
 
@@ -352,6 +660,27 @@ function ChatWindow({
             </div>
           );
         })}
+        {typingPhrase && (
+          <div className="flex items-center gap-2" style={{ opacity: 0.7 }}>
+            <div style={{ fontSize: 16 }}>
+              {contact.avatarDataUrl
+                ? <img src={contact.avatarDataUrl} alt="" style={{ width: 20, height: 20, objectFit: "cover" }} />
+                : getDefaultAvatar(contact.id)}
+            </div>
+            <div
+              style={{
+                padding: "3px 8px", fontSize: "var(--t-text-xs)", fontFamily: "var(--t-font-display)",
+                border: "2px solid", fontStyle: "italic",
+                borderTopColor: "var(--t-border-dark)", borderLeftColor: "var(--t-border-dark)",
+                borderBottomColor: "var(--t-border-light)", borderRightColor: "var(--t-border-light)",
+                background: "var(--t-card-hover)", color: "var(--t-text-muted)",
+                borderRadius: "4px 4px 4px 0",
+              }}
+            >
+              <span style={{ animation: "blink 1s step-end infinite" }}>⌨</span> {displayName} {typingPhrase}
+            </div>
+          </div>
+        )}
         <div ref={bottomRef} />
       </div>
 
@@ -380,12 +709,37 @@ function ChatWindow({
       </div>
 
       <div
+        className="flex items-center gap-1 px-2 py-1 shrink-0"
+        style={{ background: "var(--t-bg)", borderTop: "1px solid var(--t-border-dark)", borderBottom: "1px solid var(--t-border-dark)" }}
+      >
+        <span style={{ fontSize: "var(--t-text-xs)", fontFamily: "var(--t-font-display)", color: "var(--t-text-muted)", marginRight: 2, letterSpacing: "0.05em" }}>Effets :</span>
+        {MSN_EFFECT_BUTTONS.map((btn) => (
+          <button
+            key={btn.effect}
+            onClick={() => sendEffect(btn.effect)}
+            title={btn.title}
+            style={{
+              background: "var(--t-bg-light)", border: "2px solid",
+              borderTopColor: "var(--t-border-light)", borderLeftColor: "var(--t-border-light)",
+              borderBottomColor: "var(--t-border-dark)", borderRightColor: "var(--t-border-dark)",
+              cursor: "pointer", fontSize: 10, padding: "1px 5px",
+              fontFamily: "var(--t-font-display)", color: "var(--t-text)",
+              display: "flex", alignItems: "center", gap: 2, whiteSpace: "nowrap",
+            }}
+          >
+            <span style={{ fontSize: 13 }}>{btn.emoji}</span>
+            <span style={{ letterSpacing: "0.05em" }}>{btn.label}</span>
+          </button>
+        ))}
+      </div>
+
+      <div
         className="flex items-center gap-2 px-2 py-2 shrink-0"
         style={{ background: "var(--t-bg)", borderTop: "2px solid var(--t-border-light)" }}
       >
         <input
           ref={inputRef} value={input}
-          onChange={(e) => setInput(e.target.value)}
+          onChange={handleInputChange}
           onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
           placeholder="Écrivez un message... (Entrée pour envoyer)"
           maxLength={500}

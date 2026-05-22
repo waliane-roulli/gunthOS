@@ -4,11 +4,13 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useRef,
   useState,
   type ReactNode,
 } from "react";
+import { useSoundContext } from "@/lib/contexts/sound-context";
 
 export type NotificationType = "info" | "success" | "warning" | "error";
 
@@ -42,6 +44,29 @@ const NotificationActionsContext = createContext<NotificationActionsValue>({
   dismiss: () => {},
   dismissAll: () => {},
 });
+
+function NotificationSoundBridge({ notifications }: { notifications: Notification[] }) {
+  const { playNotifyInfo, playNotifySuccess, playNotifyError, playNotifyWarning } = useSoundContext();
+  const prevCountRef = useRef(0);
+
+  useEffect(() => {
+    const current = notifications.length;
+    if (current > prevCountRef.current) {
+      const latest = notifications[current - 1];
+      if (latest) {
+        switch (latest.type) {
+          case "success": playNotifySuccess(); break;
+          case "error":   playNotifyError();   break;
+          case "warning": playNotifyWarning(); break;
+          default:        playNotifyInfo();    break;
+        }
+      }
+    }
+    prevCountRef.current = current;
+  }, [notifications, playNotifyInfo, playNotifySuccess, playNotifyError, playNotifyWarning]);
+
+  return null;
+}
 
 export function NotificationProvider({ children }: { children: ReactNode }) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -87,6 +112,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   return (
     <NotificationStateContext.Provider value={stateValue}>
       <NotificationActionsContext.Provider value={actionsValue}>
+        <NotificationSoundBridge notifications={notifications} />
         {children}
       </NotificationActionsContext.Provider>
     </NotificationStateContext.Provider>

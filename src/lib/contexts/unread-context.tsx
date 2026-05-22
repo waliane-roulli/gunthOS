@@ -7,11 +7,15 @@ import { useNotify } from "@/lib/contexts/notification-context";
 import { useOpenApp } from "@/lib/hooks/use-open-app";
 import type { SSEEvent } from "@/lib/sse-bus";
 
+export type ChatEffect = "confetti" | "bsod" | "rain" | "shake" | "matrix" | "heart";
+
 export interface ChatAPI {
   pushMessage: (msg: {
     id: number; fromUserId: string; toUserId: string; content: string; createdAt: string | Date;
   }) => void;
   triggerNudge: (fromName: string) => void;
+  triggerTyping: () => void;
+  triggerEffect: (effect: ChatEffect, fromName: string) => void;
 }
 
 interface MessengerContextValue {
@@ -144,6 +148,16 @@ export function UnreadProvider({ children }: { children: React.ReactNode }) {
 
     if (event.type === "status") {
       onStatusUpdate.current?.(event.userId, event.status);
+    }
+
+    if (event.type === "typing") {
+      const api = chatApis.current[event.fromUserId];
+      api?.triggerTyping();
+    }
+
+    if (event.type === "effect") {
+      const api = chatApis.current[event.fromUserId];
+      api?.triggerEffect(event.effect, event.fromName);
     }
   }, [notify]);
 

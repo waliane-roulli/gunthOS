@@ -7,6 +7,8 @@ import { THEMES, type ThemeId } from "@/lib/themes";
 import { CURSORS, type CursorId } from "@/lib/cursors";
 import { WALLPAPERS, WALLPAPER_MAP, type WallpaperId } from "@/lib/wallpapers";
 import { FONT_PAIRS, type FontPairId } from "@/lib/font-pairs";
+import { SOUND_SCHEMES, type SoundSchemeId } from "@/lib/sound-schemes";
+import { useSoundContext } from "@/lib/contexts/sound-context";
 import { RetroTitlebarBtn } from "@/components/ui/retro-titlebar-btn";
 import type { AppProps } from "@/types";
 
@@ -22,7 +24,7 @@ const TABS: { id: Tab; label: string; icon: string }[] = [
 export function SettingsApp({ windowId }: AppProps) {
   const { closeWindow } = useWindowActions();
   const onClose = () => closeWindow(windowId);
-  const { settings, setTheme, setSoundEnabled, setAmbientVolume, setAnimationsEnabled, setScanlinesEnabled, setPixelizeEnabled, setPerformanceModeEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, setFontPairId, setFontSize } = useSettings();
+  const { settings, setTheme, setSoundEnabled, setAmbientVolume, setSoundScheme, setAnimationsEnabled, setScanlinesEnabled, setPixelizeEnabled, setPerformanceModeEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, setFontPairId, setFontSize } = useSettings();
   const [activeTab, setActiveTab] = useState<Tab>("theme");
 
   return (
@@ -46,7 +48,7 @@ export function SettingsApp({ windowId }: AppProps) {
         {activeTab === "theme" && <ThemeTab themeId={settings.themeId} setTheme={setTheme} />}
         {activeTab === "wallpaper" && <WallpaperTab wallpaperId={settings.wallpaperId ?? "bliss"} wallpaperOverridden={settings.wallpaperOverridden} themeId={settings.themeId} setWallpaperId={setWallpaperId} resetWallpaperToTheme={resetWallpaperToTheme} />}
         {activeTab === "display" && <DisplayTab animationsEnabled={settings.animationsEnabled} scanlinesEnabled={settings.scanlinesEnabled} pixelizeEnabled={settings.pixelizeEnabled} cursorId={settings.cursorId} fontPairId={settings.fontPairId} fontSize={settings.fontSize} setAnimationsEnabled={setAnimationsEnabled} setScanlinesEnabled={setScanlinesEnabled} setPixelizeEnabled={setPixelizeEnabled} setCursorId={setCursorId} setFontPairId={setFontPairId} setFontSize={setFontSize} />}
-        {activeTab === "system" && <SystemTab soundEnabled={settings.soundEnabled} setSoundEnabled={setSoundEnabled} ambientVolume={settings.ambientVolume} setAmbientVolume={setAmbientVolume} performanceModeEnabled={settings.performanceModeEnabled} setPerformanceModeEnabled={setPerformanceModeEnabled} />}
+        {activeTab === "system" && <SystemTab soundEnabled={settings.soundEnabled} setSoundEnabled={setSoundEnabled} ambientVolume={settings.ambientVolume} setAmbientVolume={setAmbientVolume} soundSchemeId={settings.soundSchemeId} setSoundScheme={setSoundScheme} performanceModeEnabled={settings.performanceModeEnabled} setPerformanceModeEnabled={setPerformanceModeEnabled} />}
 
         <div className="flex justify-end mt-5">
           <button
@@ -64,7 +66,7 @@ export function SettingsApp({ windowId }: AppProps) {
 
 // Keep non-embedded export for backwards compatibility (used by site-shell overlay)
 export function SettingsPanel({ onClose }: { onClose: () => void }) {
-  const { settings, setTheme, setSoundEnabled, setAmbientVolume, setAnimationsEnabled, setScanlinesEnabled, setPixelizeEnabled, setPerformanceModeEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, setFontPairId, setFontSize } = useSettings();
+  const { settings, setTheme, setSoundEnabled, setAmbientVolume, setSoundScheme, setAnimationsEnabled, setScanlinesEnabled, setPixelizeEnabled, setPerformanceModeEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, setFontPairId, setFontSize } = useSettings();
   const [activeTab, setActiveTab] = useState<Tab>("theme");
 
   const content = (
@@ -85,7 +87,7 @@ export function SettingsPanel({ onClose }: { onClose: () => void }) {
         {activeTab === "theme" && <ThemeTab themeId={settings.themeId} setTheme={setTheme} />}
         {activeTab === "wallpaper" && <WallpaperTab wallpaperId={settings.wallpaperId ?? "bliss"} wallpaperOverridden={settings.wallpaperOverridden} themeId={settings.themeId} setWallpaperId={setWallpaperId} resetWallpaperToTheme={resetWallpaperToTheme} />}
         {activeTab === "display" && <DisplayTab animationsEnabled={settings.animationsEnabled} scanlinesEnabled={settings.scanlinesEnabled} pixelizeEnabled={settings.pixelizeEnabled} cursorId={settings.cursorId} fontPairId={settings.fontPairId} fontSize={settings.fontSize} setAnimationsEnabled={setAnimationsEnabled} setScanlinesEnabled={setScanlinesEnabled} setPixelizeEnabled={setPixelizeEnabled} setCursorId={setCursorId} setFontPairId={setFontPairId} setFontSize={setFontSize} />}
-        {activeTab === "system" && <SystemTab soundEnabled={settings.soundEnabled} setSoundEnabled={setSoundEnabled} ambientVolume={settings.ambientVolume} setAmbientVolume={setAmbientVolume} performanceModeEnabled={settings.performanceModeEnabled} setPerformanceModeEnabled={setPerformanceModeEnabled} />}
+        {activeTab === "system" && <SystemTab soundEnabled={settings.soundEnabled} setSoundEnabled={setSoundEnabled} ambientVolume={settings.ambientVolume} setAmbientVolume={setAmbientVolume} soundSchemeId={settings.soundSchemeId} setSoundScheme={setSoundScheme} performanceModeEnabled={settings.performanceModeEnabled} setPerformanceModeEnabled={setPerformanceModeEnabled} />}
         <div className="flex justify-end mt-5">
           <button onClick={onClose} className="px-6 py-1.5 border-[2px] tracking-wider cursor-pointer" style={{ backgroundColor: "var(--t-bg)", color: "var(--t-text)", fontFamily: "var(--t-font-display)", borderTopColor: "var(--t-border-light)", borderLeftColor: "var(--t-border-light)", borderBottomColor: "var(--t-border-dark)", borderRightColor: "var(--t-border-dark)" }}>OK</button>
         </div>
@@ -306,10 +308,21 @@ function WallpaperTab({ wallpaperId, wallpaperOverridden, themeId, setWallpaperI
   );
 }
 
-function SystemTab({ soundEnabled, setSoundEnabled, ambientVolume, setAmbientVolume, performanceModeEnabled, setPerformanceModeEnabled }: {
-  soundEnabled: boolean; setSoundEnabled: (v: boolean) => void; ambientVolume: number; setAmbientVolume: (v: number) => void; performanceModeEnabled: boolean; setPerformanceModeEnabled: (v: boolean) => void;
+function SystemTab({ soundEnabled, setSoundEnabled, ambientVolume, setAmbientVolume, soundSchemeId, setSoundScheme, performanceModeEnabled, setPerformanceModeEnabled }: {
+  soundEnabled: boolean; setSoundEnabled: (v: boolean) => void;
+  ambientVolume: number; setAmbientVolume: (v: number) => void;
+  soundSchemeId: SoundSchemeId; setSoundScheme: (v: SoundSchemeId) => void;
+  performanceModeEnabled: boolean; setPerformanceModeEnabled: (v: boolean) => void;
 }) {
   const volumePct = Math.round(ambientVolume * 100);
+  const { playNotifyInfo, playNotifySuccess, playClick, playWindowOpen } = useSoundContext();
+
+  const previewScheme = (id: SoundSchemeId) => {
+    if (id === soundSchemeId) { playNotifySuccess(); return; }
+    setSoundScheme(id);
+    setTimeout(playNotifyInfo, 80);
+  };
+
   return (
     <>
       <SectionTitle>⚡ PERFORMANCES</SectionTitle>
@@ -325,6 +338,40 @@ function SystemTab({ soundEnabled, setSoundEnabled, ambientVolume, setAmbientVol
           <input type="range" min={0} max={100} value={volumePct} disabled={!soundEnabled} onChange={(e) => setAmbientVolume(Number(e.target.value) / 100)} className="w-24 cursor-pointer" style={{ accentColor: "var(--t-accent)", opacity: soundEnabled ? 1 : 0.4 }} />
           <span className="text-sm w-8 text-right tabular-nums" style={{ color: "var(--t-text-muted)", fontFamily: "var(--t-font-display)" }}>{volumePct}%</span>
         </div>
+      </div>
+      <SectionTitle>🎵 THÈME SONORE</SectionTitle>
+      <div className="grid grid-cols-1 gap-1.5 mb-4" style={{ opacity: soundEnabled ? 1 : 0.4, pointerEvents: soundEnabled ? "auto" : "none" }}>
+        {SOUND_SCHEMES.map((scheme) => {
+          const isActive = scheme.id === soundSchemeId;
+          return (
+            <button
+              key={scheme.id}
+              onClick={() => previewScheme(scheme.id)}
+              className="flex items-center gap-3 px-3 py-2 border-[2px] text-left cursor-pointer w-full"
+              style={{
+                backgroundColor: isActive ? "var(--t-card-hover)" : "var(--t-bg-dark)",
+                borderTopColor: isActive ? "var(--t-border-dark)" : "var(--t-border-light)",
+                borderLeftColor: isActive ? "var(--t-border-dark)" : "var(--t-border-light)",
+                borderBottomColor: isActive ? "var(--t-border-light)" : "var(--t-border-dark)",
+                borderRightColor: isActive ? "var(--t-border-light)" : "var(--t-border-dark)",
+              }}
+              onMouseEnter={() => { if (!isActive) playClick(); }}
+              onFocus={() => { if (!isActive) playWindowOpen(); }}
+            >
+              <div className="flex-1">
+                <div className="tracking-wider" style={{ fontFamily: "var(--t-font-display)", fontSize: "var(--t-text-xs)", color: isActive ? "var(--t-accent)" : "var(--t-text)" }}>
+                  {isActive ? "✓ " : ""}{scheme.label.toUpperCase()}
+                </div>
+                <div style={{ fontFamily: "var(--t-font-body)", fontSize: "var(--t-text-xs)", color: "var(--t-text-subtle)", marginTop: 2 }}>
+                  {scheme.description}
+                </div>
+              </div>
+              {isActive && (
+                <div style={{ fontSize: "var(--t-text-xs)", color: "var(--t-accent)", fontFamily: "var(--t-font-display)" }}>▶</div>
+              )}
+            </button>
+          );
+        })}
       </div>
       <div className="mt-4 p-3 border-[2px]" style={{ backgroundColor: "var(--t-inset-from)", borderTopColor: "var(--t-border-dark)", borderLeftColor: "var(--t-border-dark)", borderBottomColor: "var(--t-border-light)", borderRightColor: "var(--t-border-light)" }}>
         <div className="text-sm tracking-widest mb-1" style={{ color: "var(--t-text-subtle)", fontFamily: "var(--t-font-display)" }}>ℹ️ INFO SYSTÈME</div>

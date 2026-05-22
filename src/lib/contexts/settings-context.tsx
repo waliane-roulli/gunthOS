@@ -20,6 +20,7 @@ import {
 } from "@/lib/settings";
 import { WALLPAPERS, WALLPAPER_MAP, type WallpaperId } from "@/lib/wallpapers";
 import { FONT_PAIRS, type FontPairId } from "@/lib/font-pairs";
+import { type SoundSchemeId } from "@/lib/sound-schemes";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { useThemeApplication } from "@/lib/hooks/use-theme-application";
 
@@ -35,6 +36,7 @@ interface SettingsActionsContextValue {
   setSoundEnabled: (v: boolean) => void;
   setMasterVolume: (v: number) => void;
   setAmbientVolume: (v: number) => void;
+  setSoundScheme: (v: SoundSchemeId) => void;
   setAnimationsEnabled: (v: boolean) => void;
   setScanlinesEnabled: (v: boolean) => void;
   setPixelizeEnabled: (v: boolean) => void;
@@ -57,6 +59,7 @@ const SettingsActionsContext = createContext<SettingsActionsContextValue>({
   setSoundEnabled: () => {},
   setMasterVolume: () => {},
   setAmbientVolume: () => {},
+  setSoundScheme: () => {},
   setAnimationsEnabled: () => {},
   setScanlinesEnabled: () => {},
   setPixelizeEnabled: () => {},
@@ -141,6 +144,9 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
           fontSize: local.fontSize !== DEFAULT_SETTINGS.fontSize
             ? local.fontSize
             : (typeof remote.fontSize === "number" ? Math.max(0.85, Math.min(1.3, remote.fontSize)) : DEFAULT_SETTINGS.fontSize),
+          soundSchemeId: local.soundSchemeId !== DEFAULT_SETTINGS.soundSchemeId
+            ? local.soundSchemeId
+            : (remote.soundSchemeId ?? DEFAULT_SETTINGS.soundSchemeId),
         };
         setSettings(merged);
         saveSettings(merged);
@@ -205,6 +211,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const setSoundEnabled = useCallback((v: boolean) => updateSettings({ soundEnabled: v }), [updateSettings]);
   const setMasterVolume = useCallback((v: number) => updateSettings({ masterVolume: Math.max(0, Math.min(100, v)) }), [updateSettings]);
   const setAmbientVolume = useCallback((v: number) => updateSettings({ ambientVolume: Math.max(0, Math.min(1, v)) }), [updateSettings]);
+  const setSoundScheme = useCallback((v: SoundSchemeId) => updateSettings({ soundSchemeId: v }), [updateSettings]);
   const setAnimationsEnabled = useCallback((v: boolean) => updateSettings({ animationsEnabled: v }), [updateSettings]);
   const setScanlinesEnabled = useCallback((v: boolean) => updateSettings({ scanlinesEnabled: v }), [updateSettings]);
   const setPixelizeEnabled = useCallback((v: boolean) => updateSettings({ pixelizeEnabled: v }), [updateSettings]);
@@ -230,8 +237,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const stateValue = useMemo(() => ({ settings, theme }), [settings, theme]);
 
   const actionsValue = useMemo(
-    () => ({ setTheme, setSoundEnabled, setMasterVolume, setAmbientVolume, setAnimationsEnabled, setScanlinesEnabled, setPixelizeEnabled, setPerformanceModeEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, setFontPairId, setFontSize, updateSettings }),
-    [setTheme, setSoundEnabled, setMasterVolume, setAmbientVolume, setAnimationsEnabled, setScanlinesEnabled, setPixelizeEnabled, setPerformanceModeEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, setFontPairId, setFontSize, updateSettings]
+    () => ({ setTheme, setSoundEnabled, setMasterVolume, setAmbientVolume, setSoundScheme, setAnimationsEnabled, setScanlinesEnabled, setPixelizeEnabled, setPerformanceModeEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, setFontPairId, setFontSize, updateSettings }),
+    [setTheme, setSoundEnabled, setMasterVolume, setAmbientVolume, setSoundScheme, setAnimationsEnabled, setScanlinesEnabled, setPixelizeEnabled, setPerformanceModeEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, setFontPairId, setFontSize, updateSettings]
   );
 
   return (

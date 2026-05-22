@@ -11,6 +11,7 @@ import {
 import { getChannel, clearChannels, silenceChannel } from "@/lib/audio/channel";
 import { AudioPlayer } from "@/lib/audio/player";
 import { APP_REGISTRY } from "@/apps";
+import { SCHEME_MAP, DEFAULT_SOUND_SCHEME_ID, type SoundSchemeId, type ToneStep } from "@/lib/sound-schemes";
 
 // Précharge boot dès le chargement du module (client uniquement)
 if (typeof window !== "undefined") prefetch("/sounds/boot.mp3");
@@ -19,7 +20,7 @@ const supportsOpus =
   typeof window !== "undefined" &&
   document.createElement("audio").canPlayType("audio/ogg; codecs=opus") !== "";
 
-export function useSound(muted: boolean) {
+export function useSound(muted: boolean, schemeId: SoundSchemeId = DEFAULT_SOUND_SCHEME_ID) {
   const onFirstInitRef = useRef<(() => void) | null>(null);
   const initializedRef = useRef(false);
   const mutedRef = useRef(muted);
@@ -56,6 +57,13 @@ export function useSound(muted: boolean) {
     getCtx();
     return getMasterGain();
   }, [getCtx]);
+
+  // ── Scheme actif ─────────────────────────────────────────────────────────────
+
+  const schemeRef = useRef(SCHEME_MAP.get(schemeId) ?? SCHEME_MAP.get(DEFAULT_SOUND_SCHEME_ID)!);
+  useEffect(() => {
+    schemeRef.current = SCHEME_MAP.get(schemeId) ?? SCHEME_MAP.get(DEFAULT_SOUND_SCHEME_ID)!;
+  }, [schemeId]);
 
   // ── Sons synthétiques ────────────────────────────────────────────────────────
 
@@ -107,64 +115,38 @@ export function useSound(muted: boolean) {
     [getCtx, masterNode]
   );
 
-  const playPop = useCallback(() => playTone(1100, 0.12, "sine", 0.15), [playTone]);
-  const playBip = useCallback(() => playTone(820, 0.05, "square", 0.08), [playTone]);
-  const playDelete = useCallback(() => playTone(400, 0.15, "triangle", 0.12), [playTone]);
-  const playClick = useCallback(() => playTone(1200, 0.04, "square", 0.07), [playTone]);
+  const playSchemeSound = useCallback(
+    (steps: ToneStep[]) => {
+      const ctx = getCtx();
+      if (!ctx) return;
+      const t = ctx.currentTime;
+      for (const step of steps) {
+        try {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          const start = t + (step.delay ?? 0);
+          osc.type = step.type;
+          osc.frequency.setValueAtTime(step.freq, start);
+          gain.gain.setValueAtTime(step.vol, start);
+          gain.gain.exponentialRampToValueAtTime(0.001, start + step.dur);
+          osc.connect(gain);
+          gain.connect(masterNode());
+          osc.start(start);
+          osc.stop(start + step.dur + 0.01);
+        } catch {}
+      }
+    },
+    [getCtx, masterNode]
+  );
 
-  const playWindowOpen = useCallback(() => {
-    const ctx = getCtx();
-    if (!ctx) return;
-    try {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = "square";
-      osc.frequency.setValueAtTime(440, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.12);
-      gain.gain.setValueAtTime(0.09, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.14);
-      osc.connect(gain);
-      gain.connect(masterNode());
-      osc.start();
-      osc.stop(ctx.currentTime + 0.14);
-    } catch {}
-  }, [getCtx, masterNode]);
+  const playPop    = useCallback(() => playSchemeSound(schemeRef.current.sounds.pop),    [playSchemeSound]);
+  const playBip    = useCallback(() => playSchemeSound(schemeRef.current.sounds.bip),    [playSchemeSound]);
+  const playDelete = useCallback(() => playSchemeSound(schemeRef.current.sounds.delete), [playSchemeSound]);
+  const playClick  = useCallback(() => playSchemeSound(schemeRef.current.sounds.click),  [playSchemeSound]);
 
-  const playWindowClose = useCallback(() => {
-    const ctx = getCtx();
-    if (!ctx) return;
-    try {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = "square";
-      osc.frequency.setValueAtTime(880, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(220, ctx.currentTime + 0.15);
-      gain.gain.setValueAtTime(0.09, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.17);
-      osc.connect(gain);
-      gain.connect(masterNode());
-      osc.start();
-      osc.stop(ctx.currentTime + 0.17);
-    } catch {}
-  }, [getCtx, masterNode]);
-
-  const playWindowMinimize = useCallback(() => {
-    const ctx = getCtx();
-    if (!ctx) return;
-    try {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = "square";
-      osc.frequency.setValueAtTime(660, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(330, ctx.currentTime + 0.1);
-      gain.gain.setValueAtTime(0.07, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
-      osc.connect(gain);
-      gain.connect(masterNode());
-      osc.start();
-      osc.stop(ctx.currentTime + 0.12);
-    } catch {}
-  }, [getCtx, masterNode]);
+  const playWindowOpen     = useCallback(() => playSchemeSound(schemeRef.current.sounds.windowOpen),     [playSchemeSound]);
+  const playWindowClose    = useCallback(() => playSchemeSound(schemeRef.current.sounds.windowClose),    [playSchemeSound]);
+  const playWindowMinimize = useCallback(() => playSchemeSound(schemeRef.current.sounds.windowMinimize), [playSchemeSound]);
 
   const playModemDialup = useCallback(() => {
     const ctx = getCtx();
@@ -279,27 +261,15 @@ export function useSound(muted: boolean) {
     [getCtx, masterNode, playTone]
   );
 
-  const playVictory = useCallback(() => {
-    const ctx = getCtx();
-    if (!ctx) return;
-    try {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = "square";
-      osc.frequency.setValueAtTime(200, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(2000, ctx.currentTime + 0.3);
-      gain.gain.setValueAtTime(0.15, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
-      osc.connect(gain);
-      gain.connect(masterNode());
-      osc.start();
-      osc.stop(ctx.currentTime + 0.35);
-    } catch {}
-    const notes = [523.25, 659.25, 783.99, 1046.5];
-    notes.forEach((freq, i) => {
-      setTimeout(() => playTone(freq, 0.35, "sine", 0.22), 150 + i * 100);
-    });
-  }, [getCtx, masterNode, playTone]);
+  const playVictory = useCallback(
+    () => playSchemeSound(schemeRef.current.sounds.notifySuccess),
+    [playSchemeSound]
+  );
+
+  const playNotifyInfo    = useCallback(() => playSchemeSound(schemeRef.current.sounds.notifyInfo),    [playSchemeSound]);
+  const playNotifySuccess = useCallback(() => playSchemeSound(schemeRef.current.sounds.notifySuccess), [playSchemeSound]);
+  const playNotifyError   = useCallback(() => playSchemeSound(schemeRef.current.sounds.notifyError),   [playSchemeSound]);
+  const playNotifyWarning = useCallback(() => playSchemeSound(schemeRef.current.sounds.notifyWarning), [playSchemeSound]);
 
   // ── Sons MP3 ─────────────────────────────────────────────────────────────────
 
@@ -433,6 +403,10 @@ export function useSound(muted: boolean) {
     playWindowOpen,
     playWindowClose,
     playWindowMinimize,
+    playNotifyInfo,
+    playNotifySuccess,
+    playNotifyError,
+    playNotifyWarning,
     playModemDialup,
     playStartupChime,
     playBiosBleep,

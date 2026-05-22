@@ -4,7 +4,9 @@
 export type SSEEvent =
   | { type: "message"; fromUserId: string; toUserId: string; messageId: number; content: string; createdAt: string; fromName: string }
   | { type: "nudge"; fromUserId: string; toUserId: string; fromName: string }
-  | { type: "status"; userId: string; status: "online" | "away" | "busy" | "offline" };
+  | { type: "status"; userId: string; status: "online" | "away" | "busy" | "offline" }
+  | { type: "typing"; fromUserId: string; toUserId: string; fromName: string }
+  | { type: "effect"; fromUserId: string; toUserId: string; fromName: string; effect: "confetti" | "bsod" | "rain" | "shake" | "matrix" | "heart" };
 
 type Listener = (event: SSEEvent) => void;
 

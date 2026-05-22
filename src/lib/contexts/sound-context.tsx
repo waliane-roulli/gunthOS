@@ -11,7 +11,7 @@ const SoundContext = createContext<SoundContextValue | null>(null);
 
 export function SoundProvider({ children }: { children: ReactNode }) {
   const { settings } = useSettingsState();
-  const sound = useSound(!settings.soundEnabled);
+  const sound = useSound(!settings.soundEnabled, settings.soundSchemeId);
 
   useEffect(() => {
     return () => { sound.closeContext(); };

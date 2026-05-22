@@ -2,12 +2,15 @@ import { THEMES, DEFAULT_THEME_ID, type ThemeId } from "@/lib/themes";
 import { CURSORS, DEFAULT_CURSOR_ID, type CursorId } from "@/lib/cursors";
 import { WALLPAPERS, DEFAULT_WALLPAPER_ID, type WallpaperId } from "@/lib/wallpapers";
 import { FONT_PAIRS, DEFAULT_FONT_PAIR_ID, type FontPairId } from "@/lib/font-pairs";
+import { SOUND_SCHEMES, DEFAULT_SOUND_SCHEME_ID, type SoundSchemeId } from "@/lib/sound-schemes";
+export type { SoundSchemeId };
 
 export interface AppSettings {
   themeId: ThemeId;
   soundEnabled: boolean;
   masterVolume: number; // 0–100, volume général
   ambientVolume: number; // 0–1, volume du bruit de fond machine
+  soundSchemeId: SoundSchemeId;
   animationsEnabled: boolean;
   scanlinesEnabled: boolean;
   cursorId: CursorId;
@@ -26,6 +29,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   soundEnabled: true,
   masterVolume: 80,
   ambientVolume: 0.5,
+  soundSchemeId: DEFAULT_SOUND_SCHEME_ID,
   animationsEnabled: true,
   scanlinesEnabled: false,
   cursorId: DEFAULT_CURSOR_ID,
@@ -57,6 +61,9 @@ export function loadSettings(): AppSettings {
       ambientVolume: typeof parsed.ambientVolume === "number"
         ? Math.max(0, Math.min(1, parsed.ambientVolume))
         : DEFAULT_SETTINGS.ambientVolume,
+      soundSchemeId: SOUND_SCHEMES.some((s) => s.id === parsed.soundSchemeId)
+        ? (parsed.soundSchemeId as SoundSchemeId)
+        : DEFAULT_SETTINGS.soundSchemeId,
       animationsEnabled: parsed.animationsEnabled ?? DEFAULT_SETTINGS.animationsEnabled,
       scanlinesEnabled: parsed.scanlinesEnabled ?? DEFAULT_SETTINGS.scanlinesEnabled,
       cursorId: CURSORS.some((c) => c.id === parsed.cursorId)
