@@ -11,6 +11,7 @@ export const manifest: AppManifest = {
   defaultSize: { w: 720, h: 9999 },
   href: "/plouf-plouf",
   badge: "NEW",
+  hot: true,
   audioChannels: ["music"],
   component: PloufPloufApp,
 };

@@ -10,6 +10,7 @@ export const manifest: AppManifest = {
   showInLauncher: true,
   href: "/radio",
   badge: "NEW",
+  hot: true,
   component: RadioApp,
   persistAudio: true,
 };

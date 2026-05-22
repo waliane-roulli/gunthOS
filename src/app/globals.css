@@ -269,3 +269,12 @@ html, body {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
+@keyframes hotBlink {
+  0%, 100% { opacity: 1; background-color: #ff3300; }
+  50%       { opacity: 0.6; background-color: #ff6600; }
+}
+
+.animate-hot-badge {
+  animation: hotBlink 0.7s ease-in-out infinite;
+}

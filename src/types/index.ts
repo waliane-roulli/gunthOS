@@ -28,6 +28,8 @@ export interface AppManifest {
   href?: string;
   /** Optional badge text ("NEW", "3", etc.) */
   badge?: string;
+  /** Show a "HOT 🔥" badge on the top-left of the icon */
+  hot?: boolean;
   /** The React component rendered inside the window */
   component: ComponentType<AppProps>;
   /**

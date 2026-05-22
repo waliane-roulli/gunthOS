@@ -26,6 +26,7 @@ interface IconDef {
   emoji: string | import("react").ReactNode;
   label: string;
   badge?: string;
+  hot?: boolean;
   onOpen: () => void;
 }
 
@@ -127,6 +128,7 @@ export function OsDesktop() {
         app.slug === "msn" && totalUnread > 0
           ? String(totalUnread > 9 ? "9+" : totalUnread)
           : app.badge && !seen.has(app.slug) ? app.badge : undefined,
+      hot: app.hot,
       onOpen: () => handleOpenApp(app.slug),
     })),
     {
@@ -339,9 +341,23 @@ function DraggableDesktopIcon({
             {icon.emoji}
           </div>
         )}
+        {icon.hot && (
+          <span
+            className="absolute -top-2 -left-2 text-xs font-bold px-1 border border-black animate-hot-badge"
+            style={{
+              backgroundColor: "#ff3300",
+              color: "#fff",
+              fontFamily: "var(--t-font-display)",
+              transform: "rotate(-12deg)",
+              transformOrigin: "center",
+            }}
+          >
+            HOT
+          </span>
+        )}
         {icon.badge && (
           <span
-            className="absolute -top-1 -right-1 text-xs font-bold px-1 border border-black"
+            className="absolute -top-1 -right-3 text-xs font-bold px-1 border border-black"
             style={{
               backgroundColor: "var(--t-badge-bg)",
               color: "var(--t-badge-text)",
