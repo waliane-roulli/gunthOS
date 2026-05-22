@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { linkedGunthPosts, linkedGunthReactions, linkedGunthComments, user } from "@/lib/db/schema";
