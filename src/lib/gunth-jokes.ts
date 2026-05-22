@@ -108,6 +108,17 @@ export const SETTINGS_LICENSES = [
   "Licence : aucune. Assumée.",
 ];
 
+export const GUNTHER_STATUS_BAR_MSGS = [
+  "Sprint 47 • Vélocité : 0 • Moral : stable",
+  "Prochaine démo : vendredi • Préparation : 0%",
+  "Stand-up : 14h • Durée estimée : 3h • Café : nécessaire",
+  "Burndown chart : en feu",
+  "Dernier déploiement : jamais • Prochain : bientôt™",
+  "Mode Kanban™ activé • Fonctionnalité en bêta depuis 2001",
+  "Tickets perdus : ∞ • Tickets trouvés : 0 • Équipe : occupée",
+  "Roadmap : confidentielle • Deadline : hier",
+];
+
 export const GUNTHER_LOADING_HINTS = [
   "(Le stand-up a pris du retard.)",
   "(La story-pointing de cette tâche dure depuis 3h.)",

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { useSoundContext } from "@/lib/contexts/sound-context";
-import { pickRandom, GUNTHER_LOADING_HINTS } from "@/lib/gunth-jokes";
+import { pickRandom, GUNTHER_LOADING_HINTS, GUNTHER_STATUS_BAR_MSGS } from "@/lib/gunth-jokes";
 import { APP_REGISTRY } from "@/apps";
 import type { AppProps } from "@/types";
 
@@ -79,25 +79,49 @@ function ScopeSelect({
   );
 }
 
-const COLUMNS: { key: Status; label: string; icon: string; accentColor: string; emptyMsgs: string[] }[] = [
-  { key: "todo", label: "À FAIRE", icon: "📥", accentColor: "var(--t-text-muted)", emptyMsgs: [
-    "Backlog vide.\nQuelqu'un a tout mis en 'En cours'.",
-    "Rien ici.\nProfitez-en, ça durera pas.",
-    "À faire : zéro.\nC'est statistiquement impossible.",
-    "Propre ici.\nC'est louche. Très louche.",
-  ]},
-  { key: "in_progress", label: "EN COURS", icon: "⚙️", accentColor: "#c88a00", emptyMsgs: [
-    "En cours : rien.\nL'équipe est en réunion à ce sujet.",
-    "Personne ne travaille.\nC'est suspect.",
-    "Vide.\nComme le compte rendu du dernier sprint.",
-    "Aucune tâche active.\nLe velocity chart va être intéressant.",
-  ]},
-  { key: "done", label: "TERMINÉ", icon: "✅", accentColor: "#2a6e28", emptyMsgs: [
-    "0 tickets fermés.\nMais l'équipe était très busy.",
-    "Aucun ticket terminé.\nÇa arrive. Souvent.",
-    "Rien de livré.\nEn revanche le café a été bu.",
-    "Terminé : néant.\nLe retro va être intéressant.",
-  ]},
+const COLUMNS: { key: Status; label: string; icon: string; accentColor: string; emptyMsgs: string[]; subtitles: string[] }[] = [
+  { key: "todo", label: "À FAIRE", icon: "📥", accentColor: "var(--t-text-muted)",
+    subtitles: [
+      "— le backlog vous observe",
+      "— tickets en attente de volontaires",
+      "— salle d'attente des problèmes",
+      "— non priorisé depuis 2003",
+    ],
+    emptyMsgs: [
+      "Backlog vide.\nQuelqu'un a tout mis en 'En cours'.",
+      "Rien ici.\nProfitez-en, ça durera pas.",
+      "À faire : zéro.\nC'est statistiquement impossible.",
+      "Propre ici.\nC'est louche. Très louche.",
+    ],
+  },
+  { key: "in_progress", label: "EN COURS", icon: "⚙️", accentColor: "#c88a00",
+    subtitles: [
+      "— théoriquement en mouvement",
+      "— quelqu'un s'en occupe. Apparemment.",
+      "— en cours depuis un moment",
+      "— ça avance. C'est ce qu'on dit.",
+    ],
+    emptyMsgs: [
+      "En cours : rien.\nL'équipe est en réunion à ce sujet.",
+      "Personne ne travaille.\nC'est suspect.",
+      "Vide.\nComme le compte rendu du dernier sprint.",
+      "Aucune tâche active.\nLe velocity chart va être intéressant.",
+    ],
+  },
+  { key: "done", label: "TERMINÉ", icon: "✅", accentColor: "#2a6e28",
+    subtitles: [
+      "— définition de terminé : discutable",
+      "— prêt à rouvrir à la prochaine démo",
+      "— fermé jusqu'à nouvel incident",
+      "— victoires officielles de l'équipe",
+    ],
+    emptyMsgs: [
+      "0 tickets fermés.\nMais l'équipe était très busy.",
+      "Aucun ticket terminé.\nÇa arrive. Souvent.",
+      "Rien de livré.\nEn revanche le café a été bu.",
+      "Terminé : néant.\nLe retro va être intéressant.",
+    ],
+  },
 ];
 
 const PRIORITY_COLORS: Record<Priority, string> = {
@@ -214,8 +238,12 @@ export function GuntherBoardApp(_: AppProps) {
   const [dragOverCol, setDragOverCol] = useState<Status | null>(null);
   const [loadDots, setLoadDots] = useState(0);
   const [loadHint] = useState(() => pickRandom(GUNTHER_LOADING_HINTS));
+  const [statusBarMsg] = useState(() => pickRandom(GUNTHER_STATUS_BAR_MSGS));
   const [colEmptyMsgs] = useState(() =>
     Object.fromEntries(COLUMNS.map((col) => [col.key, pickRandom(col.emptyMsgs)])) as Record<Status, string>
+  );
+  const [colSubtitles] = useState(() =>
+    Object.fromEntries(COLUMNS.map((col) => [col.key, pickRandom(col.subtitles)])) as Record<Status, string>
   );
 
   useEffect(() => {
@@ -523,6 +551,19 @@ export function GuntherBoardApp(_: AppProps) {
                   </div>
                 </div>
 
+                {/* Column subtitle */}
+                <div style={{
+                  padding: "2px 8px",
+                  fontSize: "0.72rem",
+                  fontStyle: "italic",
+                  color: "var(--t-text-subtle)",
+                  borderBottom: "1px solid var(--t-border-dark)",
+                  backgroundColor: "var(--t-app-bg)",
+                  flexShrink: 0,
+                }}>
+                  {colSubtitles[col.key]}
+                </div>
+
                 {/* Tickets list */}
                 <div
                   className="flex-1 overflow-y-auto flex flex-col"
@@ -567,6 +608,22 @@ export function GuntherBoardApp(_: AppProps) {
               </div>
             );
           })}
+        </div>
+
+        {/* ── Status bar ──────────────────────────────────────────────── */}
+        <div
+          className="shrink-0 flex items-center px-3"
+          style={{
+            borderTop: "2px solid var(--t-border-dark)",
+            backgroundColor: "var(--t-bg)",
+            fontSize: "0.78rem",
+            color: "var(--t-text-muted)",
+            fontStyle: "italic",
+            minHeight: 22,
+            letterSpacing: "0.04em",
+          }}
+        >
+          {statusBarMsg}
         </div>
 
         {/* ── Detail panel ────────────────────────────────────────────── */}
