@@ -1,0 +1,17 @@
+export const W = 480;
+export const H = 520;
+export const BALL_R = 8;
+export const PEG_R = 7;
+export const BUCKET_W = 80;
+export const BUCKET_H = 20;
+export const GRAVITY = 0.28;
+export const LAUNCH_SPEED = 14;
+export const WALL_BOUNCE = 0.72;
+export const PEG_BOUNCE = 0.55;
+export const FRICTION = 0.998;
+export const FEVER_THRESHOLD = 3;
+export const SHAKE_DECAY = 0.82;
+export const AIM_LINE_STEPS = 180;
+export const SLOW_MO_DURATION = 90;
+export const LAUNCHER_X = W / 2;
+export const LAUNCHER_Y = 28;
