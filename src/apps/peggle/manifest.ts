@@ -10,4 +10,5 @@ export const manifest: AppManifest = {
   loadDuration: 1800,
   showInLauncher: true,
   component: PeggleApp,
+  audioChannels: ["peggle-music"],
 };

@@ -13,8 +13,8 @@ export async function POST(req: NextRequest) {
   if (caller?.role !== "admin") return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
 
   const { userId, newPassword } = await req.json();
-  if (!userId || !newPassword || newPassword.length < 8) {
-    return NextResponse.json({ error: "userId et newPassword (8 car. min) requis" }, { status: 400 });
+  if (!userId || !newPassword) {
+    return NextResponse.json({ error: "userId et newPassword requis" }, { status: 400 });
   }
 
   const { hashPassword } = await import("@better-auth/utils/password");

@@ -464,7 +464,7 @@ function UsersPanel() {
 
   async function handleReset(userId: string) {
     const pwd = newPwd[userId] ?? "";
-    if (pwd.length < 8) { notify({ type: "warning", title: "Mot de passe trop court", message: "8 caractères minimum" }); return; }
+    if (pwd.length < 1) { notify({ type: "warning", title: "Mot de passe vide", message: "Le mot de passe ne peut pas être vide" }); return; }
     setBusy(userId);
     const res = await fetch("/api/admin/reset-password", {
       method: "POST",

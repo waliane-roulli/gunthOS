@@ -162,8 +162,8 @@ function EditTab({
       setTimeout(() => setPwdMsg(null), 4000);
       return;
     }
-    if (newPassword.length < 8) {
-      setPwdMsg({ text: "❌ Mot de passe trop court (min. 8 caractères).", ok: false });
+    if (newPassword.length < 1) {
+      setPwdMsg({ text: "❌ Le mot de passe ne peut pas être vide.", ok: false });
       setTimeout(() => setPwdMsg(null), 4000);
       return;
     }
@@ -243,7 +243,7 @@ function EditTab({
         <FieldSection label="🔑 CHANGER LE MOT DE PASSE">
           <div className="flex flex-col gap-2">
             <RetroInput value={currentPassword} onChange={setCurrentPassword} placeholder="Mot de passe actuel" type="password" />
-            <RetroInput value={newPassword} onChange={setNewPassword} placeholder="Nouveau mot de passe (min. 8 caractères)" type="password" />
+            <RetroInput value={newPassword} onChange={setNewPassword} placeholder="Nouveau mot de passe" type="password" />
             <RetroInput value={confirmPassword} onChange={setConfirmPassword} placeholder="Confirmer le nouveau mot de passe" type="password" />
             <div className="flex gap-2 items-center">
               <RetroBtn onClick={handlePasswordChange} disabled={pwdSaving || !currentPassword || !newPassword || !confirmPassword}>

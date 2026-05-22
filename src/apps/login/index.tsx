@@ -184,7 +184,7 @@ export function LoginApp({ windowId }: AppProps) {
         <FieldGroup label="MOT_DE_PASSE.EXE">
           <RetroInput
             type="password"
-            placeholder={mode === "register" ? "8 caractères minimum" : "••••••••"}
+            placeholder={mode === "register" ? "Choisissez un mot de passe" : "••••••••"}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -203,8 +203,7 @@ export function LoginApp({ windowId }: AppProps) {
               background: "var(--t-app-bg, #f8f8f8)",
             }}
           >
-            📋 Règles du mot de passe : 8 caractères min.<br />
-            Pseudo : lettres, chiffres, _ et - uniquement.
+            📋 Règles du pseudo : lettres, chiffres, _ et - uniquement.
           </div>
         )}
 
