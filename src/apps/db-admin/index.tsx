@@ -200,11 +200,11 @@ function UsersPanel() {
                     }}
                   />
                   <button
-                    style={btnStyle(!u.hasCredential ? "admin" : "default")}
+                    style={btnStyle()}
                     disabled={busy === u.id}
                     onClick={() => handleReset(u.id)}
                   >
-                    {busy === u.id ? "…" : u.hasCredential ? "Reset" : "Réparer"}
+                    {busy === u.id ? "…" : "Reset"}
                   </button>
                 </div>
               </td>
