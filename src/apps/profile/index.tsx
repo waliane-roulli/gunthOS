@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { authClient } from "@/lib/auth-client";
-import { pickRandom, PROFILE_SAVE_MESSAGES } from "@/lib/gunth-jokes";
+import { PROFILE_SAVE_MESSAGES } from "@/lib/gunth-jokes";
+import { pickRandom } from "@/lib/utils/random";
 import type { AppProps } from "@/types";
 import {
   type ProfileData, FAVORITE_APPS, STATUS_SUGGESTIONS, BIO_SUGGESTIONS,

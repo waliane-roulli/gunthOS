@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useWindowActions } from "@/lib/contexts/window-manager-context";
-import { pickRandom, DIRECTORY_LOADING_MSGS, DIRECTORY_EMPTY_SEARCH_MSGS, DIRECTORY_NO_USERS_MSGS } from "@/lib/gunth-jokes";
+import { DIRECTORY_LOADING_MSGS, DIRECTORY_EMPTY_SEARCH_MSGS, DIRECTORY_NO_USERS_MSGS } from "@/lib/gunth-jokes";
+import { pickRandom } from "@/lib/utils/random";
 import type { AppProps } from "@/types";
 import { PIXEL_AVATARS, getDaysSinceJoin, getGunthosRank, RetroInput } from "@/apps/profile/_shared";
 

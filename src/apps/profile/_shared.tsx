@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { pickRandom } from "@/lib/gunth-jokes";
+import { pickRandom } from "@/lib/utils/random";
 import { useWastedTime, formatWastedTime } from "@/lib/hooks/use-wasted-time";
 
 // ── Types ──────────────────────────────────────────────────────────────────────

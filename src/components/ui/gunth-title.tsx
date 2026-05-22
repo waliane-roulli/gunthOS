@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { GUNTH_TITLES, pickRandom } from "@/lib/gunth-jokes";
+import { GUNTH_TITLES } from "@/lib/gunth-jokes";
+import { pickRandom } from "@/lib/utils/random";
 
 const FAVICON_EMOJIS = ["💾", "🖥️", "📟", "🖨️", "🕹️", "📼", "💿", "📡", "🔌", "⌨️", "🖱️", "📠"];
 

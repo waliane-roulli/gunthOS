@@ -196,7 +196,3 @@ export const PUBLIC_PROFILE_NOT_FOUND_MSGS = [
   "est introuvable. Secteur disque : corrompu.",
   "n'a jamais existé ici. Ou a existé et a disparu. Les deux sont plausibles.",
 ];
-
-export function pickRandom<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)]!;
-}

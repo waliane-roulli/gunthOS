@@ -6,7 +6,8 @@ import { useWindowState, useWindowActions } from "@/lib/contexts/window-manager-
 import { LAUNCHER_APPS } from "@/apps";
 import { useTheme, useSettings } from "@/lib/contexts/settings-context";
 import { THEMES, type ThemeId } from "@/lib/themes";
-import { GUNTH_SHUTDOWN_MESSAGES, GUNTH_REBOOT_MESSAGES, pickRandom } from "@/lib/gunth-jokes";
+import { GUNTH_SHUTDOWN_MESSAGES, GUNTH_REBOOT_MESSAGES } from "@/lib/gunth-jokes";
+import { pickRandom } from "@/lib/utils/random";
 import { useOsClock } from "@/lib/hooks/use-os-clock";
 import { useVisitorCountApi } from "@/lib/hooks/use-visitor-count-api";
 import { useOpenApp } from "@/lib/hooks/use-open-app";

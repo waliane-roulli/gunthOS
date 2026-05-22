@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/contexts/auth-context";
-import { pickRandom, PUBLIC_PROFILE_LOADING_MSGS, PUBLIC_PROFILE_NOT_FOUND_MSGS } from "@/lib/gunth-jokes";
+import { PUBLIC_PROFILE_LOADING_MSGS, PUBLIC_PROFILE_NOT_FOUND_MSGS } from "@/lib/gunth-jokes";
+import { pickRandom } from "@/lib/utils/random";
 import type { AppProps } from "@/types";
 import { type ProfileData, PIXEL_AVATARS, ViewTab } from "@/apps/profile/_shared";
 

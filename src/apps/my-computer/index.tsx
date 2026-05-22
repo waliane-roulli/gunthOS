@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useWindowActions } from "@/lib/contexts/window-manager-context";
-import { GUNTH_STATUS, pickRandom } from "@/lib/gunth-jokes";
+import { GUNTH_STATUS } from "@/lib/gunth-jokes";
+import { pickRandom } from "@/lib/utils/random";
 import type { AppProps } from "@/types";
 
 interface DialogConfig {

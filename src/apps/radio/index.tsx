@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRadio, STATIONS, type StationId } from "@/lib/contexts/radio-context";
 import { useSettingsActions } from "@/lib/contexts/settings-context";
+import { pickRandom } from "@/lib/utils/random";
 import type { AppProps } from "@/types";
 
 const BUFFER_MESSAGES = [
@@ -35,10 +36,6 @@ const ERROR_MESSAGES = [
 ];
 
 const EQUALIZER_CHARS = ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"];
-
-function pickRandom<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)]!;
-}
 
 function Equalizer({ active }: { active: boolean }) {
   const [bars, setBars] = useState([3, 5, 2, 7, 4, 6, 1, 5, 3, 6, 2, 4]);
