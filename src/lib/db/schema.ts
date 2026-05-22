@@ -33,6 +33,7 @@ export const user = sqliteTable("user", {
   gunthosRank: text("gunthos_rank"),
   onlineStatus: text("online_status", { enum: ["online", "away", "busy", "offline"] }).default("offline"),
   lastHeartbeat: integer("last_heartbeat", { mode: "timestamp" }),
+  role: text("role", { enum: ["user", "admin"] }).notNull().default("user"),
 });
 
 export const session = sqliteTable("session", {

@@ -29,6 +29,7 @@ import { manifest as printer } from "./printer/manifest";
 import { manifest as ie } from "./ie/manifest";
 import { manifest as linkedGunth } from "./linked-gunth/manifest";
 import { manifest as guntherBoard } from "./gunther-board/manifest";
+import { manifest as dbAdmin } from "./db-admin/manifest";
 
 export const APP_REGISTRY: AppManifest[] = [
   // Apps visibles dans le launcher (Start menu + desktop)
@@ -41,6 +42,7 @@ export const APP_REGISTRY: AppManifest[] = [
   guntherBoard,
 
   // Apps système (ouvertes programmatiquement, pas dans le launcher)
+  dbAdmin,
   myComputer,
   trash,
   settings,

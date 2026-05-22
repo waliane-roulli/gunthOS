@@ -64,6 +64,13 @@
       "when": 1748037600000,
       "tag": "0008_repair_user_columns",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1779473396523,
+      "tag": "0009_daily_stryfe",
+      "breakpoints": true
     }
   ]
 }
