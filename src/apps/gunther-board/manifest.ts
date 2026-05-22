@@ -5,7 +5,7 @@ export const manifest: AppManifest = {
   slug: "gunther-board",
   name: "GuntherBoard",
   description: "Issue tracker™ — tickets perdus depuis 2003",
-  emoji: "📋",
+  emoji: "📝",
   defaultSize: { w: 900, h: 620 },
   loadDuration: 1000,
   showInLauncher: true,
