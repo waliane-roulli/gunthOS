@@ -216,8 +216,11 @@ export function OsWindow({ win, children }: OsWindowProps) {
       {/* Content */}
       <div
         ref={contentRef}
-        className="flex-1 overflow-auto min-h-0"
-        style={{ borderRadius: "0 0 var(--t-window-radius) var(--t-window-radius)" }}
+        className="flex-1 overflow-auto min-h-0 relative"
+        style={{
+          backgroundColor: "var(--t-app-bg)",
+          borderRadius: "0 0 var(--t-window-radius) var(--t-window-radius)",
+        }}
       >{children}</div>
     </div>
   );

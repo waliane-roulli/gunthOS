@@ -343,7 +343,7 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
         }}
         className={
           embedded
-            ? "relative w-full"
+            ? "relative w-full flex-1"
             : "border-[3px] max-w-[720px] w-full shadow-[6px_6px_0_rgba(0,0,0,0.35)] relative z-10"
         }
         style={

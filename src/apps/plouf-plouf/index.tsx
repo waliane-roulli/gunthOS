@@ -1,7 +1,10 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useLocalStorage } from "@/lib/hooks/use-local-storage";
+import { THEMES } from "@/lib/themes";
 import type { AppProps } from "@/types";
+import type { ThemeId } from "@/lib/themes";
 
 const PloufApp = dynamic(
   () => import("./plouf-app").then((m) => ({ default: m.PloufApp })),
@@ -9,12 +12,16 @@ const PloufApp = dynamic(
 );
 
 export function PloufPloufApp(_: AppProps) {
+  const [appThemeId] = useLocalStorage<ThemeId | null>("ploufPloufTheme", null);
+  const appTheme = appThemeId ? THEMES.find((t) => t.id === appThemeId) : null;
+  const appThemeStyle = appTheme ? appTheme.vars : {};
+
   return (
     <div
-      className="min-h-full relative"
+      className="flex flex-col min-h-full"
       style={{
-        background:
-          "radial-gradient(ellipse at 20% 20%, rgba(173,216,255,0.25) 0%, transparent 50%), linear-gradient(180deg, var(--t-page-from) 0%, var(--t-page-to) 100%)",
+        ...appThemeStyle,
+        backgroundColor: "var(--t-bg)",
       }}
     >
       <PloufApp embedded />
