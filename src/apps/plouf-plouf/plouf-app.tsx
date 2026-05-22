@@ -16,6 +16,7 @@ import { useCelebrationEffects } from "@/lib/hooks/use-celebration-effects";
 import { useLocalStorage } from "@/lib/hooks/use-local-storage";
 import { useVisitorCount } from "@/lib/hooks/use-visitor-count";
 import { useDraggable } from "@/lib/hooks/use-draggable";
+import { useWinnerHistory } from "./use-winner-history";
 import { DEFAULT_OPTIONS, PRESETS } from "@/types/plouf-plouf";
 import type { CelebrationOptions, DrawMode, PresetName, CelebType } from "@/types/plouf-plouf";
 import { THEMES } from "@/lib/themes";
@@ -75,6 +76,7 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
   const drag = useDraggable();
 
   const visitorCount = useVisitorCount();
+  const winnerHistory = useWinnerHistory();
   const { games, inputError, addGame, removeGame, clearGames, importGames } = useItemList();
   const sound = useSoundContext();
   const { canvasRef, start: startCelebration, stop: stopCelebration } = useCelebration();
@@ -167,6 +169,7 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
     const name = games[idx] ?? "";
     setWinnerName(name);
     setShowResult(true);
+    winnerHistory.addWinner(name);
     const ceOpts = options.randomPreset
       ? (() => {
           const names = Object.keys(PRESETS) as PresetName[];
@@ -195,6 +198,18 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
     setShowResult(false);
     setWinnerName(null);
   }, [drawing, sound, sfxMuted, removeGame]);
+
+  const handleHistoryPrev = useCallback(() => {
+    setShowResult(false);
+    stopCelebration();
+    winnerHistory.goPrev();
+  }, [stopCelebration, winnerHistory]);
+
+  const handleHistoryNext = useCallback(() => {
+    setShowResult(false);
+    stopCelebration();
+    winnerHistory.goNext();
+  }, [stopCelebration, winnerHistory]);
 
   const handleExport = useCallback(() => {
     if (games.length === 0) return;
@@ -708,9 +723,95 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
             </div>
           )}
 
+          {/* Winner History */}
+          {winnerHistory.currentEntry && (
+            <div
+              className="mb-2 border-[2px] p-2"
+              style={{
+                backgroundColor: "var(--t-card-bg)",
+                borderTopColor: "var(--t-border-dark)",
+                borderLeftColor: "var(--t-border-dark)",
+                borderBottomColor: "var(--t-border-light)",
+                borderRightColor: "var(--t-border-light)",
+              }}
+            >
+              <div
+                className="text-center font-bold text-[0.9rem] tracking-wider pb-1 mb-1.5 border-b border-dashed"
+                style={{
+                  color: "var(--t-accent)",
+                  fontFamily: "var(--t-font-display)",
+                  borderBottomColor: "var(--t-accent)",
+                }}
+              >
+                🏆 DERNIERS VAINQUEURS
+              </div>
+
+              {/* Navigation + Current */}
+              <div className="flex items-center justify-center gap-2 text-[0.85rem] tracking-wider mb-1">
+                <button
+                  onClick={handleHistoryPrev}
+                  disabled={!winnerHistory.hasPrev}
+                  className="font-bold border border-black px-2 py-0.5 disabled:opacity-30 disabled:cursor-not-allowed"
+                  style={{
+                    color: winnerHistory.hasPrev ? "var(--t-accent)" : "var(--t-text-muted)",
+                    fontFamily: "var(--t-font-display)",
+                    backgroundColor: "var(--t-bg)",
+                  }}
+                >
+                  &lt;&lt; Précédent
+                </button>
+
+                <span
+                  className="text-xs font-bold px-1"
+                  style={{ color: "var(--t-text-muted)", fontFamily: "var(--t-font-display)" }}
+                >
+                  {winnerHistory.displayNumber}/{winnerHistory.total}
+                </span>
+
+                <button
+                  onClick={handleHistoryNext}
+                  disabled={!winnerHistory.hasNext}
+                  className="font-bold border border-black px-2 py-0.5 disabled:opacity-30 disabled:cursor-not-allowed"
+                  style={{
+                    color: winnerHistory.hasNext ? "var(--t-accent)" : "var(--t-text-muted)",
+                    fontFamily: "var(--t-font-display)",
+                    backgroundColor: "var(--t-bg)",
+                  }}
+                >
+                  Suivant &gt;&gt;
+                </button>
+              </div>
+
+              {/* Winner name + date */}
+              <div className="text-center">
+                <p
+                  className="font-[family-name:var(--font-fredoka)] font-bold text-[1.3rem] text-[var(--t-accent)]"
+                  style={{ color: "var(--t-accent)" }}
+                >
+                  🎉 {winnerHistory.currentEntry.name}
+                </p>
+                <p
+                  className="text-[0.75rem]"
+                  style={{ color: "var(--t-text-muted)", fontFamily: "var(--t-font-display)" }}
+                >
+                  {new Date(winnerHistory.currentEntry.date).toLocaleDateString("fr-FR", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                  })}{" "}
+                  à{" "}
+                  {new Date(winnerHistory.currentEntry.date).toLocaleTimeString("fr-FR", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Footer */}
           <div
-            className="text-center py-2.5 px-2 border-[2px] text-[0.95rem] tracking-wider"
+            className="text-center py-2 px-2 border-[2px] text-[0.85rem] tracking-wider"
             style={{
               backgroundColor: "var(--t-bg)",
               color: "var(--t-text-muted)",
@@ -725,22 +826,13 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
             <span className="text-red-600 inline-block animate-[heartBeat_1s_ease-in-out_infinite]">
               ♥
             </span>
-            <div className="flex justify-center items-center gap-3 mt-2 pt-2 border-t border-dashed border-[#808080] text-[0.85rem]">
-              <a className="text-[#000080] underline cursor-pointer font-bold hover:text-[#ff00ff]">
-                &lt;&lt; Précédent
-              </a>
-              <span>🌐 PLOUF WEBRING 🌐</span>
-              <a className="text-[#000080] underline cursor-pointer font-bold hover:text-[#ff00ff]">
-                Suivant &gt;&gt;
-              </a>
-            </div>
-            <div className="mt-1.5">
+            <div className="mt-1">
               Vous êtes le visiteur n°{" "}
-              <span className="bg-black text-[#00ff00] px-2 py-0.5 border border-inset border-[#808080] font-[family-name:var(--font-vt323)] tracking-[2px]">
+              <span className="bg-black text-[#00ff00] px-2 py-0.5 border border-[#808080] font-[family-name:var(--font-vt323)] tracking-[2px]">
                 {visitorCount}
               </span>
             </div>
-            <div className="mt-1.5 bg-black text-[#00ff00] border border-[#00ff00] px-2 py-0.5 inline-block animate-[blink_1.5s_step-end_infinite]">
+            <div className="mt-1 bg-black text-[#00ff00] border border-[#00ff00] px-2 py-0.5 inline-block animate-[blink_1.5s_step-end_infinite]">
               ★ Best viewed in Netscape Navigator 4.0 ★
             </div>
           </div>
