@@ -61,6 +61,11 @@ export function UnreadProvider({ children }: { children: React.ReactNode }) {
       if (!prev[contactId]) return prev;
       return { ...prev, [contactId]: 0 };
     });
+    // Persist read timestamp so the next page load doesn't re-count old messages
+    try {
+      const key = `msn_read_${contactId}`;
+      localStorage.setItem(key, String(Date.now()));
+    } catch {}
   }, []);
 
   const registerChat = useCallback((contactId: string, api: ChatAPI) => {
@@ -84,19 +89,32 @@ export function UnreadProvider({ children }: { children: React.ReactNode }) {
     setTotalUnread(Object.values(unreadCounts).reduce((a, b) => a + b, 0));
   }, [unreadCounts]);
 
-  // Initial fetch of unread counts from last 24h
+  // Initial fetch of unread counts — use per-contact read timestamps from localStorage
   useEffect(() => {
     if (!user) return;
-    const since = Date.now() - 24 * 60 * 60 * 1000;
-    fetch(`/api/messages/unread?since=${since}`)
+    const fallback = Date.now() - 24 * 60 * 60 * 1000;
+    fetch(`/api/messages/unread?since=${fallback}&rows=1`)
       .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        if (!data?.counts) return;
+      .then((data: { rows?: { fromUserId: string; createdAt: string }[] } | null) => {
+        if (!data?.rows) return;
+        // Group rows by sender and filter by per-contact read timestamp
+        const counts: Record<string, number> = {};
+        for (const row of data.rows) {
+          if (chatApis.current[row.fromUserId]) continue;
+          let readAt = 0;
+          try {
+            const stored = localStorage.getItem(`msn_read_${row.fromUserId}`);
+            if (stored) readAt = Number(stored);
+          } catch {}
+          const msgAt = new Date(row.createdAt).getTime();
+          if (msgAt > readAt) {
+            counts[row.fromUserId] = (counts[row.fromUserId] ?? 0) + 1;
+          }
+        }
         setUnreadCounts(prev => {
           const next = { ...prev };
-          for (const [id, count] of Object.entries(data.counts as Record<string, number>)) {
-            // Don't overwrite if chat is already open
-            if (!chatApis.current[id]) next[id] = count;
+          for (const [id, count] of Object.entries(counts)) {
+            next[id] = count;
           }
           return next;
         });

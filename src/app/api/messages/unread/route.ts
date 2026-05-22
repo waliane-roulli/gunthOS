@@ -21,6 +21,8 @@ export async function GET(req: NextRequest) {
 
   const myId = session.user.id;
 
+  const returnRows = searchParams.get("rows") === "1";
+
   const rows = db()
     .select({
       fromUserId: messages.fromUserId,
@@ -35,6 +37,10 @@ export async function GET(req: NextRequest) {
       )
     )
     .all();
+
+  if (returnRows) {
+    return NextResponse.json({ rows });
+  }
 
   // Group by sender
   const counts: Record<string, number> = {};
