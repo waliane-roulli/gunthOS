@@ -8,6 +8,7 @@ import { useUnread } from "@/lib/contexts/unread-context";
 import { useSeenApps } from "@/lib/contexts/seen-apps-context";
 import { WALLPAPER_MAP, DEFAULT_WALLPAPER_ID } from "@/lib/wallpapers";
 import { WallpaperDecoration } from "./wallpaper-decorations";
+import { useAuth } from "@/lib/contexts/auth-context";
 
 // Grid cell size in pixels
 const CELL_W = 110;
@@ -27,6 +28,7 @@ interface IconDef {
   label: string;
   badge?: string;
   hot?: boolean;
+  locked?: boolean;
   onOpen: () => void;
 }
 
@@ -104,6 +106,7 @@ export function OsDesktop() {
   const { openApp, openNamedWindow } = useOpenApp();
   const { totalUnread } = useUnread();
   const { seen } = useSeenApps();
+  const { user, isPending } = useAuth();
 
   const wallpaper =
     (settings.wallpaperId
@@ -129,6 +132,7 @@ export function OsDesktop() {
           ? String(totalUnread > 9 ? "9+" : totalUnread)
           : app.badge && !seen.has(app.slug) ? app.badge : undefined,
       hot: app.hot,
+      locked: app.requiresAuth && !isPending && !user,
       onOpen: () => handleOpenApp(app.slug),
     })),
     {
@@ -232,6 +236,7 @@ interface DraggableDesktopIconProps {
   onDeselect: () => void;
   onMove: (cell: GridCell) => void;
 }
+
 
 function DraggableDesktopIcon({
   icon,
@@ -365,6 +370,14 @@ function DraggableDesktopIcon({
             }}
           >
             {icon.badge}
+          </span>
+        )}
+        {icon.locked && (
+          <span
+            className="absolute -bottom-1 -right-2 text-base leading-none"
+            style={{ filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.8))" }}
+          >
+            🔒
           </span>
         )}
       </div>

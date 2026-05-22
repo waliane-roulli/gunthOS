@@ -7,6 +7,8 @@ import { OsWindow } from "./os-window";
 import { useSoundContext } from "@/lib/contexts/sound-context";
 import { useSettingsState } from "@/lib/contexts/settings-context";
 import { APP_REGISTRY } from "@/apps";
+import { useAuth } from "@/lib/contexts/auth-context";
+import { useOpenApp } from "@/lib/hooks/use-open-app";
 
 class AppErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
   constructor(props: { children: ReactNode }) {
@@ -172,8 +174,67 @@ function AppLoadingScreen({ appSlug, onDone }: { appSlug: string; onDone: () => 
   );
 }
 
+const AUTH_WALL_MESSAGES = [
+  "Accès refusé. Qui êtes-vous, d'abord ?",
+  "Cette zone est réservée aux utilisateurs enregistrés. Ou aux fantômes avec un compte.",
+  "ERREUR 401 : identité non vérifiée. Essayez d'exister d'abord.",
+  "Contenu protégé par GUNTH-LOCK™. Brevet déposé en 1997.",
+];
+
+function AuthWall({ appName }: { appName: string }) {
+  const { openApp } = useOpenApp();
+  const [msgIndex] = useState(() => Math.floor(Math.random() * AUTH_WALL_MESSAGES.length));
+
+  return (
+    <div
+      className="flex-1 flex flex-col items-center justify-center gap-5 p-6 select-none"
+      style={{ background: "var(--t-bg)", fontFamily: "var(--t-font-display)", color: "var(--t-text)" }}
+    >
+      <div className="text-5xl">🔒</div>
+
+      <div
+        className="flex flex-col items-center gap-1 text-center px-4 py-3 border-2"
+        style={{
+          borderTopColor: "var(--t-border-dark)", borderLeftColor: "var(--t-border-dark)",
+          borderBottomColor: "var(--t-border-light)", borderRightColor: "var(--t-border-light)",
+          background: "var(--t-app-bg, #fff)",
+          maxWidth: 320,
+        }}
+      >
+        <div style={{ fontSize: "var(--t-text-sm)", color: "var(--t-text)" }}>
+          ⛔ Accès à <strong>{appName}</strong> refusé
+        </div>
+        <div style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-muted, #808080)", marginTop: 4 }}>
+          {AUTH_WALL_MESSAGES[msgIndex]}
+        </div>
+      </div>
+
+      <div className="flex flex-col items-center gap-2">
+        <button
+          onClick={() => openApp("login")}
+          className="px-5 py-1.5 border-2 tracking-widest cursor-pointer"
+          style={{
+            fontSize: "var(--t-text-sm)",
+            fontFamily: "var(--t-font-display)",
+            color: "var(--t-text)",
+            background: "linear-gradient(180deg, var(--t-bg-light, #e0e0e0) 0%, var(--t-bg, #c0c0c0) 50%, var(--t-bg-dark, #a0a0a0) 100%)",
+            borderTopColor: "var(--t-border-light)", borderLeftColor: "var(--t-border-light)",
+            borderBottomColor: "var(--t-border-dark)", borderRightColor: "var(--t-border-dark)",
+          }}
+        >
+          🔑 Se connecter
+        </button>
+        <div style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-muted, #999)" }}>
+          Mode invité : certaines apps restent inaccessibles. C&apos;est la vie.
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function WindowContent({ win }: { win: { id: string; appSlug: string } }) {
   const [loaded, setLoaded] = useState(false);
+  const { user, isPending } = useAuth();
 
   const manifest = getAppManifest(win.appSlug);
   const AppComponent = manifest?.component;
@@ -183,6 +244,10 @@ function WindowContent({ win }: { win: { id: string; appSlug: string } }) {
   }
 
   if (!AppComponent) return null;
+
+  if (manifest?.requiresAuth && !isPending && !user) {
+    return <AuthWall appName={manifest.name} />;
+  }
 
   return (
     <AppErrorBoundary>

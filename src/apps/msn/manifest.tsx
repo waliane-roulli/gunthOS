@@ -11,5 +11,6 @@ export const manifest: AppManifest = {
   loadDuration: 1200,
   showInLauncher: true,
   href: "/msn",
+  requiresAuth: true,
   component: MsnApp,
 };

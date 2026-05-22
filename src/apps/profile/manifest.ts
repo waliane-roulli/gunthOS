@@ -10,5 +10,6 @@ export const manifest: AppManifest = {
   showInLauncher: true,
   badge: "NEW",
   href: "/profile",
+  requiresAuth: true,
   component: ProfileApp,
 };

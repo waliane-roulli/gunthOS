@@ -7,11 +7,11 @@ import { useAuth } from "@/lib/contexts/auth-context";
 import { useWindowActions } from "@/lib/contexts/window-manager-context";
 import type { AppProps } from "@/types";
 
-type Mode = "login" | "register" | "logged-in";
+type Mode = "login" | "register";
 
 const loginSchema = z.object({
   username: z.string().min(2, "Pseudo trop court. Même GUEST fait 5 lettres."),
-  password: z.string().min(1, "Le mot de passe ne peut pas être vide, voyons"),
+  password: z.string().min(1, "Le mot de passe ne peut pas être vide, voyons."),
 });
 
 const registerSchema = z.object({
@@ -29,6 +29,8 @@ const LOGIN_HINTS = [
   "Votre session expire après 30 jours ou une coupure de courant.",
   "GunthOS protège vos données. Sauf en cas d'erreur 404.",
   "Connexion sécurisée par GUNTH-SSL™ (certifié par nous-mêmes).",
+  "Si vous avez oublié votre mot de passe, c'est votre problème.",
+  "Astuce : un bon mot de passe contient au moins un chiffre et une larme.",
 ];
 
 function getHint() {
@@ -40,7 +42,7 @@ export function LoginApp({ windowId }: AppProps) {
   const { closeWindow } = useWindowActions();
   const onClose = () => closeWindow(windowId);
 
-  const [mode, setMode] = useState<Mode>(user ? "logged-in" : "login");
+  const [mode, setMode] = useState<Mode>("login");
   const [hint] = useState(getHint);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -93,62 +95,154 @@ export function LoginApp({ windowId }: AppProps) {
     if (e.key === "Enter" && !loading) mode === "login" ? handleLogin() : handleRegister();
   };
 
-  return (
-    <div className="flex flex-col h-full" style={{ fontFamily: "var(--t-font-display)", color: "var(--t-text)" }}>
-      {user && (
-        <div className="flex-1 flex flex-col items-center justify-center gap-6 p-6">
-          <div className="text-5xl">👤</div>
-          <div className="text-center">
-            <div className="text-xl tracking-widest mb-1">{user.name}</div>
+  if (user) {
+    return (
+      <div
+        className="flex-1 flex flex-col items-center justify-center gap-5 p-6 select-none"
+        style={{ fontFamily: "var(--t-font-display)", color: "var(--t-text)", background: "var(--t-bg)" }}
+      >
+        <div className="text-6xl">✅</div>
+
+        <div
+          className="flex flex-col items-center gap-2 px-6 py-4 border-2 text-center"
+          style={{
+            borderTopColor: "var(--t-border-dark)", borderLeftColor: "var(--t-border-dark)",
+            borderBottomColor: "var(--t-border-light)", borderRightColor: "var(--t-border-light)",
+            background: "var(--t-app-bg, #fff)",
+            maxWidth: 300,
+          }}
+        >
+          <div style={{ fontSize: "var(--t-text-base)" }}>{user.name}</div>
+          <div style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-muted, #666)" }}>
+            Connecté à GunthOS™
           </div>
-          <div className="tracking-wide text-center px-4 py-2 border" style={{ fontSize: "var(--t-text-sm)", borderColor: "var(--t-border-dark)", backgroundColor: "var(--t-app-bg, var(--t-bg))", color: "var(--t-text-muted, #666)" }}>
-            ✅ Connecté à GunthOS. Vos données sont en sécurité.<br />
-            <span style={{ color: "var(--t-text-muted, #888)", fontSize: "0.8em" }}>(Enfin, autant que peut l&apos;être un OS de 1998.)</span>
+          <div style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-subtle, #999)" }}>
+            (Enfin, autant que peut l&apos;être un OS de 1998.)
           </div>
-          <RetroButton onClick={logout} variant="danger">🔌 Se déconnecter</RetroButton>
         </div>
-      )}
 
-      {!user && (
-        <div className="flex-1 flex flex-col p-4 gap-3 overflow-y-auto">
-          <div className="flex border-b-2" style={{ borderColor: "var(--t-border-dark)" }}>
-            <TabButton active={mode === "login"} onClick={() => { setMode("login"); clearForm(); }}>🔑 Connexion</TabButton>
-            <TabButton active={mode === "register"} onClick={() => { setMode("register"); clearForm(); }}>📝 Inscription</TabButton>
+        <div className="flex gap-2">
+          <RetroButton onClick={logout} variant="danger">🔌 Se déconnecter</RetroButton>
+          <RetroButton onClick={onClose} variant="secondary">✕ Fermer</RetroButton>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="flex flex-col h-full"
+      style={{ fontFamily: "var(--t-font-display)", color: "var(--t-text)", background: "var(--t-bg)" }}
+    >
+      {/* Header avec logo */}
+      <div
+        className="flex items-center gap-3 px-4 py-3 border-b-2"
+        style={{ borderColor: "var(--t-border-dark)", background: "var(--t-titlebar-from, var(--t-accent))" }}
+      >
+        <div className="text-2xl">🔐</div>
+        <div className="flex flex-col">
+          <div
+            className="tracking-widest"
+            style={{ fontSize: "var(--t-text-sm)", color: "#fff", textShadow: "1px 1px 0 rgba(0,0,0,0.5)" }}
+          >
+            GUNTH-OS SECURE LOGIN v2.1
           </div>
-
-          {successMsg && (
-            <div className="tracking-wide px-3 py-2 border-2" style={{ fontSize: "var(--t-text-sm)", borderColor: "var(--t-accent, #000080)", backgroundColor: "var(--t-app-bg, #fff)", color: "var(--t-accent, #000080)" }}>
-              ✅ {successMsg}
-            </div>
-          )}
-          {error && (
-            <div className="tracking-wide px-3 py-2 border-2" style={{ fontSize: "var(--t-text-sm)", borderColor: "#c0392b", backgroundColor: "#fff0f0", color: "#c0392b" }}>
-              ⚠ {error}
-            </div>
-          )}
-
-          <FieldGroup label="IDENTIFIANT.SYS">
-            <RetroInput type="text" placeholder="votre_pseudo" value={username} onChange={(e) => setUsername(e.target.value)} onKeyDown={handleKeyDown} disabled={loading} autoComplete="username" />
-          </FieldGroup>
-          <FieldGroup label="MOT_DE_PASSE.EXE">
-            <RetroInput type="password" placeholder={mode === "register" ? "8 caractères minimum" : "••••••••"} value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={handleKeyDown} disabled={loading} />
-          </FieldGroup>
-
-          <div className="flex gap-2 mt-1">
-            <RetroButton onClick={mode === "login" ? handleLogin : handleRegister} disabled={loading} variant="primary">
-              {loading ? "⏳ Connexion en cours…" : mode === "login" ? "🔑 Connexion" : "📝 Créer le compte"}
-            </RetroButton>
-            <RetroButton onClick={() => onClose()} disabled={loading} variant="secondary">👤 Continuer en invité</RetroButton>
+          <div style={{ fontSize: "var(--t-text-xs)", color: "rgba(255,255,255,0.75)" }}>
+            Identification requise pour continuer
           </div>
+        </div>
+      </div>
 
-          <div className="tracking-wide mt-2 px-2 py-1 border-l-4" style={{ fontSize: "var(--t-text-sm)", borderLeftColor: "var(--t-border-dark)", color: "var(--t-text-muted, #808080)", fontFamily: "var(--t-font-display)" }}>
+      {/* Tabs */}
+      <div className="flex border-b-2 px-2 pt-2" style={{ borderColor: "var(--t-border-dark)" }}>
+        <TabButton active={mode === "login"} onClick={() => { setMode("login"); clearForm(); }}>🔑 Connexion</TabButton>
+        <TabButton active={mode === "register"} onClick={() => { setMode("register"); clearForm(); }}>📝 Inscription</TabButton>
+      </div>
+
+      {/* Body */}
+      <div className="flex-1 flex flex-col p-4 gap-3 overflow-y-auto">
+
+        {successMsg && (
+          <StatusBox variant="success">✅ {successMsg}</StatusBox>
+        )}
+        {error && (
+          <StatusBox variant="error">⚠ {error}</StatusBox>
+        )}
+
+        <FieldGroup label="IDENTIFIANT.SYS">
+          <RetroInput
+            type="text"
+            placeholder="votre_pseudo"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            onKeyDown={handleKeyDown}
+            disabled={loading}
+            autoComplete="username"
+          />
+        </FieldGroup>
+
+        <FieldGroup label="MOT_DE_PASSE.EXE">
+          <RetroInput
+            type="password"
+            placeholder={mode === "register" ? "8 caractères minimum" : "••••••••"}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={handleKeyDown}
+            disabled={loading}
+            autoComplete={mode === "login" ? "current-password" : "new-password"}
+          />
+        </FieldGroup>
+
+        {mode === "register" && (
+          <div
+            className="px-3 py-2 border-l-4"
+            style={{
+              fontSize: "var(--t-text-xs)",
+              borderLeftColor: "var(--t-accent, #000080)",
+              color: "var(--t-text-muted, #666)",
+              background: "var(--t-app-bg, #f8f8f8)",
+            }}
+          >
+            📋 Règles du mot de passe : 8 caractères min.<br />
+            Pseudo : lettres, chiffres, _ et - uniquement.
+          </div>
+        )}
+
+        <div className="flex gap-2 mt-1">
+          <RetroButton
+            onClick={mode === "login" ? handleLogin : handleRegister}
+            disabled={loading}
+            variant="primary"
+          >
+            {loading
+              ? "⏳ Vérification en cours…"
+              : mode === "login" ? "🔑 Connexion" : "📝 Créer le compte"}
+          </RetroButton>
+          <RetroButton onClick={onClose} disabled={loading} variant="secondary">
+            👤 Mode invité
+          </RetroButton>
+        </div>
+
+        {/* Hint + footer */}
+        <div className="flex flex-col gap-1 mt-auto pt-3 border-t" style={{ borderColor: "var(--t-border-dark)" }}>
+          <div
+            className="tracking-wide px-2 py-1 border-l-4"
+            style={{
+              fontSize: "var(--t-text-xs)",
+              borderLeftColor: "var(--t-border-dark)",
+              color: "var(--t-text-muted, #808080)",
+            }}
+          >
             💡 {hint}
           </div>
-          <div className="tracking-wide px-2" style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-muted, #999)", fontFamily: "var(--t-font-display)" }}>
+          <div
+            className="tracking-wide px-2"
+            style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-subtle, #aaa)" }}
+          >
             Mode invité : vos paramètres restent en local, comme en 1998.
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
@@ -160,13 +254,15 @@ function TabButton({ active, onClick, children }: { active: boolean; onClick: ()
       className="px-4 py-1.5 tracking-widest cursor-pointer border-t-2 border-x-2 -mb-0.5 select-none"
       style={{
         fontSize: "var(--t-text-sm)",
-        fontFamily: "var(--t-font-display)", color: "var(--t-text)",
+        fontFamily: "var(--t-font-display)",
+        color: "var(--t-text)",
         backgroundColor: active ? "var(--t-bg)" : "var(--t-bg-dark, #a0a0a0)",
         borderTopColor: active ? "var(--t-border-light)" : "var(--t-border-dark)",
         borderLeftColor: active ? "var(--t-border-light)" : "var(--t-border-dark)",
         borderRightColor: active ? "var(--t-border-dark)" : "var(--t-border-light)",
         borderBottomColor: active ? "var(--t-bg)" : "var(--t-border-dark)",
-        zIndex: active ? 1 : 0, position: "relative",
+        zIndex: active ? 1 : 0,
+        position: "relative",
       }}
     >
       {children}
@@ -177,9 +273,30 @@ function TabButton({ active, onClick, children }: { active: boolean; onClick: ()
 function FieldGroup({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-1">
-      <label className="tracking-widest select-none" style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-muted, #666)", fontFamily: "var(--t-font-display)" }}>
+      <label
+        className="tracking-widest select-none"
+        style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-muted, #666)", fontFamily: "var(--t-font-display)" }}
+      >
         {label}
       </label>
+      {children}
+    </div>
+  );
+}
+
+function StatusBox({ variant, children }: { variant: "success" | "error"; children: React.ReactNode }) {
+  const isError = variant === "error";
+  return (
+    <div
+      className="tracking-wide px-3 py-2 border-2"
+      style={{
+        fontSize: "var(--t-text-sm)",
+        fontFamily: "var(--t-font-display)",
+        borderColor: isError ? "#c0392b" : "var(--t-accent, #000080)",
+        backgroundColor: isError ? "#fff0f0" : "var(--t-app-bg, #fff)",
+        color: isError ? "#c0392b" : "var(--t-accent, #000080)",
+      }}
+    >
       {children}
     </div>
   );
@@ -192,7 +309,9 @@ function RetroInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
       className="w-full px-2 py-1 border-2 outline-none"
       style={{
         fontSize: "var(--t-text-base)",
-        fontFamily: "var(--t-font-display)", color: "var(--t-text)", backgroundColor: "var(--t-app-bg, #fff)",
+        fontFamily: "var(--t-font-display)",
+        color: "var(--t-text)",
+        backgroundColor: "var(--t-app-bg, #fff)",
         borderTopColor: "var(--t-border-dark)", borderLeftColor: "var(--t-border-dark)",
         borderBottomColor: "var(--t-border-light)", borderRightColor: "var(--t-border-light)",
         ...props.style,
@@ -202,21 +321,31 @@ function RetroInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
 }
 
 function RetroButton({ onClick, children, disabled, variant = "secondary" }: {
-  onClick: () => void; children: React.ReactNode; disabled?: boolean; variant?: "primary" | "secondary" | "danger";
+  onClick: () => void;
+  children: React.ReactNode;
+  disabled?: boolean;
+  variant?: "primary" | "secondary" | "danger";
 }) {
-  const bg = variant === "primary"
-    ? "linear-gradient(180deg, var(--t-bg-light, #e0e0e0) 0%, var(--t-bg, #c0c0c0) 50%, var(--t-bg-dark, #a0a0a0) 100%)"
-    : variant === "danger" ? "linear-gradient(180deg, #e88, #c44)" : "var(--t-bg)";
+  const bg =
+    variant === "primary"
+      ? "linear-gradient(180deg, var(--t-bg-light, #e0e0e0) 0%, var(--t-bg, #c0c0c0) 50%, var(--t-bg-dark, #a0a0a0) 100%)"
+      : variant === "danger"
+      ? "linear-gradient(180deg, #e88, #c44)"
+      : "var(--t-bg)";
   return (
     <button
-      onClick={onClick} disabled={disabled}
+      onClick={onClick}
+      disabled={disabled}
       className="px-4 py-1 border-2 tracking-widest cursor-pointer select-none shrink-0"
       style={{
         fontSize: "var(--t-text-sm)",
-        fontFamily: "var(--t-font-display)", color: variant === "danger" ? "#fff" : "var(--t-text)", background: bg,
+        fontFamily: "var(--t-font-display)",
+        color: variant === "danger" ? "#fff" : "var(--t-text)",
+        background: bg,
         borderTopColor: "var(--t-border-light)", borderLeftColor: "var(--t-border-light)",
         borderBottomColor: "var(--t-border-dark)", borderRightColor: "var(--t-border-dark)",
-        opacity: disabled ? 0.6 : 1, cursor: disabled ? "default" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        cursor: disabled ? "default" : "pointer",
       }}
     >
       {children}

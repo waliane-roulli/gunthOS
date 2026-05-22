@@ -24,6 +24,8 @@ export interface AppManifest {
   loadDuration?: number;
   /** Show in Start menu and desktop */
   showInLauncher?: boolean;
+  /** If true, the app requires the user to be logged in to access it */
+  requiresAuth?: boolean;
   /** Optional Next.js page route (for nav-bar / direct URL access) */
   href?: string;
   /** Optional badge text ("NEW", "3", etc.) */

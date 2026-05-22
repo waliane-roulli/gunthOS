@@ -10,5 +10,6 @@ export const manifest: AppManifest = {
   loadDuration: 1000,
   showInLauncher: true,
   badge: "NEW",
+  requiresAuth: true,
   component: GuntherBoardApp
 };

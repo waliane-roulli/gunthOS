@@ -9,6 +9,7 @@ export const manifest: AppManifest = {
   loadDuration: 1800,
   showInLauncher: true,
   badge: "NEW",
+  requiresAuth: true,
   component: LinkedGunthApp,
   defaultSize: { w: 860, h: 600 },
 };
