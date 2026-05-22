@@ -18,6 +18,8 @@ import { useVisitorCount } from "@/lib/hooks/use-visitor-count";
 import { useDraggable } from "@/lib/hooks/use-draggable";
 import { DEFAULT_OPTIONS, PRESETS } from "@/types/plouf-plouf";
 import type { CelebrationOptions, DrawMode, PresetName, CelebType } from "@/types/plouf-plouf";
+import { THEMES } from "@/lib/themes";
+import type { ThemeId } from "@/lib/themes";
 
 const VALID_TYPES: Set<string> = new Set([
   "confetti", "fireworks", "rain", "matrix", "hearts", "stars",
@@ -53,6 +55,10 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
   const [drawMode, setDrawMode] = useLocalStorage<DrawMode>(
     "ploufPloufDrawMode",
     "vertical"
+  );
+  const [appThemeId, setAppThemeId] = useLocalStorage<ThemeId | null>(
+    "ploufPloufTheme",
+    null
   );
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -250,6 +256,9 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
     return () => document.removeEventListener("keydown", onKey);
   }, [showResult, optionsOpen, handlePlouf, handleRetry, handleClear, stopCelebration]);
 
+  const appTheme = appThemeId ? THEMES.find((t) => t.id === appThemeId) : null;
+  const appThemeStyle = appTheme ? appTheme.vars : {};
+
   const canDraw = games.length >= 2 && !drawing.isDrawing;
 
   return (
@@ -339,8 +348,9 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
         }
         style={
           embedded
-            ? { backgroundColor: "var(--t-bg)" }
+            ? { ...appThemeStyle, backgroundColor: "var(--t-bg)" }
             : {
+                ...appThemeStyle,
                 ...drag.style,
                 backgroundColor: "var(--t-bg)",
                 borderTopColor: "var(--t-border-light)",
@@ -733,6 +743,8 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
         options={options}
         onChange={setOptions}
         onClose={() => setOptionsOpen(false)}
+        appThemeId={appThemeId}
+        onThemeChange={setAppThemeId}
       />
     </>
   );

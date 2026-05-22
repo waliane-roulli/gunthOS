@@ -3,7 +3,6 @@
 import { PRESETS, PRESET_LABELS, TYPE_DEFAULTS } from "@/types/plouf-plouf";
 import type { CelebrationOptions, PresetName } from "@/types/plouf-plouf";
 import { useDraggable } from "@/lib/hooks/use-draggable";
-import { useTheme } from "@/lib/contexts/settings-context";
 import { THEMES } from "@/lib/themes";
 import type { ThemeId } from "@/lib/themes";
 import { RetroTitlebarBtn } from "@/components/ui/retro-titlebar-btn";
@@ -13,6 +12,8 @@ interface OptionsPanelProps {
   options: CelebrationOptions;
   onChange: (o: CelebrationOptions) => void;
   onClose: () => void;
+  appThemeId: ThemeId | null;
+  onThemeChange: (id: ThemeId | null) => void;
 }
 
 export function OptionsPanel({
@@ -20,11 +21,12 @@ export function OptionsPanel({
   options,
   onChange,
   onClose,
+  appThemeId,
+  onThemeChange,
 }: OptionsPanelProps) {
   const update = (patch: Partial<CelebrationOptions>) =>
     onChange({ ...options, ...patch, preset: "custom" });
 
-  const { themeId, setTheme } = useTheme();
   const drag = useDraggable();
 
   const asideStyle = drag.isDragged
@@ -289,14 +291,14 @@ export function OptionsPanel({
         </OptGroup>
 
         {/* Theme */}
-        <OptGroup title="🖥️ Theme">
+        <OptGroup title="🖥️ Theme (cette app uniquement)">
           <div className="grid grid-cols-2 gap-[3px]">
             {THEMES.map((t) => {
-              const isActive = themeId === t.id;
+              const isActive = appThemeId === t.id;
               return (
                 <button
                   key={t.id}
-                  onClick={() => setTheme(t.id as ThemeId)}
+                  onClick={() => onThemeChange(isActive ? null : t.id)}
                   className="border-[2px] px-1 py-[5px] text-sm font-bold cursor-pointer text-left transition-none"
                   style={{
                     fontFamily: "var(--t-font-body)",
