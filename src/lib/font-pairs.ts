@@ -1,4 +1,4 @@
-export type FontPairId = "classic" | "pixel" | "orbitron" | "righteous";
+export type FontPairId = "classic" | "pixel" | "orbitron" | "righteous" | "terminal" | "retrowave" | "serif-retro" | "chunky";
 
 export interface FontPair {
   id: FontPairId;
@@ -58,6 +58,46 @@ export const FONT_PAIRS: FontPair[] = [
     bodyVar: "var(--font-nunito), sans-serif",
     sample: "Groovy",
     scale: 0.9,
+  },
+  {
+    id: "terminal",
+    name: "Terminal",
+    emoji: "💻",
+    description: "Share Tech Mono + Ubuntu Mono",
+    displayVar: "var(--font-share-tech-mono), monospace",
+    bodyVar: "var(--font-ubuntu-mono), monospace",
+    sample: "$ root_",
+    scale: 0.95,
+  },
+  {
+    id: "retrowave",
+    name: "Retrowave",
+    emoji: "🌆",
+    description: "Audiowide + Rajdhani",
+    displayVar: "var(--font-audiowide), sans-serif",
+    bodyVar: "var(--font-rajdhani), sans-serif",
+    sample: "SYNTH",
+    scale: 0.8,
+  },
+  {
+    id: "serif-retro",
+    name: "Serif Retro",
+    emoji: "📰",
+    description: "Playfair Display + Lora",
+    displayVar: "var(--font-playfair-display), serif",
+    bodyVar: "var(--font-lora), serif",
+    sample: "Gazette",
+    scale: 0.95,
+  },
+  {
+    id: "chunky",
+    name: "Chunky",
+    emoji: "🧱",
+    description: "Bungee + IBM Plex Mono",
+    displayVar: "var(--font-bungee), cursive",
+    bodyVar: "var(--font-ibm-plex-mono), monospace",
+    sample: "BOLD",
+    scale: 0.85,
   },
 ];
 
