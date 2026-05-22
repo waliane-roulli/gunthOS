@@ -76,6 +76,7 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
 
   const [winnerName, setWinnerName] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
+  const [activeOpts, setActiveOpts] = useState<CelebrationOptions>(options);
 
   // Stoppe la musique au démontage (fermeture de fenêtre).
   useEffect(() => {
@@ -164,6 +165,7 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
           return { ...PRESETS[randomName], randomPreset: true };
         })()
       : options;
+    setActiveOpts(ceOpts);
     triggerCelebration(name, ceOpts);
   }, [drawing, games, sound, stopCelebration, triggerCelebration, options]);
 
@@ -281,15 +283,35 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
         {/* Winner big text */}
         <div
           ref={winnerBigRef}
-          className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-[family-name:var(--font-fredoka)] font-bold text-[clamp(2rem,10vw,7rem)] z-[99999] pointer-events-none hidden text-center max-w-[95vw] px-5 leading-none word-break-break-word bg-[linear-gradient(90deg,#ff0000,#ff8800,#ffee00,#00ff00,#00ccff,#8800ff,#ff00ff,#ff0000)] bg-[length:400%_100%] [background-clip:text] [-webkit-background-clip:text] text-transparent [filter:drop-shadow(0_0_20px_#ffff00)_drop-shadow(0_0_40px_#ff00ff)]"
-          style={{ WebkitTextFillColor: "transparent" }}
+          className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-[family-name:var(--font-fredoka)] font-bold text-[clamp(2rem,10vw,7rem)] z-[99999] pointer-events-none hidden text-center max-w-[95vw] px-5 leading-none word-break-break-word"
+          style={
+            activeOpts.rainbow
+              ? {
+                  backgroundImage: "linear-gradient(90deg,#ff0000,#ff8800,#ffee00,#00ff00,#00ccff,#8800ff,#ff00ff,#ff0000)",
+                  backgroundSize: "400% 100%",
+                  backgroundClip: "text",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  filter: "drop-shadow(0 0 10px #ffff00) drop-shadow(0 0 20px #ff00ff)",
+                }
+              : {
+                  color: activeOpts.winnerColor,
+                  WebkitTextFillColor: activeOpts.winnerColor,
+                  textShadow: "2px 2px 0 #000, -2px 2px 0 #000, 2px -2px 0 #000, -2px -2px 0 #000",
+                  filter: "none",
+                }
+          }
         />
 
         {/* Winner sub text */}
         <div
           ref={winnerSubRef}
-          className="fixed left-1/2 -translate-x-1/2 font-[family-name:var(--font-vt323)] font-bold text-[clamp(1rem,4vw,2.5rem)] z-[99999] pointer-events-none hidden text-center tracking-[4px] text-[#ffff00] [text-shadow:3px_3px_0_#000,-2px_-2px_0_#000,2px_-2px_0_#000,-2px_2px_0_#000]"
-          style={{ top: "calc(50% - clamp(2rem, 10vw, 7rem) * 0.7)" }}
+          className="fixed left-1/2 -translate-x-1/2 font-[family-name:var(--font-vt323)] font-bold text-[clamp(1rem,4vw,2.5rem)] z-[99999] pointer-events-none hidden text-center tracking-[4px]"
+          style={{
+            top: "calc(50% - clamp(2rem, 10vw, 7rem) * 0.7)",
+            color: activeOpts.rainbow ? "#ffff00" : activeOpts.winnerSubColor,
+            textShadow: "2px 2px 0 #000, -2px 2px 0 #000, 2px -2px 0 #000, -2px -2px 0 #000",
+          }}
         />
       </>,
       document.body
@@ -628,23 +650,23 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
           {showResult && winnerName && (
             <div
               className={`text-center p-3 border-[3px] border-t-[#808080] border-l-[#808080] border-b-white border-r-white mb-2.5 animate-[fadeIn_0.4s_ease]
-                ${options.epicResult
+                ${activeOpts.epicResult
                   ? "bg-[linear-gradient(135deg,#ff00ff,#00ffff,#ffff00,#ff00ff)] bg-[length:400%_400%] [animation:epicBg_2s_ease_infinite,fadeIn_0.4s_ease] border-black shadow-[0_0_30px_rgba(255,0,255,0.6),inset_0_0_0_3px_#ffff00]"
                   : "bg-[#c0c0c0]"
                 }`}
             >
               <p
-                className={`text-sm font-bold uppercase tracking-[2px] mb-1.5 font-[family-name:var(--font-vt323)] text-xl ${options.epicResult ? "text-black [text-shadow:1px_1px_0_#fff]" : "text-[#000080]"}`}
+                className={`text-sm font-bold uppercase tracking-[2px] mb-1.5 font-[family-name:var(--font-vt323)] text-xl ${activeOpts.epicResult ? "text-black [text-shadow:1px_1px_0_#fff]" : "text-[#000080]"}`}
               >
                 ★ RESULTAT ★
               </p>
               <p
                 className={`font-[family-name:var(--font-fredoka)] font-bold mb-3 break-words animate-[pop_0.5s_ease]
-                  ${options.epicResult
+                  ${activeOpts.epicResult
                     ? "text-[2.2rem] bg-[linear-gradient(90deg,#ff0000,#ff8800,#ffee00,#00ff00,#00ccff,#8800ff,#ff00ff,#ff0000)] bg-[length:400%_100%] [background-clip:text] [-webkit-background-clip:text] text-transparent animate-[pop_0.5s_ease,rainbow_2s_linear_infinite] [filter:drop-shadow(2px_2px_0_#000)_drop-shadow(-1px_-1px_0_#000)]"
-                    : "text-[1.8rem] text-[#000080]"
+                    : "text-[1.8rem]"
                   }`}
-                style={options.epicResult ? { WebkitTextFillColor: "transparent" } : undefined}
+                style={activeOpts.epicResult ? { WebkitTextFillColor: "transparent" } : { color: activeOpts.winnerColor, textShadow: "2px 2px 0 rgba(0,0,0,0.3)" }}
               >
                 🎉 {winnerName}
               </p>

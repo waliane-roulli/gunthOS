@@ -235,6 +235,34 @@ export function OptionsPanel({
               className="w-[18px] h-[18px] cursor-pointer accent-[color:var(--t-accent)]"
             />
           </OptRow>
+          <OptRow label="Texte gagnant">
+            <input
+              type="color"
+              value={options.winnerColor}
+              onChange={(e) => update({ winnerColor: e.target.value })}
+              className="w-[50px] h-[26px] border-[2px] p-0.5 cursor-pointer"
+              style={{
+                borderTopColor: "var(--t-border-dark)",
+                borderLeftColor: "var(--t-border-dark)",
+                borderBottomColor: "var(--t-border-light)",
+                borderRightColor: "var(--t-border-light)",
+              }}
+            />
+          </OptRow>
+          <OptRow label="Sous-texte">
+            <input
+              type="color"
+              value={options.winnerSubColor}
+              onChange={(e) => update({ winnerSubColor: e.target.value })}
+              className="w-[50px] h-[26px] border-[2px] p-0.5 cursor-pointer"
+              style={{
+                borderTopColor: "var(--t-border-dark)",
+                borderLeftColor: "var(--t-border-dark)",
+                borderBottomColor: "var(--t-border-light)",
+                borderRightColor: "var(--t-border-light)",
+              }}
+            />
+          </OptRow>
         </OptGroup>
 
         {/* Effets */}
