@@ -91,11 +91,13 @@ const MSN_AWAY_MESSAGES = [
   "Connexion 56K instable",
   "En train de souffler dans ma cartouche",
   "Mise à jour Windows en cours (depuis 2003)",
-  "Je cherche mes drivers audio",
+  "Résolution du conflit IRQ entre la carte son et le modem 56K",
   "Partie de Solitaire en cours",
-  "Écran de veille activé",
+  "Flying Toasters en cours — Ne pas déranger avant le retour des toasters",
   "En vacances sur Geocities",
   "Occupé à ne pas éteindre correctement",
+  "En train de composer un statut MSN de 17 mots exactement",
+  "Photo de profil JPEG en cours de compression (qualité : 8)",
 ];
 
 const MSN_EMOTICONS: Record<string, string> = {

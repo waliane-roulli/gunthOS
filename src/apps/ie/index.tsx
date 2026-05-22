@@ -5,13 +5,15 @@ import { pickRandom } from "@/lib/gunth-jokes";
 import type { AppProps } from "@/types";
 
 const IE_ERRORS = [
-  "Cette page ne peut pas être affichée.",
+  "Cette page ne peut pas être affichée. Elle n'a peut-être jamais existé. Vérifiez l'URL, le câble, et vos choix de vie.",
   "Connexion au serveur expirée. Reconnectez le câble RJ-45.",
   "Erreur ActiveX : composant manquant. Voulez-vous l'installer ? (Ne cliquez pas Oui)",
   "Le certificat de sécurité a expiré en 2004.",
   "Macromedia Flash Player requis. Version 2.0 minimum.",
   "Erreur de script ligne 1 : \"Internet\" is not defined.",
   "Avertissement : ce site utilise des cookies. Des vrais. Au chocolat.",
+  "Plug-in Java 1.1.8 requis. Téléchargement estimé : 3h47 en 56K. Bonne lecture.",
+  "Sécurité : ce site utilise SSL 2.0, désactivé depuis 2011. Continuer quand même ?",
 ];
 
 const FAKE_SITES = [

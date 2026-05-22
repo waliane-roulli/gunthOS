@@ -13,6 +13,8 @@ const BUFFER_MESSAGES = [
   "Décompression des ondes radio...",
   "Synchronisation avec la tour de contrôle...",
   "Réglage de l'antenne (soufflez dessus)...",
+  "Tentative de connexion n°3 sur le serveur de Roubaix...",
+  "Négociation du codec audio avec les années 90...",
 ];
 
 const PLAYING_STATUSES = [
@@ -24,11 +26,12 @@ const PLAYING_STATUSES = [
 ];
 
 const ERROR_MESSAGES = [
-  "Signal perdu. Le hamster qui fait tourner les serveurs est en pause.",
-  "Connexion échouée. Avez-vous payé votre abonnement internet ?",
+  "Signal perdu. Le hamster qui fait tourner les serveurs est en pause déjeuner.",
+  "Connexion échouée. Le routeur Free de Roubaix a redémarré pour une mise à jour de firmware.",
   "Erreur 404 : musique non trouvée dans votre secteur.",
   "Le flux audio s'est évaporé. Comme vos économies.",
-  "Timeout. Le serveur réfléchit encore.",
+  "Serveur indisponible jusqu'à 14h30. Il est à la cantine.",
+  "RealPlayer™ recommande de recharger la page. Vous n'avez pas RealPlayer™.",
 ];
 
 const EQUALIZER_CHARS = ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"];

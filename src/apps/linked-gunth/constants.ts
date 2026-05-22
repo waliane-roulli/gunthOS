@@ -1,19 +1,22 @@
 import type { Tab } from "./types";
 
 export const NOTIF_TEMPLATES = [
-  { text: "Patrick Lemaire a consulté votre profil", icon: "👀" },
+  { text: "Patrick Lemaire a consulté votre profil. Il n'a pas pris contact.", icon: "👀" },
   { text: "Jean-Kévin vous a envoyé un InMail sans vous lire", icon: "📧" },
   { text: "Votre post a eu 1 vue (c'était vous)", icon: "📊" },
   { text: "Quelqu'un a ignoré votre invitation depuis 3 semaines", icon: "🙃" },
-  { text: "Marc Technologie a partagé quelque chose d'inspirant", icon: "🚀" },
+  { text: "Thierry G. a partagé un article de 2019 en le 'découvrant aujourd'hui'", icon: "📰" },
   { text: "Rappel : votre profil est incomplet depuis 2021", icon: "⚠️" },
   { text: "Nadège Blondel a validé votre compétence 'Réunions debout'", icon: "👍" },
-  { text: "Vous avez été mentionné dans un post que vous ne lirez jamais", icon: "🔔" },
+  { text: "Vous avez été mentionné dans un thread de 47 commentaires. C'était une erreur de mention.", icon: "🔔" },
   { text: "Bruno Disruptif a vu votre profil 3 fois ce matin", icon: "😰" },
   { text: "Félicitations ! Votre post a 0 commentaires mais 1 vue", icon: "🎊" },
   { text: "Karine R. veut vous ajouter à son réseau professionnel de 500+", icon: "🤝" },
   { text: "Thierry Consultant a validé 'Leadership Bienveillant'", icon: "✨" },
   { text: "Vous avez atteint le rang Inférieur à la Moyenne™", icon: "🏅" },
+  { text: "Sandrine R. a vu votre profil. Elle cherchait quelqu'un d'autre.", icon: "👀" },
+  { text: "Votre résumé professionnel a été lu 1,4 seconde en moyenne. C'est votre record.", icon: "📈" },
+  { text: "Patrick L. a consulté votre profil 7 fois cette semaine. Pas de message.", icon: "😰" },
 ];
 
 export const COMMENT_RESPONSES = [
@@ -36,6 +39,8 @@ export const SHARE_TOASTS = [
   "Partagé ! (vu par personne)",
   "Republié pour maximiser le reach.",
   "3 personnes seront inspirées 🚀",
+  "Algorithme LinkedGunth™ a réduit votre portée de 94%. Partagé quand même.",
+  "Publication visible par vos 3 relations et le bot de Sandrine R.",
 ];
 
 export const ENTHUSIASTIC_REPLIES = [
@@ -144,6 +149,23 @@ Meilleure décision de ma vie. (je cherche du travail)`,
 3. Le réseau, c'est tout
 4. Excel VLOOKUP
 5. Le réseau, c'est tout`,
+  `Mon manager a demandé un reporting.
+.
+.
+J'ai créé 47 slides.
+.
+.
+Il voulait un e-mail.
+.
+.
+J'ai ajouté un slide de transition.`,
+  `Hier j'ai couru 0 km.
+.
+.
+Mentalement : un marathon.
+.
+.
+#résilience #growth #leadership`,
 ];
 
 export const SEARCH_RESULTS = [
@@ -160,6 +182,8 @@ export const CONNECTION_REQUESTS = [
   { name: "Thierry C.", title: "Consultant indépendant · Expert en expertises", emoji: "👔", mutual: 1 },
   { name: "Bruno D.", title: "Head of Head of Head of Things", emoji: "🧠", mutual: 0 },
   { name: "Sophie LB.", title: "Directrice de la Direction Directoriale", emoji: "💼", mutual: 3 },
+  { name: "Dominique V.", title: "Directeur de la Transformation Numérique des Choses", emoji: "🤖", mutual: 0 },
+  { name: "Marie-Laure D.", title: "Entrepreneuse · 3 pivots · Conférencière TEDx Lannion", emoji: "🌟", mutual: 1 },
 ] as const;
 
 export const TABS: { id: Tab; icon: string; label: string }[] = [

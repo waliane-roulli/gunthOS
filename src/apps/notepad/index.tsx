@@ -27,6 +27,8 @@ const SAVE_RESPONSES = [
   "Sauvegardé… ou pas. Le disque est plein.",
   "Fichier sauvegardé. Écrasement de la sauvegarde précédente.",
   "Erreur : impossible de sauvegarder. Sauvegardé quand même.",
+  "Sauvegardé dans C:\\WINDOWS\\TEMP\\~WRK47.tmp (sera supprimé au prochain redémarrage).",
+  "Fichier sauvegardé. L'antivirus l'a mis en quarantaine par précaution.",
 ];
 
 export function NotepadApp(_: AppProps) {

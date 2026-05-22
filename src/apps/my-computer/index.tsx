@@ -93,13 +93,13 @@ const MY_COMPUTER_JOKES = [
   "Propriété de Gunth Corp™. Ne pas ouvrir le boîtier.",
   "Processeur : Pentium II 233 MHz. Surpuissant pour vos besoins.",
   "Garantie expirée le 14 janvier 2002.",
-  "Votre ordinateur a besoin d'être redémarré. Comme toujours.",
+  "Votre ordinateur a besoin d'être redémarré. Il en a besoin depuis le 15 mars 2002.",
   "Pilote de son introuvable. Vous entendrez quand même.",
   "Mémoire disponible : suffisante pour ce que vous faites là.",
 ];
 
 const DISK_C_JOKES = [
-  "Disque C:\\ — 0 octets libres. Comme d'habitude.",
+  "Disque C:\\ — 0 octets libres. Les 4,7 Go manquants se trouvent dans C:\\WINDOWS\\Temp.",
   "Disque C:\\ — Plein depuis 2002. Supprimez vos MP3.",
   "Disque C:\\ — Fragmentation : 97%. Bonne chance.",
   "Disque C:\\ — Erreur SMART détectée. Ignorez.",

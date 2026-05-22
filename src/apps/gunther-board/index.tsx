@@ -107,7 +107,7 @@ const PRIORITY_LABELS: Record<Priority, string> = {
 
 const PRIORITY_LABELS_LONG: Record<Priority, string> = {
   low: "Pas urgent (on verra jamais)",
-  medium: "Moyen (comme d'hab)",
+  medium: "Moyen (sera critique vendredi)",
   high: "Élevé (pour de vrai cette fois)",
   critical: "🚨 PANIQUE TOTALE",
 };

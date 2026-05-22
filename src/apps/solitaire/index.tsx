@@ -15,11 +15,14 @@ function makeCard() {
 }
 
 const SOLITAIRE_TAUNTS = [
-  "Bonne chance. Tu en auras besoin.",
   "GunthOS Solitaire™ — édition non-gagnante.",
-  "Rappel : tu peux pas gagner.",
-  "Score actuel : 0. Score final : 0.",
-  "Statistiques : 0 victoires sur ∞ parties.",
+  "Score actuel : 0. Score final : 0. L'intervalle n'a aucune importance.",
+  "Statistiques : 0 victoires sur ∞ parties. Vous ne changerez pas la tendance.",
+  "Vous avez ouvert ce jeu pour 'deux minutes'. C'était il y a 47 minutes.",
+  "La dame de carreau vous juge. Elle l'a toujours fait.",
+  "Aucun utilisateur n'a jamais terminé cette partie. Nous avons vérifié les logs.",
+  "Le roi de pique attend d'être placé. Il attendra encore longtemps.",
+  "Vous jouez au Solitaire. En 1998, c'était une excuse valable.",
 ];
 
 export function SolitaireApp(_: AppProps) {

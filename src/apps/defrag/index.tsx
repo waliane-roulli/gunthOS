@@ -17,6 +17,9 @@ const DEFRAG_MESSAGES = [
   "Sauvegarde dans C:\\GUNTH\\BACKUP\\BACKUP2\\FINAL\\...",
   "Optimisation de l'optimiseur d'optimisation...",
   "Chargement du module de chargement...",
+  "Interrogation des secteurs défaillants sur leur intention de se rétablir...",
+  "Réparation du module de réparation (erreur dans la réparation)...",
+  "Défragmentation terminée à 99%. Arrêt du processus. Relance.",
 ];
 
 type DefragBlock = "used" | "fragmented" | "free" | "system" | "mystery";

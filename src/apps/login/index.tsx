@@ -27,10 +27,12 @@ const LOGIN_HINTS = [
   "Mot de passe oublié ? Parlez à votre thérapeute, pas à nous.",
   "Conseil : n'utilisez pas '123456'. (On sait que vous y avez pensé.)",
   "Votre session expire après 30 jours ou une coupure de courant.",
-  "GunthOS protège vos données. Sauf en cas d'erreur 404.",
+  "Connexion sécurisée par certificat auto-signé — Gunth Corp SAS, Roubaix, 2003.",
   "Connexion sécurisée par GUNTH-SSL™ (certifié par nous-mêmes).",
-  "Si vous avez oublié votre mot de passe, c'est votre problème.",
+  "Mot de passe perdu ? Vos données sont en lieu sûr. (Emplacement inconnu depuis 2003.)",
   "Astuce : un bon mot de passe contient au moins un chiffre et une larme.",
+  "RGPD : vos données sont traitées selon le CLUF GunthOS §47.3.b (annexe non disponible).",
+  "Astuce avancée : votre navigateur a mémorisé votre mot de passe. Lui, il s'en souvient.",
 ];
 
 function getHint() {
