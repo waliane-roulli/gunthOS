@@ -33,6 +33,40 @@ const LOGIN_HINTS = [
   "Astuce : un bon mot de passe contient au moins un chiffre et une larme.",
   "RGPD : vos données sont traitées selon le CLUF GunthOS §47.3.b (annexe non disponible).",
   "Astuce avancée : votre navigateur a mémorisé votre mot de passe. Lui, il s'en souvient.",
+  "Votre IP a été enregistrée par mesure de précaution. Et de curiosité.",
+  "Tentatives restantes : ∞ (on n'a pas de limite, juste de l'espoir).",
+  "En cas d'oubli du mot de passe, relisez le post-it sur l'écran.",
+  "Cookies activés. Vous avez consenti quelque part en 1998.",
+  "Le serveur garde vos données au chaud depuis le démarrage de la machine.",
+];
+
+const LOGIN_ERROR_MSGS = [
+  "Identifiants incorrects. Réessayez ou inventez-en de nouveaux.",
+  "Mot de passe refusé. Le serveur a l'air vexé.",
+  "Aucun compte par ce nom. Ou alors il s'est défragmenté.",
+  "Connexion refusée. Avez-vous essayé d'éteindre et rallumer votre identité ?",
+  "Authentification échouée. Votre âme numérique n'est pas reconnue.",
+];
+
+const LOGIN_NETWORK_ERRORS = [
+  "Erreur réseau. Le modem 14.4k a encore lâché.",
+  "Erreur réseau. Soufflez dans le câble RJ-45 et réessayez.",
+  "Connexion perdue. Le hamster du serveur est en pause déjeuner.",
+  "Timeout réseau. Le serveur réfléchit encore.",
+];
+
+const REGISTER_ERRORS = [
+  "Impossible de créer le compte. Peut-être que l'univers s'y oppose.",
+  "Pseudo déjà pris. Quelqu'un vous a précédé. C'est humiliant.",
+  "Inscription refusée. Le CLUF §47.3.b a été invoqué.",
+  "Erreur de création. Votre existence numérique est en attente de validation.",
+];
+
+const REGISTER_SUCCESS_MSGS = [
+  "Compte créé ! Bienvenue dans GunthOS. Vous êtes maintenant officiel(le).",
+  "Bienvenue ! Votre âme a été enregistrée sur la disquette 1/1.",
+  "Compte créé avec succès. Un email de confirmation sera envoyé. Peut-être.",
+  "Vous existez maintenant dans GunthOS. Félicitations. Ou condoléances.",
 ];
 
 function getHint() {
@@ -62,9 +96,9 @@ export function LoginApp({ windowId }: AppProps) {
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = await (signIn as any).username({ username, password });
-      if (result.error) setError("Identifiants incorrects. Réessayez ou inventez-en de nouveaux.");
+      if (result.error) setError(LOGIN_ERROR_MSGS[Math.floor(Math.random() * LOGIN_ERROR_MSGS.length)]!);
     } catch {
-      setError("Erreur réseau. Le modem 14.4k a encore lâché.");
+      setError(LOGIN_NETWORK_ERRORS[Math.floor(Math.random() * LOGIN_NETWORK_ERRORS.length)]!);
     } finally {
       setLoading(false);
     }
@@ -80,14 +114,14 @@ export function LoginApp({ windowId }: AppProps) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = await (signUp as any).email({ email: fakeEmail, password, name: username, username });
       if (result.error) {
-        setError("Impossible de créer le compte. Peut-être que l'univers s'y oppose.");
+        setError(REGISTER_ERRORS[Math.floor(Math.random() * REGISTER_ERRORS.length)]!);
       } else {
-        setSuccessMsg("Compte créé ! Bienvenue dans GunthOS. Vous êtes maintenant officiel(le).");
+        setSuccessMsg(REGISTER_SUCCESS_MSGS[Math.floor(Math.random() * REGISTER_SUCCESS_MSGS.length)]!);
         clearForm();
         setMode("login");
       }
     } catch {
-      setError("Erreur réseau. Soufflez dans la cartouche et réessayez.");
+      setError(LOGIN_NETWORK_ERRORS[Math.floor(Math.random() * LOGIN_NETWORK_ERRORS.length)]!);
     } finally {
       setLoading(false);
     }

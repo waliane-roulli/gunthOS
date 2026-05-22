@@ -169,6 +169,23 @@ export const LNK_CONNECTION_TOASTS: ((n: number) => string)[] = [
   (n) => `🤝 ${n} relations maintenant. Sandrine R. prend note.`,
 ];
 
+export const PUBLIC_PROFILE_LOADING_MSGS = [
+  "Connexion 56K en cours...",
+  "Transmission par satellite géostationnaire...",
+  "Chargement via le réseau RNIS 64K...",
+  "Téléchargement du profil depuis le FTP de 1998...",
+  "Synchronisation avec le serveur de données humaines...",
+  "Rapatriement du profil depuis la disquette de sauvegarde...",
+];
+
+export const PUBLIC_PROFILE_NOT_FOUND_MSGS = [
+  "n'existe pas ou a été défragmenté.",
+  "a peut-être changé d'identité numérique.",
+  "a été effacé lors d'une mise à jour du registre.",
+  "est introuvable. Secteur disque : corrompu.",
+  "n'a jamais existé ici. Ou a existé et a disparu. Les deux sont plausibles.",
+];
+
 export function pickRandom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)]!;
 }
