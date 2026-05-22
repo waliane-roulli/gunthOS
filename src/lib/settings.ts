@@ -18,6 +18,7 @@ export interface AppSettings {
   /** Multiplicateur de taille de base 0.7–1.4, défaut 1.0 */
   fontSize: number;
   pixelizeEnabled: boolean;
+  performanceModeEnabled: boolean;
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -33,6 +34,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   fontPairId: DEFAULT_FONT_PAIR_ID,
   fontSize: 1.0,
   pixelizeEnabled: false,
+  performanceModeEnabled: false,
 };
 
 const STORAGE_KEY = "gunth-settings";
@@ -71,6 +73,7 @@ export function loadSettings(): AppSettings {
         ? Math.max(0.85, Math.min(1.3, parsed.fontSize))
         : DEFAULT_SETTINGS.fontSize,
       pixelizeEnabled: parsed.pixelizeEnabled ?? DEFAULT_SETTINGS.pixelizeEnabled,
+      performanceModeEnabled: parsed.performanceModeEnabled ?? DEFAULT_SETTINGS.performanceModeEnabled,
     };
   } catch {
     return DEFAULT_SETTINGS;

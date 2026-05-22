@@ -22,7 +22,7 @@ const TABS: { id: Tab; label: string; icon: string }[] = [
 export function SettingsApp({ windowId }: AppProps) {
   const { closeWindow } = useWindowActions();
   const onClose = () => closeWindow(windowId);
-  const { settings, setTheme, setSoundEnabled, setAmbientVolume, setAnimationsEnabled, setScanlinesEnabled, setPixelizeEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, setFontPairId, setFontSize } = useSettings();
+  const { settings, setTheme, setSoundEnabled, setAmbientVolume, setAnimationsEnabled, setScanlinesEnabled, setPixelizeEnabled, setPerformanceModeEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, setFontPairId, setFontSize } = useSettings();
   const [activeTab, setActiveTab] = useState<Tab>("theme");
 
   return (
@@ -46,7 +46,7 @@ export function SettingsApp({ windowId }: AppProps) {
         {activeTab === "theme" && <ThemeTab themeId={settings.themeId} setTheme={setTheme} />}
         {activeTab === "wallpaper" && <WallpaperTab wallpaperId={settings.wallpaperId ?? "bliss"} wallpaperOverridden={settings.wallpaperOverridden} themeId={settings.themeId} setWallpaperId={setWallpaperId} resetWallpaperToTheme={resetWallpaperToTheme} />}
         {activeTab === "display" && <DisplayTab animationsEnabled={settings.animationsEnabled} scanlinesEnabled={settings.scanlinesEnabled} pixelizeEnabled={settings.pixelizeEnabled} cursorId={settings.cursorId} fontPairId={settings.fontPairId} fontSize={settings.fontSize} setAnimationsEnabled={setAnimationsEnabled} setScanlinesEnabled={setScanlinesEnabled} setPixelizeEnabled={setPixelizeEnabled} setCursorId={setCursorId} setFontPairId={setFontPairId} setFontSize={setFontSize} />}
-        {activeTab === "system" && <SystemTab soundEnabled={settings.soundEnabled} setSoundEnabled={setSoundEnabled} ambientVolume={settings.ambientVolume} setAmbientVolume={setAmbientVolume} />}
+        {activeTab === "system" && <SystemTab soundEnabled={settings.soundEnabled} setSoundEnabled={setSoundEnabled} ambientVolume={settings.ambientVolume} setAmbientVolume={setAmbientVolume} performanceModeEnabled={settings.performanceModeEnabled} setPerformanceModeEnabled={setPerformanceModeEnabled} />}
 
         <div className="flex justify-end mt-5">
           <button
@@ -64,7 +64,7 @@ export function SettingsApp({ windowId }: AppProps) {
 
 // Keep non-embedded export for backwards compatibility (used by site-shell overlay)
 export function SettingsPanel({ onClose }: { onClose: () => void }) {
-  const { settings, setTheme, setSoundEnabled, setAmbientVolume, setAnimationsEnabled, setScanlinesEnabled, setPixelizeEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, setFontPairId, setFontSize } = useSettings();
+  const { settings, setTheme, setSoundEnabled, setAmbientVolume, setAnimationsEnabled, setScanlinesEnabled, setPixelizeEnabled, setPerformanceModeEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, setFontPairId, setFontSize } = useSettings();
   const [activeTab, setActiveTab] = useState<Tab>("theme");
 
   const content = (
@@ -85,7 +85,7 @@ export function SettingsPanel({ onClose }: { onClose: () => void }) {
         {activeTab === "theme" && <ThemeTab themeId={settings.themeId} setTheme={setTheme} />}
         {activeTab === "wallpaper" && <WallpaperTab wallpaperId={settings.wallpaperId ?? "bliss"} wallpaperOverridden={settings.wallpaperOverridden} themeId={settings.themeId} setWallpaperId={setWallpaperId} resetWallpaperToTheme={resetWallpaperToTheme} />}
         {activeTab === "display" && <DisplayTab animationsEnabled={settings.animationsEnabled} scanlinesEnabled={settings.scanlinesEnabled} pixelizeEnabled={settings.pixelizeEnabled} cursorId={settings.cursorId} fontPairId={settings.fontPairId} fontSize={settings.fontSize} setAnimationsEnabled={setAnimationsEnabled} setScanlinesEnabled={setScanlinesEnabled} setPixelizeEnabled={setPixelizeEnabled} setCursorId={setCursorId} setFontPairId={setFontPairId} setFontSize={setFontSize} />}
-        {activeTab === "system" && <SystemTab soundEnabled={settings.soundEnabled} setSoundEnabled={setSoundEnabled} ambientVolume={settings.ambientVolume} setAmbientVolume={setAmbientVolume} />}
+        {activeTab === "system" && <SystemTab soundEnabled={settings.soundEnabled} setSoundEnabled={setSoundEnabled} ambientVolume={settings.ambientVolume} setAmbientVolume={setAmbientVolume} performanceModeEnabled={settings.performanceModeEnabled} setPerformanceModeEnabled={setPerformanceModeEnabled} />}
         <div className="flex justify-end mt-5">
           <button onClick={onClose} className="px-6 py-1.5 border-[2px] tracking-wider cursor-pointer" style={{ backgroundColor: "var(--t-bg)", color: "var(--t-text)", fontFamily: "var(--t-font-display)", borderTopColor: "var(--t-border-light)", borderLeftColor: "var(--t-border-light)", borderBottomColor: "var(--t-border-dark)", borderRightColor: "var(--t-border-dark)" }}>OK</button>
         </div>
@@ -306,12 +306,14 @@ function WallpaperTab({ wallpaperId, wallpaperOverridden, themeId, setWallpaperI
   );
 }
 
-function SystemTab({ soundEnabled, setSoundEnabled, ambientVolume, setAmbientVolume }: {
-  soundEnabled: boolean; setSoundEnabled: (v: boolean) => void; ambientVolume: number; setAmbientVolume: (v: number) => void;
+function SystemTab({ soundEnabled, setSoundEnabled, ambientVolume, setAmbientVolume, performanceModeEnabled, setPerformanceModeEnabled }: {
+  soundEnabled: boolean; setSoundEnabled: (v: boolean) => void; ambientVolume: number; setAmbientVolume: (v: number) => void; performanceModeEnabled: boolean; setPerformanceModeEnabled: (v: boolean) => void;
 }) {
   const volumePct = Math.round(ambientVolume * 100);
   return (
     <>
+      <SectionTitle>⚡ PERFORMANCES</SectionTitle>
+      <RetroToggle value={performanceModeEnabled} onChange={setPerformanceModeEnabled} label="Mode performance" description="Overclocking du processus avec bypass quantique" />
       <SectionTitle>🔊 SONS SYSTÈME</SectionTitle>
       <RetroToggle value={soundEnabled} onChange={setSoundEnabled} label="Sons GunthOS" description="Bips, pops et effets sonores du système" />
       <div className="flex items-center justify-between py-2 gap-4">

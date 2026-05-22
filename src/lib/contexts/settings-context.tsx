@@ -38,6 +38,7 @@ interface SettingsActionsContextValue {
   setAnimationsEnabled: (v: boolean) => void;
   setScanlinesEnabled: (v: boolean) => void;
   setPixelizeEnabled: (v: boolean) => void;
+  setPerformanceModeEnabled: (v: boolean) => void;
   setCursorId: (v: CursorId) => void;
   setWallpaperId: (v: WallpaperId) => void;
   resetWallpaperToTheme: () => void;
@@ -59,6 +60,7 @@ const SettingsActionsContext = createContext<SettingsActionsContextValue>({
   setAnimationsEnabled: () => {},
   setScanlinesEnabled: () => {},
   setPixelizeEnabled: () => {},
+  setPerformanceModeEnabled: () => {},
   setCursorId: () => {},
   setWallpaperId: () => {},
   resetWallpaperToTheme: () => {},
@@ -119,6 +121,9 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
           pixelizeEnabled: local.pixelizeEnabled !== DEFAULT_SETTINGS.pixelizeEnabled
             ? local.pixelizeEnabled
             : (remote.pixelizeEnabled ?? DEFAULT_SETTINGS.pixelizeEnabled),
+          performanceModeEnabled: local.performanceModeEnabled !== DEFAULT_SETTINGS.performanceModeEnabled
+            ? local.performanceModeEnabled
+            : (remote.performanceModeEnabled ?? DEFAULT_SETTINGS.performanceModeEnabled),
           cursorId: local.cursorId !== DEFAULT_SETTINGS.cursorId
             ? local.cursorId
             : (remote.cursorId ?? DEFAULT_SETTINGS.cursorId),
@@ -203,6 +208,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const setAnimationsEnabled = useCallback((v: boolean) => updateSettings({ animationsEnabled: v }), [updateSettings]);
   const setScanlinesEnabled = useCallback((v: boolean) => updateSettings({ scanlinesEnabled: v }), [updateSettings]);
   const setPixelizeEnabled = useCallback((v: boolean) => updateSettings({ pixelizeEnabled: v }), [updateSettings]);
+  const setPerformanceModeEnabled = useCallback((v: boolean) => updateSettings({ performanceModeEnabled: v }), [updateSettings]);
   const setCursorId = useCallback((v: CursorId) => updateSettings({ cursorId: v }), [updateSettings]);
   const setWallpaperId = useCallback((v: WallpaperId) => updateSettings({ wallpaperId: v, wallpaperOverridden: true }), [updateSettings]);
   const setFontPairId = useCallback((v: FontPairId) => updateSettings({ fontPairId: v }), [updateSettings]);
@@ -224,8 +230,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const stateValue = useMemo(() => ({ settings, theme }), [settings, theme]);
 
   const actionsValue = useMemo(
-    () => ({ setTheme, setSoundEnabled, setMasterVolume, setAmbientVolume, setAnimationsEnabled, setScanlinesEnabled, setPixelizeEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, setFontPairId, setFontSize, updateSettings }),
-    [setTheme, setSoundEnabled, setMasterVolume, setAmbientVolume, setAnimationsEnabled, setScanlinesEnabled, setPixelizeEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, setFontPairId, setFontSize, updateSettings]
+    () => ({ setTheme, setSoundEnabled, setMasterVolume, setAmbientVolume, setAnimationsEnabled, setScanlinesEnabled, setPixelizeEnabled, setPerformanceModeEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, setFontPairId, setFontSize, updateSettings }),
+    [setTheme, setSoundEnabled, setMasterVolume, setAmbientVolume, setAnimationsEnabled, setScanlinesEnabled, setPixelizeEnabled, setPerformanceModeEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, setFontPairId, setFontSize, updateSettings]
   );
 
   return (

@@ -5,6 +5,7 @@ import { useWindowState } from "@/lib/contexts/window-manager-context";
 import { getAppManifest } from "@/apps";
 import { OsWindow } from "./os-window";
 import { useSoundContext } from "@/lib/contexts/sound-context";
+import { useSettingsState } from "@/lib/contexts/settings-context";
 import { APP_REGISTRY } from "@/apps";
 
 class AppErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
@@ -58,7 +59,9 @@ const LOADING_MESSAGES = [
 
 function AppLoadingScreen({ appSlug, onDone }: { appSlug: string; onDone: () => void }) {
   const manifest = getAppManifest(appSlug);
-  const duration = manifest?.loadDuration ?? 1500;
+  const { settings } = useSettingsState();
+  const baseDuration = manifest?.loadDuration ?? 1500;
+  const duration = settings.performanceModeEnabled ? Math.floor(baseDuration / 6) : baseDuration;
   const [progress, setProgress] = useState(0);
   const [msgIndex, setMsgIndex] = useState(0);
   const [hourglassFlipped, setHourglassFlipped] = useState(false);
