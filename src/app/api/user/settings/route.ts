@@ -13,6 +13,7 @@ const settingsPatchSchema = z.object({
   ambientVolume: z.number().min(0).max(1).optional(),
   animationsEnabled: z.boolean().optional(),
   scanlinesEnabled: z.boolean().optional(),
+  pixelizeEnabled: z.boolean().optional(),
   cursorId: z.string().optional(),
   wallpaperId: z.string().optional(),
   wallpaperOverridden: z.boolean().optional(),

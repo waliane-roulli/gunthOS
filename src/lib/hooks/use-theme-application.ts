@@ -31,7 +31,9 @@ export function useThemeApplication(settings: AppSettings, theme: Theme) {
     if (!settings.scanlinesEnabled) {
       root.style.setProperty("--t-scanlines", "0");
     } else {
-      root.style.setProperty("--t-scanlines", theme.vars["--t-scanlines"] ?? "0");
+      const themeValue = theme.vars["--t-scanlines"] ?? "0";
+      // Si le thème n'a pas de scanlines, on force une valeur visible
+      root.style.setProperty("--t-scanlines", themeValue === "0" ? "0.12" : themeValue);
     }
   }, [settings.scanlinesEnabled, theme]);
 
@@ -55,4 +57,11 @@ export function useThemeApplication(settings: AppSettings, theme: Theme) {
     // Redéfinit le 1rem de base → tous les rem (Tailwind text-sm etc.) suivent
     document.documentElement.style.fontSize = `${scale * 100}%`;
   }, [settings.fontSize]);
+
+  useEffect(() => {
+    document.documentElement.setAttribute(
+      "data-pixelize",
+      settings.pixelizeEnabled ? "on" : "off"
+    );
+  }, [settings.pixelizeEnabled]);
 }

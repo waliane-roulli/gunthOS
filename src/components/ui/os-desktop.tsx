@@ -10,7 +10,7 @@ import { WALLPAPER_MAP, DEFAULT_WALLPAPER_ID } from "@/lib/wallpapers";
 import { WallpaperDecoration } from "./wallpaper-decorations";
 
 // Grid cell size in pixels
-const CELL_W = 90;
+const CELL_W = 110;
 const CELL_H = 100;
 const GRID_PADDING = 12; // offset from desktop edges
 

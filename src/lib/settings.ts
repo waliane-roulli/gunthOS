@@ -17,6 +17,7 @@ export interface AppSettings {
   fontPairId: FontPairId;
   /** Multiplicateur de taille de base 0.7–1.4, défaut 1.0 */
   fontSize: number;
+  pixelizeEnabled: boolean;
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -25,12 +26,13 @@ export const DEFAULT_SETTINGS: AppSettings = {
   masterVolume: 80,
   ambientVolume: 0.5,
   animationsEnabled: true,
-  scanlinesEnabled: true,
+  scanlinesEnabled: false,
   cursorId: DEFAULT_CURSOR_ID,
   wallpaperId: DEFAULT_WALLPAPER_ID,
   wallpaperOverridden: false,
   fontPairId: DEFAULT_FONT_PAIR_ID,
   fontSize: 1.0,
+  pixelizeEnabled: false,
 };
 
 const STORAGE_KEY = "gunth-settings";
@@ -68,6 +70,7 @@ export function loadSettings(): AppSettings {
       fontSize: typeof parsed.fontSize === "number"
         ? Math.max(0.85, Math.min(1.3, parsed.fontSize))
         : DEFAULT_SETTINGS.fontSize,
+      pixelizeEnabled: parsed.pixelizeEnabled ?? DEFAULT_SETTINGS.pixelizeEnabled,
     };
   } catch {
     return DEFAULT_SETTINGS;

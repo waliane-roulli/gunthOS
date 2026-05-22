@@ -22,7 +22,7 @@ const TABS: { id: Tab; label: string; icon: string }[] = [
 export function SettingsApp({ windowId }: AppProps) {
   const { closeWindow } = useWindowActions();
   const onClose = () => closeWindow(windowId);
-  const { settings, setTheme, setSoundEnabled, setAmbientVolume, setAnimationsEnabled, setScanlinesEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, setFontPairId, setFontSize } = useSettings();
+  const { settings, setTheme, setSoundEnabled, setAmbientVolume, setAnimationsEnabled, setScanlinesEnabled, setPixelizeEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, setFontPairId, setFontSize } = useSettings();
   const [activeTab, setActiveTab] = useState<Tab>("theme");
 
   return (
@@ -45,7 +45,7 @@ export function SettingsApp({ windowId }: AppProps) {
       <div className="p-5">
         {activeTab === "theme" && <ThemeTab themeId={settings.themeId} setTheme={setTheme} />}
         {activeTab === "wallpaper" && <WallpaperTab wallpaperId={settings.wallpaperId ?? "bliss"} wallpaperOverridden={settings.wallpaperOverridden} themeId={settings.themeId} setWallpaperId={setWallpaperId} resetWallpaperToTheme={resetWallpaperToTheme} />}
-        {activeTab === "display" && <DisplayTab animationsEnabled={settings.animationsEnabled} scanlinesEnabled={settings.scanlinesEnabled} cursorId={settings.cursorId} fontPairId={settings.fontPairId} fontSize={settings.fontSize} setAnimationsEnabled={setAnimationsEnabled} setScanlinesEnabled={setScanlinesEnabled} setCursorId={setCursorId} setFontPairId={setFontPairId} setFontSize={setFontSize} />}
+        {activeTab === "display" && <DisplayTab animationsEnabled={settings.animationsEnabled} scanlinesEnabled={settings.scanlinesEnabled} pixelizeEnabled={settings.pixelizeEnabled} cursorId={settings.cursorId} fontPairId={settings.fontPairId} fontSize={settings.fontSize} setAnimationsEnabled={setAnimationsEnabled} setScanlinesEnabled={setScanlinesEnabled} setPixelizeEnabled={setPixelizeEnabled} setCursorId={setCursorId} setFontPairId={setFontPairId} setFontSize={setFontSize} />}
         {activeTab === "system" && <SystemTab soundEnabled={settings.soundEnabled} setSoundEnabled={setSoundEnabled} ambientVolume={settings.ambientVolume} setAmbientVolume={setAmbientVolume} />}
 
         <div className="flex justify-end mt-5">
@@ -64,7 +64,7 @@ export function SettingsApp({ windowId }: AppProps) {
 
 // Keep non-embedded export for backwards compatibility (used by site-shell overlay)
 export function SettingsPanel({ onClose }: { onClose: () => void }) {
-  const { settings, setTheme, setSoundEnabled, setAmbientVolume, setAnimationsEnabled, setScanlinesEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, setFontPairId, setFontSize } = useSettings();
+  const { settings, setTheme, setSoundEnabled, setAmbientVolume, setAnimationsEnabled, setScanlinesEnabled, setPixelizeEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, setFontPairId, setFontSize } = useSettings();
   const [activeTab, setActiveTab] = useState<Tab>("theme");
 
   const content = (
@@ -84,7 +84,7 @@ export function SettingsPanel({ onClose }: { onClose: () => void }) {
       <div className="p-5">
         {activeTab === "theme" && <ThemeTab themeId={settings.themeId} setTheme={setTheme} />}
         {activeTab === "wallpaper" && <WallpaperTab wallpaperId={settings.wallpaperId ?? "bliss"} wallpaperOverridden={settings.wallpaperOverridden} themeId={settings.themeId} setWallpaperId={setWallpaperId} resetWallpaperToTheme={resetWallpaperToTheme} />}
-        {activeTab === "display" && <DisplayTab animationsEnabled={settings.animationsEnabled} scanlinesEnabled={settings.scanlinesEnabled} cursorId={settings.cursorId} fontPairId={settings.fontPairId} fontSize={settings.fontSize} setAnimationsEnabled={setAnimationsEnabled} setScanlinesEnabled={setScanlinesEnabled} setCursorId={setCursorId} setFontPairId={setFontPairId} setFontSize={setFontSize} />}
+        {activeTab === "display" && <DisplayTab animationsEnabled={settings.animationsEnabled} scanlinesEnabled={settings.scanlinesEnabled} pixelizeEnabled={settings.pixelizeEnabled} cursorId={settings.cursorId} fontPairId={settings.fontPairId} fontSize={settings.fontSize} setAnimationsEnabled={setAnimationsEnabled} setScanlinesEnabled={setScanlinesEnabled} setPixelizeEnabled={setPixelizeEnabled} setCursorId={setCursorId} setFontPairId={setFontPairId} setFontSize={setFontSize} />}
         {activeTab === "system" && <SystemTab soundEnabled={settings.soundEnabled} setSoundEnabled={setSoundEnabled} ambientVolume={settings.ambientVolume} setAmbientVolume={setAmbientVolume} />}
         <div className="flex justify-end mt-5">
           <button onClick={onClose} className="px-6 py-1.5 border-[2px] tracking-wider cursor-pointer" style={{ backgroundColor: "var(--t-bg)", color: "var(--t-text)", fontFamily: "var(--t-font-display)", borderTopColor: "var(--t-border-light)", borderLeftColor: "var(--t-border-light)", borderBottomColor: "var(--t-border-dark)", borderRightColor: "var(--t-border-dark)" }}>OK</button>
@@ -172,9 +172,9 @@ function ThemeTab({ themeId, setTheme }: { themeId: ThemeId; setTheme: (id: Them
   );
 }
 
-function DisplayTab({ animationsEnabled, scanlinesEnabled, cursorId, fontPairId, fontSize, setAnimationsEnabled, setScanlinesEnabled, setCursorId, setFontPairId, setFontSize }: {
-  animationsEnabled: boolean; scanlinesEnabled: boolean; cursorId: CursorId; fontPairId: FontPairId; fontSize: number;
-  setAnimationsEnabled: (v: boolean) => void; setScanlinesEnabled: (v: boolean) => void; setCursorId: (v: CursorId) => void; setFontPairId: (v: FontPairId) => void; setFontSize: (v: number) => void;
+function DisplayTab({ animationsEnabled, scanlinesEnabled, pixelizeEnabled, cursorId, fontPairId, fontSize, setAnimationsEnabled, setScanlinesEnabled, setPixelizeEnabled, setCursorId, setFontPairId, setFontSize }: {
+  animationsEnabled: boolean; scanlinesEnabled: boolean; pixelizeEnabled: boolean; cursorId: CursorId; fontPairId: FontPairId; fontSize: number;
+  setAnimationsEnabled: (v: boolean) => void; setScanlinesEnabled: (v: boolean) => void; setPixelizeEnabled: (v: boolean) => void; setCursorId: (v: CursorId) => void; setFontPairId: (v: FontPairId) => void; setFontSize: (v: number) => void;
 }) {
   return (
     <>
@@ -219,7 +219,8 @@ function DisplayTab({ animationsEnabled, scanlinesEnabled, cursorId, fontPairId,
       <SectionTitle>✨ ANIMATIONS</SectionTitle>
       <RetroToggle value={animationsEnabled} onChange={setAnimationsEnabled} label="Animations du système" description="Transitions, effets visuels, ouverture de fenêtres" />
       <SectionTitle>📺 EFFETS CRT</SectionTitle>
-      <RetroToggle value={scanlinesEnabled} onChange={setScanlinesEnabled} label="Scanlines CRT" description="Lignes de balayage rétro (actif sur Win95, Hacker, Amber)" />
+      <RetroToggle value={scanlinesEnabled} onChange={setScanlinesEnabled} label="Scanlines CRT" description="Lignes de balayage rétro" />
+      <RetroToggle value={pixelizeEnabled} onChange={setPixelizeEnabled} label="Mode pixelisé" description="Grille de pixels par-dessus l'écran" />
       <SectionTitle>🖱️ CURSEUR SOURIS</SectionTitle>
       <div className="grid grid-cols-3 gap-2">
         {CURSORS.map((c) => {
