@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { useSoundContext } from "@/lib/contexts/sound-context";
 import { APP_REGISTRY } from "@/apps";
 import type { AppProps } from "@/types";
+
+const ALLOWED_EMOJIS = ["👍", "❤️", "😂", "😮", "😢", "🔥", "🚀", "👀"];
 
 type Status = "todo" | "in_progress" | "done";
 type Priority = "low" | "medium" | "high" | "critical";
@@ -22,6 +24,8 @@ interface Ticket {
   assigneeName: string | null;
   assigneeUsername: string | null;
   createdById: string | null;
+  createdByName: string | null;
+  createdByUsername: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -312,7 +316,7 @@ export function GuntherBoardApp(_: AppProps) {
           }}
         >
           <div style={{ fontSize: "2rem", marginBottom: 8 }}>📋</div>
-          <div style={{ fontSize: "0.85rem", fontWeight: "bold", color: "var(--t-text)", marginBottom: 6 }}>
+          <div style={{ fontSize: "1.02rem", fontWeight: "bold", color: "var(--t-text)", marginBottom: 6 }}>
             GuntherBoard™
           </div>
           <div
@@ -333,10 +337,10 @@ export function GuntherBoardApp(_: AppProps) {
               }}
             />
           </div>
-          <div style={{ fontSize: "0.72rem", color: "var(--t-text-muted)" }}>
+          <div style={{ fontSize: "0.86rem", color: "var(--t-text-muted)" }}>
             Synchronisation{".".repeat(loadDots)}
           </div>
-          <div style={{ fontSize: "0.6rem", color: "var(--t-text-subtle)", fontStyle: "italic", marginTop: 4 }}>
+          <div style={{ fontSize: "1.08rem", color: "var(--t-text-subtle)", fontStyle: "italic", marginTop: 4 }}>
             (Le serveur fait ce qu&apos;il peut.)
           </div>
         </div>
@@ -351,7 +355,7 @@ export function GuntherBoardApp(_: AppProps) {
   }
 
   return (
-    <div className="flex flex-col h-full" style={{ fontFamily: "var(--t-font-display)", backgroundColor: "var(--t-bg)" }}>
+    <div className="flex flex-col h-full gb-root" style={{ fontFamily: "var(--t-font-display)", backgroundColor: "var(--t-bg)" }}>
       {/* ── Toolbar ─────────────────────────────────────────────────── */}
       <div
         className="flex items-center justify-between shrink-0"
@@ -372,7 +376,7 @@ export function GuntherBoardApp(_: AppProps) {
               gap: 4,
               padding: "1px 6px",
               backgroundColor: "var(--t-bg)",
-              fontSize: "0.78rem",
+              fontSize: "0.94rem",
               fontWeight: "bold",
               color: "var(--t-text)",
               letterSpacing: "0.04em",
@@ -382,7 +386,7 @@ export function GuntherBoardApp(_: AppProps) {
           </span>
           <span
             style={{
-              fontSize: "0.68rem",
+              fontSize: "0.82rem",
               color: "var(--t-text-muted)",
               fontStyle: "italic",
             }}
@@ -399,7 +403,7 @@ export function GuntherBoardApp(_: AppProps) {
             style={{
               ...RAISED,
               padding: "2px 10px",
-              fontSize: "0.72rem",
+              fontSize: "0.86rem",
               backgroundColor: user ? "var(--t-bg)" : "var(--t-bg)",
               color: user ? "var(--t-text)" : "var(--t-text-subtle)",
               cursor: user ? "pointer" : "not-allowed",
@@ -415,7 +419,7 @@ export function GuntherBoardApp(_: AppProps) {
             style={{
               ...RAISED,
               padding: "2px 7px",
-              fontSize: "0.75rem",
+              fontSize: "0.90rem",
               backgroundColor: "var(--t-bg)",
               color: "var(--t-text)",
               cursor: "pointer",
@@ -470,10 +474,10 @@ export function GuntherBoardApp(_: AppProps) {
                   }}
                 >
                   <div className="flex items-center gap-1">
-                    <span style={{ fontSize: "0.8rem" }}>{col.icon}</span>
+                    <span style={{ fontSize: "0.96rem" }}>{col.icon}</span>
                     <span
                       style={{
-                        fontSize: "0.68rem",
+                        fontSize: "0.82rem",
                         fontWeight: "bold",
                         color: col.accentColor,
                         letterSpacing: "0.08em",
@@ -487,7 +491,7 @@ export function GuntherBoardApp(_: AppProps) {
                       ...INSET,
                       minWidth: 22,
                       textAlign: "center",
-                      fontSize: "0.68rem",
+                      fontSize: "0.82rem",
                       fontWeight: "bold",
                       color: colTickets.length > 0 ? col.accentColor : "var(--t-text-subtle)",
                       backgroundColor: "var(--t-app-bg)",
@@ -529,7 +533,7 @@ export function GuntherBoardApp(_: AppProps) {
                       style={{
                         margin: "auto",
                         padding: "12px 8px",
-                        fontSize: "0.63rem",
+                        fontSize: "0.76rem",
                         color: "var(--t-text-subtle)",
                         fontStyle: "italic",
                         whiteSpace: "pre-line",
@@ -659,7 +663,7 @@ function TicketCard({
               fontWeight: "bold",
               lineHeight: 1.35,
               flex: 1,
-              fontSize: "0.75rem",
+              fontSize: "0.90rem",
               color: "var(--t-text)",
             }}
           >
@@ -667,7 +671,7 @@ function TicketCard({
           </span>
           <span
             style={{
-              fontSize: "0.6rem",
+              fontSize: "1.08rem",
               color: "var(--t-text-subtle)",
               whiteSpace: "nowrap",
               fontStyle: "italic",
@@ -683,7 +687,7 @@ function TicketCard({
         <div style={{ display: "flex", flexWrap: "wrap", gap: 3, marginBottom: 5 }}>
           <span
             style={{
-              fontSize: "0.6rem",
+              fontSize: "1.08rem",
               padding: "1px 5px",
               color: priorityColor,
               backgroundColor: PRIORITY_BG[ticket.priority],
@@ -702,7 +706,7 @@ function TicketCard({
                 backgroundColor: LABEL_COLORS[ticket.label],
                 color: "#fff",
                 padding: "1px 5px",
-                fontSize: "0.6rem",
+                fontSize: "1.08rem",
                 whiteSpace: "nowrap",
                 lineHeight: 1.5,
               }}
@@ -716,7 +720,7 @@ function TicketCard({
               style={{
                 ...RAISED,
                 padding: "1px 5px",
-                fontSize: "0.58rem",
+                fontSize: "0.70rem",
                 color: "var(--t-text-muted)",
                 backgroundColor: "var(--t-bg)",
                 whiteSpace: "nowrap",
@@ -732,7 +736,7 @@ function TicketCard({
         {ticket.assigneeName && (
           <div
             style={{
-              fontSize: "0.62rem",
+              fontSize: "0.74rem",
               color: "var(--t-text-muted)",
               marginBottom: 6,
               display: "flex",
@@ -763,7 +767,7 @@ function TicketCard({
               title="Reculer (ça arrive)"
               style={{
                 ...RAISED,
-                fontSize: "0.65rem",
+                fontSize: "0.78rem",
                 padding: "1px 7px",
                 backgroundColor: "var(--t-bg)",
                 color: "var(--t-text-muted)",
@@ -784,7 +788,7 @@ function TicketCard({
               title="Avancer (enfin)"
               style={{
                 ...RAISED,
-                fontSize: "0.65rem",
+                fontSize: "0.78rem",
                 padding: "1px 7px",
                 backgroundColor: "var(--t-bg)",
                 color: "var(--t-text-muted)",
@@ -807,7 +811,7 @@ function TicketCard({
             style={{
               background: "none",
               border: "none",
-              fontSize: "0.65rem",
+              fontSize: "0.78rem",
               color: "var(--t-text-subtle)",
               cursor: "pointer",
               fontFamily: "var(--t-font-display)",
@@ -857,7 +861,7 @@ function TicketDetail({
     backgroundColor: "var(--t-app-bg)",
     color: "var(--t-text)",
     fontFamily: "var(--t-font-display)",
-    fontSize: "0.72rem",
+    fontSize: "0.86rem",
     width: "100%",
   };
 
@@ -868,7 +872,7 @@ function TicketDetail({
         ...INSET,
         width: 272,
         backgroundColor: "var(--t-app-bg)",
-        fontSize: "0.72rem",
+        fontSize: "0.86rem",
         color: "var(--t-text)",
         overflow: "hidden",
       }}
@@ -879,7 +883,7 @@ function TicketDetail({
         style={{
           background: "linear-gradient(to right, var(--t-titlebar-from), var(--t-titlebar-to))",
           color: "#fff",
-          fontSize: "0.7rem",
+          fontSize: "0.84rem",
           fontWeight: "bold",
           height: 22,
           gap: 4,
@@ -895,7 +899,7 @@ function TicketDetail({
             background: "var(--t-bg)",
             color: "var(--t-text)",
             cursor: "pointer",
-            fontSize: "0.65rem",
+            fontSize: "0.78rem",
             fontWeight: "bold",
             width: 16,
             height: 14,
@@ -999,7 +1003,7 @@ function TicketDetail({
                       color: "var(--t-text)",
                       cursor: "pointer",
                       fontFamily: "var(--t-font-display)",
-                      fontSize: "0.65rem",
+                      fontSize: "0.78rem",
                       whiteSpace: "nowrap",
                     }}
                   >
@@ -1020,7 +1024,7 @@ function TicketDetail({
                   color: "var(--t-text)",
                   cursor: "pointer",
                   fontFamily: "var(--t-font-display)",
-                  fontSize: "0.7rem",
+                  fontSize: "0.84rem",
                   fontWeight: "bold",
                 }}
               >
@@ -1035,7 +1039,7 @@ function TicketDetail({
                   color: "var(--t-text)",
                   cursor: "pointer",
                   fontFamily: "var(--t-font-display)",
-                  fontSize: "0.7rem",
+                  fontSize: "0.84rem",
                 }}
               >
                 Annuler
@@ -1051,7 +1055,7 @@ function TicketDetail({
                 padding: "5px 7px",
                 backgroundColor: "var(--t-bg)",
                 fontWeight: "bold",
-                fontSize: "0.78rem",
+                fontSize: "0.94rem",
                 lineHeight: 1.35,
                 color: "var(--t-text)",
               }}
@@ -1063,7 +1067,7 @@ function TicketDetail({
             <div style={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
               <span
                 style={{
-                  fontSize: "0.62rem",
+                  fontSize: "0.74rem",
                   padding: "1px 5px",
                   color: PRIORITY_COLORS[ticket.priority],
                   backgroundColor: PRIORITY_BG[ticket.priority],
@@ -1079,7 +1083,7 @@ function TicketDetail({
                     backgroundColor: LABEL_COLORS[ticket.label],
                     color: "#fff",
                     padding: "1px 5px",
-                    fontSize: "0.62rem",
+                    fontSize: "0.74rem",
                   }}
                 >
                   {LABEL_ICONS[ticket.label]} {LABEL_NAMES[ticket.label]}
@@ -1090,7 +1094,7 @@ function TicketDetail({
                   style={{
                     ...RAISED,
                     padding: "1px 5px",
-                    fontSize: "0.6rem",
+                    fontSize: "1.08rem",
                     color: "var(--t-text-muted)",
                     backgroundColor: "var(--t-bg)",
                   }}
@@ -1111,7 +1115,7 @@ function TicketDetail({
                     color: "var(--t-text)",
                     lineHeight: 1.5,
                     whiteSpace: "pre-wrap",
-                    fontSize: "0.68rem",
+                    fontSize: "0.82rem",
                     minHeight: 36,
                   }}
                 >
@@ -1125,7 +1129,7 @@ function TicketDetail({
                     backgroundColor: "var(--t-app-bg)",
                     color: "var(--t-text-subtle)",
                     fontStyle: "italic",
-                    fontSize: "0.66rem",
+                    fontSize: "0.79rem",
                   }}
                 >
                   Aucune description. Bonne chance à celui qui reprend.
@@ -1140,7 +1144,7 @@ function TicketDetail({
                   ...INSET,
                   padding: "3px 6px",
                   backgroundColor: "var(--t-app-bg)",
-                  fontSize: "0.68rem",
+                  fontSize: "0.82rem",
                   color: ticket.assigneeName ? "var(--t-text)" : "var(--t-text-subtle)",
                 }}
               >
@@ -1155,7 +1159,7 @@ function TicketDetail({
                       color: "var(--t-accent)",
                       cursor: "pointer",
                       fontFamily: "var(--t-font-display)",
-                      fontSize: "0.68rem",
+                      fontSize: "0.82rem",
                       padding: 0,
                     }}
                   >
@@ -1167,10 +1171,34 @@ function TicketDetail({
               </div>
             </Fieldset>
 
+            {/* Reactions */}
+            <Fieldset legend="Réactions">
+              <TicketReactions ticketId={ticket.id} currentUserId={currentUser?.id ?? null} />
+            </Fieldset>
+
+            {/* Creator */}
+            <Fieldset legend="Créé par">
+              <div
+                style={{
+                  ...INSET,
+                  padding: "3px 6px",
+                  backgroundColor: "var(--t-app-bg)",
+                  fontSize: "0.82rem",
+                  color: ticket.createdByName ? "var(--t-text)" : "var(--t-text-subtle)",
+                }}
+              >
+                {ticket.createdByName ? (
+                  <span>✍️ {ticket.createdByName}{ticket.createdByUsername ? ` @${ticket.createdByUsername}` : ""}</span>
+                ) : (
+                  <span style={{ fontStyle: "italic" }}>Inconnu (mystère total)</span>
+                )}
+              </div>
+            </Fieldset>
+
             {/* Date */}
             <div
               style={{
-                fontSize: "0.6rem",
+                fontSize: "1.08rem",
                 color: "var(--t-text-subtle)",
                 textAlign: "right",
                 fontStyle: "italic",
@@ -1200,7 +1228,7 @@ function TicketDetail({
                   color: "var(--t-text)",
                   cursor: "pointer",
                   fontFamily: "var(--t-font-display)",
-                  fontSize: "0.7rem",
+                  fontSize: "0.84rem",
                 }}
               >
                 ✏️ Modifier
@@ -1214,7 +1242,7 @@ function TicketDetail({
                   color: "#bb0000",
                   cursor: "pointer",
                   fontFamily: "var(--t-font-display)",
-                  fontSize: "0.7rem",
+                  fontSize: "0.84rem",
                   fontWeight: "bold",
                 }}
               >
@@ -1243,7 +1271,7 @@ function Fieldset({ legend, children, style }: { legend: string; children: React
     >
       <legend
         style={{
-          fontSize: "0.6rem",
+          fontSize: "1.08rem",
           color: "var(--t-text-muted)",
           fontFamily: "var(--t-font-display)",
           padding: "0 3px",
@@ -1256,6 +1284,171 @@ function Fieldset({ legend, children, style }: { legend: string; children: React
       </legend>
       {children}
     </fieldset>
+  );
+}
+
+// ── TicketReactions ───────────────────────────────────────────────────────────
+
+type ReactionsMap = Record<string, { count: number; userIds: string[]; userNames: string[] }>;
+
+function TicketReactions({
+  ticketId,
+  currentUserId,
+  onReact,
+}: {
+  ticketId: number;
+  currentUserId: string | null;
+  onReact?: () => void;
+}) {
+  const [reactions, setReactions] = useState<ReactionsMap>({});
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pending, setPending] = useState<string | null>(null);
+  const pickerRef = useRef<HTMLDivElement>(null);
+
+  const fetchReactions = useCallback(async () => {
+    const res = await fetch(`/api/gunther-board/${ticketId}/reactions`);
+    if (res.ok) setReactions(await res.json());
+  }, [ticketId]);
+
+  useEffect(() => { fetchReactions(); }, [fetchReactions]);
+
+  useEffect(() => {
+    if (!pickerOpen) return;
+    function onClickOutside(e: MouseEvent) {
+      if (pickerRef.current && !pickerRef.current.contains(e.target as Node)) {
+        setPickerOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, [pickerOpen]);
+
+  async function toggleReaction(emoji: string) {
+    if (!currentUserId || pending) return;
+    setPending(emoji);
+    setPickerOpen(false);
+    // Optimistic update
+    setReactions((prev) => {
+      const copy = { ...prev };
+      const entry = copy[emoji];
+      if (entry?.userIds.includes(currentUserId)) {
+        const next = { ...entry, count: entry.count - 1, userIds: entry.userIds.filter((id) => id !== currentUserId) };
+        if (next.count === 0) { delete copy[emoji]; } else { copy[emoji] = next; }
+      } else {
+        copy[emoji] = {
+          count: (entry?.count ?? 0) + 1,
+          userIds: [...(entry?.userIds ?? []), currentUserId],
+          userNames: entry?.userNames ?? [],
+        };
+      }
+      return copy;
+    });
+    await fetch(`/api/gunther-board/${ticketId}/reactions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ emoji }),
+    });
+    await fetchReactions();
+    setPending(null);
+    onReact?.();
+  }
+
+  const hasAny = Object.keys(reactions).length > 0;
+
+  return (
+    <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 3 }}>
+      {/* Existing reactions */}
+      {Object.entries(reactions).map(([emoji, data]) => {
+        const mine = currentUserId ? data.userIds.includes(currentUserId) : false;
+        const tip = data.userNames.length > 0 ? data.userNames.join(", ") : `${data.count} réaction(s)`;
+        return (
+          <button
+            key={emoji}
+            onClick={() => toggleReaction(emoji)}
+            title={tip}
+            disabled={!currentUserId || pending === emoji}
+            style={{
+              ...( mine ? INSET : RAISED),
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 2,
+              padding: "1px 5px",
+              fontSize: "0.84rem",
+              backgroundColor: mine ? "var(--t-card-hover)" : "var(--t-bg)",
+              color: "var(--t-text)",
+              cursor: currentUserId ? "pointer" : "default",
+              fontFamily: "var(--t-font-display)",
+              lineHeight: "16px",
+              opacity: pending === emoji ? 0.5 : 1,
+            }}
+          >
+            {emoji} <span style={{ fontSize: "0.74rem", color: "var(--t-text-muted)" }}>{data.count}</span>
+          </button>
+        );
+      })}
+
+      {/* Add reaction button */}
+      {currentUserId && (
+        <div style={{ position: "relative" }} ref={pickerRef}>
+          <button
+            onClick={() => setPickerOpen((v) => !v)}
+            title={hasAny ? "Ajouter une réaction" : "Réagir à ce ticket"}
+            style={{
+              ...RAISED,
+              padding: "1px 5px",
+              fontSize: "0.82rem",
+              backgroundColor: "var(--t-bg)",
+              color: "var(--t-text-muted)",
+              cursor: "pointer",
+              fontFamily: "var(--t-font-display)",
+              lineHeight: "16px",
+            }}
+          >
+            {hasAny ? "+" : "😶 Réagir"}
+          </button>
+
+          {pickerOpen && (
+            <div
+              style={{
+                ...RAISED,
+                position: "absolute",
+                bottom: "calc(100% + 4px)",
+                left: 0,
+                backgroundColor: "var(--t-bg)",
+                padding: "4px",
+                display: "flex",
+                gap: 2,
+                flexWrap: "wrap",
+                zIndex: 100,
+                width: 160,
+                boxShadow: "2px 2px 0 rgba(0,0,0,0.4)",
+              }}
+            >
+              {ALLOWED_EMOJIS.map((emoji) => {
+                const mine = reactions[emoji]?.userIds.includes(currentUserId) ?? false;
+                return (
+                  <button
+                    key={emoji}
+                    onClick={() => toggleReaction(emoji)}
+                    title={emoji}
+                    style={{
+                      ...(mine ? INSET : RAISED),
+                      padding: "2px 4px",
+                      fontSize: "1.08rem",
+                      backgroundColor: mine ? "var(--t-card-hover)" : "var(--t-bg)",
+                      cursor: "pointer",
+                      lineHeight: 1,
+                    }}
+                  >
+                    {emoji}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -1290,7 +1483,7 @@ function NewTicketModal({
     backgroundColor: "var(--t-app-bg)",
     color: "var(--t-text)",
     fontFamily: "var(--t-font-display)",
-    fontSize: "0.75rem",
+    fontSize: "0.90rem",
   };
 
   return (
@@ -1306,7 +1499,7 @@ function NewTicketModal({
           backgroundColor: "var(--t-bg)",
           width: 400,
           fontFamily: "var(--t-font-display)",
-          fontSize: "0.75rem",
+          fontSize: "0.90rem",
           color: "var(--t-text)",
           boxShadow: "4px 4px 0 rgba(0,0,0,0.5)",
         }}
@@ -1318,7 +1511,7 @@ function NewTicketModal({
             background: "linear-gradient(to right, var(--t-titlebar-from), var(--t-titlebar-to))",
             color: "#fff",
             fontWeight: "bold",
-            fontSize: "0.72rem",
+            fontSize: "0.86rem",
             height: 22,
           }}
         >
@@ -1330,7 +1523,7 @@ function NewTicketModal({
               background: "var(--t-bg)",
               color: "var(--t-text)",
               cursor: "pointer",
-              fontSize: "0.65rem",
+              fontSize: "0.78rem",
               fontWeight: "bold",
               width: 16,
               height: 14,
@@ -1433,7 +1626,7 @@ function NewTicketModal({
                     color: "var(--t-text)",
                     cursor: "pointer",
                     fontFamily: "var(--t-font-display)",
-                    fontSize: "0.7rem",
+                    fontSize: "0.84rem",
                     whiteSpace: "nowrap",
                   }}
                 >
@@ -1462,7 +1655,7 @@ function NewTicketModal({
                 color: "var(--t-text)",
                 cursor: "pointer",
                 fontFamily: "var(--t-font-display)",
-                fontSize: "0.75rem",
+                fontSize: "0.90rem",
               }}
             >
               Annuler
@@ -1477,7 +1670,7 @@ function NewTicketModal({
                 color: form.title.trim() ? "#fff" : "var(--t-text-muted)",
                 cursor: form.title.trim() ? "pointer" : "not-allowed",
                 fontFamily: "var(--t-font-display)",
-                fontSize: "0.75rem",
+                fontSize: "0.90rem",
                 fontWeight: "bold",
               }}
             >

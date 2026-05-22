@@ -209,6 +209,17 @@ export const guntherBoardTickets = sqliteTable("gunther_board_tickets", {
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
 });
 
+// réactions aux tickets GuntherBoard
+export const guntherBoardReactions = sqliteTable("gunther_board_reactions", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  ticketId: integer("ticket_id").notNull().references(() => guntherBoardTickets.id, { onDelete: "cascade" }),
+  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  emoji: text("emoji").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+}, (t) => [
+  uniqueIndex("gunther_board_reactions_unique_idx").on(t.ticketId, t.userId, t.emoji),
+]);
+
 // validations de compétences entre vrais users
 export const linkedGunthEndorsements = sqliteTable("linked_gunth_endorsements", {
   id: integer("id").primaryKey({ autoIncrement: true }),

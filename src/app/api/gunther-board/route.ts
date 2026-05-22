@@ -3,10 +3,14 @@ import { db } from "@/lib/db";
 import { guntherBoardTickets, user } from "@/lib/db/schema";
 import { auth } from "@/lib/auth";
 import { desc, eq } from "drizzle-orm";
+import { alias } from "drizzle-orm/sqlite-core";
 import { headers } from "next/headers";
 import { unauthorized, badRequest } from "@/lib/api-utils";
 
 export async function GET() {
+  const assignee = alias(user, "assignee");
+  const creator = alias(user, "creator");
+
   const tickets = db()
     .select({
       id: guntherBoardTickets.id,
@@ -20,11 +24,14 @@ export async function GET() {
       createdById: guntherBoardTickets.createdById,
       createdAt: guntherBoardTickets.createdAt,
       updatedAt: guntherBoardTickets.updatedAt,
-      assigneeName: user.name,
-      assigneeUsername: user.username,
+      assigneeName: assignee.name,
+      assigneeUsername: assignee.username,
+      createdByName: creator.name,
+      createdByUsername: creator.username,
     })
     .from(guntherBoardTickets)
-    .leftJoin(user, eq(guntherBoardTickets.assigneeId, user.id))
+    .leftJoin(assignee, eq(guntherBoardTickets.assigneeId, assignee.id))
+    .leftJoin(creator, eq(guntherBoardTickets.createdById, creator.id))
     .orderBy(desc(guntherBoardTickets.createdAt))
     .all();
 

@@ -43,6 +43,13 @@
       "when": 1779450726603,
       "tag": "0005_regular_blacklash",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1779455134898,
+      "tag": "0006_ambitious_whistler",
+      "breakpoints": true
     }
   ]
 }
