@@ -4,6 +4,7 @@ import { messages, user } from "@/lib/db/schema";
 import { auth } from "@/lib/auth";
 import { and, or, eq, gt, desc } from "drizzle-orm";
 import { headers } from "next/headers";
+import { publish } from "@/lib/sse-bus";
 
 // GET /api/messages?with=<userId>&since=<timestamp>
 export async function GET(req: NextRequest) {
@@ -72,6 +73,16 @@ export async function POST(req: NextRequest) {
     })
     .returning()
     .get();
+
+  // Push to recipient via SSE if they're connected
+  publish(toUserId, {
+    type: "message",
+    fromUserId: session.user.id,
+    toUserId,
+    messageId: msg.id,
+    content: msg.content,
+    createdAt: msg.createdAt.toISOString(),
+  });
 
   return NextResponse.json({ message: msg });
 }

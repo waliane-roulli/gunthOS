@@ -31,7 +31,8 @@ export const user = sqliteTable("user", {
   avatarDataUrl: text("avatar_data_url"),
   favoriteApp: text("favorite_app"),
   gunthosRank: text("gunthos_rank"),
-  onlineStatus: text("online_status", { enum: ["online", "away", "busy", "offline"] }).default("online"),
+  onlineStatus: text("online_status", { enum: ["online", "away", "busy", "offline"] }).default("offline"),
+  lastHeartbeat: integer("last_heartbeat", { mode: "timestamp" }),
 });
 
 export const session = sqliteTable("session", {
@@ -76,6 +77,14 @@ export const messages = sqliteTable("messages", {
   fromUserId: text("from_user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
   toUserId: text("to_user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
   content: text("content").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+});
+
+// Nudges MSN style (persistés pour que le destinataire les reçoive même via SSE ou polling)
+export const nudges = sqliteTable("nudges", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  fromUserId: text("from_user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  toUserId: text("to_user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
 });
 

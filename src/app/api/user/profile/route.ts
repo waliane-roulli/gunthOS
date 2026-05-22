@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { user } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
+import { publishToAll } from "@/lib/sse-bus";
 
 const profilePatchSchema = z.object({
   name: z.string().min(1).max(60).optional(),
@@ -38,6 +39,10 @@ export async function PATCH(req: NextRequest) {
     if (parsed.data.onlineStatus !== undefined) updates.onlineStatus = parsed.data.onlineStatus;
 
     db().update(user).set(updates).where(eq(user.id, session.user.id)).run();
+
+    if (parsed.data.onlineStatus !== undefined) {
+      publishToAll({ type: "status", userId: session.user.id, status: parsed.data.onlineStatus });
+    }
 
     return NextResponse.json({ ok: true });
   } catch (err) {

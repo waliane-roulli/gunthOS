@@ -3,9 +3,11 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { useWindowActions } from "@/lib/contexts/window-manager-context";
-import { useUnread } from "@/lib/contexts/unread-context";
+import { useMessenger, type ChatAPI } from "@/lib/contexts/unread-context";
+import { useSSE } from "@/lib/hooks/use-sse";
 import { MsnLogo } from "@/components/ui/msn-logo";
 import type { AppProps } from "@/types";
+import type { SSEEvent } from "@/lib/sse-bus";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -28,7 +30,7 @@ interface Message {
 }
 
 const MSN_WINKS = [
-  "🫨 NUDGE ENVOYÉ",
+  "🫨 NUDGE REÇU !",
   "🫨 Ton écran tremble !",
   "🫨 NUDGE x3 — Au secours",
 ];
@@ -44,15 +46,6 @@ const MSN_AWAY_MESSAGES = [
   "Écran de veille activé",
   "En vacances sur Geocities",
   "Occupé à ne pas éteindre correctement",
-];
-
-const MSN_TYPO_EFFECTS = [
-  "est en train d'écrire...",
-  "martèle le clavier...",
-  "cherche ses mots...",
-  "tape avec deux doigts...",
-  "corrige ses fautes...",
-  "réfléchit profondément...",
 ];
 
 const MSN_EMOTICONS: Record<string, string> = {
@@ -135,11 +128,11 @@ function UnreadBadge({ count }: { count: number }) {
     <div
       style={{
         position: "absolute", top: -4, right: -4,
-        background: "#cc0000", color: "white",
+        background: "var(--t-accent)", color: "var(--t-titlebar-text)",
         borderRadius: "50%", width: 16, height: 16,
         fontSize: 9, fontWeight: "bold",
         display: "flex", alignItems: "center", justifyContent: "center",
-        fontFamily: "Arial, sans-serif", border: "1px solid white",
+        fontFamily: "var(--t-font-display)", border: "1px solid var(--t-border-light)",
         zIndex: 1, animation: "badgePop 0.2s ease",
       }}
     >
@@ -148,60 +141,59 @@ function UnreadBadge({ count }: { count: number }) {
   );
 }
 
+// ── ChatWindow ─────────────────────────────────────────────────────────────────
+
 function ChatWindow({
-  contact, myId, myAvatar, onClose, onDragStart, onRead,
+  contact, myId, myAvatar, onClose, onDragStart,
 }: {
   contact: Contact; myId: string; myAvatar: string | null;
-  onClose: () => void; onDragStart?: (e: React.MouseEvent) => void; onRead?: () => void;
+  onClose: () => void;
+  onDragStart?: (e: React.MouseEvent) => void;
 }) {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const { registerChat, unregisterChat, markRead } = useMessenger();
+  const [msgs, setMsgs] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isSending, setIsSending] = useState(false);
-  const [isTyping, setIsTyping] = useState(false);
-  const [typingEffect] = useState(() => MSN_TYPO_EFFECTS[Math.floor(Math.random() * MSN_TYPO_EFFECTS.length)]);
   const [nudgeActive, setNudgeActive] = useState(false);
   const [winkMsg, setWinkMsg] = useState<string | null>(null);
-  const lastMsgId = useRef<number>(0);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const onReadRef = useRef(onRead);
-  useEffect(() => { onReadRef.current = onRead; }, [onRead]);
 
-  const fetchMessages = useCallback(async (since = 0) => {
-    const res = await fetch(`/api/messages?with=${contact.id}&since=${since}`);
-    if (!res.ok) return;
-    const data = await res.json();
-    if (data.messages?.length > 0) {
-      let hasFromContact = false;
-      let hasNew = false;
-      setMessages((prev) => {
-        const ids = new Set(prev.map((m) => m.id));
-        const newMsgs = data.messages.filter((m: Message) => !ids.has(m.id));
-        if (newMsgs.length === 0) return prev;
-        hasNew = true;
-        hasFromContact = newMsgs.some((m: Message) => m.fromUserId === contact.id);
-        const merged = [...prev, ...newMsgs].sort(
-          (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-        );
-        lastMsgId.current = merged[merged.length - 1]?.id ?? 0;
-        return merged;
-      });
-      if (hasNew && hasFromContact) { setIsTyping(false); onReadRef.current?.(); }
-    }
+  const triggerNudge = useCallback((fromName: string) => {
+    const wink = MSN_WINKS[Math.floor(Math.random() * MSN_WINKS.length)] ?? MSN_WINKS[0]!;
+    setWinkMsg(`${wink} — ${fromName}`);
+    setNudgeActive(true);
+    setTimeout(() => setNudgeActive(false), 600);
+    setTimeout(() => setWinkMsg(null), 3000);
+  }, []);
+
+  // Register this window's API globally so SSE can reach it
+  useEffect(() => {
+    const api: ChatAPI = {
+      pushMessage(msg) {
+        setMsgs(prev => {
+          if (prev.some(m => m.id === msg.id)) return prev;
+          return [...prev, msg].sort(
+            (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+          );
+        });
+        markRead(contact.id);
+      },
+      triggerNudge,
+    };
+    registerChat(contact.id, api);
+    markRead(contact.id);
+    return () => { unregisterChat(contact.id); };
+  }, [contact.id, registerChat, unregisterChat, markRead, triggerNudge]);
+
+  // Load history once on open
+  useEffect(() => {
+    fetch(`/api/messages?with=${contact.id}&since=0`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data?.messages) setMsgs(data.messages); });
   }, [contact.id]);
 
-  useEffect(() => { fetchMessages(0); onReadRef.current?.(); }, [fetchMessages]);
-
-  useEffect(() => {
-    const id = setInterval(() => {
-      const lastMsg = messages[messages.length - 1];
-      fetchMessages(lastMsg ? new Date(lastMsg.createdAt).getTime() : 0);
-    }, 3000);
-    return () => clearInterval(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetchMessages]);
-
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs]);
 
   async function send() {
     const text = input.trim();
@@ -216,8 +208,7 @@ function ChatWindow({
       });
       if (res.ok) {
         const data = await res.json();
-        setMessages((prev) => [...prev, data.message]);
-        lastMsgId.current = data.message.id;
+        setMsgs(prev => prev.some(m => m.id === data.message.id) ? prev : [...prev, data.message]);
       }
     } finally {
       setIsSending(false);
@@ -225,12 +216,16 @@ function ChatWindow({
     }
   }
 
-  function sendNudge() {
-    const wink = MSN_WINKS[Math.floor(Math.random() * MSN_WINKS.length)] ?? MSN_WINKS[0]!;
-    setWinkMsg(wink);
+  async function sendNudge() {
+    setWinkMsg("🫨 NUDGE ENVOYÉ !");
     setNudgeActive(true);
     setTimeout(() => setNudgeActive(false), 600);
     setTimeout(() => setWinkMsg(null), 3000);
+    await fetch("/api/messages/nudge", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ toUserId: contact.id }),
+    });
   }
 
   const displayName = contact.displayUsername || contact.username || contact.name;
@@ -258,7 +253,7 @@ function ChatWindow({
           userSelect: "none",
         }}
       >
-        <div className="flex items-center gap-2 text-sm tracking-widest font-bold truncate">
+        <div className="flex items-center gap-2 tracking-widest font-bold truncate" style={{ fontSize: "var(--t-text-xs)" }}>
           <span>💬</span>
           <span className="truncate">Conversation — {displayName}</span>
         </div>
@@ -281,10 +276,10 @@ function ChatWindow({
       >
         <Avatar contact={contact} size={32} />
         <div className="flex flex-col min-w-0">
-          <span className="text-xs font-bold tracking-widest truncate" style={{ color: "var(--t-text)" }}>
+          <span className="font-bold tracking-widest truncate" style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text)" }}>
             {STATUS_ICONS[contact.onlineStatus]} {displayName}
           </span>
-          <span className="text-xs tracking-wider truncate" style={{ color: "var(--t-text-muted)" }}>
+          <span className="tracking-wider truncate" style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)" }}>
             {contact.statusMessage || STATUS_LABELS[contact.onlineStatus]}
           </span>
         </div>
@@ -292,21 +287,21 @@ function ChatWindow({
 
       {winkMsg && (
         <div
-          className="text-center text-xs tracking-widest py-1 shrink-0"
-          style={{ background: "var(--t-accent)", color: "var(--t-titlebar-text)", animation: "blink 0.5s step-end infinite" }}
+          className="text-center tracking-widest py-1 shrink-0"
+          style={{ fontSize: "var(--t-text-xs)", background: "var(--t-accent)", color: "var(--t-titlebar-text)", animation: "blink 0.5s step-end infinite" }}
         >
           {winkMsg}
         </div>
       )}
 
-      <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-2" style={{ background: "white", color: "#000", fontSize: 13 }}>
-        {messages.length === 0 && (
-          <div className="text-center text-xs tracking-wider mt-8 leading-relaxed" style={{ color: "#888", fontFamily: "var(--t-font-display)" }}>
+      <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-2" style={{ background: "var(--t-app-bg)", color: "var(--t-text)", fontSize: "var(--t-text-sm)" }}>
+        {msgs.length === 0 && (
+          <div className="text-center tracking-wider mt-8 leading-relaxed" style={{ color: "var(--t-text-muted)", fontFamily: "var(--t-font-display)", fontSize: "var(--t-text-xs)" }}>
             💬 Début de la conversation<br />
-            <span style={{ fontSize: 10 }}>GunthMessenger™ v6.0 — Connexion 56K stable (pour l&apos;instant)</span>
+            <span style={{ fontSize: "var(--t-text-xs)", opacity: 0.7 }}>GunthMessenger™ v6.0 — Connexion 56K stable (pour l&apos;instant)</span>
           </div>
         )}
-        {messages.map((msg) => {
+        {msgs.map((msg) => {
           const isMe = msg.fromUserId === myId;
           const text = replaceEmoticons(msg.content);
           const time = new Date(msg.createdAt).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
@@ -322,14 +317,25 @@ function ChatWindow({
                 )}
                 <div
                   style={{
-                    maxWidth: 280, padding: "4px 8px", fontSize: 13,
-                    fontFamily: "Tahoma, Arial, sans-serif", lineHeight: 1.4, wordBreak: "break-word",
+                    maxWidth: 280, padding: "4px 8px",
+                    fontSize: "var(--t-text-sm)", fontFamily: "var(--t-font-display)",
+                    lineHeight: 1.4, wordBreak: "break-word", border: "2px solid",
                     ...(isMe
-                      ? { background: "#ddeeff", border: "1px solid #99bbdd", color: "#003366", borderRadius: "8px 8px 0 8px" }
-                      : { background: "#fff0cc", border: "1px solid #ddbb88", color: "#332200", borderRadius: "8px 8px 8px 0" }),
+                      ? {
+                          background: "var(--t-accent)", color: "var(--t-titlebar-text)",
+                          borderTopColor: "var(--t-border-light)", borderLeftColor: "var(--t-border-light)",
+                          borderBottomColor: "var(--t-border-dark)", borderRightColor: "var(--t-border-dark)",
+                          borderRadius: "4px 4px 0 4px",
+                        }
+                      : {
+                          background: "var(--t-card-hover)", color: "var(--t-text)",
+                          borderTopColor: "var(--t-border-dark)", borderLeftColor: "var(--t-border-dark)",
+                          borderBottomColor: "var(--t-border-light)", borderRightColor: "var(--t-border-light)",
+                          borderRadius: "4px 4px 4px 0",
+                        }),
                   }}
                 >
-                  {!isMe && <div style={{ fontWeight: "bold", fontSize: 11, marginBottom: 2, color: "#0055aa" }}>{displayName}</div>}
+                  {!isMe && <div style={{ fontWeight: "bold", fontSize: "var(--t-text-xs)", marginBottom: 2, color: "var(--t-accent)", fontFamily: "var(--t-font-display)" }}>{displayName}</div>}
                   {text}
                 </div>
                 {isMe && (
@@ -340,18 +346,12 @@ function ChatWindow({
                   </div>
                 )}
               </div>
-              <div style={{ fontSize: 10, color: "#aaa", marginTop: 1, paddingLeft: isMe ? 0 : 24, paddingRight: isMe ? 24 : 0 }}>
+              <div style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-subtle)", marginTop: 1, paddingLeft: isMe ? 0 : 24, paddingRight: isMe ? 24 : 0 }}>
                 {time}
               </div>
             </div>
           );
         })}
-        {isTyping && (
-          <div className="flex items-center gap-2" style={{ color: "#888", fontSize: 11 }}>
-            <span>{getDefaultAvatar(contact.id)}</span>
-            <span>{displayName} {typingEffect}</span>
-          </div>
-        )}
         <div ref={bottomRef} />
       </div>
 
@@ -390,11 +390,11 @@ function ChatWindow({
           placeholder="Écrivez un message... (Entrée pour envoyer)"
           maxLength={500}
           style={{
-            flex: 1, padding: "3px 6px", fontSize: 12,
-            fontFamily: "Tahoma, Arial, sans-serif", border: "2px solid",
+            flex: 1, padding: "3px 6px", fontSize: "var(--t-text-xs)",
+            fontFamily: "var(--t-font-display)", border: "2px solid",
             borderTopColor: "var(--t-border-dark)", borderLeftColor: "var(--t-border-dark)",
             borderBottomColor: "var(--t-border-light)", borderRightColor: "var(--t-border-light)",
-            background: "white", color: "#000", outline: "none",
+            background: "var(--t-app-bg)", color: "var(--t-text)", outline: "none",
           }}
         />
         <button
@@ -423,11 +423,13 @@ function ChatWindow({
   );
 }
 
-function DraggableChatWindow({ contact, myId, myAvatar, onClose, onRead }: {
+// ── DraggableChatWindow ────────────────────────────────────────────────────────
+
+function DraggableChatWindow({ contact, myId, myAvatar, onClose }: {
   contact: Contact; myId: string; myAvatar: string | null;
-  onClose: () => void; onRead?: () => void;
+  onClose: () => void;
 }) {
-  const [pos, setPos] = useState(() => ({ x: window.innerWidth - 480, y: window.innerHeight - 540 }));
+  const [pos, setPos] = useState(() => ({ x: Math.max(0, window.innerWidth - 500), y: Math.max(0, window.innerHeight - 560) }));
   const dragging = useRef(false);
   const origin = useRef({ mx: 0, my: 0, wx: 0, wy: 0 });
   const posRef = useRef(pos);
@@ -452,15 +454,20 @@ function DraggableChatWindow({ contact, myId, myAvatar, onClose, onRead }: {
 
   return (
     <div style={{ position: "fixed", left: pos.x, top: pos.y, zIndex: 99998, boxShadow: "4px 4px 0 rgba(0,0,0,0.3)" }}>
-      <ChatWindow contact={contact} myId={myId} myAvatar={myAvatar} onClose={onClose} onDragStart={onMouseDown} onRead={onRead} />
+      <ChatWindow
+        contact={contact} myId={myId} myAvatar={myAvatar}
+        onClose={onClose} onDragStart={onMouseDown}
+      />
     </div>
   );
 }
 
+// ── MsnApp ────────────────────────────────────────────────────────────────────
+
 export function MsnApp(_: AppProps) {
   const { user } = useAuth();
   const { openWindow } = useWindowActions();
-  const { setTotalUnread } = useUnread();
+  const { totalUnread, unreadCounts, onNudgeOpen, onStatusUpdate } = useMessenger();
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
   const [openChats, setOpenChats] = useState<Record<string, boolean>>({});
@@ -468,10 +475,28 @@ export function MsnApp(_: AppProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [myAwayMsg] = useState(() => getRandomAwayMessage());
   const [myAvatar, setMyAvatar] = useState<string | null>(null);
-  const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
   const [lastSync, setLastSync] = useState<Date | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const openChatsRef = useRef<Record<string, boolean>>({});
+
+  // Tell the global messenger where to open a chat when a nudge arrives while MSN is open
+  useEffect(() => {
+    onNudgeOpen.current = (contactId: string) => {
+      setOpenChats(prev => prev[contactId] ? prev : { ...prev, [contactId]: true });
+    };
+    return () => { onNudgeOpen.current = null; };
+  }, [onNudgeOpen]);
+
+  // Real-time status updates via the global SSE connection
+  useEffect(() => {
+    const order: Contact["onlineStatus"][] = ["online", "away", "busy", "offline"];
+    onStatusUpdate.current = (userId, status) => {
+      setContacts(prev => {
+        const updated = prev.map(c => c.id === userId ? { ...c, onlineStatus: status } : c);
+        return [...updated].sort((a, b) => order.indexOf(a.onlineStatus) - order.indexOf(b.onlineStatus));
+      });
+    };
+    return () => { onStatusUpdate.current = null; };
+  }, [onStatusUpdate]);
 
   useEffect(() => {
     if (!user) return;
@@ -487,7 +512,7 @@ export function MsnApp(_: AppProps) {
     if (!res.ok) return;
     const data = await res.json();
     const all: Contact[] = (data.users || [])
-      .filter((u: { id?: string; username?: string | null }) => u.username !== user?.username)
+      .filter((u: { username?: string | null }) => u.username !== user.username)
       .map((u: {
         id: string; name: string; username: string | null; displayUsername?: string | null;
         statusMessage?: string | null; avatarDataUrl?: string | null; onlineStatus?: string | null;
@@ -501,27 +526,6 @@ export function MsnApp(_: AppProps) {
 
   useEffect(() => { loadContacts(); }, [loadContacts]);
 
-  const fetchUnread = useCallback(async () => {
-    if (!user) return;
-    const since = Date.now() - 24 * 60 * 60 * 1000;
-    const res = await fetch(`/api/messages/unread?since=${since}`);
-    if (!res.ok) return;
-    const data = await res.json();
-    const raw = data.counts as Record<string, number>;
-    const next: Record<string, number> = {};
-    for (const [contactId, count] of Object.entries(raw)) {
-      next[contactId] = openChatsRef.current[contactId] ? 0 : count;
-    }
-    setUnreadCounts(next);
-    setLastSync(new Date());
-  }, [user]);
-
-  useEffect(() => {
-    fetchUnread();
-    const id = setInterval(fetchUnread, 5000);
-    return () => clearInterval(id);
-  }, [fetchUnread]);
-
   async function handleStatusChange(newStatus: Contact["onlineStatus"]) {
     setMyStatus(newStatus);
     await fetch("/api/user/profile", {
@@ -533,23 +537,14 @@ export function MsnApp(_: AppProps) {
 
   async function handleRefresh() {
     setIsRefreshing(true);
-    await Promise.all([loadContacts(), fetchUnread()]);
+    await loadContacts();
+    setLastSync(new Date());
     setIsRefreshing(false);
   }
 
   function toggleChat(contact: Contact) {
-    setOpenChats((prev) => {
-      const nowOpen = !prev[contact.id];
-      if (nowOpen) setUnreadCounts(u => ({ ...u, [contact.id]: 0 }));
-      const next = { ...prev, [contact.id]: nowOpen };
-      openChatsRef.current = next;
-      return next;
-    });
+    setOpenChats(prev => ({ ...prev, [contact.id]: !prev[contact.id] }));
   }
-
-  const handleRead = useCallback((contactId: string) => {
-    setUnreadCounts(u => ({ ...u, [contactId]: 0 }));
-  }, []);
 
   function openProfile(username: string | null) {
     if (!username) return;
@@ -561,46 +556,43 @@ export function MsnApp(_: AppProps) {
     return (c.displayUsername || c.username || c.name).toLowerCase().includes(q);
   });
 
-  const totalUnread = Object.values(unreadCounts).reduce((a, b) => a + b, 0);
-  useEffect(() => { setTotalUnread(totalUnread); }, [totalUnread, setTotalUnread]);
-
   return (
     <div className="flex flex-col" style={{ height: "100%", minHeight: 480, fontFamily: "var(--t-font-display)", background: "var(--t-bg)", position: "relative" }}>
-      <div className="shrink-0 px-3 py-2" style={{ background: "linear-gradient(135deg, #003399 0%, #0066cc 50%, #0099ff 100%)", color: "white" }}>
+      <div className="shrink-0 px-3 py-2" style={{ background: "linear-gradient(to right, var(--t-titlebar-from), var(--t-titlebar-to))", color: "var(--t-titlebar-text)" }}>
         <div className="flex items-center gap-3">
           <MsnLogo size={40} />
           <div className="flex-1 min-w-0">
-            <div style={{ fontFamily: "Arial, sans-serif", fontWeight: "bold", fontSize: 14, letterSpacing: 1 }}>GunthMessenger™</div>
-            <div style={{ fontSize: 10, opacity: 0.85, fontFamily: "Arial, sans-serif" }}>v6.0 — Connexion 56K détectée</div>
+            <div style={{ fontFamily: "var(--t-font-display)", fontWeight: "bold", fontSize: "var(--t-text-sm)", letterSpacing: "0.1em" }}>GunthMessenger™</div>
+            <div style={{ fontSize: "var(--t-text-xs)", opacity: 0.85, fontFamily: "var(--t-font-display)" }}>v6.0 — Temps réel activé ⚡</div>
           </div>
           <div style={{ position: "relative" }}>
             <div style={{ fontSize: 22 }}>{STATUS_ICONS[myStatus]}</div>
             {totalUnread > 0 && (
-              <div style={{ position: "absolute", top: -4, right: -4, background: "#cc0000", color: "white", borderRadius: "50%", width: 14, height: 14, fontSize: 8, fontWeight: "bold", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Arial, sans-serif", border: "1px solid white" }}>
+              <div style={{ position: "absolute", top: -4, right: -4, background: "var(--t-accent)", color: "var(--t-titlebar-text)", borderRadius: "50%", width: 14, height: 14, fontSize: 8, fontWeight: "bold", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--t-font-display)", border: "1px solid var(--t-border-light)" }}>
                 {totalUnread > 9 ? "9+" : totalUnread}
               </div>
             )}
           </div>
         </div>
-        <div className="mt-2 flex items-center gap-2 p-2" style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.3)" }}>
+        <div className="mt-2 flex items-center gap-2 p-2" style={{ background: "rgba(0,0,0,0.15)", border: "1px solid", borderColor: "var(--t-border-light)" }}>
           <div style={{ flexShrink: 0 }}>
             {myAvatar
-              ? <img src={myAvatar} alt="moi" style={{ width: 36, height: 36, objectFit: "cover", border: "2px solid rgba(255,255,255,0.5)" }} />
+              ? <img src={myAvatar} alt="moi" style={{ width: 36, height: 36, objectFit: "cover", border: "2px solid var(--t-border-light)" }} />
               : <div style={{ fontSize: 28, lineHeight: 1 }}>{user ? getDefaultAvatar(user.id) : "👤"}</div>}
           </div>
           <div className="flex-1 min-w-0">
-            <div style={{ fontFamily: "Arial, sans-serif", fontWeight: "bold", fontSize: 12, color: "white" }}>{user?.name || "Moi"}</div>
-            <div style={{ fontSize: 10, color: "rgba(255,255,255,0.8)", fontFamily: "Arial, sans-serif", fontStyle: "italic" }}>{myAwayMsg}</div>
+            <div style={{ fontFamily: "var(--t-font-display)", fontWeight: "bold", fontSize: "var(--t-text-xs)", color: "var(--t-titlebar-text)" }}>{user?.name || "Moi"}</div>
+            <div style={{ fontSize: "var(--t-text-xs)", color: "var(--t-titlebar-text)", fontFamily: "var(--t-font-display)", fontStyle: "italic", opacity: 0.8 }}>{myAwayMsg}</div>
           </div>
           <select
             value={myStatus}
             onChange={(e) => handleStatusChange(e.target.value as Contact["onlineStatus"])}
-            style={{ fontSize: 10, background: "rgba(255,255,255,0.2)", border: "1px solid rgba(255,255,255,0.4)", color: "white", cursor: "pointer", fontFamily: "Arial, sans-serif", padding: "1px 2px" }}
+            style={{ fontSize: "var(--t-text-xs)", background: "var(--t-bg)", border: "2px solid", borderTopColor: "var(--t-border-dark)", borderLeftColor: "var(--t-border-dark)", borderBottomColor: "var(--t-border-light)", borderRightColor: "var(--t-border-light)", color: "var(--t-text)", cursor: "pointer", fontFamily: "var(--t-font-display)", padding: "1px 2px" }}
           >
-            <option value="online" style={{ color: "#000" }}>🟢 En ligne</option>
-            <option value="away" style={{ color: "#000" }}>🟡 Absent</option>
-            <option value="busy" style={{ color: "#000" }}>🔴 Occupé</option>
-            <option value="offline" style={{ color: "#000" }}>⚫ Invisible</option>
+            <option value="online">🟢 En ligne</option>
+            <option value="away">🟡 Absent</option>
+            <option value="busy">🔴 Occupé</option>
+            <option value="offline">⚫ Invisible</option>
           </select>
         </div>
       </div>
@@ -609,7 +601,7 @@ export function MsnApp(_: AppProps) {
         <input
           value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="🔍 Rechercher un contact..."
-          style={{ flex: 1, padding: "2px 6px", fontSize: 11, fontFamily: "var(--t-font-display)", background: "white", color: "#000", border: "2px solid", borderTopColor: "var(--t-border-dark)", borderLeftColor: "var(--t-border-dark)", borderBottomColor: "var(--t-border-light)", borderRightColor: "var(--t-border-light)", outline: "none" }}
+          style={{ flex: 1, padding: "2px 6px", fontSize: "var(--t-text-xs)", fontFamily: "var(--t-font-display)", background: "var(--t-app-bg)", color: "var(--t-text)", border: "2px solid", borderTopColor: "var(--t-border-dark)", borderLeftColor: "var(--t-border-dark)", borderBottomColor: "var(--t-border-light)", borderRightColor: "var(--t-border-light)", outline: "none" }}
         />
         <button
           onClick={handleRefresh} disabled={isRefreshing}
@@ -619,7 +611,7 @@ export function MsnApp(_: AppProps) {
       </div>
 
       {lastSync && (
-        <div style={{ fontSize: 9, color: "var(--t-text-subtle)", fontFamily: "Arial, sans-serif", textAlign: "right", padding: "1px 8px", background: "var(--t-bg-light)", borderBottom: "1px solid var(--t-border-dark)" }}>
+        <div style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-subtle)", fontFamily: "var(--t-font-display)", textAlign: "right", padding: "1px 8px", background: "var(--t-bg-light)", borderBottom: "1px solid var(--t-border-dark)" }}>
           ⏱ {lastSync.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
         </div>
       )}
@@ -628,8 +620,8 @@ export function MsnApp(_: AppProps) {
         {!user ? (
           <div className="flex flex-col items-center justify-center gap-3 p-6 text-center" style={{ color: "var(--t-text-muted)" }}>
             <div style={{ fontSize: 48 }}>🔒</div>
-            <div className="text-sm tracking-widest">Connexion requise</div>
-            <div className="text-xs tracking-wider" style={{ color: "var(--t-text-subtle)" }}>Identifiez-vous pour accéder à GunthMessenger™</div>
+            <div style={{ fontSize: "var(--t-text-sm)", letterSpacing: "0.1em" }}>Connexion requise</div>
+            <div style={{ fontSize: "var(--t-text-xs)", letterSpacing: "0.08em", color: "var(--t-text-subtle)" }}>Identifiez-vous pour accéder à GunthMessenger™</div>
             <button
               onClick={() => openWindow("login", "Connexion GunthOS", "🔑")}
               style={{ padding: "4px 16px", fontSize: 11, fontFamily: "var(--t-font-display)", background: "var(--t-bg)", color: "var(--t-text)", border: "2px solid", borderTopColor: "var(--t-border-light)", borderLeftColor: "var(--t-border-light)", borderBottomColor: "var(--t-border-dark)", borderRightColor: "var(--t-border-dark)", cursor: "pointer", letterSpacing: "0.1em" }}
@@ -638,14 +630,14 @@ export function MsnApp(_: AppProps) {
         ) : loading ? (
           <div className="flex flex-col items-center justify-center gap-2 p-6" style={{ color: "var(--t-text-muted)" }}>
             <div style={{ fontSize: 32, animation: "spin 1s linear infinite" }}>⌛</div>
-            <div className="text-xs tracking-widest">Chargement des contacts...</div>
-            <div className="text-xs" style={{ color: "var(--t-text-subtle)" }}>Négociation avec le serveur 56K...</div>
+            <div style={{ fontSize: "var(--t-text-xs)", letterSpacing: "0.1em" }}>Chargement des contacts...</div>
+            <div style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-subtle)" }}>Négociation avec le serveur 56K...</div>
           </div>
         ) : filtered.length === 0 ? (
           <div className="p-4 text-center" style={{ color: "var(--t-text-muted)" }}>
             <div style={{ fontSize: 32 }}>🦗</div>
-            <div className="text-xs tracking-widest mt-2">Aucun contact trouvé</div>
-            <div className="text-xs mt-1" style={{ color: "var(--t-text-subtle)" }}>Vous êtes seul(e) sur GunthOS.<br />C'est très triste.</div>
+            <div style={{ fontSize: "var(--t-text-xs)", letterSpacing: "0.1em", marginTop: 8 }}>Aucun contact trouvé</div>
+            <div style={{ fontSize: "var(--t-text-xs)", marginTop: 4, color: "var(--t-text-subtle)" }}>Vous êtes seul(e) sur GunthOS.<br />C&apos;est très triste.</div>
           </div>
         ) : (
           <>
@@ -656,7 +648,7 @@ export function MsnApp(_: AppProps) {
         )}
       </div>
 
-      <div className="shrink-0 px-3 py-1 flex items-center justify-between" style={{ background: "linear-gradient(to right, #003399, #0066cc)", color: "rgba(255,255,255,0.7)", fontSize: 9, fontFamily: "Arial, sans-serif" }}>
+      <div className="shrink-0 px-3 py-1 flex items-center justify-between" style={{ background: "linear-gradient(to right, var(--t-titlebar-from), var(--t-titlebar-to))", color: "var(--t-titlebar-text)", fontSize: "var(--t-text-xs)", fontFamily: "var(--t-font-display)", opacity: 0.85 }}>
         <span>GunthMessenger™ 2003 Edition</span>
         <span>© Gunth Corp. Tous droits réservés.</span>
       </div>
@@ -664,16 +656,15 @@ export function MsnApp(_: AppProps) {
       {user && Object.entries(openChats)
         .filter(([contactId, isOpen]) => isOpen && contacts.some(c => c.id === contactId))
         .map(([contactId]) => {
-          const contact = contacts.find(c => c.id === contactId)!;
+          const contact = contacts.find(c => c.id === contactId);
+          if (!contact) return null;
           return (
             <DraggableChatWindow
-              key={contactId} contact={contact} myId={user.id} myAvatar={myAvatar}
-              onClose={() => setOpenChats(prev => {
-                const next = { ...prev, [contactId]: false };
-                openChatsRef.current = next;
-                return next;
-              })}
-              onRead={() => handleRead(contactId)}
+              key={contactId}
+              contact={contact}
+              myId={user.id}
+              myAvatar={myAvatar}
+              onClose={() => setOpenChats(prev => ({ ...prev, [contactId]: false }))}
             />
           );
         })}
@@ -718,10 +709,10 @@ function renderGroup(
               <UnreadBadge count={unread} />
             </div>
             <div className="flex-1 min-w-0" onClick={() => toggleChat(contact)}>
-              <div className="text-xs font-bold tracking-wider truncate" style={{ color: unread > 0 ? "var(--t-accent, #cc0000)" : "var(--t-text)", fontWeight: unread > 0 ? "bold" : undefined }}>
+              <div style={{ fontSize: "var(--t-text-xs)", fontWeight: unread > 0 ? "bold" : undefined, letterSpacing: "0.08em", color: unread > 0 ? "var(--t-accent)" : "var(--t-text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {unread > 0 && "● "}{displayName}
               </div>
-              <div className="text-xs tracking-wide truncate" style={{ color: "var(--t-text-muted)", fontStyle: "italic" }}>
+              <div style={{ fontSize: "var(--t-text-xs)", letterSpacing: "0.06em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "var(--t-text-muted)", fontStyle: "italic" }}>
                 {contact.statusMessage || STATUS_LABELS[contact.onlineStatus]}
               </div>
             </div>

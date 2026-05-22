@@ -50,6 +50,13 @@
       "when": 1779455134898,
       "tag": "0006_ambitious_whistler",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1779471202012,
+      "tag": "0007_lowly_the_captain",
+      "breakpoints": true
     }
   ]
 }
