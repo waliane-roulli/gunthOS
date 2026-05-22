@@ -4,8 +4,6 @@ import { user, account } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import { headers } from "next/headers";
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { hashPassword } = require("better-auth/dist/crypto") as { hashPassword: (pwd: string) => Promise<string> };
 
 export async function POST(req: NextRequest) {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -19,6 +17,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "userId et newPassword (8 car. min) requis" }, { status: 400 });
   }
 
+  const { hashPassword } = await import("@better-auth/utils/password");
   const hashed = await hashPassword(newPassword);
   await db()
     .update(account)
