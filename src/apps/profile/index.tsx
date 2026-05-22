@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/lib/contexts/auth-context";
+import { authClient } from "@/lib/auth-client";
 import { pickRandom } from "@/lib/gunth-jokes";
 import type { AppProps } from "@/types";
 import {
@@ -149,6 +150,40 @@ function EditTab({
   const [statusSuggestion] = useState(() => pickRandom(STATUS_SUGGESTIONS));
   const [bioSuggestion] = useState(() => pickRandom(BIO_SUGGESTIONS));
 
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [pwdSaving, setPwdSaving] = useState(false);
+  const [pwdMsg, setPwdMsg] = useState<{ text: string; ok: boolean } | null>(null);
+
+  async function handlePasswordChange() {
+    if (newPassword !== confirmPassword) {
+      setPwdMsg({ text: "❌ Les mots de passe ne correspondent pas.", ok: false });
+      setTimeout(() => setPwdMsg(null), 4000);
+      return;
+    }
+    if (newPassword.length < 8) {
+      setPwdMsg({ text: "❌ Mot de passe trop court (min. 8 caractères).", ok: false });
+      setTimeout(() => setPwdMsg(null), 4000);
+      return;
+    }
+    setPwdSaving(true);
+    try {
+      const result = await authClient.changePassword({ currentPassword, newPassword, revokeOtherSessions: false });
+      if (result.error) {
+        setPwdMsg({ text: `❌ ${result.error.message ?? "Erreur inconnue"}`, ok: false });
+      } else {
+        setPwdMsg({ text: "✅ Mot de passe mis à jour avec succès.", ok: true });
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+      }
+    } finally {
+      setPwdSaving(false);
+      setTimeout(() => setPwdMsg(null), 5000);
+    }
+  }
+
   return (
     <div className="p-4 flex flex-col gap-4">
       <FieldSection label="📷 PHOTO DE PROFIL">
@@ -202,6 +237,26 @@ function EditTab({
       <div className="flex gap-2 pt-2">
         <RetroBtn onClick={onSave} disabled={saving} variant="primary">{saving ? "⏳ Sauvegarde..." : "💾 Sauvegarder"}</RetroBtn>
         <div className="text-xs self-center" style={{ color: "var(--t-text-muted)" }}>{saving ? "Écriture sur le disque dur..." : "Cliquez pour enregistrer vos modifications."}</div>
+      </div>
+
+      <div className="border-t pt-4" style={{ borderColor: "var(--t-border-dark)" }}>
+        <FieldSection label="🔑 CHANGER LE MOT DE PASSE">
+          <div className="flex flex-col gap-2">
+            <RetroInput value={currentPassword} onChange={setCurrentPassword} placeholder="Mot de passe actuel" type="password" />
+            <RetroInput value={newPassword} onChange={setNewPassword} placeholder="Nouveau mot de passe (min. 8 caractères)" type="password" />
+            <RetroInput value={confirmPassword} onChange={setConfirmPassword} placeholder="Confirmer le nouveau mot de passe" type="password" />
+            <div className="flex gap-2 items-center">
+              <RetroBtn onClick={handlePasswordChange} disabled={pwdSaving || !currentPassword || !newPassword || !confirmPassword}>
+                {pwdSaving ? "⏳ Mise à jour..." : "🔒 Changer le mot de passe"}
+              </RetroBtn>
+              {pwdMsg && (
+                <div className="text-xs" style={{ color: pwdMsg.ok ? "var(--t-accent)" : "var(--t-defrag-fragmented,#cc2200)", fontFamily: "var(--t-font-display)" }}>
+                  {pwdMsg.text}
+                </div>
+              )}
+            </div>
+          </div>
+        </FieldSection>
       </div>
     </div>
   );

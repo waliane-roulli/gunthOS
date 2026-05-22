@@ -136,9 +136,9 @@ export function RetroBtn({
 }
 
 export function RetroInput({
-  value, onChange, placeholder, maxLength, multiline, rows,
+  value, onChange, placeholder, maxLength, multiline, rows, type,
 }: {
-  value: string; onChange: (v: string) => void; placeholder?: string; maxLength?: number; multiline?: boolean; rows?: number;
+  value: string; onChange: (v: string) => void; placeholder?: string; maxLength?: number; multiline?: boolean; rows?: number; type?: string;
 }) {
   const base: React.CSSProperties = {
     fontFamily: "var(--t-font-display)", fontSize: "0.875rem",
@@ -151,7 +151,7 @@ export function RetroInput({
   if (multiline) {
     return <textarea style={base} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} maxLength={maxLength} rows={rows ?? 3} spellCheck={false} />;
   }
-  return <input style={base} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} maxLength={maxLength} />;
+  return <input style={base} type={type ?? "text"} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} maxLength={maxLength} />;
 }
 
 export function AvatarBlock({

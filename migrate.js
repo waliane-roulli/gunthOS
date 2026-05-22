@@ -11,7 +11,15 @@ const sqlite = new Database(path.join(dataDir, "app.db"));
 sqlite.pragma("journal_mode = WAL");
 sqlite.pragma("foreign_keys = ON");
 
-migrate(drizzle(sqlite), { migrationsFolder: path.join(__dirname, "drizzle") });
+const db = drizzle(sqlite);
+migrate(db, { migrationsFolder: path.join(__dirname, "drizzle") });
+
+const adminUsername = process.env.ADMIN_USERNAME;
+if (adminUsername) {
+  const result = sqlite.prepare("UPDATE user SET role = 'admin' WHERE username = ? AND role != 'admin'").run(adminUsername);
+  if (result.changes > 0) console.log(`admin: '${adminUsername}' promu admin`);
+}
+
 sqlite.close();
 
 console.log("migrations done");
