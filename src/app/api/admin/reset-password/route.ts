@@ -19,10 +19,28 @@ export async function POST(req: NextRequest) {
 
   const { hashPassword } = await import("@better-auth/utils/password");
   const hashed = await hashPassword(newPassword);
-  await db()
-    .update(account)
-    .set({ password: hashed })
+
+  const [existing] = await db()
+    .select({ id: account.id })
+    .from(account)
     .where(and(eq(account.userId, userId), eq(account.providerId, "credential")));
+
+  if (existing) {
+    await db()
+      .update(account)
+      .set({ password: hashed })
+      .where(and(eq(account.userId, userId), eq(account.providerId, "credential")));
+  } else {
+    await db().insert(account).values({
+      id: crypto.randomUUID(),
+      accountId: userId,
+      providerId: "credential",
+      userId,
+      password: hashed,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+  }
 
   return NextResponse.json({ ok: true });
 }

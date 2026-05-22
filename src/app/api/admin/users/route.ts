@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { user } from "@/lib/db/schema";
+import { user, account } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
@@ -20,5 +20,11 @@ export async function GET() {
     createdAt: user.createdAt,
   }).from(user).orderBy(user.createdAt);
 
-  return NextResponse.json(users);
+  const credentials = await db().select({ userId: account.userId })
+    .from(account)
+    .where(eq(account.providerId, "credential"));
+
+  const credentialSet = new Set(credentials.map((c) => c.userId));
+
+  return NextResponse.json(users.map((u) => ({ ...u, hasCredential: credentialSet.has(u.id) })));
 }

@@ -9,6 +9,7 @@ type UserRow = {
   username: string | null;
   role: string;
   createdAt: number;
+  hasCredential: boolean;
 };
 
 const cellStyle: React.CSSProperties = { padding: "6px 8px", verticalAlign: "middle" };
@@ -174,17 +175,36 @@ function UsersPanel() {
                 {new Date(u.createdAt).toLocaleDateString("fr-FR")}
               </td>
               <td style={cellStyle}>
-                <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap" }}>
+                  {!u.hasCredential && (
+                    <span style={{
+                      background: "#c0392b",
+                      color: "#fff",
+                      fontSize: "var(--t-text-xs)",
+                      padding: "1px 5px",
+                      fontFamily: "var(--t-font-body)",
+                    }}>
+                      ⚠ Pas de mdp
+                    </span>
+                  )}
                   <input
                     type="password"
-                    placeholder="Nouveau mdp…"
+                    placeholder={u.hasCredential ? "Nouveau mdp…" : "Définir un mdp…"}
                     value={newPwd[u.id] ?? ""}
                     onChange={(e) => setNewPwd((p) => ({ ...p, [u.id]: e.target.value }))}
                     onKeyDown={(e) => e.key === "Enter" && handleReset(u.id)}
-                    style={inputStyle}
+                    style={{
+                      ...inputStyle,
+                      borderTopColor: !u.hasCredential ? "#c0392b" : "var(--t-border-dark)",
+                      borderLeftColor: !u.hasCredential ? "#c0392b" : "var(--t-border-dark)",
+                    }}
                   />
-                  <button style={btnStyle()} disabled={busy === u.id} onClick={() => handleReset(u.id)}>
-                    {busy === u.id ? "…" : "Reset"}
+                  <button
+                    style={btnStyle(!u.hasCredential ? "admin" : "default")}
+                    disabled={busy === u.id}
+                    onClick={() => handleReset(u.id)}
+                  >
+                    {busy === u.id ? "…" : u.hasCredential ? "Reset" : "Réparer"}
                   </button>
                 </div>
               </td>
