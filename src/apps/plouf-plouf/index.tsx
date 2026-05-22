@@ -18,7 +18,7 @@ export function PloufPloufApp(_: AppProps) {
 
   return (
     <div
-      className="flex flex-col min-h-full"
+      className="flex-1 flex flex-col"
       style={{
         ...appThemeStyle,
         backgroundColor: "var(--t-bg)",
