@@ -62,6 +62,11 @@ export function PeggleApp({ windowId: _windowId }: AppProps) {
     onScoreSubmit: submitScore,
   });
 
+  const handleNextLevel = useCallback(() => {
+    setScoreSubmitted(false);
+    nextLevel();
+  }, [nextLevel]);
+
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
     mouseRef.current = {
@@ -129,7 +134,7 @@ export function PeggleApp({ windowId: _windowId }: AppProps) {
           onMouseMove={handleMouseMove}
           onClick={handleClick}
           onReplay={() => { resetGame(false); setScoreSubmitted(false); }}
-          onNextLevel={nextLevel}
+          onNextLevel={handleNextLevel}
           onLeaderboard={handleTabLeaderboard}
         />
         <div
