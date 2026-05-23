@@ -162,7 +162,7 @@ export function OsWindow({ win, children }: OsWindowProps) {
         left: 0,
         top: taskbarH,
         width: "100vw",
-        height: `calc(100vh - ${taskbarH}px)`,
+        height: `calc(100dvh - ${taskbarH}px)`,
         zIndex: win.zIndex,
         margin: 0,
         display: "flex",
