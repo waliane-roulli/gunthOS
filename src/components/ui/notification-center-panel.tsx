@@ -90,7 +90,7 @@ export function NotificationCenterPanel({ anchorBottom, anchorRight, onClose, on
         body: JSON.stringify({ id: notif.id }),
       });
       setItems((prev) => prev.map((n) => (n.id === notif.id ? { ...n, read: true } : n)));
-      onUnreadChange(Math.max(0, items.filter((n) => !n.read).length - 1));
+      onUnreadChange(items.filter((n) => !n.read && n.id !== notif.id).length);
     }
     if (notif.actionAppSlug) openApp(notif.actionAppSlug);
     onClose();

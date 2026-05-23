@@ -40,7 +40,6 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
   const [trayDrawerOpen, setTrayDrawerOpen] = useState(false);
   const [notifPanelOpen, setNotifPanelOpen] = useState(false);
   const [notifUnread, setNotifUnread] = useState(0);
-  const bellRef = useRef<HTMLButtonElement>(null);
 
   const taskbarH = isMobile ? TASKBAR_H_MOBILE : TASKBAR_H;
 
@@ -512,7 +511,6 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
 
               {/* Notification center bell */}
               <button
-                ref={bellRef}
                 title="Centre de notifications"
                 onClick={() => {
                   init();
