@@ -21,4 +21,5 @@ export const APP_META: { slug: string; name: string; emoji: string; audioChannel
   { slug: "notepad",        name: "Bloc-notes",              emoji: "📝" },
   { slug: "printer",        name: "GunthPrint 3000™",        emoji: "🖨️" },
   { slug: "ie",             name: "Internet Explorer 6",     emoji: "🌐" },
+  { slug: "changelog",     name: "Notes de version",        emoji: "📋" },
 ];

@@ -29,5 +29,6 @@ export const neonTheme: IconTheme = {
     notepad:         { ...lucideTheme.icons.notepad!,         color: "#88aadd" },
     printer:         { ...lucideTheme.icons.printer!,         color: "#aabbcc" },
     ie:              { ...lucideTheme.icons.ie!,              color: "#44aaff" },
+    changelog:       { ...lucideTheme.icons.changelog!,       color: "#ffbb66" },
   },
 };

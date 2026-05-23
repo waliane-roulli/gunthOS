@@ -18,6 +18,7 @@ import {
   Printer,
   Globe,
   MessagesSquare,
+  ScrollText,
 } from "lucide-react";
 import { MsnLogo } from "@/components/ui/msn-logo";
 import type { IconTheme, IconRenderer } from "../types";
@@ -51,6 +52,7 @@ export const lucideTheme: IconTheme = {
     notepad:         { icon: FileText,        color: "#37474f" },
     printer:         { icon: Printer,         color: "#4e342e" },
     ie:              { icon: Globe,           color: "#1565c0" },
+    changelog:       { icon: ScrollText,      color: "#5c4033" },
   },
   fallback: MessagesSquare,
 };
