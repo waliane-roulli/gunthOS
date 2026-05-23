@@ -485,7 +485,7 @@ export function useGameLoop({
         for (let i = 0; i < 3; i++) {
           const bx = BONUS_BUCKET_XS[i]!;
           if (b.y + BALL_R >= bucketTop && b.x >= bx && b.x <= bx + BUCKET_W) {
-            const mult = s.bonusBucketMults[i] ?? 1;;
+            const mult = s.bonusBucketMults[i] ?? 1;
             const turnScore = Math.max(0, s.score - s.turnScoreStart);
             const bonus = (mult - 1) * turnScore;
             s.balls += 1;
