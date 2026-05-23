@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { guntherBoardTickets } from "@/lib/db/schema";
+import { guntherBoardTickets, notifications } from "@/lib/db/schema";
 import { auth } from "@/lib/auth";
 import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
@@ -22,6 +22,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   if (!existing) return notFound("Ticket introuvable");
 
+  const assigneeChanged = "assigneeId" in body && body.assigneeId !== existing.assigneeId;
+
   const allowed = ["title", "description", "status", "priority", "label", "scope", "assigneeId"] as const;
   const updates: Partial<typeof existing> = { updatedAt: new Date() };
   for (const key of allowed) {
@@ -34,6 +36,17 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     .where(eq(guntherBoardTickets.id, Number(id)))
     .returning()
     .all();
+
+  if (assigneeChanged && body.assigneeId && body.assigneeId !== session.user.id && updated) {
+    db().insert(notifications).values({
+      userId: body.assigneeId as string,
+      source: "gunther-board",
+      type: "info",
+      title: `📋 Ticket assigné : ${updated.title}`,
+      message: `Assigné par ${session.user.name}`,
+      actionAppSlug: "gunther-board",
+    }).run();
+  }
 
   return NextResponse.json(updated);
 }

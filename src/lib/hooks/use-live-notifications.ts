@@ -2,10 +2,20 @@
 
 import { useEffect } from "react";
 import { useNotify } from "@/lib/contexts/notification-context";
+import { useAuth } from "@/lib/contexts/auth-context";
 import type { BroadcastPayload } from "@/lib/sse-broadcaster";
+
+function persistNotification(payload: { source: string; type: string; title: string; message?: string }) {
+  fetch("/api/notifications", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  }).catch(() => {});
+}
 
 export function useLiveNotifications() {
   const notify = useNotify();
+  const { user } = useAuth();
 
   useEffect(() => {
     const es = new EventSource("/api/notifications/stream");
@@ -32,6 +42,14 @@ export function useLiveNotifications() {
             duration: null,
             onClick: () => window.location.reload(),
           });
+          if (user) {
+            persistNotification({
+              source: "system",
+              type: "info",
+              title: `Nouvelle version ${payload.version}`,
+              message: payload.changelog ?? undefined,
+            });
+          }
           return;
         }
         notify({
@@ -40,11 +58,19 @@ export function useLiveNotifications() {
           message: payload.message,
           duration: payload.duration,
         });
+        if (user) {
+          persistNotification({
+            source: "system",
+            type: payload.type,
+            title: payload.title,
+            message: payload.message ?? undefined,
+          });
+        }
       } catch {
         // malformed event, ignore
       }
     };
 
     return () => es.close();
-  }, [notify]);
+  }, [notify, user]);
 }
