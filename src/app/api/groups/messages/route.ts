@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { groupConversations, groupMembers, groupMessages, groupMessageReads, user } from "@/lib/db/schema";
+import { groupConversations, groupMembers, groupMessages, user } from "@/lib/db/schema";
 import { auth } from "@/lib/auth";
 import { and, eq, gt, desc } from "drizzle-orm";
 import { headers } from "next/headers";

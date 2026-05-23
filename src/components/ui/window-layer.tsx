@@ -6,7 +6,6 @@ import { getAppManifest } from "@/apps";
 import { OsWindow } from "./os-window";
 import { useSoundContext } from "@/lib/contexts/sound-context";
 import { useSettingsState } from "@/lib/contexts/settings-context";
-import { APP_REGISTRY } from "@/apps";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { useOpenApp } from "@/lib/hooks/use-open-app";
 import { useChatWindows } from "@/lib/contexts/chat-windows-context";
