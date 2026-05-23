@@ -578,7 +578,6 @@ export function useGameLoop({
       // End of turn
       const anyBallActive = s.ball?.active === true || s.extraBalls.length > 0;
       if (s.phase === "firing" && !anyBallActive) {
-        s.pegs = s.pegs.filter(p => !p.hit || p.popping);
         s.pegs = s.pegs.filter(p => !p.hit);
         s.combo = 0;
         s.scoreMultiplier = 1;
@@ -616,10 +615,6 @@ export function useGameLoop({
           onScoreSubmit(s.score, false);
         } else {
           s.phase = "aim";
-          // Grant new multiball every 3 levels if not already available
-          if (!s.multiballUsed && !s.multiballReady) {
-            // No auto-refresh; it was granted at level start
-          }
         }
         syncUI();
       }
