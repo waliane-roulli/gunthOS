@@ -22,6 +22,7 @@ export const GUNTH_TITLES = [
   "GunthOS v1.0 — Dernière mise à jour : vendredi soir avant un long week-end.",
   "GunthOS v1.0 — Vous utilisez Internet Explorer. Nous ne dirons rien.",
   "GunthOS v1.0 — Votre session a expiré pendant que vous lisiez ceci.",
+  "GunthOS v1.0 — Votre session a été déconnectée pendant la réunion Teams. Personne ne l'a signalé.",
 ];
 
 export const GUNTH_STATUS = [
@@ -37,6 +38,9 @@ export const GUNTH_STATUS = [
   "💾 GunthOS v1.0 — Erreur générale de protection. Ignorée avec succès.",
   "💾 GunthOS v1.0 — Processus inconnu 'gunth.exe' consomme 98% du CPU. Il ne répond pas aux questions.",
   "💾 GunthOS v1.0 — Dernière défragmentation : 1999. Fragmentation actuelle : artistique.",
+  "💾 GunthOS v1.0 — Réunion Teams en cours. 14 participants. 13 en sourdine. Le 14ème partage son écran par accident depuis 47 minutes.",
+  "💾 GunthOS v1.0 — PID 666 : actif. A refusé l'invitation au stand-up. A raison.",
+  "💾 GunthOS v1.0 — Ticket JIRA-2847 ouvert le 14 janvier 2002. Statut : In Progress. Assigné : personne. Priorité : bloquante.",
 ];
 
 export const GUNTH_SHUTDOWN_MESSAGES = [
@@ -52,6 +56,8 @@ export const GUNTH_SHUTDOWN_MESSAGES = [
   "Êtes-vous sûr(e) de vouloir éteindre GunthOS ?\n\nAucune sauvegarde automatique n'a été effectuée. Bonne chance.",
   "Êtes-vous sûr(e) de vouloir éteindre GunthOS ?\n\nLe processus svchost.exe (×23) va se terminer. Personne ne sait ce qu'il fait. Personne ne posera la question.",
   "Êtes-vous sûr(e) de vouloir éteindre GunthOS ?\n\nMicrosoft vous rappelle d'éteindre correctement votre ordinateur. GunthOS vous rappelle que ça ne change rien.",
+  "Êtes-vous sûr(e) de vouloir éteindre GunthOS ?\n\nVotre badge d'onboarding n'a toujours pas été activé. Le service informatique répond sous 47 jours ouvrés. Ce n'est pas une blague.",
+  "Êtes-vous sûr(e) de vouloir éteindre GunthOS ?\n\nLa revue de roadmap débute dans 3 minutes. Votre présence est 'vivement recommandée'. GunthOS sait ce que ça veut dire.",
 ];
 
 export const GUNTH_REBOOT_MESSAGES = [
@@ -117,6 +123,9 @@ export const GUNTHER_STATUS_BAR_MSGS = [
   "Mode Kanban™ activé • Fonctionnalité en bêta depuis 2001",
   "Tickets perdus : ∞ • Tickets trouvés : 0 • Équipe : occupée",
   "Roadmap : confidentielle • Deadline : hier",
+  "Ticket JIRA-∞ • Priorité : critique • Assigné : Sandrine R. • Sandrine R. a quitté l'entreprise en 2019",
+  "Onboarding J+47 • Badge : désactivé • Manager : en déplacement • WiFi : inconnu",
+  "Réunion Teams • Lien envoyé • Lien expiré • Nouveau lien en cours depuis 23 min",
 ];
 
 export const GUNTHER_LOADING_HINTS = [
@@ -127,6 +136,9 @@ export const GUNTHER_LOADING_HINTS = [
   "(Synchronisation avec les volontés de l'univers.)",
   "(Le kanban réfléchit à sa vie.)",
   "(Le serveur fait ce qu'il peut. Ce n'est pas beaucoup.)",
+  "(Le ticket a été rouvert par quelqu'un qui ne savait pas qu'il était résolu.)",
+  "(Le manager bienveillant prépare un feedback constructif. Depuis le 3 octobre.)",
+  "(La réunion de cadrage de la réunion de cadrage est planifiée pour jeudi prochain.)",
 ];
 
 export const DIRECTORY_LOADING_MSGS = [
