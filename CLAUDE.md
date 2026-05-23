@@ -21,12 +21,19 @@ pnpm db:studio    # Drizzle Studio GUI
 ### Provider tree (outermost → innermost)
 
 ```
-SoundProvider
-  RadioProvider
-    WindowManagerProvider
-      NotificationProvider
-        LiveNotificationsBridge (SSE hook, renders null)
-        GunthTitle + Taskbar + OsDesktop + WindowLayer + NotificationLayer
+AuthProvider
+  SettingsProvider
+    IconThemeProvider          ← src/app/layout.tsx
+      SiteShell:
+        SoundProvider
+          RadioProvider
+            SeenAppsProvider
+              WindowManagerProvider
+                NotificationProvider
+                  UnreadProvider
+                    ChatWindowsProvider
+                      LiveNotificationsBridge (SSE hook, renders null)
+                      GunthTitle + Taskbar + OsDesktop + WindowLayer + NotificationLayer
 ```
 
 `SiteShell` (`src/components/ui/site-shell.tsx`) owns the boot/shutdown state machine. `WindowLayer` renders all open windows via `OsWindow`.
@@ -51,8 +58,35 @@ Every app lives in `src/apps/<slug>/` with exactly two files: `index.tsx` (compo
 | `defaultSize` | Initial window size `{ w, h }` in px |
 | `loadDuration` | Fake loading bar duration (ms) shown on open |
 | `showInLauncher` | Appears in Start menu + desktop icon |
+| `emoji` | Used by the Emoji icon theme — always set it, even for new apps |
 | `persistAudio` | If `true`, audio keeps playing after window close (Radio) |
 | `audioChannels` | Named channels auto-silenced on window close |
+
+> **`iconComponent` / `iconNode` are legacy.** The icon theme system now handles all rendering via `<OsIcon slug={app.slug} size={N} />`. Don't add these fields to new apps.
+
+### Icon theme system
+
+`src/lib/icon-themes/` — 7 built-in themes switchable by the user (Paramètres → ICÔNES). Default: **Win98**.
+
+| Theme id | Style | Description |
+|---|---|---|
+| `win98` | Boîte grise + bordure raised | Défaut, old school authentique |
+| `pixel` | Fond coloré + outline noir | Style jeu vidéo 16-bit |
+| `lucide` | Fond coloré + bordure raised | SVG moderne par app |
+| `neon` | Fond noir + lueur colorée | Cyberpunk |
+| `crt` | Fond noir + phosphore vert | Terminal rétro monochrome |
+| `flat` | Icône SVG colorée, sans fond | Minimaliste |
+| `emoji` | Emoji string | Lecture du champ `emoji` du manifest |
+
+**`<OsIcon slug="my-app" size={N} />`** (`src/components/ui/os-icon.tsx`) — composant central. Il lit le thème courant via `useIconTheme()` et rend l'icône adaptée. Toujours utiliser ce composant plutôt que d'afficher `app.emoji` directement.
+
+**`useIconTheme()`** (`src/lib/contexts/icon-theme-context.tsx`) — retourne le `IconTheme` actif. Utile pour lire `theme.style` ou accéder à `theme.icons[slug]` si besoin de rendu custom.
+
+**Ajouter les icônes pour un nouvel app** (étape 5 après les 4 étapes standard) :
+1. Dans `src/lib/icon-themes/themes/lucide.tsx` — ajouter `"my-app": { icon: SomeLucideIcon, color: "#hexcolor" }` dans `icons`
+2. Dans `src/lib/icon-themes/themes/neon.ts` — ajouter `"my-app": { ...lucideTheme.icons["my-app"]!, color: "#brightercolor" }`
+3. Les thèmes win98 / pixel / crt / flat héritent automatiquement de lucide — rien à faire.
+4. Le thème emoji lit `manifest.emoji` — rien à faire si le champ est renseigné.
 
 ### Window manager
 
@@ -120,6 +154,19 @@ Declare `audioChannels` in manifest — silenced automatically on window close. 
 ### Persistent audio (survives window close)
 
 Set `persistAudio: true`, do **not** declare `audioChannels`. Manage cleanup yourself. See `src/lib/contexts/radio-context.tsx` as the reference.
+
+### Display an app icon
+
+```tsx
+import { OsIcon } from "@/components/ui/os-icon";
+
+// Adapts automatically to the user's chosen icon theme
+<OsIcon slug="settings" size={24} />
+<OsIcon slug="msn" size={46} />   // desktop-size
+<OsIcon slug="radio" size={16} />  // titlebar/taskbar-size
+```
+
+Sizes courantes : 16 (titlebar/taskbar), 18 (start menu), 20 (fenêtre ouverte), 46 (desktop).
 
 ### Open another app
 
