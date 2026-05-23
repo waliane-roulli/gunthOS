@@ -1,4 +1,4 @@
-import { W, H, PEG_R, BALL_R, BUCKET_W, BUCKET_H, FEVER_THRESHOLD, SLOW_MO_DURATION, ZOOM_SCALE, BONUS_BUCKET_XS, BONUS_BUCKET_MULTS } from "./constants";
+import { W, H, PEG_R, BALL_R, BUCKET_W, BUCKET_H, FEVER_THRESHOLD, SLOW_MO_DURATION, ZOOM_SCALE, BONUS_BUCKET_XS } from "./constants";
 import { computeAimLine } from "./physics";
 import type { GameState, Ball, Peg } from "./types";
 
@@ -422,18 +422,18 @@ export function draw(
   ctx.save();
 
   if (s.balls === 0 && s.phase === "firing") {
-    // Last ball: draw 3 bonus buckets at fixed positions
-    const BONUS_STYLES = [
-      { bg0: "#005544", bg1: "#003322", glow: "#00ffcc" },
-      { bg0: "#330044", bg1: "#1a0022", glow: "#cc44ff" },
-      { bg0: "#554400", bg1: "#332200", glow: "#ffcc00" },
-    ] as const;
+    // Last ball: draw 3 bonus buckets at fixed positions, order randomised
+    const styleForMult = (m: number) => m === 5
+      ? { bg0: "#554400", bg1: "#332200", glow: "#ffcc00" }
+      : m === 3
+      ? { bg0: "#330044", bg1: "#1a0022", glow: "#cc44ff" }
+      : { bg0: "#005544", bg1: "#003322", glow: "#00ffcc" };
     for (let i = 0; i < 3; i++) {
       const bx = BONUS_BUCKET_XS[i]!;
       const by = bucketTop;
       const flash = s.bonusBucketFlash[i] ?? 0;
-      const style = BONUS_STYLES[i]!;
-      const mult = BONUS_BUCKET_MULTS[i]!;
+      const mult = s.bonusBucketMults[i] ?? 1;
+      const style = styleForMult(mult);
 
       ctx.shadowColor = flash > 0 ? "#ffffff" : style.glow;
       ctx.shadowBlur = 8 + (flash > 0 ? flash : 0.4) * 22;

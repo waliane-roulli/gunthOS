@@ -84,6 +84,7 @@ export interface GameState {
   multiballUsed: boolean;
   turnScoreStart: number;
   bonusBucketFlash: number[];
+  bonusBucketMults: number[];
 }
 
 export interface UiState {

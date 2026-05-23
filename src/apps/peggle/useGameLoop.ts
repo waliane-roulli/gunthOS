@@ -59,6 +59,7 @@ function makeInitialState(level: number, keepScore = false, prevScore = 0): Game
     multiballUsed: false,
     turnScoreStart: 0,
     bonusBucketFlash: [0, 0, 0],
+    bonusBucketMults: [1, 3, 5],
   };
 }
 
@@ -176,6 +177,15 @@ export function useGameLoop({
     }
     s.balls -= 1;
     s.turnScoreStart = s.score;
+    if (s.balls === 0) {
+      const mults = [...BONUS_BUCKET_MULTS];
+      for (let i = mults.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [mults[i], mults[j]] = [mults[j]!, mults[i]!];
+      }
+      s.bonusBucketMults = mults;
+      s.bonusBucketFlash = [0, 0, 0];
+    }
     s.phase = "firing";
     syncUI();
   }, [syncUI]);
@@ -475,7 +485,7 @@ export function useGameLoop({
         for (let i = 0; i < 3; i++) {
           const bx = BONUS_BUCKET_XS[i]!;
           if (b.y + BALL_R >= bucketTop && b.x >= bx && b.x <= bx + BUCKET_W) {
-            const mult = BONUS_BUCKET_MULTS[i]!;
+            const mult = s.bonusBucketMults[i] ?? 1;;
             const turnScore = Math.max(0, s.score - s.turnScoreStart);
             const bonus = (mult - 1) * turnScore;
             s.balls += 1;
