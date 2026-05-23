@@ -1,5 +1,9 @@
-import type { AppManifest } from "@/types";
-import { DefragApp } from "./index";
+import { lazy, type ComponentType } from "react";
+import type { AppManifest, AppProps } from "@/types";
+
+const DefragApp = lazy(
+  () => import("./index").then((m) => ({ default: m.DefragApp }))
+) as ComponentType<AppProps>;
 
 export const manifest: AppManifest = {
   slug: "defrag",

@@ -1,5 +1,9 @@
-import type { AppManifest } from "@/types";
-import { SolitaireApp } from "./index";
+import { lazy, type ComponentType } from "react";
+import type { AppManifest, AppProps } from "@/types";
+
+const SolitaireApp = lazy(
+  () => import("./index").then((m) => ({ default: m.SolitaireApp }))
+) as ComponentType<AppProps>;
 
 export const manifest: AppManifest = {
   slug: "solitaire",

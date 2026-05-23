@@ -1,5 +1,9 @@
-import type { AppManifest } from "@/types";
-import { TrashApp } from "./index";
+import { lazy, type ComponentType } from "react";
+import type { AppManifest, AppProps } from "@/types";
+
+const TrashApp = lazy(
+  () => import("./index").then((m) => ({ default: m.TrashApp }))
+) as ComponentType<AppProps>;
 
 export const manifest: AppManifest = {
   slug: "trash",

@@ -1,5 +1,9 @@
-import type { AppManifest } from "@/types";
-import { NotepadApp } from "./index";
+import { lazy, type ComponentType } from "react";
+import type { AppManifest, AppProps } from "@/types";
+
+const NotepadApp = lazy(
+  () => import("./index").then((m) => ({ default: m.NotepadApp }))
+) as ComponentType<AppProps>;
 
 export const manifest: AppManifest = {
   slug: "notepad",

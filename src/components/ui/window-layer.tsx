@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, Component, type ReactNode, type ErrorInfo } from "react";
+import { useState, useEffect, useRef, Component, Suspense, type ReactNode, type ErrorInfo } from "react";
 import { useWindowState, useWindowActions } from "@/lib/contexts/window-manager-context";
 import { getAppManifest } from "@/apps";
 import { OsWindow } from "./os-window";
@@ -287,7 +287,9 @@ function WindowContent({ win }: { win: { id: string; appSlug: string } }) {
 
   return (
     <AppErrorBoundary>
-      <AppComponent windowId={win.appSlug.startsWith("profile:") ? win.appSlug : win.id} />
+      <Suspense fallback={null}>
+        <AppComponent windowId={win.appSlug.startsWith("profile:") ? win.appSlug : win.id} />
+      </Suspense>
     </AppErrorBoundary>
   );
 }

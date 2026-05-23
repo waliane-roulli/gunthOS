@@ -1,5 +1,9 @@
-import type { AppManifest } from "@/types";
-import { PrinterApp } from "./index";
+import { lazy, type ComponentType } from "react";
+import type { AppManifest, AppProps } from "@/types";
+
+const PrinterApp = lazy(
+  () => import("./index").then((m) => ({ default: m.PrinterApp }))
+) as ComponentType<AppProps>;
 
 export const manifest: AppManifest = {
   slug: "printer",
