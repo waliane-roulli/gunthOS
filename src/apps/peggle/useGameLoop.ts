@@ -97,12 +97,11 @@ export function useGameLoop({
     return Math.max(0.15, Math.min(Math.PI - 0.15, angle));
   }
 
-  const handleClick = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+  const fireBallAtClientPos = useCallback((rect: DOMRect, clientX: number, clientY: number) => {
     const s = stateRef.current;
     if (s.phase !== "aim" || s.ball) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const mx = (e.clientX - rect.left) * (W / rect.width);
-    const my = (e.clientY - rect.top) * (H / rect.height);
+    const mx = (clientX - rect.left) * (W / rect.width);
+    const my = (clientY - rect.top) * (H / rect.height);
     const angle = Math.max(0.15, Math.min(Math.PI - 0.15, Math.atan2(my - LAUNCHER_Y, mx - LAUNCHER_X)));
     s.ball = {
       x: LAUNCHER_X, y: LAUNCHER_Y,
@@ -115,6 +114,54 @@ export function useGameLoop({
     s.phase = "firing";
     syncUI();
   }, [syncUI]);
+
+  const handleClick = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+    fireBallAtClientPos(e.currentTarget.getBoundingClientRect(), e.clientX, e.clientY);
+  }, [fireBallAtClientPos]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const updateAimFromTouch = (t: Touch) => {
+      const rect = canvas.getBoundingClientRect();
+      mouseRef.current = {
+        x: (t.clientX - rect.left) * (W / rect.width),
+        y: (t.clientY - rect.top) * (H / rect.height),
+      };
+    };
+
+    const onTouchStart = (e: TouchEvent) => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      if (touch) updateAimFromTouch(touch);
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      if (touch) updateAimFromTouch(touch);
+    };
+
+    const onTouchEnd = (e: TouchEvent) => {
+      e.preventDefault();
+      const touch = e.changedTouches[0];
+      if (!touch) return;
+      updateAimFromTouch(touch);
+      const rect = canvas.getBoundingClientRect();
+      fireBallAtClientPos(rect, touch.clientX, touch.clientY);
+    };
+
+    canvas.addEventListener("touchstart", onTouchStart, { passive: false });
+    canvas.addEventListener("touchmove", onTouchMove, { passive: false });
+    canvas.addEventListener("touchend", onTouchEnd, { passive: false });
+
+    return () => {
+      canvas.removeEventListener("touchstart", onTouchStart);
+      canvas.removeEventListener("touchmove", onTouchMove);
+      canvas.removeEventListener("touchend", onTouchEnd);
+    };
+  }, [fireBallAtClientPos, mouseRef]);
 
   useEffect(() => {
     const pegs = stateRef.current.pegs;

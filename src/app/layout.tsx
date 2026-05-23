@@ -3,6 +3,7 @@ import { Fredoka, VT323, Press_Start_2P, Orbitron, Exo_2, Righteous, Nunito, Sha
 import "./globals.css";
 import { SettingsProvider } from "@/lib/contexts/settings-context";
 import { AuthProvider } from "@/lib/contexts/auth-context";
+import { IconThemeProvider } from "@/lib/contexts/icon-theme-context";
 import { SiteShell } from "@/components/ui/site-shell";
 
 const fredoka = Fredoka({
@@ -99,6 +100,19 @@ export const metadata: Metadata = {
   title: "GunthOS v1.0 — Chargement en cours… (depuis 1998)",
   description:
     "GunthOS : le système d'exploitation du web. Tirage au sort, mini-jeux et outils kitsch. Chargement en cours depuis 1998.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "GunthOS",
+  },
+  icons: {
+    icon: [
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/icons/icon-192.png" }],
+  },
 };
 
 export const viewport: Viewport = {
@@ -117,7 +131,9 @@ export default function RootLayout({
       <body>
         <AuthProvider>
           <SettingsProvider>
-            <SiteShell>{children}</SiteShell>
+            <IconThemeProvider>
+              <SiteShell>{children}</SiteShell>
+            </IconThemeProvider>
           </SettingsProvider>
         </AuthProvider>
       </body>

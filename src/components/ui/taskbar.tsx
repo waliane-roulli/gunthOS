@@ -1,10 +1,13 @@
 "use client";
 
-import { useCallback, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { MsnLogo } from "./msn-logo";
+import { OsIcon } from "./os-icon";
+import { NotificationCenterPanel } from "./notification-center-panel";
 import { useWindowState, useWindowActions } from "@/lib/contexts/window-manager-context";
 import { LAUNCHER_APPS } from "@/apps";
 import { useTheme, useSettings } from "@/lib/contexts/settings-context";
+import { useSeenApps } from "@/lib/contexts/seen-apps-context";
 import { THEMES, type ThemeId } from "@/lib/themes";
 import { GUNTH_SHUTDOWN_MESSAGES, GUNTH_REBOOT_MESSAGES } from "@/lib/gunth-jokes";
 import { pickRandom } from "@/lib/utils/random";
@@ -26,6 +29,7 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
   const { init, playClick, playWindowOpen, playWindowMinimize } = useSoundContext();
   const { user } = useAuth();
   const { totalUnread } = useUnread();
+  const { seen, isNewVersion } = useSeenApps();
   const time = useOsClock();
   const visitorCount = useVisitorCountApi();
   const isMobile = useMobile();
@@ -34,8 +38,23 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
   const [shutdownMsg, setShutdownMsg] = useState<string | null>(null);
   const [rebootMsg, setRebootMsg] = useState<string | null>(null);
   const [trayDrawerOpen, setTrayDrawerOpen] = useState(false);
+  const [notifPanelOpen, setNotifPanelOpen] = useState(false);
+  const [notifUnread, setNotifUnread] = useState(0);
 
   const taskbarH = isMobile ? TASKBAR_H_MOBILE : TASKBAR_H;
+
+  useEffect(() => {
+    if (!user) { setNotifUnread(0); return; }
+    const refresh = () => {
+      fetch("/api/notifications/unread")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data: { unread: number } | null) => { if (data) setNotifUnread(data.unread); })
+        .catch(() => {});
+    };
+    refresh();
+    const interval = setInterval(refresh, 30_000);
+    return () => clearInterval(interval);
+  }, [user]);
 
   const handleShutdownConfirm = () => {
     setShutdownMsg(null);
@@ -73,6 +92,7 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
     setStartMenuOpen(false);
     setThemeMenuOpen(false);
     setTrayDrawerOpen(false);
+    setNotifPanelOpen(false);
   };
 
   const dialogStyle: React.CSSProperties = {
@@ -146,9 +166,19 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
         </div>
       )}
 
-      {/* Backdrop */}
+      {/* Backdrop for menus (not panel — panel has its own) */}
       {(startMenuOpen || themeMenuOpen || trayDrawerOpen) && (
         <div className="fixed inset-0 z-[9000]" onClick={closeAllMenus} />
+      )}
+
+      {/* Notification center panel */}
+      {notifPanelOpen && (
+        <NotificationCenterPanel
+          anchorTop={taskbarH + 4}
+          anchorRight={8}
+          onClose={() => setNotifPanelOpen(false)}
+          onUnreadChange={setNotifUnread}
+        />
       )}
 
       {/* Start menu */}
@@ -184,15 +214,23 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
           </div>
 
           <div className="py-1 overflow-y-auto" style={{ maxHeight: isMobile ? "60vh" : "calc(100vh - 80px)" }}>
-            {LAUNCHER_APPS.map((app) => (
-              <StartMenuItem
-                key={app.slug}
-                icon={app.iconComponent ? <app.iconComponent size={18} /> : (app.iconNode ?? app.emoji)}
-                label={app.name}
-                onClick={() => handleOpenApp(app.slug)}
-                tall={isMobile}
-              />
-            ))}
+            {LAUNCHER_APPS.map((app) => {
+              const badge = isNewVersion(app.slug, app.version)
+                ? "NEW"
+                : app.badge && !seen.has(app.slug)
+                ? app.badge
+                : undefined;
+              return (
+                <StartMenuItem
+                  key={app.slug}
+                  icon={<OsIcon slug={app.slug} size={18} />}
+                  label={app.name}
+                  badge={badge}
+                  onClick={() => handleOpenApp(app.slug)}
+                  tall={isMobile}
+                />
+              );
+            })}
 
             <div className="my-1 mx-2 border-t border-b" style={{ borderColor: "var(--t-border-dark)", borderBottomColor: "var(--t-border-light)" }} />
 
@@ -306,6 +344,28 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
           )}
           <RadioTrayPlayer />
           <VolumeTray />
+          <button
+            onClick={() => { setTrayDrawerOpen(false); setNotifPanelOpen((o) => !o); }}
+            style={{
+              background: "none", border: "none", cursor: "pointer",
+              fontFamily: "var(--t-font-display)", fontSize: "var(--t-text-sm)",
+              color: "var(--t-text)", display: "flex", alignItems: "center", gap: 6, position: "relative",
+            }}
+          >
+            🔔 Notifications
+            {notifUnread > 0 && (
+              <span
+                style={{
+                  background: "#cc0000", color: "white", borderRadius: "50%",
+                  width: 16, height: 16, fontSize: 9, fontWeight: "bold",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontFamily: "Arial, sans-serif", border: "1px solid white",
+                }}
+              >
+                {notifUnread > 9 ? "9+" : notifUnread}
+              </span>
+            )}
+          </button>
         </div>
       )}
 
@@ -392,7 +452,7 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
                 title={win.title}
               >
                 <span className="shrink-0" style={{ lineHeight: 0, display: "flex", alignItems: "center" }}>
-                  {win.icon}
+                  <OsIcon slug={win.appSlug} size={16} />
                 </span>
                 {!isMobile && <span className="truncate">{win.title}</span>}
               </button>
@@ -448,6 +508,48 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
                   </span>
                 )}
               </button>
+
+              {/* Notification center bell */}
+              <button
+                title="Centre de notifications"
+                onClick={() => {
+                  init();
+                  playClick();
+                  setNotifPanelOpen((o) => !o);
+                  setStartMenuOpen(false);
+                  setThemeMenuOpen(false);
+                  setTrayDrawerOpen(false);
+                }}
+                className="cursor-pointer select-none hover:opacity-80 border-r pr-2"
+                style={{
+                  borderColor: "var(--t-border-dark)",
+                  background: "none",
+                  padding: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  lineHeight: 0,
+                  position: "relative",
+                  color: "var(--t-text)",
+                  fontFamily: "var(--t-font-display)",
+                  fontSize: "var(--t-text-base)",
+                }}
+              >
+                🔔
+                {notifUnread > 0 && (
+                  <span
+                    style={{
+                      position: "absolute", top: -4, right: 4,
+                      background: "#cc0000", color: "white", borderRadius: "50%",
+                      width: 13, height: 13, fontSize: 8, fontWeight: "bold",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontFamily: "Arial, sans-serif", border: "1px solid white", lineHeight: 1,
+                    }}
+                  >
+                    {notifUnread > 9 ? "9+" : notifUnread}
+                  </span>
+                )}
+              </button>
+
               <RadioTrayPlayer />
               <VolumeTray />
             </>
@@ -677,12 +779,14 @@ function StartMenuItem({
   onClick,
   active,
   tall,
+  badge,
 }: {
   icon: ReactNode;
   label: string;
   onClick: () => void;
   active?: boolean;
   tall?: boolean;
+  badge?: string;
 }) {
   return (
     <button
@@ -698,7 +802,20 @@ function StartMenuItem({
       }}
     >
       <span className="shrink-0 icon-constrained">{icon}</span>
-      <span className="tracking-wider truncate">{label}</span>
+      <span className="tracking-wider truncate flex-1">{label}</span>
+      {badge && (
+        <span
+          className="shrink-0 px-1 text-xs font-bold border border-black"
+          style={{
+            backgroundColor: "var(--t-badge-bg)",
+            color: "var(--t-badge-text)",
+            fontFamily: "var(--t-font-display)",
+            fontSize: "10px",
+          }}
+        >
+          {badge}
+        </span>
+      )}
       {active && <span className="ml-auto shrink-0">✓</span>}
     </button>
   );

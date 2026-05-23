@@ -51,6 +51,7 @@ export function GameCanvas({
           cursor: ui.phase === "aim" ? "crosshair" : "default",
           display: "block",
           imageRendering: "pixelated",
+          touchAction: "none",
         }}
         onMouseMove={onMouseMove}
         onClick={onClick}

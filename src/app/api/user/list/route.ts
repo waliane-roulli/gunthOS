@@ -11,7 +11,7 @@ export async function GET() {
   const session = await auth.api.getSession({ headers: await headers() });
 
   const query = db()
-    .select({ id: user.id, name: user.name, username: user.username });
+    .select({ id: user.id, name: user.name, username: user.username, avatarDataUrl: user.avatarDataUrl });
 
   const rows = session?.user?.id
     ? query.from(user).where(ne(user.id, session.user.id)).all()

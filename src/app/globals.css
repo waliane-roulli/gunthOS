@@ -335,3 +335,13 @@ button, [role="button"], input, select, textarea, a {
   from { opacity: 0; transform: translateY(-8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
+/* hidden on non-touch (pointer-hover capable) devices */
+.hidden-on-mouse {
+  display: none;
+}
+@media (hover: none) and (pointer: coarse) {
+  .hidden-on-mouse {
+    display: inline;
+  }
+}

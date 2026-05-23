@@ -184,6 +184,10 @@ export function MyComputerApp(_: AppProps) {
       icon: "📝", label: "Bloc-notes",
       onClick: () => openWindow("notepad", "Bloc-notes — UNTITLED.txt", "📝"),
     },
+    {
+      icon: "📋", label: "Notes de version",
+      onClick: () => openWindow("changelog", "GunthOS — Notes de version", "📋"),
+    },
   ];
 
   return (

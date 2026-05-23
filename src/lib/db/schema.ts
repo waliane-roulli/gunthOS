@@ -292,3 +292,26 @@ export const linkedGunthEndorsements = sqliteTable("linked_gunth_endorsements", 
 }, (t) => [
   uniqueIndex("linked_gunth_endorsements_pair_idx").on(t.fromUserId, t.toUserId, t.skillName),
 ]);
+
+// ── Notification Center ───────────────────────────────────────────────────────
+
+export const notifications = sqliteTable("notifications", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  source: text("source").notNull(), // "linked-gunth" | "msn" | "gunther-board" | "system"
+  type: text("type", { enum: ["info", "success", "warning", "error"] }).notNull().default("info"),
+  title: text("title").notNull(),
+  message: text("message"),
+  read: integer("read", { mode: "boolean" }).notNull().default(false),
+  actionAppSlug: text("action_app_slug"),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+});
+
+// ── GunthOS versioning ────────────────────────────────────────────────────────
+
+export const osVersions = sqliteTable("os_versions", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  version: text("version").notNull(),
+  changelog: text("changelog"),
+  releasedAt: integer("released_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+});

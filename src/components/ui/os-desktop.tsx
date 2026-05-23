@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { LAUNCHER_APPS } from "@/apps";
 import { useSettings } from "@/lib/contexts/settings-context";
+import { OsIcon } from "./os-icon";
 import { useOpenApp } from "@/lib/hooks/use-open-app";
 import { useUnread } from "@/lib/contexts/unread-context";
 import { useSeenApps } from "@/lib/contexts/seen-apps-context";
@@ -104,7 +105,7 @@ export function OsDesktop() {
   const { settings } = useSettings();
   const { openApp, openNamedWindow } = useOpenApp();
   const { totalUnread } = useUnread();
-  const { seen } = useSeenApps();
+  const { seen, isNewVersion } = useSeenApps();
   const { user, isPending } = useAuth();
   const isMobile = useMobile();
 
@@ -119,37 +120,41 @@ export function OsDesktop() {
   );
 
   const handleOpenSettings = useCallback(() => {
-    openNamedWindow("settings", "Paramètres GunthOS", "⚙️");
+    openNamedWindow("settings", "Paramètres GunthOS", null);
   }, [openNamedWindow]);
 
   const icons: IconDef[] = [
     ...LAUNCHER_APPS.map((app) => ({
       id: app.slug,
-      emoji: app.iconComponent ? <app.iconComponent size={46} /> : (app.iconNode ?? app.emoji),
+      emoji: <OsIcon slug={app.slug} size={46} />,
       label: app.name,
       badge:
         app.slug === "msn" && totalUnread > 0
           ? String(totalUnread > 9 ? "9+" : totalUnread)
-          : app.badge && !seen.has(app.slug) ? app.badge : undefined,
+          : isNewVersion(app.slug, app.version)
+          ? "NEW"
+          : app.badge && !seen.has(app.slug)
+          ? app.badge
+          : undefined,
       hot: app.hot,
       locked: app.requiresAuth && !isPending && !user,
       onOpen: () => handleOpenApp(app.slug),
     })),
     {
       id: "my-computer",
-      emoji: "🖥️",
+      emoji: <OsIcon slug="my-computer" size={46} />,
       label: "Mon Ordi",
       onOpen: () => openNamedWindow("my-computer", "Mon Ordinateur", "🖥️"),
     },
     {
       id: "settings",
-      emoji: "⚙️",
+      emoji: <OsIcon slug="settings" size={46} />,
       label: "Paramètres",
       onOpen: handleOpenSettings,
     },
     {
       id: "trash",
-      emoji: "🗑️",
+      emoji: <OsIcon slug="trash" size={46} />,
       label: "Corbeille",
       onOpen: () => openNamedWindow("trash", "Corbeille", "🗑️"),
     },

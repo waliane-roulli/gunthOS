@@ -15,6 +15,7 @@ import { NotificationProvider } from "@/lib/contexts/notification-context";
 import { UnreadProvider } from "@/lib/contexts/unread-context";
 import { ChatWindowsProvider } from "@/lib/contexts/chat-windows-context";
 import { useLiveNotifications } from "@/lib/hooks/use-live-notifications";
+import { PwaInstallPrompt } from "./pwa-register";
 
 function LiveNotificationsBridge() {
   useLiveNotifications();
@@ -47,6 +48,7 @@ export function SiteShell({ children: _children }: { children?: React.ReactNode 
               <UnreadProvider>
                 <ChatWindowsProvider>
                 <LiveNotificationsBridge />
+                <PwaInstallPrompt />
                 <GunthTitle />
                 <div className="fixed inset-0 flex flex-col overflow-hidden scanlines">
                   <Taskbar onReboot={handleReboot} onShutdown={handleShutdown} />
