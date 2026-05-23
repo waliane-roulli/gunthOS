@@ -4,7 +4,7 @@ import { createContext, useContext, useMemo, type ReactNode } from "react";
 import { getIconTheme, type IconTheme } from "@/lib/icon-themes";
 import { useSettingsState } from "./settings-context";
 
-const IconThemeContext = createContext<IconTheme>(getIconTheme("lucide"));
+const IconThemeContext = createContext<IconTheme>(getIconTheme("win98"));
 
 export function IconThemeProvider({ children }: { children: ReactNode }) {
   const { settings } = useSettingsState();

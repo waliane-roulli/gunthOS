@@ -41,7 +41,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   fontSize: 1.0,
   pixelizeEnabled: false,
   performanceModeEnabled: false,
-  iconThemeId: DEFAULT_ICON_THEME_ID,
+  iconThemeId: DEFAULT_ICON_THEME_ID, // "win98"
 };
 
 const STORAGE_KEY = "gunth-settings";
