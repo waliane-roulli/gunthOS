@@ -4,51 +4,280 @@ import { useEffect, useState, useRef } from "react";
 import { useSoundContext } from "@/lib/contexts/sound-context";
 import { useSettings } from "@/lib/contexts/settings-context";
 
-// ── Shutdown screen ───────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
-const SHUTDOWN_LINES = [
-  { text: "GunthOS v1.0 — Procédure d'arrêt initiée.", delay: 0 },
-  { text: "", delay: 200 },
-  { text: "Fermeture des applications en cours...", delay: 400 },
-  { text: "  Solitaire ..................................... REFUS (il était en train de gagner)", delay: 700 },
-  { text: "  Bloc-notes .................................... FERMÉ (contenu non sauvegardé : votre vie)", delay: 1050 },
-  { text: "  Internet Explorer ............................. TOUJOURS EN COURS DE FERMETURE", delay: 1400 },
-  { text: "  Processus mystérieux (PID 666) ............... QU'EST-CE QUE C'EST", delay: 1750 },
-  { text: "  Processus mystérieux (PID 666) ............... IGNORÉ", delay: 2050 },
-  { text: "", delay: 2200 },
-  { text: "Sauvegarde des préférences...", delay: 2350 },
-  { text: "  Thème de bureau .............................. ENREGISTRÉ (il était hideux)", delay: 2600 },
-  { text: "  Raccourcis bureau ............................ 47 icônes sauvegardées", delay: 2900 },
-  { text: "  Vos données importantes ...................... PEUT-ÊTRE", delay: 3200 },
-  { text: "", delay: 3400 },
-  { text: "Nettoyage du cache...", delay: 3550 },
-  { text: "  Fichiers temporaires ......................... 4,7 Go supprimés (ça faisait longtemps)", delay: 3800 },
-  { text: "  Cookies ...................................... CONSERVÉS (pour la nostalgie)", delay: 4150 },
-  { text: "  Historique ................................... EFFACÉ. On ne demande pas.", delay: 4500 },
-  { text: "  Sentiments refoulés : ........................ ARCHIVÉS EN .EXE", delay: 4750 },
-  { text: "", delay: 4950 },
-  { text: "Déconnexion du réseau...", delay: 5100 },
-  { text: "  Modem 14.4k : raccrochage .................... KSHHH BOING DING KRRSSH", delay: 5350 },
-  { text: "  Connexion Internet ........................... PERDUE (comme d'habitude)", delay: 5950 },
-  { text: "  Votre email non lu ........................... 1 message en attente depuis 2002", delay: 6250 },
-  { text: "  Connexion aux serveurs G Corp™ : ............. MAINTENUE (discrètement)", delay: 6500 },
-  { text: "", delay: 6700 },
-  { text: "Arrêt des services système...", delay: 6850 },
-  { text: "  Horloge système .............................. STOPPÉE (le temps c'est de l'argent)", delay: 7100 },
-  { text: "  Gestionnaire de mémoire ...................... LIBÉRÉ (640K, c'est plus que suffisant)", delay: 7450 },
-  { text: "  Pilote PLOUF.SYS ............................. RESTÉ MOUILLÉ", delay: 7800 },
-  { text: "  Machine à café réseau : ...................... ÉTEINTE EN PREMIER", delay: 8050 },
-  { text: "  GUNTH.DRV .................................... TOUJOURS MYSTÉRIEUX", delay: 8350 },
-  { text: "", delay: 8550 },
-  { text: "================================================================", delay: 8700 },
-  { text: "  GunthOS s'éteint correctement.", delay: 8900 },
-  { text: "  Merci d'avoir utilisé GunthOS v1.0.", delay: 9100 },
-  { text: "  Rappel : soufflez dans la cartouche avant de rallumer.", delay: 9350 },
-  { text: "  Au revoir. Nous espérons que vous avez sauvegardé.", delay: 9650 },
-  { text: "================================================================", delay: 9900 },
-  { text: "", delay: 10050 },
-  { text: "Il est maintenant sans danger d'éteindre votre ordinateur.", delay: 10250 },
-];
+type BootLine = { text: string; delay: number; sound?: "ok" | "error" | "modem" | "hdd" };
+
+function pickRandom<T>(arr: readonly T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)]!;
+}
+
+function shuffle<T>(arr: readonly T[]): T[] {
+  return [...arr].sort(() => Math.random() - 0.5);
+}
+
+// ── Boot pools ────────────────────────────────────────────────────────────────
+
+const HARDWARE_POOL = [
+  "  Imprimante LPT1 : ............................ PLEURE EN SILENCE",
+  "  Pile CMOS : .................................. VIDE (heure : 01/01/1980)",
+  "  Ventilateur CPU : ............................. BRUYANT. TRÈS BRUYANT.",
+  "  Port parallèle : .............................. EXISTENTIELLEMENT PERDU",
+  "  Joystick : .................................... DÉTECTÉ (personne ne sait pourquoi)",
+  "  Écran : ....................................... RÉSIGNÉ",
+  "  Horloge temps réel : .......................... À LA TRAÎNE",
+  "  Port série COM1 : ............................. JALOUX DU USB",
+] as const;
+
+const DISK_POOL = [
+  "  Secteurs irrécupérables : .................... EN DÉNI",
+  "  Dernière sauvegarde : ........................ JAMAIS (on dirait)",
+  "  Fragmentation : .............................. 97% (record personnel)",
+  "  Fichiers orphelins : ......................... 1 247. LAISSEZ-LES.",
+  "  Défragmentation conseillée : ................. DEPUIS 3 ANS",
+  "  Espace libre : ................................ OPTIMISTE",
+] as const;
+
+const DRIVER_POOL = [
+  "  SECRETS.SYS ................................... NE PAS OUVRIR",
+  "  WIN.COM ....................................... ANXIEUX MAIS FONCTIONNEL",
+  "  DOUBLONS.DLL .................................. 3 COPIES. RAISON INCONNUE.",
+  "  AUTOEXEC.BAT .................................. A FAIT N'IMPORTE QUOI",
+  "  VBRUN300.DLL .................................. REVENU. SANS EXPLICATION.",
+  "  CONFIG.SYS .................................... DÉCOURAGÉ",
+  "  DELTREE.EXE ................................... NE PAS LANCER",
+  "  CHOICE.COM .................................... INDÉCIS",
+] as const;
+
+const NETWORK_POOL = [
+  "  Surveillance activée : ....................... NE PAS PANIQUER",
+  "  Mise à jour disponible : ..................... 847 Mo (durée estimée : 6 jours)",
+  "  Fournisseur d'accès : ........................ PAS CONTENT",
+  "  Ping : ........................................ ÉLEVÉ. COMME TOUJOURS.",
+  "  Pare-feu : .................................... IL ESSAIE",
+  "  Protocole TCP/IP : ........................... NÉGOCIATION EN COURS",
+  "  DNS : .......................................... OÙ SUIS-JE",
+] as const;
+
+const MENTAL_HEALTH_SECTIONS = [
+  [
+    "Vérification de la santé mentale du système...",
+    "  Stabilité psychologique : .................... FRAGILE (comme d'habitude)",
+    "  Confiance en l'avenir : ...................... EN COURS D'ÉVALUATION",
+  ],
+  [
+    "Analyse de la personnalité système...",
+    "  Complexes refoulés : ......................... NOMBREUX",
+    "  Volonté de démarrer : ........................ BASSE MAIS PRÉSENTE",
+  ],
+  [
+    "Bilan existentiel rapide...",
+    "  Sens du démarrage : .......................... NON TROUVÉ",
+    "  Continuation malgré tout : ................... OUI",
+  ],
+  [
+    "Auto-diagnostic émotionnel...",
+    "  Rancœurs accumulées : ........................ 14 (en hausse)",
+    "  Espoir résiduel : ............................ DÉTECTÉ (faible signal)",
+  ],
+] as const;
+
+const STARTUP_POOL = [
+  "  Espoirs de l'utilisateur : .................... DÉTECTÉS. PRUDENCE.",
+  "  Vérification du sens de la vie : .............. IGNORÉE (faute de temps)",
+  "  Optimisme initial : ........................... DÉTECTÉ (profitez-en)",
+  "  Attentes déraisonnables : ..................... CHARGÉES",
+  "  Illusions de performance : .................... ACTIVÉES",
+  "  Café de l'utilisateur : ....................... TROP CHAUD POUR L'INSTANT",
+] as const;
+
+const CLOSING_POOL = [
+  "  Ça marche 73% du temps, à chaque fois.",
+  "  Probabilité de plantage dans l'heure : 34%.",
+  "  Durée de vie estimée : encore un peu.",
+  "  Mode sans échec disponible (de toute façon).",
+  "  Bonne chance. Sincèrement.",
+  "  En cas de problème, relancez. En cas de problème grave, relancez plus fort.",
+] as const;
+
+function buildBootLines(): BootLine[] {
+  const lines: BootLine[] = [];
+  let t = 0;
+
+  const add = (text: string, gap = 280, sound?: BootLine["sound"]) => {
+    lines.push({ text, delay: t, ...(sound && { sound }) });
+    t += gap;
+  };
+  const blank = (gap = 200) => add("", gap);
+
+  add("GunthOS v1.0 - Copyright (C) 1998 Gunther Corp.", 300);
+  add("All rights reserved. Surtout le droit à l'erreur.", 200);
+  blank(200);
+
+  add("Détection du matériel en cours...", 300);
+  add("  Processeur : Gunth686 DX2 66MHz .............. OK", 300, "ok");
+  add("  Mémoire vive : 640K RAM ...................... PAS ASSEZ", 300);
+  add("  Mémoire vive (étendue) : 4Mo ................. OK (à peine)", 300);
+  add("  Lecteur disquette A: ......................... ABSENT (votre faute)", 300, "hdd");
+  add("  Lecteur CD-ROM : ............................. OUVERT (fermez-le)", 300);
+  add("  Carte son : SoundBlaster 16 .................. BRUIT DETECÉ", 300);
+  add("  Modem 14.4k : ................................ CONNEXION IMMINENTE", 250, "ok");
+  const hwCount = Math.random() < 0.5 ? 1 : 2;
+  shuffle(HARDWARE_POOL).slice(0, hwCount).forEach(text => add(text, 270));
+  blank(200);
+
+  add("Vérification du disque dur...", 300, "hdd");
+  add("  C:\\ [XXXXXXXXXXXXXXXXXX____] 2147 erreurs trouvées", 300, "hdd");
+  add("  Correction des erreurs : IGNORÉE (on verra plus tard)", 250);
+  add(pickRandom(DISK_POOL), 200);
+  blank(200);
+
+  add("Chargement des pilotes...", 200);
+  add("  HIMEM.SYS ..................................... OK", 200);
+  add("  EMM386.EXE .................................... CONFUS", 200);
+  add("  MOUSE.COM ..................................... CLIQUÉ", 200);
+  add("  GUNTH.DRV ..................................... MYSTÉRIEUX", 200);
+  add("  PLOUF.SYS ..................................... MOUILLÉ", 200);
+  add(pickRandom(DRIVER_POOL), 200);
+  blank(200);
+
+  add("Initialisation réseau...", 300);
+  add("  Tentative de connexion à Internet... 14400 bps", 400);
+  add("  SKRRRR KSSHHH BOING SKRRRR DING DING KSSSHH", 600, "modem");
+  add("  Connexion établie ! (elle tiendra peut-être)", 250);
+  add(pickRandom(NETWORK_POOL), 200);
+  blank(200);
+
+  pickRandom(MENTAL_HEALTH_SECTIONS).forEach(text => add(text, 250));
+  blank(200);
+
+  add("Démarrage de GunthOS...", 300);
+  add("  Chargement du bureau ......................... EN COURS", 300);
+  add("  Application des préférences .................. OK", 300);
+  add("  Activation du papier peint ................... HIDEUX", 300);
+  add("  Démarrage automatique ........................ 3 programmes inutiles", 250);
+  add(pickRandom(STARTUP_POOL), 200);
+  blank(300);
+
+  add("========================================================", 200);
+  add("  GunthOS est prêt. Nous pensons.", 200);
+  add("  En cas de problème : éteignez et rallumez.", 200);
+  add(pickRandom(CLOSING_POOL), 200);
+  add("========================================================", 100);
+  blank(100);
+
+  return lines;
+}
+
+// ── Shutdown pools ────────────────────────────────────────────────────────────
+
+const SHUTDOWN_APP_POOL = [
+  "  Paint ..................................... FERMÉ (chef-d'œuvre non sauvegardé)",
+  "  Calculatrice .............................. FERMÉE (résultat : 42)",
+  "  Winamp .................................... STOPPÉ (au milieu d'un solo)",
+  "  Screensaver ............................... INTERROMPU (c'était si beau)",
+  "  Minesweeper ............................... FERMÉ (mine non déminée)",
+  "  WordPad ................................... FERMÉ (roman inachevé : votre vie)",
+] as const;
+
+const SHUTDOWN_CACHE_POOL = [
+  "  Sentiments refoulés : ..................... ARCHIVÉS EN .EXE",
+  "  Rancœurs de l'utilisateur : .............. MISES EN CACHE",
+  "  Espoirs non réalisés : .................... COMPRESSÉS EN ZIP",
+  "  Doutes existentiels : ..................... REPORTÉS AU PROCHAIN BOOT",
+  "  Regrets du jour : ......................... DÉFRAGMENTÉS",
+  "  Souvenirs inutiles : ....................... CONSERVÉS PAR SENTIMENTALISME",
+] as const;
+
+const SHUTDOWN_NETWORK_POOL = [
+  "  Connexion aux serveurs G Corp™ : ......... MAINTENUE (discrètement)",
+  "  Historique de navigation : ............... TRANSMIS (à qui ? mystère)",
+  "  Localisation approximative : ............. ENREGISTRÉE",
+  "  Cookies tiers : ........................... TRÈS BIEN CONSERVÉS",
+  "  Données personnelles : .................... QUELQUE PART",
+] as const;
+
+const SHUTDOWN_SYSTEM_POOL = [
+  "  Machine à café réseau : .................. ÉTEINTE EN PREMIER",
+  "  Songe de l'unité centrale : .............. INTERROMPU",
+  "  Processus de fond suspects : ............. LAISSÉS EN PLACE",
+  "  Nostalgie système : ....................... SAUVEGARDÉE",
+  "  Ventilateur : ............................. ENFIN DU REPOS",
+  "  Registre Windows : ........................ INTACT (miracle)",
+] as const;
+
+const SHUTDOWN_CLOSING_POOL = [
+  "  Rappel : soufflez dans la cartouche avant de rallumer.",
+  "  Rappel : ne rallumez pas pendant un orage. Ou si.",
+  "  Rappel : la disquette de secours est introuvable.",
+  "  Rappel : ça repart rarement mieux qu'avant.",
+  "  Rappel : avez-vous essayé d'éteindre et de rallumer ?",
+  "  Rappel : vos fichiers non sauvegardés sont partis pour toujours.",
+] as const;
+
+function buildShutdownLines(): { text: string; delay: number }[] {
+  const lines: { text: string; delay: number }[] = [];
+  let t = 0;
+
+  const add = (text: string, gap = 300) => {
+    lines.push({ text, delay: t });
+    t += gap;
+  };
+  const blank = (gap = 200) => add("", gap);
+
+  add("GunthOS v1.0 — Procédure d'arrêt initiée.", 200);
+  blank(200);
+
+  add("Fermeture des applications en cours...", 300);
+  add("  Solitaire ..................................... REFUS (il était en train de gagner)", 350);
+  add("  Bloc-notes .................................... FERMÉ (contenu non sauvegardé : votre vie)", 350);
+  add("  Internet Explorer ............................. TOUJOURS EN COURS DE FERMETURE", 350);
+  add(pickRandom(SHUTDOWN_APP_POOL), 300);
+  add("  Processus mystérieux (PID 666) ............... QU'EST-CE QUE C'EST", 300);
+  add("  Processus mystérieux (PID 666) ............... IGNORÉ", 150);
+  blank(200);
+
+  add("Sauvegarde des préférences...", 250);
+  add("  Thème de bureau .............................. ENREGISTRÉ (il était hideux)", 300);
+  add("  Raccourcis bureau ............................ 47 icônes sauvegardées", 300);
+  add("  Vos données importantes ...................... PEUT-ÊTRE", 200);
+  blank(150);
+
+  add("Nettoyage du cache...", 200);
+  add("  Fichiers temporaires ......................... 4,7 Go supprimés (ça faisait longtemps)", 350);
+  add("  Cookies ...................................... CONSERVÉS (pour la nostalgie)", 350);
+  add("  Historique ................................... EFFACÉ. On ne demande pas.", 300);
+  add(pickRandom(SHUTDOWN_CACHE_POOL), 250);
+  blank(200);
+
+  add("Déconnexion du réseau...", 250);
+  add("  Modem 14.4k : raccrochage .................... KSHHH BOING DING KRRSSH", 600);
+  add("  Connexion Internet ........................... PERDUE (comme d'habitude)", 300);
+  add("  Votre email non lu ........................... 1 message en attente depuis 2002", 300);
+  add(pickRandom(SHUTDOWN_NETWORK_POOL), 250);
+  blank(200);
+
+  add("Arrêt des services système...", 250);
+  add("  Horloge système .............................. STOPPÉE (le temps c'est de l'argent)", 350);
+  add("  Gestionnaire de mémoire ...................... LIBÉRÉ (640K, c'est plus que suffisant)", 350);
+  add("  Pilote PLOUF.SYS ............................. RESTÉ MOUILLÉ", 300);
+  add(pickRandom(SHUTDOWN_SYSTEM_POOL), 300);
+  add("  GUNTH.DRV .................................... TOUJOURS MYSTÉRIEUX", 200);
+  blank(200);
+
+  add("================================================================", 150);
+  add("  GunthOS s'éteint correctement.", 200);
+  add("  Merci d'avoir utilisé GunthOS v1.0.", 200);
+  add(pickRandom(SHUTDOWN_CLOSING_POOL), 250);
+  add("  Au revoir. Nous espérons que vous avez sauvegardé.", 250);
+  add("================================================================", 100);
+  blank(100);
+  add("Il est maintenant sans danger d'éteindre votre ordinateur.", 0);
+
+  return lines;
+}
+
+// ── Shutdown screen ───────────────────────────────────────────────────────────
 
 interface ShutdownScreenProps {
   onPowerOn: () => void;
@@ -59,6 +288,7 @@ export function ShutdownScreen({ onPowerOn }: ShutdownScreenProps) {
   const [phase, setPhase] = useState<"shutdown" | "off">("shutdown");
   const [visibleLines, setVisibleLines] = useState(0);
   const [cursorVisible, setCursorVisible] = useState(true);
+  const [shutdownLines] = useState(() => buildShutdownLines());
   const terminalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -69,7 +299,7 @@ export function ShutdownScreen({ onPowerOn }: ShutdownScreenProps) {
   useEffect(() => {
     const timers: ReturnType<typeof setTimeout>[] = [];
 
-    SHUTDOWN_LINES.forEach((line, i) => {
+    shutdownLines.forEach((line, i) => {
       timers.push(
         setTimeout(() => {
           setVisibleLines(i + 1);
@@ -80,11 +310,11 @@ export function ShutdownScreen({ onPowerOn }: ShutdownScreenProps) {
       );
     });
 
-    const lastDelay = SHUTDOWN_LINES[SHUTDOWN_LINES.length - 1]!.delay;
+    const lastDelay = shutdownLines[shutdownLines.length - 1]!.delay;
     timers.push(setTimeout(() => setPhase("off"), lastDelay + 1200));
 
     return () => timers.forEach(clearTimeout);
-  }, []);
+  }, [shutdownLines]);
 
   const crtOverlay = settings.scanlinesEnabled ? (
     <div aria-hidden style={{ position: "fixed", inset: 0, zIndex: 1, pointerEvents: "none", backgroundImage: "repeating-linear-gradient(to bottom, transparent 0px, transparent 2px, rgba(255,255,255,0.04) 2px, rgba(255,255,255,0.04) 4px)" }} />
@@ -105,12 +335,12 @@ export function ShutdownScreen({ onPowerOn }: ShutdownScreenProps) {
           className="flex-1 overflow-hidden p-4 leading-[1.4]"
           style={{ color: "#c0c0c0", fontSize: "clamp(16px, 2.2vw, 22px)" }}
         >
-          {SHUTDOWN_LINES.slice(0, visibleLines).map((line, i) => (
+          {shutdownLines.slice(0, visibleLines).map((line, i) => (
             <div key={i} style={{ minHeight: "1.4em" }}>
               {line.text}
             </div>
           ))}
-          {visibleLines < SHUTDOWN_LINES.length && (
+          {visibleLines < shutdownLines.length && (
             <span style={{ color: "#c0c0c0" }}>
               {cursorVisible ? "█" : " "}
             </span>
@@ -181,57 +411,7 @@ export function ShutdownScreen({ onPowerOn }: ShutdownScreenProps) {
   );
 }
 
-const BOOT_LINES = [
-  { text: "GunthOS v1.0 - Copyright (C) 1998 Gunther Corp.", delay: 0 },
-  { text: "All rights reserved. Surtout le droit à l'erreur.", delay: 300 },
-  { text: "", delay: 500 },
-  { text: "Détection du matériel en cours...", delay: 700 },
-  { text: "  Processeur : Gunth686 DX2 66MHz .............. OK", delay: 1000 },
-  { text: "  Mémoire vive : 640K RAM ...................... PAS ASSEZ", delay: 1300 },
-  { text: "  Mémoire vive (étendue) : 4Mo ................. OK (à peine)", delay: 1600 },
-  { text: "  Lecteur disquette A: ......................... ABSENT (votre faute)", delay: 1900 },
-  { text: "  Lecteur CD-ROM : ............................. OUVERT (fermez-le)", delay: 2200 },
-  { text: "  Carte son : SoundBlaster 16 .................. BRUIT DETECÉ", delay: 2500 },
-  { text: "  Modem 14.4k : ................................ CONNEXION IMMINENTE", delay: 2800 },
-  { text: "  Imprimante LPT1 : ............................ PLEURE EN SILENCE", delay: 3050 },
-  { text: "  Pile CMOS : .................................. VIDE (heure : 01/01/1980)", delay: 3300 },
-  { text: "", delay: 3500 },
-  { text: "Vérification du disque dur...", delay: 3600 },
-  { text: "  C:\\ [XXXXXXXXXXXXXXXXXX____] 2147 erreurs trouvées", delay: 3900 },
-  { text: "  Correction des erreurs : IGNORÉE (on verra plus tard)", delay: 4200 },
-  { text: "  Secteurs irrécupérables : .................... EN DÉNI", delay: 4450 },
-  { text: "", delay: 4650 },
-  { text: "Chargement des pilotes...", delay: 4750 },
-  { text: "  HIMEM.SYS ..................................... OK", delay: 4950 },
-  { text: "  EMM386.EXE .................................... CONFUS", delay: 5150 },
-  { text: "  MOUSE.COM ..................................... CLIQUÉ", delay: 5350 },
-  { text: "  GUNTH.DRV ..................................... MYSTÉRIEUX", delay: 5550 },
-  { text: "  PLOUF.SYS ..................................... MOUILLÉ", delay: 5750 },
-  { text: "  SECRETS.SYS ................................... NE PAS OUVRIR", delay: 5950 },
-  { text: "", delay: 6150 },
-  { text: "Initialisation réseau...", delay: 6250 },
-  { text: "  Tentative de connexion à Internet... 14400 bps", delay: 6550 },
-  { text: "  SKRRRR KSSHHH BOING SKRRRR DING DING KSSSHH", delay: 6950 },
-  { text: "  Connexion établie ! (elle tiendra peut-être)", delay: 7550 },
-  { text: "  Surveillance activée : ....................... NE PAS PANIQUER", delay: 7800 },
-  { text: "", delay: 8000 },
-  { text: "Vérification de la santé mentale du système...", delay: 8100 },
-  { text: "  Stabilité psychologique : .................... FRAGILE (comme d'habitude)", delay: 8350 },
-  { text: "  Confiance en l'avenir : ...................... EN COURS D'ÉVALUATION", delay: 8600 },
-  { text: "", delay: 8850 },
-  { text: "Démarrage de GunthOS...", delay: 8950 },
-  { text: "  Chargement du bureau ......................... EN COURS", delay: 9250 },
-  { text: "  Application des préférences .................. OK", delay: 9550 },
-  { text: "  Activation du papier peint ................... HIDEUX", delay: 9850 },
-  { text: "  Démarrage automatique ........................ 3 programmes inutiles", delay: 10150 },
-  { text: "", delay: 10450 },
-  { text: "========================================================", delay: 10550 },
-  { text: "  GunthOS est prêt. Nous pensons.", delay: 10750 },
-  { text: "  En cas de problème : éteignez et rallumez.", delay: 10950 },
-  { text: "  Ça marche 73% du temps, à chaque fois.", delay: 11150 },
-  { text: "========================================================", delay: 11350 },
-  { text: "", delay: 11500 },
-];
+// ── Boot screen ───────────────────────────────────────────────────────────────
 
 const PROGRESS_STEPS = [
   { label: "Initialisation du noyau Gunth...", pct: 8 },
@@ -249,16 +429,6 @@ interface BootScreenProps {
   onComplete: () => void;
 }
 
-// Indices des lignes BIOS qui déclenchent des sons spéciaux
-const BIOS_SOUND_TRIGGERS: Record<number, "ok" | "error" | "modem" | "hdd"> = {
-  4: "ok",    // Processeur OK
-  7: "hdd",   // Lecteur disquette ABSENT
-  10: "ok",   // Modem détecté
-  14: "hdd",  // Vérification disque dur
-  15: "hdd",  // Erreurs disque
-  29: "modem", // SKRRRR KSSHHH
-};
-
 export function BootScreen({ onComplete }: BootScreenProps) {
   const { settings } = useSettings();
   const [phase, setPhase] = useState<"bios" | "loading" | "done">("bios");
@@ -267,6 +437,7 @@ export function BootScreen({ onComplete }: BootScreenProps) {
   const [progress, setProgress] = useState(0);
   const [progressLabel, setProgressLabel] = useState(PROGRESS_STEPS[0]!.label);
   const [fadeOut, setFadeOut] = useState(false);
+  const [bootLines] = useState(() => buildBootLines());
   const terminalRef = useRef<HTMLDivElement>(null);
   const skippedRef = useRef(false);
   const tapTimesRef = useRef<number[]>([]);
@@ -311,27 +482,25 @@ export function BootScreen({ onComplete }: BootScreenProps) {
     init();
     const timers: ReturnType<typeof setTimeout>[] = [];
 
-    // Bip POST + boot_and_run.mp3 démarre
     timers.push(setTimeout(() => { playBiosBleep("start"); startBootAudio(); }, 50));
 
-    BOOT_LINES.forEach((line, i) => {
+    bootLines.forEach((line, i) => {
       timers.push(
         setTimeout(() => {
           setVisibleLines(i + 1);
           if (terminalRef.current) {
             terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
           }
-          const trigger = BIOS_SOUND_TRIGGERS[i];
-          if (trigger === "ok") playBiosBleep("ok");
-          else if (trigger === "modem") playModemDialup();
+          if (line.sound === "ok") playBiosBleep("ok");
+          else if (line.sound === "modem") playModemDialup();
         }, line.delay)
       );
     });
 
-    const lastDelay = BOOT_LINES[BOOT_LINES.length - 1]!.delay;
+    const lastDelay = bootLines[bootLines.length - 1]!.delay;
     timers.push(setTimeout(() => setPhase("loading"), lastDelay + 600));
     return () => timers.forEach(clearTimeout);
-  }, [phase, init, playBiosBleep, playModemDialup, startBootAudio]);
+  }, [phase, bootLines, init, playBiosBleep, playModemDialup, startBootAudio]);
 
   // Progress bar — access_disk.mp3 pendant le chargement, chime à la fin
   useEffect(() => {
@@ -339,7 +508,6 @@ export function BootScreen({ onComplete }: BootScreenProps) {
     const timers: ReturnType<typeof setTimeout>[] = [];
     const stepDuration = 2400 / PROGRESS_STEPS.length;
 
-    // boot_and_run s'arrête, access_disk prend le relais
     stopBootAudio();
     startAccessDisk();
 
@@ -388,12 +556,12 @@ export function BootScreen({ onComplete }: BootScreenProps) {
           className="flex-1 overflow-hidden p-4 leading-[1.4]"
           style={{ color: "#c0c0c0", fontSize: "clamp(16px, 2.2vw, 22px)" }}
         >
-          {BOOT_LINES.slice(0, visibleLines).map((line, i) => (
+          {bootLines.slice(0, visibleLines).map((line, i) => (
             <div key={i} style={{ minHeight: "1.4em" }}>
               {line.text}
             </div>
           ))}
-          {visibleLines < BOOT_LINES.length && (
+          {visibleLines < bootLines.length && (
             <span style={{ color: "#c0c0c0" }}>
               {cursorVisible ? "█" : " "}
             </span>
