@@ -3,7 +3,8 @@
 import { useRef, useCallback, useState, useEffect } from "react";
 import type { AppProps } from "@/types";
 import { useAuth } from "@/lib/contexts/auth-context";
-import { pickRandom, PEGGLE_TIPS } from "@/lib/gunth-jokes";
+import { PEGGLE_TIPS } from "@/lib/gunth-jokes";
+import { pickRandom } from "@/lib/utils/random";
 import { useMusic } from "./useMusic";
 import { useGameLoop } from "./useGameLoop";
 import { GameHud } from "./components/GameHud";

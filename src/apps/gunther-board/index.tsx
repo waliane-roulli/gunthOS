@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { useSoundContext } from "@/lib/contexts/sound-context";
-import { pickRandom, GUNTHER_LOADING_HINTS, GUNTHER_STATUS_BAR_MSGS } from "@/lib/gunth-jokes";
+import { GUNTHER_LOADING_HINTS, GUNTHER_STATUS_BAR_MSGS } from "@/lib/gunth-jokes";
+import { pickRandom } from "@/lib/utils/random";
 import { APP_REGISTRY } from "@/apps";
 import type { AppProps } from "@/types";
 

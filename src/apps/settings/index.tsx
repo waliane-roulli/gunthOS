@@ -3,7 +3,8 @@
 import { useState, type CSSProperties } from "react";
 import { useWindowActions } from "@/lib/contexts/window-manager-context";
 import { useSettings } from "@/lib/contexts/settings-context";
-import { pickRandom, SETTINGS_RAM_STATUSES, SETTINGS_LICENSES } from "@/lib/gunth-jokes";
+import { SETTINGS_RAM_STATUSES, SETTINGS_LICENSES } from "@/lib/gunth-jokes";
+import { pickRandom } from "@/lib/utils/random";
 import { THEMES, type ThemeId } from "@/lib/themes";
 import { CURSORS, type CursorId } from "@/lib/cursors";
 import { WALLPAPERS, WALLPAPER_MAP, type WallpaperId } from "@/lib/wallpapers";
