@@ -123,33 +123,41 @@ export function useGameLoop({
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    const updateAimFromTouch = (t: Touch) => {
+      const rect = canvas.getBoundingClientRect();
+      mouseRef.current = {
+        x: (t.clientX - rect.left) * (W / rect.width),
+        y: (t.clientY - rect.top) * (H / rect.height),
+      };
+    };
+
+    const onTouchStart = (e: TouchEvent) => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      if (touch) updateAimFromTouch(touch);
+    };
+
     const onTouchMove = (e: TouchEvent) => {
       e.preventDefault();
       const touch = e.touches[0];
-      if (!touch) return;
-      const rect = canvas.getBoundingClientRect();
-      mouseRef.current = {
-        x: (touch.clientX - rect.left) * (W / rect.width),
-        y: (touch.clientY - rect.top) * (H / rect.height),
-      };
+      if (touch) updateAimFromTouch(touch);
     };
 
     const onTouchEnd = (e: TouchEvent) => {
       e.preventDefault();
       const touch = e.changedTouches[0];
       if (!touch) return;
+      updateAimFromTouch(touch);
       const rect = canvas.getBoundingClientRect();
-      mouseRef.current = {
-        x: (touch.clientX - rect.left) * (W / rect.width),
-        y: (touch.clientY - rect.top) * (H / rect.height),
-      };
       fireBallAtClientPos(rect, touch.clientX, touch.clientY);
     };
 
+    canvas.addEventListener("touchstart", onTouchStart, { passive: false });
     canvas.addEventListener("touchmove", onTouchMove, { passive: false });
     canvas.addEventListener("touchend", onTouchEnd, { passive: false });
 
     return () => {
+      canvas.removeEventListener("touchstart", onTouchStart);
       canvas.removeEventListener("touchmove", onTouchMove);
       canvas.removeEventListener("touchend", onTouchEnd);
     };
