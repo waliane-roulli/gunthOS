@@ -4,6 +4,10 @@ export interface Peg {
   hit: boolean;
   orange: boolean;
   green: boolean;
+  bomb: boolean;
+  armorHits: number;   // 0=none; 1=cracked (1 more hit); init 1 for armor pegs
+  hitCooldown: number; // prevents re-collision same frame
+  warpId?: number;     // paired warp pegs share same warpId
   popping: boolean;
   popAlpha: number;
   scale: number;
@@ -16,6 +20,7 @@ export interface Ball {
   vy: number;
   active: boolean;
   trail: { x: number; y: number; speed: number }[];
+  tint?: string; // multiball coloring
 }
 
 export interface Particle {
@@ -37,11 +42,21 @@ export interface FloatingText {
   maxLife: number;
   color: string;
   combo: boolean;
+  fontSize?: number; // dramatic scaling
+}
+
+export interface Star {
+  x: number;
+  y: number;
+  layer: 0 | 1 | 2; // 0=far dim, 1=mid, 2=near bright
+  size: number;
+  phase: number; // for twinkle offset
 }
 
 export interface GameState {
   pegs: Peg[];
   ball: Ball | null;
+  extraBalls: Ball[]; // multiball extra balls
   balls: number;
   score: number;
   phase: "aim" | "firing" | "lost" | "won";
@@ -52,13 +67,21 @@ export interface GameState {
   particles: Particle[];
   floatingTexts: FloatingText[];
   feverPulse: number;
+  animClock: number;  // always-incrementing animation clock
   bucketFlash: number;
+  trauma: number;     // 0-1, drives screen shake intensity
   shakeX: number;
   shakeY: number;
   scoreMultiplier: number;
   flashWhite: number;
   slowMoFrames: number;
+  zoomLevel: number;  // smooth zoom towards ball on last peg
   level: number;
+  hitFreezeFrames: number; // hitstop on peg collision
+  stars: Star[];
+  multiballReady: boolean;
+  multiballPending: boolean;
+  multiballUsed: boolean;
 }
 
 export interface UiState {
@@ -70,6 +93,9 @@ export interface UiState {
   message: string;
   combo: number;
   level: number;
+  multiballReady: boolean;
+  multiballPending: boolean;
+  multiballUsed: boolean;
 }
 
 export interface LeaderboardEntry {

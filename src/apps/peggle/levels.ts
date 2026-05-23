@@ -2,7 +2,11 @@ import { W, PEG_R } from "./constants";
 import type { Peg } from "./types";
 
 function makePeg(x: number, y: number): Peg {
-  return { x, y, hit: false, orange: false, green: false, popping: false, popAlpha: 1, scale: 1 };
+  return {
+    x, y, hit: false, orange: false, green: false,
+    bomb: false, armorHits: 0, hitCooldown: 0,
+    popping: false, popAlpha: 1, scale: 1,
+  };
 }
 
 export function buildLevel(level: number): Peg[] {
@@ -71,25 +75,21 @@ export function buildLevel(level: number): Peg[] {
     for (const [cx2, cy2] of corners) pegs.push(makePeg(cx2!, cy2!));
 
   } else if (layout === 4) {
-    // Croix / diamant central + colonnes latérales
     const armLen = 5;
     const spacing = 36;
     for (let i = -armLen; i <= armLen; i++) {
       pegs.push(makePeg(cx + i * spacing, 260));
       pegs.push(makePeg(cx, 260 + i * spacing * 0.65));
     }
-    // Colonnes de chaque côté
     for (let row = 0; row < 6; row++) {
-      pegs.push(makePeg(55,  130 + row * 55));
+      pegs.push(makePeg(55, 130 + row * 55));
       pegs.push(makePeg(W - 55, 130 + row * 55));
     }
-    // Quelques pegs en haut
     for (let i = 0; i < 5; i++) {
       pegs.push(makePeg(100 + i * 70, 90));
     }
 
   } else if (layout === 5) {
-    // Deux arcs face à face (haut et bas)
     const topArcR = 130;
     const botArcR = 130;
     for (let i = 0; i < 11; i++) {
@@ -100,19 +100,16 @@ export function buildLevel(level: number): Peg[] {
       const a = Math.PI + (i / 10) * Math.PI;
       pegs.push(makePeg(cx + Math.cos(a) * botArcR, 360 + Math.sin(a) * 55));
     }
-    // Centre
     for (let i = 0; i < 7; i++) {
       const a = (i / 7) * Math.PI * 2;
       pegs.push(makePeg(cx + Math.cos(a) * 48, 260 + Math.sin(a) * 35));
     }
-    // Côtés
     for (let r = 0; r < 4; r++) {
-      pegs.push(makePeg(50,  180 + r * 50));
+      pegs.push(makePeg(50, 180 + r * 50));
       pegs.push(makePeg(W - 50, 180 + r * 50));
     }
 
   } else if (layout === 6) {
-    // Échiquier / grille décalée dense
     for (let row = 0; row < 8; row++) {
       const cols = 7;
       const offsetX = row % 2 === 0 ? 0 : 30;
@@ -122,7 +119,6 @@ export function buildLevel(level: number): Peg[] {
     }
 
   } else if (layout === 7) {
-    // Étoile à 6 branches
     const starR1 = 130;
     const starR2 = 60;
     const points = 6;
@@ -131,30 +127,25 @@ export function buildLevel(level: number): Peg[] {
       const r = i % 2 === 0 ? starR1 : starR2;
       pegs.push(makePeg(cx + Math.cos(a) * r, 250 + Math.sin(a) * r * 0.8));
     }
-    // Anneau extérieur
     for (let i = 0; i < 18; i++) {
       const a = (i / 18) * Math.PI * 2;
       pegs.push(makePeg(cx + Math.cos(a) * 185, 250 + Math.sin(a) * 120));
     }
-    // Pegs de remplissage en haut/bas
     [[cx - 80, 100], [cx, 90], [cx + 80, 100], [cx - 80, 410], [cx, 420], [cx + 80, 410]].forEach(([px, py]) =>
       pegs.push(makePeg(px!, py!))
     );
 
   } else {
-    // layout === 8 : tunnels en zigzag
     const rows = 6;
     for (let r = 0; r < rows; r++) {
       const y = 110 + r * 65;
       const goLeft = r % 2 === 0;
-      // Mur gauche avec trou
       const holeLeft = goLeft ? Math.floor(W * 0.55) : Math.floor(W * 0.2);
       for (let x = 40; x < W - 40; x += 34) {
         const distToHole = Math.abs(x - holeLeft);
         if (distToHole > 38) pegs.push(makePeg(x, y));
       }
     }
-    // Pegs décoratifs sur les bords
     for (let i = 0; i < 4; i++) {
       pegs.push(makePeg(22, 130 + i * 80));
       pegs.push(makePeg(W - 22, 130 + i * 80));
@@ -172,6 +163,7 @@ export function buildLevel(level: number): Peg[] {
   const orangePct = Math.min(0.42, 0.28 + (level - 1) * 0.04);
   const orangeCount = Math.floor(filtered.length * orangePct);
   const shuffled = [...Array(filtered.length).keys()].sort(() => Math.random() - 0.5);
+
   for (let i = 0; i < orangeCount; i++) {
     const idx = shuffled[i];
     if (idx !== undefined && filtered[idx]) filtered[idx]!.orange = true;
@@ -181,6 +173,47 @@ export function buildLevel(level: number): Peg[] {
   for (let i = 0; i < 5; i++) {
     const idx = nonOrange[i];
     if (idx !== undefined && filtered[idx]) filtered[idx]!.green = true;
+  }
+
+  // Bomb pegs (level 3+): replace a few blue pegs
+  if (level >= 3) {
+    const bombCount = Math.min(3, 1 + Math.floor((level - 3) / 2));
+    const bombCandidates = nonOrange.filter(i =>
+      filtered[i] && !filtered[i]!.orange && !filtered[i]!.green
+    );
+    for (let i = 0; i < Math.min(bombCount, bombCandidates.length); i++) {
+      const idx = bombCandidates[i];
+      if (idx !== undefined && filtered[idx]) filtered[idx]!.bomb = true;
+    }
+  }
+
+  // Armor pegs (level 5+): replace a few blue pegs
+  if (level >= 5) {
+    const armorCount = Math.min(5, 2 + Math.floor((level - 5) / 2));
+    const armorCandidates = nonOrange.filter(i =>
+      filtered[i] && !filtered[i]!.orange && !filtered[i]!.green && !filtered[i]!.bomb
+    );
+    for (let i = 0; i < Math.min(armorCount, armorCandidates.length); i++) {
+      const idx = armorCandidates[i];
+      if (idx !== undefined && filtered[idx]) filtered[idx]!.armorHits = 1;
+    }
+  }
+
+  // Warp pairs (level 7+): two pegs teleport ball between them
+  if (level >= 7) {
+    const pairCount = 1 + Math.floor((level - 7) / 3);
+    const warpCandidates = nonOrange.filter(i =>
+      filtered[i] && !filtered[i]!.orange && !filtered[i]!.green
+      && !filtered[i]!.bomb && filtered[i]!.armorHits === 0
+    );
+    for (let pair = 0; pair < Math.min(pairCount, Math.floor(warpCandidates.length / 2)); pair++) {
+      const a = warpCandidates[pair * 2];
+      const b = warpCandidates[pair * 2 + 1];
+      if (a !== undefined && b !== undefined && filtered[a] && filtered[b]) {
+        filtered[a]!.warpId = pair + 1;
+        filtered[b]!.warpId = pair + 1;
+      }
+    }
   }
 
   return filtered;

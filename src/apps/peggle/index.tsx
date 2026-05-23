@@ -22,6 +22,7 @@ export function PeggleApp({ windowId: _windowId }: AppProps) {
   const [ui, setUi] = useState<UiState>({
     balls: 10, score: 0, orangeLeft: 0, orangeTotal: 0,
     phase: "aim", message: "", combo: 0, level: 1,
+    multiballReady: true, multiballPending: false, multiballUsed: false,
   });
   const [bestScore, setBestScore] = useState<number>(() => {
     if (typeof window === "undefined") return 0;
@@ -63,7 +64,7 @@ export function PeggleApp({ windowId: _windowId }: AppProps) {
   const handleUiSync = useCallback((uiState: UiState) => setUi(uiState), []);
   const handleOrangeTotalChange = useCallback((total: number) => setUi(u => ({ ...u, orangeTotal: total })), []);
 
-  const { handleClick, resetGame, nextLevel } = useGameLoop({
+  const { handleClick, resetGame, nextLevel, activateMultiball } = useGameLoop({
     canvasRef,
     mouseRef,
     onUiSync: handleUiSync,
@@ -135,7 +136,12 @@ export function PeggleApp({ windowId: _windowId }: AppProps) {
 
       {/* Game tab */}
       <div style={{ display: tab === "game" ? "flex" : "none", flexDirection: "column", flex: 1, overflow: "hidden" }}>
-        <GameHud ui={ui} bestScore={bestScore} displayName={displayName} />
+        <GameHud
+          ui={ui}
+          bestScore={bestScore}
+          displayName={displayName}
+          onActivateMultiball={activateMultiball}
+        />
         <GameCanvas
           canvasRef={canvasRef}
           ui={ui}

@@ -10,8 +10,15 @@ export const WALL_BOUNCE = 0.72;
 export const PEG_BOUNCE = 0.55;
 export const FRICTION = 0.998;
 export const FEVER_THRESHOLD = 3;
-export const SHAKE_DECAY = 0.82;
 export const AIM_LINE_STEPS = 180;
 export const SLOW_MO_DURATION = 90;
 export const LAUNCHER_X = W / 2;
 export const LAUNCHER_Y = 28;
+
+export const BOMB_RADIUS = 65;
+export const MAX_SHAKE = 14;
+export const TRAUMA_DECAY = 0.03;
+export const HIT_FREEZE_NORMAL = 4;
+export const HIT_FREEZE_ORANGE = 9;
+export const ZOOM_SCALE = 1.6;
+export const STAR_COUNT = 55;
