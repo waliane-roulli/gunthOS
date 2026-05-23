@@ -285,11 +285,10 @@ function MobileDesktopIcon({ icon, selected, onSelect, onOpen }: MobileDesktopIc
   const handlePointerDown = useCallback((e: React.PointerEvent<HTMLButtonElement>) => {
     pointerMoved.current = false;
     pointerStart.current = { x: e.clientX, y: e.clientY };
-    onSelect();
     longPressTimer.current = setTimeout(() => {
       // future: context menu
     }, 500);
-  }, [onSelect]);
+  }, []);
 
   const handlePointerMove = useCallback((e: React.PointerEvent<HTMLButtonElement>) => {
     const dx = Math.abs(e.clientX - pointerStart.current.x);
@@ -309,9 +308,10 @@ function MobileDesktopIcon({ icon, selected, onSelect, onOpen }: MobileDesktopIc
       longPressTimer.current = null;
     }
     if (!pointerMoved.current) {
+      onSelect();
       onOpen();
     }
-  }, [onOpen]);
+  }, [onSelect, onOpen]);
 
   return (
     <button
@@ -417,6 +417,8 @@ function DraggableDesktopIcon({
   const startPos = useRef({ x: 0, y: 0 });
   const [dragPos, setDragPos] = useState<{ x: number; y: number } | null>(null);
   const lastTapTime = useRef(0);
+  const onOpenRef = useRef(icon.onOpen);
+  onOpenRef.current = icon.onOpen;
 
   const handlePointerDown = useCallback(
     (e: React.PointerEvent<HTMLButtonElement>) => {
@@ -464,7 +466,7 @@ function DraggableDesktopIcon({
           // Tap — check for double-tap
           const now = Date.now();
           if (now - lastTapTime.current < 300) {
-            icon.onOpen();
+            onOpenRef.current();
             lastTapTime.current = 0;
           } else {
             lastTapTime.current = now;
@@ -475,7 +477,7 @@ function DraggableDesktopIcon({
       window.addEventListener("pointermove", onPointerMove);
       window.addEventListener("pointerup", onUp);
     },
-    [x, y, onSelect, onMove, icon]
+    [x, y, onSelect, onMove]
   );
 
   const currentX = dragPos?.x ?? x;

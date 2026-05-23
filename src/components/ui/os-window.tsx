@@ -91,10 +91,14 @@ export function OsWindow({ win, children }: OsWindowProps) {
     const onPointerMove = (e: PointerEvent) => {
       // Mobile: swipe-to-minimize on titlebar
       if (isTitleSwipe.current) {
-        if (e.clientY - swipeStartY.current > SWIPE_THRESHOLD) {
+        const dy = e.clientY - swipeStartY.current;
+        if (dy > SWIPE_THRESHOLD) {
           isTitleSwipe.current = false;
           playWindowMinimize();
           minimizeWindow(winId);
+        } else if (Math.abs(dy) > SWIPE_THRESHOLD) {
+          // Upward or horizontal swipe — cancel gesture
+          isTitleSwipe.current = false;
         }
         return;
       }
