@@ -10,7 +10,7 @@ import {
 } from "@/lib/audio/engine";
 import { getChannel, clearChannels, silenceChannel } from "@/lib/audio/channel";
 import { AudioPlayer } from "@/lib/audio/player";
-import { APP_REGISTRY } from "@/apps";
+import { APP_META } from "@/lib/app-meta";
 import { SCHEME_MAP, DEFAULT_SOUND_SCHEME_ID, type SoundSchemeId, type ToneStep } from "@/lib/sound-schemes";
 
 // Précharge boot dès le chargement du module (client uniquement)
@@ -350,7 +350,7 @@ export function useSound(muted: boolean, schemeId: SoundSchemeId = DEFAULT_SOUND
    * Appelé par OsWindow au clic ✕ — aucune app n'a besoin de s'enregistrer.
    */
   const stopAppSounds = useCallback((appSlug: string) => {
-    const manifest = APP_REGISTRY.find((a) => a.slug === appSlug);
+    const manifest = APP_META.find((a) => a.slug === appSlug);
     for (const channelName of manifest?.audioChannels ?? []) {
       silenceChannel(channelName);
     }
