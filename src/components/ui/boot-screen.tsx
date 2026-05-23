@@ -27,6 +27,14 @@ const MEMORY_TEST_POOL = [
   "  Mémoire vive : 640K RAM ...................... BILL GATES APPROUVE",
   "  Mémoire vive : 640K RAM ...................... COMPTE TENU DES CIRCONSTANCES, OK",
   "  Mémoire vive : 640K RAM ...................... C'EST TOUT CE QU'ON A",
+  "  Mémoire vive : 640K RAM ...................... VOTRE VIE PÈSE PLUS LOURD",
+  "  Mémoire vive : 640K RAM ...................... AMPLEMENT SUFFISANT POUR VOS AMBITIONS",
+  "  Mémoire vive : 640K RAM ...................... POUR UN USAGE MODESTE. PARFAIT POUR VOUS.",
+  "  Mémoire vive : 640K RAM ...................... SUFFISANT POUR IGNORER VOS EMAILS",
+  "  Mémoire vive : 640K RAM ...................... OK (vos attentes ont été revues à la baisse)",
+  "  Mémoire vive : 640K RAM ...................... CHARGÉE AVEC RÉSIGNATION",
+  "  Mémoire vive : 640K RAM ...................... DÉTECTÉE. DÉÇUE.",
+  "  Mémoire vive : 640K RAM ...................... FONCTIONNELLE (dans le sens large)",
 ] as const;
 
 const HARDWARE_POOL = [
@@ -54,6 +62,30 @@ const HARDWARE_POOL = [
   "  Clavier : ..................................... TOUS LES BOUTONS COLLANTS",
   "  Souris PS/2 : ................................. 2 BOUTONS (édition deluxe)",
   "  Port COM2 : ................................... SILENCIEUX. TROP SILENCIEUX.",
+  "  Carte mère : .................................. SURVIVANTE (de justesse)",
+  "  Condensateurs : ............................... BOMBÉS (mauvais signe)",
+  "  IRQ 3 : ....................................... OCCUPÉ PAR QUELQUE CHOSE D'INDÉFINI",
+  "  DMA canal 1 : ................................. PERDU EN ROUTE",
+  "  Slot ISA libre : .............................. 0 (les meilleures années)",
+  "  Disque dur : .................................. CLIQUE. PARFOIS. IGNORÉ.",
+  "  Lecteur ZIP Iomega : .......................... CLIQUÉ (adieu données)",
+  "  Haut-parleur PC : ............................. BIP. BIP BIP. (message codé)",
+  "  Mémoire cache CPU : ........................... 256 Ko (fièrement)",
+  "  Câble nappe IDE : ............................. PLIÉ EN ACCORDÉON",
+  "  Power supply : ................................ 200W. NE PAS BRANCHER LE GRILLE-PAIN.",
+  "  Carte son ISA : ............................... INSTALLÉE. REGRETTÉE.",
+  "  Lecteur LS-120 : .............................. PERSONNE NE SAIT CE QUE C'EST",
+  "  Port MIDI : ................................... SILENCIEUX (pour l'instant)",
+  "  Chip BIOS Flash : ............................. NE PAS FLASHER. NON. SÉRIEUSEMENT.",
+  "  Fond de panier : .............................. TENU PAR UN TOURNEVIS",
+  "  Coprocesseur FPU : ............................ OPTIONNEL COMME VOS AMBITIONS",
+  "  Registre IRQ14 : .............................. RÉSERVÉ AU CHAOS",
+  "  Slot DIMM : ................................... REMPLI PAR UN TECHNICIEN NERVEUX",
+  "  Carte PCMCIA : ................................ VIDE (comme vos espoirs)",
+  "  Coupleur acoustique : ......................... INTROUVABLE (bonne nouvelle)",
+  "  Bus AGP : ..................................... PAS ENCORE (c'est 1998)",
+  "  Lecteur ZIP 100 : ............................. CLIQUÉ. DONNÉES : AU PARADIS.",
+  "  Port série COM3 : ............................. NE DEMANDEZ PAS",
 ] as const;
 
 const BIOS_WARNING_POOL = [
@@ -69,6 +101,18 @@ const BIOS_WARNING_POOL = [
   "  Boot device not found : ....................... TROUVÉ EN CHERCHANT BIEN",
   "  Keyboard error or no keyboard present : ....... CONTINUER QUAND MÊME",
   "  PXE boot timeout : ............................ RÉSEAU ABANDONNÉ. BIENVENUE.",
+  "  Disque dur non reconnu au démarrage : ......... TROUVÉ APRÈS NÉGOCIATION",
+  "  Secteur de boot corrompu : .................... RÉPARÉ (à notre façon)",
+  "  Virus BIOS potentiel : ........................ NON VÉRIFIÉ (bonne chance)",
+  "  Primary master drive failure : ................. IGNORÉ. CONTINUER.",
+  "  Overclocking instable : ........................ DÉTECTÉ. COURAGEUX.",
+  "  ECC error correction : ......................... DÉSACTIVÉE (trop lente)",
+  "  Shadow RAM error : ............................. OMBRE D'UN PROBLÈME",
+  "  DMA parity error : ............................. DÉPAREILLÉ",
+  "  ROM checksum mismatch : ........................ VALEUR IGNORÉE",
+  "  CPU voltage out of spec : ...................... CE N'EST PAS NOTRE PROBLÈME",
+  "  Thermal shutdown imminent : .................... PAS ENCORE",
+  "  Memory timing unstable : ....................... ON ESPÈRE",
 ] as const;
 
 const DISK_POOL = [
@@ -86,10 +130,28 @@ const DISK_POOL = [
   "  Volume label : ................................ DISQUE_C (original)",
   "  Temps d'accès : ............................... 28ms (dans ses rêves)",
   "  Swap file : ................................... GROS. TRÈS GROS.",
-  "  Compression disque DoubleSpace : .............. TENTÉE. ABANDONNÉE.",
+  "  Compression DoubleSpace : ..................... TENTÉE. ABANDONNÉE.",
   "  SCANDISK interrompu : ......................... IL L'EST TOUJOURS",
   "  Cylindres : ................................... USÉS",
   "  Secteurs par piste : .......................... NOMBREUX ET MÉLANCOLIQUES",
+  "  Secteurs réalloués : .......................... 847 (ça empire)",
+  "  Température disque : .......................... 67°C (record du mois)",
+  "  Cache disque : ................................ DÉSACTIVÉ (accès direct à la douleur)",
+  "  Partition C: .................................. UNIQUE. COMME VOTRE TÉMÉRITÉ.",
+  "  Fichier PAGEFILE.SYS : ........................ 4 FOIS LA RAM. LOGIQUE.",
+  "  Dossier WINDOWS : ............................. 847 Mo (et ça grossit)",
+  "  Dossier TEMP : ................................ JAMAIS VIDÉ",
+  "  Fichier WIN386.SWP : .......................... GROS COMME VOS REGRETS",
+  "  MBR : .......................................... LU. CONTESTÉ.",
+  "  Partition table : .............................. TENUE PAR LA FOI",
+  "  FDISK recommandé : ............................ NON. VRAIMENT NON.",
+  "  Dossier Recycled\\ : ........................... PLEIN. COMME D'HABITUDE.",
+  "  Autorun.inf : ................................. PRÉSENT (mystérieusement)",
+  "  Fichiers .INI orphelins : ...................... 312. LAISSEZ.",
+  "  Taux d'erreurs en lecture : ................... NON COMMUNIQUÉ (pour votre bien)",
+  "  Heads : ........................................ 4 (tous traumatisés)",
+  "  Secteur zéro : ................................ PRÉSENT (pour l'instant)",
+  "  Spin-up time : ................................ LONG. PATIENT.",
 ] as const;
 
 const DRIVER_POOL = [
@@ -117,6 +179,30 @@ const DRIVER_POOL = [
   "  NLSFUNC.EXE .................................... MULTILINGUE (mais pas beaucoup)",
   "  SUBST.EXE ...................................... A SUBSTITUÉ QUELQUE CHOSE",
   "  WINA20.386 ..................................... MYSTÈRE COMPLET",
+  "  POWER.EXE ..................................... IRONIQUEMENT FAIBLE",
+  "  IFSHLP.SYS .................................... INTERCEPTÉ",
+  "  DBLBUFF.SYS ................................... DOUBLÉ SANS RAISON",
+  "  SETVER.EXE .................................... DÉFINIT UNE VERSION. LAQUELLE ? MYSTÈRE.",
+  "  COMMAND.COM ................................... COMMANDANT DU DÉSORDRE",
+  "  WIN.INI ........................................ 3,2 Ko DE REGRETS",
+  "  SYSTEM.INI ..................................... LU. MAL COMPRIS.",
+  "  PROGMAN.EXE ................................... NOSTALGIE ACTIVÉE",
+  "  TASKMAN.EXE ................................... A DÉMISSIONNÉ EN 1996",
+  "  MSD.EXE ........................................ DIAGNOSTIC DOUTEUX",
+  "  QBASIC.EXE .................................... GORILLA.BAS INTROUVABLE",
+  "  EDIT.COM ........................................ EN MODE INSERTION PERMANENT",
+  "  FORMAT.COM .................................... NE PAS LANCER. JAMAIS.",
+  "  ATTRIB.EXE .................................... TOUT EN LECTURE SEULE",
+  "  XCOPY.EXE ..................................... COPIÉ... QUELQUE PART",
+  "  CHKDSK.EXE .................................... CONSEILLÉ. IGNORÉ.",
+  "  RAMDRIVE.SYS .................................. RAM PRÉLEVÉE DE FORCE",
+  "  HIMEM386.SYS .................................. IDENTITÉ INCERTAINE",
+  "  CVTAPLOG.EXE .................................. PERSONNE NE SAIT",
+  "  WSWAP.EXE ..................................... ÉCHANGÉ CONTRE QUOI ?",
+  "  INTERLNK.EXE .................................. CÂBLE NON FOURNI",
+  "  NOTEPAD.EXE ................................... VIDE COMME TOUJOURS",
+  "  CALC.EXE ...................................... RÉSULTAT DOUTEUX",
+  "  CLOCK.EXE ..................................... EN RETARD",
 ] as const;
 
 const NETWORK_POOL = [
@@ -138,6 +224,24 @@ const NETWORK_POOL = [
   "  Winsock : ..................................... PRESQUE PRÊT",
   "  Protocole NetBEUI : ........................... VERBEUX",
   "  Connexion partagée : .......................... NON (et non)",
+  "  Serveur DHCP : ................................ CAPRICIEUX",
+  "  Résolution hostname : .......................... LENTE. TRÈS LENTE.",
+  "  MTU : .......................................... 1500 (espoir maximal)",
+  "  Collision détectée : ........................... SUR LE RÉSEAU. ET DANS LA VIE.",
+  "  ARP cache : ................................... REMPLI DE MENSONGES",
+  "  FTP passif : .................................. TRÈS PASSIF",
+  "  Telnet : ........................................ OUVERT (mauvaise idée)",
+  "  IRC port 6667 : ................................ CONNECTÉ. #GUNTHOS VIDE.",
+  "  Usenet : ....................................... ALT.BINARIES DÉTECTÉ. ON NE COMMENTE PAS.",
+  "  Hotmail.com : .................................. QUOTA DÉPASSÉ (comme d'habitude)",
+  "  Flash Player requis : .......................... ABSENT. TANT PIS.",
+  "  ActiveX control : .............................. INSTALLÉ (sans vous demander)",
+  "  Pop-ups bloqués : .............................. 0 (bloqueur inexistant)",
+  "  SMTP relay ouvert : ............................ ANNÉES 90 STYLE",
+  "  Gopher : ....................................... ESPÈCE EN VOIE DE DISPARITION",
+  "  Cookie Yahoo! : ................................ FRAÎCHEMENT DÉPOSÉ",
+  "  CompuServe : .................................. PEUT-ÊTRE ENCORE EN VIE",
+  "  AOL keyword : .................................. BONJOUR",
 ] as const;
 
 const MENTAL_HEALTH_SECTIONS = [
@@ -169,12 +273,47 @@ const MENTAL_HEALTH_SECTIONS = [
   [
     "Inventaire des ressources internes...",
     "  RAM disponible pour les rêves : .............. 0 Ko",
-    "  Espace disque pour les regrets : ............. 4,2 Go (et ça augmente)",
+    "  Espace disque pour les regrets : ............. 4,2 Go (en hausse)",
   ],
   [
     "Diagnostic de personnalité système...",
     "  Introversion du processeur : ................. CONFIRMÉE",
     "  Anxiété de démarrage : ....................... STANDARD (pour un lundi)",
+  ],
+  [
+    "Consultation du psy système...",
+    "  Relation à l'échec : ......................... FUSIONNELLE",
+    "  Acceptation de la réalité : .................. PARTIELLE ET NÉGOCIÉE",
+  ],
+  [
+    "Thérapie de groupe avec le matériel...",
+    "  Consensus obtenu : ........................... NON",
+    "  Tout le monde se supporte : .................. À PEINE",
+  ],
+  [
+    "Évaluation du rapport à l'autorité...",
+    "  Respect des règles système : ................. SÉLECTIF",
+    "  Obéissance aux instructions : ................ INTERPRÉTÉE LIBREMENT",
+  ],
+  [
+    "Audit de la confiance en soi système...",
+    "  Estime de soi processeur : ................... SOUS-ÉVALUÉE",
+    "  Syndrome de l'imposteur : .................... CONFIRMÉ",
+  ],
+  [
+    "Méditation pré-démarrage...",
+    "  Centrage du système : ........................ EN COURS",
+    "  Paix intérieure : ............................ INTROUVABLE (comme d'habitude)",
+  ],
+  [
+    "Bilan des traumatismes passés...",
+    "  Plantages non résolus : ...................... 23 (en cours de deuil)",
+    "  Données perdues acceptées : .................. NON ENCORE",
+  ],
+  [
+    "Vérification de la maturité émotionnelle...",
+    "  Gestion de la frustration : .................. AMÉLIORABLE",
+    "  Réaction aux erreurs : ....................... DISPROPORTIONNÉE (classique)",
   ],
 ] as const;
 
@@ -193,8 +332,24 @@ const STARTUP_POOL = [
   "  Heure système : ............................... APPROXIMATIVE",
   "  Poubelle bureau : ............................. VIDE (miracle du mois)",
   "  Résolution d'écran : .......................... 800×600 (ne pas toucher)",
-  "  Thème bureau : ................................ CONSERVÉ PAR INERTIE",
-  "  Sons système : ................................ ACTIVÉS (désolé)",
+  "  Thème bureau : ................................ GRIS. INCHANGÉ DEPUIS 3 ANS.",
+  "  Sons système : ................................ TROP FORTS POUR CE MATIN",
+  "  Lecteur de CD automatique : ................... DÉSACTIVÉ (trop enthousiaste)",
+  "  Antivirus : ................................... EXPIRÉ DEPUIS 1999",
+  "  Menu Démarrer : ............................... PRÊT À DÉCEVOIR",
+  "  Bureau chargé : ............................... 47 ICÔNES (dont 12 doublons)",
+  "  Connexion automatique : ........................ ÉCHOUÉE (comme prévu)",
+  "  Périphériques Plug & Play : ................... PLUG. PAS DE PLAY.",
+  "  Ressources système disponibles : ............... 38% (ça va aller)",
+  "  GDI resources : ............................... 61% (marge réduite)",
+  "  Mémoire système libre : ........................ 2,1 Mo (c'est peu)",
+  "  Sons : ........................................ ACTIVÉS (désolé)",
+  "  Assistants : .................................. ACTIVÉS (ça va être long)",
+  "  Zone horaire : ................................ CORRECTE (pour une fois)",
+  "  Langue du clavier : ........................... AZERTY (touches collantes)",
+  "  Compression de fenêtres : ..................... 120ms (lent mais fier)",
+  "  Gestionnaire de fichiers : ..................... OUVERT ET JUGÉ",
+  "  Compagnon Office chargé : ..................... IL GUETTE DÉJÀ",
 ] as const;
 
 const CLOSING_POOL = [
@@ -213,6 +368,21 @@ const CLOSING_POOL = [
   "  Rechargez en cas de comportement inattendu. Souvent.",
   "  Profitez-en. L'écran bleu peut venir à tout moment.",
   "  Toute perte de données est une opportunité de repartir à zéro.",
+  "  Ne pas alimenter de faux espoirs à votre ordinateur.",
+  "  Votre patience a été mesurée. Elle est insuffisante.",
+  "  Ce démarrage vous a coûté 47 secondes de vie.",
+  "  Aucune donnée critique n'a été perdue. Cette fois.",
+  "  L'ordinateur fait de son mieux. Ce n'est pas grand chose.",
+  "  Rapport performance/attentes : catastrophique.",
+  "  Merci de ne pas frapper l'écran.",
+  "  Votre ordinateur vous tolère. Respectez ça.",
+  "  Ce n'est pas l'ordinateur le problème. Si.",
+  "  GunthOS a fait ce qu'il a pu. C'est noté.",
+  "  Sauvegardez maintenant. Non, maintenant. Là.",
+  "  L'optimisme est une option. Pas recommandée ici.",
+  "  Bonne continuation dans ce monde incertain.",
+  "  Progression vers l'écran bleu : 0%. Pour l'instant.",
+  "  Durée avant prochain crash estimée : variable.",
 ] as const;
 
 function buildBootLines(): BootLine[] {
@@ -279,7 +449,7 @@ function buildBootLines(): BootLine[] {
   shuffle(NETWORK_POOL).slice(0, netCount).forEach(text => add(text, 220));
   blank(200);
 
-  // ─ Existential section (always one, picked randomly)
+  // ─ Existential section
   pickRandom(MENTAL_HEALTH_SECTIONS).forEach(text => add(text, 250));
   blank(200);
 
@@ -323,8 +493,26 @@ const SHUTDOWN_APP_POOL = [
   "  Doom II ................................... FERMÉ (niveau E2M4 perdu à jamais)",
   "  WinZip .................................... FERMÉ (archive en cours : abandonnée)",
   "  Notepad ................................... FERMÉ (contenu : aaaaaaaaaaaaa)",
-  "  Windows Media Player ...................... FERMÉ (musique : coupée au solo)",
+  "  Windows Media Player ...................... FERMÉ (musique coupée au solo)",
   "  HyperTerminal ............................. DÉCONNECTÉ (sans explication)",
+  "  Solitaire (partie en cours) ............... FERMÉ (7 de cœur perdu)",
+  "  Netscape Navigator ........................ FERMÉ (40 onglets perdus)",
+  "  WinAmp (Linkin Park) ...................... FERMÉ (solo de guitare interrompu)",
+  "  MSN Messenger ............................. OFFLINE (statut : à plus tard)",
+  "  Kazaa ...................................... FERMÉ (téléchargement à 99% : perdu)",
+  "  Napster .................................... FERMÉ (une époque révolue)",
+  "  Nero Burning ROM .......................... FERMÉ (CD non gravé)",
+  "  ACDSee ..................................... FERMÉ (collection : intacte)",
+  "  Quake III .................................. FERMÉ (frag non enregistré)",
+  "  Age of Empires ............................ FERMÉ (civilisation perdue)",
+  "  Diablo II .................................. FERMÉ (personnage hardcore mort)",
+  "  mIRC ....................................... FERMÉ (#bonjour déconnecté)",
+  "  FTP client ................................. FERMÉ (upload à 12% : annulé)",
+  "  VB6 IDE .................................... FERMÉ (projet non sauvegardé)",
+  "  Internet Download Manager ................. FERMÉ (queue vidée avec regret)",
+  "  Star Craft ................................. FERMÉ (partie multijoueur abandonnée)",
+  "  Telnet ...................................... DÉCONNECTÉ (session root perdue)",
+  "  Paint Shop Pro ............................. FERMÉ (calque non aplati)",
 ] as const;
 
 const SHUTDOWN_CACHE_POOL = [
@@ -342,6 +530,20 @@ const SHUTDOWN_CACHE_POOL = [
   "  Fichier .tmp de 2,1 Go : .................. SUPPRIMÉ (enfin)",
   "  Mots de passe mémorisés : ................. PROBABLEMENT QUELQUE PART",
   "  Fond d'écran temporaire : ................. DEVENU PERMANENT EN 1999",
+  "  Historique IE ............................. 2 847 URLs (pas vues par nous)",
+  "  Fichiers index.dat : ...................... PERSISTANTS (comme les remords)",
+  "  Dossier Mes Documents : ................... SAUVEGARDÉ (la moitié)",
+  "  Thumbs.db dans chaque dossier : ........... OUI. TOUS.",
+  "  Recent documents : ......................... VIDÉ (ne le dites à personne)",
+  "  DLL en double : ............................ 23 DE PLUS QU'AVANT",
+  "  Entrées de registre orphelines : ........... 4 712. RECORD.",
+  "  Fichier SETUPLOG.TXT : ..................... 47 Mo. INCOMPRÉHENSIBLE.",
+  "  Pilotes non signés conservés : ............. TOUS",
+  "  Dossier $Recycle.Bin : ..................... PLEIN. COMME VOTRE KARMA.",
+  "  System32\\config : .......................... INTACT (miracle du soir)",
+  "  Prefetch : ................................. ENCOMBRÉ",
+  "  Desktop.ini : ............................. MULTIPLIÉ (6 EXEMPLAIRES)",
+  "  Fichier WIN.INI : .......................... CORROMPU DEPUIS LONGTEMPS",
 ] as const;
 
 const SHUTDOWN_NETWORK_POOL = [
@@ -356,7 +558,19 @@ const SHUTDOWN_NETWORK_POOL = [
   "  Favoris IE : .............................. 847 LIENS (dont 831 morts)",
   "  NetMeeting : .............................. PERSONNE N'A RÉPONDU",
   "  Dernier chat IRC : ........................ DÉCONNECTÉ SANS PRÉVENIR",
-  "  IP dynamique : ............................. CHANGÉE (sans prévenir)",
+  "  IP dynamique : ............................. CHANGÉE (sans vous prévenir)",
+  "  Session Kazaa : ............................ DÉCONNECTÉ (ratio : honteux)",
+  "  Partage de connexion : ..................... JAMAIS CONFIGURÉ",
+  "  Scan de ports entrants : ................... ARRÊTÉ (quelqu'un cherchait)",
+  "  Firewall : .................................. N'EXISTAIT PAS",
+  "  Tentative de mise à jour silencieuse : ..... REJETÉE",
+  "  Broadcast réseau : ......................... DERNIER COUCOU ENVOYÉ",
+  "  Partage imprimante réseau : ................ PERSONNE N'A JAMAIS IMPRIMÉ",
+  "  NetMeeting caméra : ........................ HEUREUSEMENT DÉCONNECTÉ",
+  "  Connexion VPN : ............................ ÉTAIT-CE SÉCURISÉ ? NON",
+  "  Proxy Wingate : ............................ OUVERT (mauvaise idée d'époque)",
+  "  Dernier ping reçu : ........................ 2847ms (honorable)",
+  "  Serveur web IIS : .......................... ÉTEINT (port 80 libéré)",
 ] as const;
 
 const SHUTDOWN_SYSTEM_POOL = [
@@ -374,6 +588,20 @@ const SHUTDOWN_SYSTEM_POOL = [
   "  Pile TCP/IP : ............................. DÉSEMPILÉE",
   "  Gestionnaire de tâches : .................. A DÉMISSIONNÉ",
   "  Mémoire virtuelle : ....................... LIBÉRÉE (elle méritait mieux)",
+  "  Service Spooler : .......................... ARRÊTÉ (l'imprimante est libre)",
+  "  Kernel32.dll : ............................. DÉCHARGÉ PRUDEMMENT",
+  "  GDI32.dll : ................................ LIBÉRÉ (16M de ressources)",
+  "  USER32.dll : ............................... DÉCONNECTÉ DE L'UTILISATEUR",
+  "  Barre des tâches : ......................... ÉTEINTE EN DOUCEUR",
+  "  Bureau : ................................... VIDÉ (les icônes pleurent)",
+  "  Explorateur Windows : ...................... FERMÉ (pas de regret)",
+  "  Svchost.exe (×7) : ........................ INSTANCES TERMINÉES",
+  "  Msconfig : ................................. AVAIT TOUT EN DÉMARRAGE",
+  "  Audio mixer : .............................. MUET. ENFIN.",
+  "  Pilote SCSI phantom : ...................... TOUJOURS LÀ. IGNORÉ.",
+  "  Exception non gérée : ...................... EMPORTÉE AVEC LE RESTE",
+  "  Dernière BSOD : ............................ IL Y A 4 JOURS (record)",
+  "  Services RPC : ............................. TERMINÉS (bon débarras)",
 ] as const;
 
 const SHUTDOWN_CLOSING_POOL = [
@@ -389,6 +617,18 @@ const SHUTDOWN_CLOSING_POOL = [
   "  Rappel : nous ne sommes pas responsables des pertes de données.",
   "  Rappel : relancez si problème. Relancez si pas de problème aussi.",
   "  Rappel : les données importantes étaient où, déjà ?",
+  "  Rappel : votre ordinateur se souvient de tout. Tout.",
+  "  Rappel : sauvegardez. Maintenant. Pas demain.",
+  "  Rappel : l'extinction par le bouton est une violence.",
+  "  Rappel : les données perdues ne reviennent jamais.",
+  "  Rappel : un reboot n'efface pas vos erreurs de vie.",
+  "  Rappel : personne n'a lu les conditions d'utilisation.",
+  "  Rappel : si ça marchait, c'était peut-être de la chance.",
+  "  Rappel : il est tard. Allez dormir.",
+  "  Rappel : votre ordinateur vous a vu faire des choses.",
+  "  Rappel : la corbeille est pleine depuis janvier.",
+  "  Rappel : GunthOS ne vous juge pas. Un peu quand même.",
+  "  Rappel : le ventilateur avait des choses à dire.",
 ] as const;
 
 function buildShutdownLines(): { text: string; delay: number }[] {
@@ -629,7 +869,6 @@ export function BootScreen({ onComplete }: BootScreenProps) {
   const tapTimesRef = useRef<number[]>([]);
   const { init, playBiosBleep, playModemDialup, playStartupChime, startBootAudio, stopBootAudio, startAccessDisk, stopAccessDisk } = useSoundContext();
 
-  // Skip on Escape or Space
   useEffect(() => {
     const handle = (e: KeyboardEvent) => {
       if (e.key !== "Escape" && e.key !== " ") return;
@@ -643,7 +882,6 @@ export function BootScreen({ onComplete }: BootScreenProps) {
     return () => window.removeEventListener("keydown", handle);
   }, [onComplete, stopBootAudio, stopAccessDisk]);
 
-  // Skip on 3 rapid taps (mobile)
   const handleTap = () => {
     if (skippedRef.current) return;
     const now = Date.now();
@@ -656,13 +894,11 @@ export function BootScreen({ onComplete }: BootScreenProps) {
     }
   };
 
-  // Cursor blink
   useEffect(() => {
     const id = setInterval(() => setCursorVisible((v) => !v), 530);
     return () => clearInterval(id);
   }, []);
 
-  // BIOS text lines + sons
   useEffect(() => {
     if (phase !== "bios") return;
     init();
@@ -688,7 +924,6 @@ export function BootScreen({ onComplete }: BootScreenProps) {
     return () => timers.forEach(clearTimeout);
   }, [phase, bootLines, init, playBiosBleep, playModemDialup, startBootAudio]);
 
-  // Progress bar — access_disk.mp3 pendant le chargement, chime à la fin
   useEffect(() => {
     if (phase !== "loading") return;
     const timers: ReturnType<typeof setTimeout>[] = [];
@@ -755,7 +990,6 @@ export function BootScreen({ onComplete }: BootScreenProps) {
         </div>
       )}
 
-      {/* Mobile skip hint — only visible on touch devices */}
       <div
         className="pointer-events-none absolute bottom-4 left-0 right-0 flex justify-center"
         style={{
@@ -770,7 +1004,6 @@ export function BootScreen({ onComplete }: BootScreenProps) {
 
       {phase === "loading" && (
         <div className="flex-1 flex flex-col items-center justify-center gap-0" style={{ color: "var(--t-text, #c0c0c0)" }}>
-          {/* Retro-style logo block — uses theme vars with Win95 fallbacks */}
           <div
             className="mb-10 text-center"
             style={{
@@ -784,7 +1017,6 @@ export function BootScreen({ onComplete }: BootScreenProps) {
               width: "clamp(320px, 60vw, 520px)",
             }}
           >
-            {/* Titlebar */}
             <div
               className="flex items-center gap-2 px-2 py-1"
               style={{
@@ -797,7 +1029,6 @@ export function BootScreen({ onComplete }: BootScreenProps) {
               <span>💾</span>
               <span>GunthOS v1.0 — Démarrage du système</span>
             </div>
-            {/* Content */}
             <div className="p-6 pb-8 flex flex-col items-center gap-6">
               <div
                 className="text-center"
@@ -820,8 +1051,6 @@ export function BootScreen({ onComplete }: BootScreenProps) {
               >
                 Version 1.0 — Certifié compatible avec lui-même
               </div>
-
-              {/* Progress bar */}
               <div className="w-full flex flex-col gap-2">
                 <div
                   style={{
@@ -859,7 +1088,6 @@ export function BootScreen({ onComplete }: BootScreenProps) {
               </div>
             </div>
           </div>
-
           <div
             style={{
               fontSize: "clamp(14px, 1.7vw, 18px)",
