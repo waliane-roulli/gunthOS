@@ -25,9 +25,11 @@ interface Ticket {
   assigneeId: string | null;
   assigneeName: string | null;
   assigneeUsername: string | null;
+  assigneeAvatar: string | null;
   createdById: string | null;
   createdByName: string | null;
   createdByUsername: string | null;
+  createdByAvatar: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -202,6 +204,7 @@ interface GunthUser {
   id: string;
   name: string;
   username: string | null;
+  avatarDataUrl: string | null;
 }
 
 interface NewTicketForm {
@@ -332,6 +335,7 @@ export function GuntherBoardApp(_: AppProps) {
         ...updated,
         assigneeName: assignee?.name ?? (updated.assigneeId ? selectedTicket.assigneeName : null),
         assigneeUsername: (assignee as GunthUser | null)?.username ?? (updated.assigneeId ? selectedTicket.assigneeUsername : null),
+        assigneeAvatar: (assignee as GunthUser | null)?.avatarDataUrl ?? (updated.assigneeId ? selectedTicket.assigneeAvatar : null),
       };
       setTickets((prev) => prev.map((t) => t.id === enriched.id ? { ...t, ...enriched } : t));
       setSelectedTicket((prev) => prev ? { ...prev, ...enriched } : null);
@@ -677,16 +681,31 @@ const AVATAR_COLORS = [
   "#e67e22", "#16a085", "#d35400", "#1a5276",
 ];
 
-function UserAvatar({ name, size = 22 }: { name: string; size?: number }) {
+function UserAvatar({ name, avatarDataUrl, size = 22 }: { name: string; avatarDataUrl?: string | null; size?: number }) {
   const initials = name.split(" ").map((p) => p[0] ?? "").slice(0, 2).join("").toUpperCase() || "?";
   const idx = [...name].reduce((acc, c) => acc + c.charCodeAt(0), 0) % AVATAR_COLORS.length;
+  const baseStyle: React.CSSProperties = {
+    width: size,
+    height: size,
+    borderRadius: "50%",
+    flexShrink: 0,
+    border: "1px solid rgba(0,0,0,0.25)",
+    userSelect: "none",
+    overflow: "hidden",
+  };
+  if (avatarDataUrl) {
+    return (
+      <div title={name} style={baseStyle}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={avatarDataUrl} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+      </div>
+    );
+  }
   return (
     <div
       title={name}
       style={{
-        width: size,
-        height: size,
-        borderRadius: "50%",
+        ...baseStyle,
         backgroundColor: AVATAR_COLORS[idx],
         color: "#fff",
         display: "flex",
@@ -694,9 +713,6 @@ function UserAvatar({ name, size = 22 }: { name: string; size?: number }) {
         justifyContent: "center",
         fontSize: "var(--t-text-xs)",
         fontWeight: "bold",
-        flexShrink: 0,
-        border: "1px solid rgba(0,0,0,0.25)",
-        userSelect: "none",
         letterSpacing: 0,
         fontFamily: "var(--t-font-display)",
       }}
@@ -782,7 +798,7 @@ function TicketCard({
             {ticket.title}
           </span>
           {ticket.assigneeName ? (
-            <UserAvatar name={ticket.assigneeName} size={22} />
+            <UserAvatar name={ticket.assigneeName} avatarDataUrl={ticket.assigneeAvatar} size={22} />
           ) : (
             <div
               title="Non assigné"
@@ -1259,7 +1275,7 @@ function TicketDetail({
               >
                 {ticket.assigneeName ? (
                   <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-                    <UserAvatar name={ticket.assigneeName} size={20} />
+                    <UserAvatar name={ticket.assigneeName} avatarDataUrl={ticket.assigneeAvatar} size={20} />
                     <span style={{ fontWeight: "bold" }}>{ticket.assigneeName}</span>
                     {ticket.assigneeUsername && (
                       <span style={{ color: "var(--t-text-muted)", fontSize: "var(--t-text-xs)" }}>
@@ -1306,7 +1322,7 @@ function TicketDetail({
               >
                 {ticket.createdByName ? (
                   <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-                    <UserAvatar name={ticket.createdByName} size={20} />
+                    <UserAvatar name={ticket.createdByName} avatarDataUrl={ticket.createdByAvatar} size={20} />
                     <span>{ticket.createdByName}</span>
                     {ticket.createdByUsername && (
                       <span style={{ color: "var(--t-text-muted)", fontSize: "var(--t-text-xs)" }}>
