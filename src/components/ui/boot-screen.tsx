@@ -257,6 +257,7 @@ export function BootScreen({ onComplete }: BootScreenProps) {
   const [fadeOut, setFadeOut] = useState(false);
   const terminalRef = useRef<HTMLDivElement>(null);
   const skippedRef = useRef(false);
+  const tapTimesRef = useRef<number[]>([]);
   const { init, playBiosBleep, playModemDialup, playStartupChime, startBootAudio, stopBootAudio, startAccessDisk, stopAccessDisk } = useSoundContext();
 
   // Skip on Escape or Space
@@ -272,6 +273,19 @@ export function BootScreen({ onComplete }: BootScreenProps) {
     window.addEventListener("keydown", handle);
     return () => window.removeEventListener("keydown", handle);
   }, [onComplete, stopBootAudio, stopAccessDisk]);
+
+  // Skip on 3 rapid taps (mobile)
+  const handleTap = () => {
+    if (skippedRef.current) return;
+    const now = Date.now();
+    tapTimesRef.current = [...tapTimesRef.current, now].filter((t) => now - t < 600);
+    if (tapTimesRef.current.length >= 3) {
+      skippedRef.current = true;
+      stopBootAudio();
+      stopAccessDisk();
+      onComplete();
+    }
+  };
 
   // Cursor blink
   useEffect(() => {
@@ -353,6 +367,7 @@ export function BootScreen({ onComplete }: BootScreenProps) {
         opacity: fadeOut ? 0 : 1,
         transition: fadeOut ? "opacity 0.6s ease" : "none",
       }}
+      onClick={handleTap}
     >
       {settings.scanlinesEnabled && <div aria-hidden style={{ position: "fixed", inset: 0, zIndex: 1, pointerEvents: "none", backgroundImage: "repeating-linear-gradient(to bottom, transparent 0px, transparent 2px, rgba(255,255,255,0.04) 2px, rgba(255,255,255,0.04) 4px)" }} />}
       {phase === "bios" && (
@@ -373,6 +388,19 @@ export function BootScreen({ onComplete }: BootScreenProps) {
           )}
         </div>
       )}
+
+      {/* Mobile skip hint — only visible on touch devices */}
+      <div
+        className="pointer-events-none absolute bottom-4 left-0 right-0 flex justify-center"
+        style={{
+          fontFamily: "var(--font-vt323), monospace",
+          fontSize: "clamp(13px, 1.8vw, 16px)",
+          color: "#404040",
+          letterSpacing: "0.1em",
+        }}
+      >
+        <span className="hidden-on-mouse">appuyez 3× pour passer</span>
+      </div>
 
       {phase === "loading" && (
         <div className="flex-1 flex flex-col items-center justify-center gap-0" style={{ color: "var(--t-text, #c0c0c0)" }}>
