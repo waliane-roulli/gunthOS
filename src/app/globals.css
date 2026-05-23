@@ -4,6 +4,15 @@ html, body {
   overflow: hidden;
   height: 100%;
   width: 100%;
+  overscroll-behavior: none;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button, [role="button"], input, select, textarea, a {
+  touch-action: manipulation;
 }
 
 /* Theme CSS variables — defaults to Win95, overridden by ThemeProvider via JS */
@@ -312,4 +321,27 @@ html, body {
 
 .animate-hot-badge {
   animation: hotBlink 0.7s ease-in-out infinite;
+}
+
+/* ─── Mobile overrides ─────────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  :root {
+    --t-text-xs:   calc(0.80rem  * var(--t-font-scale));
+    --t-text-sm:   calc(0.95rem  * var(--t-font-scale));
+  }
+}
+
+@keyframes slideInDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* hidden on non-touch (pointer-hover capable) devices */
+.hidden-on-mouse {
+  display: none;
+}
+@media (hover: none) and (pointer: coarse) {
+  .hidden-on-mouse {
+    display: inline;
+  }
 }

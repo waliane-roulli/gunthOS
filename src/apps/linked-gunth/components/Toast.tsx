@@ -26,7 +26,7 @@ export function Toast({ message, onDone }: { message: string; onDone: () => void
       <button
         onClick={onDone}
         className="ml-1 opacity-70 hover:opacity-100 leading-none border-none bg-transparent"
-        style={{ color: "var(--t-titlebar-text)", fontSize: "1rem" }}
+        style={{ color: "var(--t-titlebar-text)", fontSize: "var(--t-text-base)" }}
       >✕</button>
     </div>
   );

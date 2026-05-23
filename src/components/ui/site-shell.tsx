@@ -13,7 +13,9 @@ import { GunthTitle } from "./gunth-title";
 import { BootScreen, ShutdownScreen } from "./boot-screen";
 import { NotificationProvider } from "@/lib/contexts/notification-context";
 import { UnreadProvider } from "@/lib/contexts/unread-context";
+import { ChatWindowsProvider } from "@/lib/contexts/chat-windows-context";
 import { useLiveNotifications } from "@/lib/hooks/use-live-notifications";
+import { PwaInstallPrompt } from "./pwa-register";
 
 function LiveNotificationsBridge() {
   useLiveNotifications();
@@ -44,7 +46,9 @@ export function SiteShell({ children: _children }: { children?: React.ReactNode 
           <WindowManagerProvider>
             <NotificationProvider>
               <UnreadProvider>
+                <ChatWindowsProvider>
                 <LiveNotificationsBridge />
+                <PwaInstallPrompt />
                 <GunthTitle />
                 <div className="fixed inset-0 flex flex-col overflow-hidden scanlines">
                   <Taskbar onReboot={handleReboot} onShutdown={handleShutdown} />
@@ -52,6 +56,7 @@ export function SiteShell({ children: _children }: { children?: React.ReactNode 
                   <WindowLayer />
                   <NotificationLayer />
                 </div>
+                </ChatWindowsProvider>
               </UnreadProvider>
             </NotificationProvider>
           </WindowManagerProvider>

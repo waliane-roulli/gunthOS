@@ -6,7 +6,7 @@ import { useSoundContext } from "@/lib/contexts/sound-context";
 import type { AppProps } from "@/types";
 
 import type { Post, Reaction, Tab, Experience, Recommendation, ProfileData, ProfileView, NetworkUser, ViewedProfile } from "./types";
-import { NOTIF_TEMPLATES, TABS, TITLEBAR_GRADIENT, AI_POST_SUGGESTIONS } from "./constants";
+import { NOTIF_TEMPLATES, TABS, TITLEBAR_GRADIENT, AI_POST_SUGGESTIONS, LNK_POST_PUBLISH_TOASTS, LNK_AI_TOASTS, LNK_CONNECTION_TOASTS } from "./constants";
 import { pick, totalReactions } from "./helpers";
 
 import { SearchBar } from "./components/SearchBar";
@@ -235,7 +235,7 @@ export function LinkedGunthApp(_: AppProps) {
         setNewPostText("");
         setShowCompose(false);
         setShowConfetti(true);
-        showToast("🚀 Post publié ! Vos 3 relations sont notifiées.");
+        showToast(pick(LNK_POST_PUBLISH_TOASTS));
         await fetchPosts();
       }
     } finally { setPosting(false); }
@@ -247,7 +247,7 @@ export function LinkedGunthApp(_: AppProps) {
     setTimeout(() => {
       setNewPostText(pick(AI_POST_SUGGESTIONS));
       setAiSuggesting(false);
-      showToast("✨ L'IA a généré votre authenticité.");
+      showToast(pick(LNK_AI_TOASTS));
     }, 1100);
   }
 
@@ -384,7 +384,7 @@ export function LinkedGunthApp(_: AppProps) {
     if (!connectionRequest) return;
     playVictory();
     setFollowersCount((c) => c + 1);
-    showToast(`🤝 Connexion acceptée ! Vous avez maintenant ${followersCount + 1} relations.`);
+    showToast(pick(LNK_CONNECTION_TOASTS)(followersCount + 1));
     setNotifications((prev) => [{ id: Date.now(), text: `${connectionRequest.name} a rejoint votre réseau`, icon: "🤝", read: false }, ...prev.slice(0, 19)]);
     setNotifBounce(true);
     setTimeout(() => setNotifBounce(false), 600);

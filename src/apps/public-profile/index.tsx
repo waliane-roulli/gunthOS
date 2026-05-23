@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/contexts/auth-context";
-import { pickRandom } from "@/lib/gunth-jokes";
+import { PUBLIC_PROFILE_LOADING_MSGS, PUBLIC_PROFILE_NOT_FOUND_MSGS } from "@/lib/gunth-jokes";
+import { pickRandom } from "@/lib/utils/random";
 import type { AppProps } from "@/types";
 import { type ProfileData, PIXEL_AVATARS, ViewTab } from "@/apps/profile/_shared";
 
@@ -12,6 +13,8 @@ export function PublicProfileWindow({ windowId }: AppProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pixelEmoji] = useState(() => pickRandom(PIXEL_AVATARS));
+  const [loadingMsg] = useState(() => pickRandom(PUBLIC_PROFILE_LOADING_MSGS));
+  const [notFoundMsg] = useState(() => pickRandom(PUBLIC_PROFILE_NOT_FOUND_MSGS));
   const { user: me } = useAuth();
 
   useEffect(() => {
@@ -32,7 +35,7 @@ export function PublicProfileWindow({ windowId }: AppProps) {
       <div className="p-6 text-center" style={{ fontFamily: "var(--t-font-display)", color: "var(--t-text-muted)" }}>
         <div className="text-4xl mb-3 animate-[blink_1s_step-end_infinite]">⏳</div>
         <div className="tracking-widest">Chargement du profil de @{username}...</div>
-        <div className="text-xs mt-1">Connexion 56K en cours...</div>
+        <div className="text-xs mt-1">{loadingMsg}</div>
       </div>
     );
   }
@@ -43,7 +46,7 @@ export function PublicProfileWindow({ windowId }: AppProps) {
         <div className="text-5xl">🚫</div>
         <div className="text-xl tracking-widest" style={{ color: "var(--t-accent)" }}>PROFIL INTROUVABLE</div>
         <div className="text-sm tracking-wider" style={{ color: "var(--t-text-muted)" }}>{error ?? "Secteur disque corrompu."}</div>
-        <div className="text-xs" style={{ color: "var(--t-text-subtle, var(--t-text-muted))" }}>@{username} n&apos;existe pas ou a été défragmenté.</div>
+        <div className="text-xs" style={{ color: "var(--t-text-subtle, var(--t-text-muted))" }}>@{username} {notFoundMsg}</div>
       </div>
     );
   }

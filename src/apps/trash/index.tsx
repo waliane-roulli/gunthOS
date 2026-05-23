@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { pickRandom } from "@/lib/gunth-jokes";
+import { pickRandom } from "@/lib/utils/random";
 import type { AppProps } from "@/types";
 
 interface DialogConfig {

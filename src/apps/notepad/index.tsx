@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { pickRandom } from "@/lib/gunth-jokes";
+import { pickRandom } from "@/lib/utils/random";
 import type { AppProps } from "@/types";
 
 const NOTEPAD_PLACEHOLDER = `Bienvenue dans Bloc-Notes GunthOS.
@@ -27,6 +27,14 @@ const SAVE_RESPONSES = [
   "Sauvegardé… ou pas. Le disque est plein.",
   "Fichier sauvegardé. Écrasement de la sauvegarde précédente.",
   "Erreur : impossible de sauvegarder. Sauvegardé quand même.",
+  "Sauvegardé dans C:\\WINDOWS\\TEMP\\~WRK47.tmp (sera supprimé au prochain redémarrage).",
+  "Fichier sauvegardé. L'antivirus l'a mis en quarantaine par précaution.",
+  "Sauvegardé sur disquette 3½ (secteur 847 ignoré).",
+  "Fichier écrit. Format inconnu. Contenu préservé à 73%.",
+  "Sauvegarde réussie. Version précédente dans la corbeille. La corbeille est pleine.",
+  "Enregistré dans un fichier temporaire qui le restera.",
+  "Sauvegardé. GunthOS ne garantit pas la relecture.",
+  "Ctrl+S intercepté. Fichier écrit dans un dossier mystère.",
 ];
 
 export function NotepadApp(_: AppProps) {
@@ -68,7 +76,7 @@ export function NotepadApp(_: AppProps) {
           backgroundColor: "var(--t-app-bg)",
           color: "var(--t-app-text)",
           fontFamily: "var(--t-font-mono)",
-          fontSize: "0.875rem",
+          fontSize: "var(--t-text-sm)",
           lineHeight: 1.6,
           border: "none",
         }}

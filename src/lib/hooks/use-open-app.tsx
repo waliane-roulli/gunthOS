@@ -5,6 +5,7 @@ import { useWindowActions } from "@/lib/contexts/window-manager-context";
 import { useSoundContext } from "@/lib/contexts/sound-context";
 import { useSeenApps } from "@/lib/contexts/seen-apps-context";
 import { getAppManifest } from "@/apps";
+import { OsIcon } from "@/components/ui/os-icon";
 import type { ReactNode } from "react";
 
 /**
@@ -25,8 +26,8 @@ export function useOpenApp() {
       if (!app) return "";
       init();
       playWindowOpen();
-      markSeen(slug);
-      const icon = app.iconComponent ? <app.iconComponent size={20} /> : (app.iconNode ?? app.emoji);
+      markSeen(slug, app.version);
+      const icon = <OsIcon slug={app.slug} size={20} />;
       return openWindow(app.slug, app.name, icon, { startMaximized: app.startMaximized, defaultSize: app.defaultSize });
     },
     [openWindow, init, playWindowOpen, markSeen]

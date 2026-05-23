@@ -91,7 +91,7 @@ export function ProfilTab({
               maxLength={120}
               disabled={!user}
               onSave={(val) => onSaveField("headline", val)}
-              style={{ color: "var(--t-text-muted)", fontFamily: "var(--t-font-display)", fontSize: "0.875rem" }}
+              style={{ color: "var(--t-text-muted)", fontFamily: "var(--t-font-display)", fontSize: "var(--t-text-sm)" }}
             />
             <InlineEditField
               value={profileData?.location ?? ""}
@@ -99,7 +99,7 @@ export function ProfilTab({
               maxLength={80}
               disabled={!user}
               onSave={(val) => onSaveField("location", val)}
-              style={{ color: "var(--t-text-subtle)", fontFamily: "var(--t-font-display)", fontSize: "0.75rem" }}
+              style={{ color: "var(--t-text-subtle)", fontFamily: "var(--t-font-display)", fontSize: "var(--t-text-xs)" }}
             />
             <div className="text-xs mt-0.5" style={{ color: "var(--t-accent)", fontFamily: "var(--t-font-display)" }}>
               {followersCount} relations ·{" "}

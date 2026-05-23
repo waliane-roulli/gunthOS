@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useWindowActions } from "@/lib/contexts/window-manager-context";
-import { GUNTH_STATUS, pickRandom } from "@/lib/gunth-jokes";
+import { GUNTH_STATUS } from "@/lib/gunth-jokes";
+import { pickRandom } from "@/lib/utils/random";
 import type { AppProps } from "@/types";
 
 interface DialogConfig {
@@ -93,28 +94,40 @@ const MY_COMPUTER_JOKES = [
   "Propriété de Gunth Corp™. Ne pas ouvrir le boîtier.",
   "Processeur : Pentium II 233 MHz. Surpuissant pour vos besoins.",
   "Garantie expirée le 14 janvier 2002.",
-  "Votre ordinateur a besoin d'être redémarré. Comme toujours.",
+  "Votre ordinateur a besoin d'être redémarré. Il en a besoin depuis le 15 mars 2002.",
   "Pilote de son introuvable. Vous entendrez quand même.",
   "Mémoire disponible : suffisante pour ce que vous faites là.",
+  "3 processus inconnus tournent en arrière-plan. Ne pas enquêter.",
+  "Température CPU : normale. (C'est chaud. C'est normal.)",
+  "Dernière mise à jour : jamais. Prochaine : jamais.",
+  "BIOS : 1998. Mise à jour disponible. Ne pas faire.",
 ];
 
 const DISK_C_JOKES = [
-  "Disque C:\\ — 0 octets libres. Comme d'habitude.",
+  "Disque C:\\ — 0 octets libres. Les 4,7 Go manquants se trouvent dans C:\\WINDOWS\\Temp.",
   "Disque C:\\ — Plein depuis 2002. Supprimez vos MP3.",
   "Disque C:\\ — Fragmentation : 97%. Bonne chance.",
   "Disque C:\\ — Erreur SMART détectée. Ignorez.",
+  "Disque C:\\ — 847 secteurs défaillants. Les importants.",
+  "Disque C:\\ — Bruit de clic au démarrage. Tout va bien.",
+  "Disque C:\\ — 4 Go occupés par le dossier TEMP. Ne pas toucher.",
 ];
 
 const DISK_D_JOKES = [
   "Lecteur D:\\ — Veuillez insérer le CD-ROM « GunthOS SP2 »",
   "Lecteur D:\\ — Disque non reconnu. Soufflez dedans.",
   "Lecteur D:\\ — Aucun média inséré (depuis l'usine).",
+  "Lecteur D:\\ — CD détecté. Type : « Audio illégal 2001 ».",
+  "Lecteur D:\\ — Éjection manuelle recommandée. Avec un trombone.",
 ];
 
 const DOCS_JOKES = [
   "Mes Documents — 847 fichiers nommés « SANS TITRE (1).doc »",
   "Mes Documents — Dernière sauvegarde : jamais.",
   "Mes Documents — Dossier vide. Vos données sont ailleurs.",
+  "Mes Documents — CV mis à jour en 2003. Toujours actuel.",
+  "Mes Documents — Contient « lettre_de_motivation_FINAL_v3_VRAI.doc ».",
+  "Mes Documents — 2,3 Go de photos de vacances sans titre.",
 ];
 
 export function MyComputerApp(_: AppProps) {
@@ -170,6 +183,10 @@ export function MyComputerApp(_: AppProps) {
     {
       icon: "📝", label: "Bloc-notes",
       onClick: () => openWindow("notepad", "Bloc-notes — UNTITLED.txt", "📝"),
+    },
+    {
+      icon: "📋", label: "Notes de version",
+      onClick: () => openWindow("changelog", "GunthOS — Notes de version", "📋"),
     },
   ];
 

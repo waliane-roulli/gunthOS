@@ -19,6 +19,12 @@ const settingsPatchSchema = z.object({
   wallpaperId: z.string().optional(),
   wallpaperOverridden: z.boolean().optional(),
   seenApps: z.array(z.string()).optional(),
+  seenAppVersions: z.record(z.string(), z.string()).optional(),
+  fontPairId: z.string().optional(),
+  fontSize: z.number().min(0.85).max(1.3).optional(),
+  soundSchemeId: z.string().optional(),
+  performanceModeEnabled: z.boolean().optional(),
+  iconThemeId: z.string().optional(),
 });
 
 async function getSession() {

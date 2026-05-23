@@ -1,6 +1,8 @@
+export const dynamic = "force-dynamic";
+
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { user } from "@/lib/db/schema";
+import { user, osVersions } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
@@ -17,6 +19,18 @@ export async function POST(req: Request) {
   const body = await req.json() as { version?: string; changelog?: string };
   if (!body.version) return NextResponse.json({ error: "version requis" }, { status: 400 });
 
+  let release: { id: number; version: string; changelog: string | null; releasedAt: Date };
+  try {
+    release = db().insert(osVersions).values({
+      version: body.version.trim(),
+      changelog: body.changelog?.trim() || null,
+      releasedAt: new Date(),
+    }).returning().get();
+  } catch (err) {
+    console.error("[broadcast-version] DB insert failed:", err);
+    return NextResponse.json({ error: "Erreur base de données" }, { status: 500 });
+  }
+
   const payload: ReloadPayload = {
     kind: "reload",
     version: body.version,
@@ -24,5 +38,5 @@ export async function POST(req: Request) {
   };
 
   const count = broadcast(payload);
-  return NextResponse.json({ ok: true, reached: count });
+  return NextResponse.json({ ok: true, reached: count, release });
 }

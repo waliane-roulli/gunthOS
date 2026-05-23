@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { pickRandom } from "@/lib/gunth-jokes";
+import { pickRandom } from "@/lib/utils/random";
 import type { AppProps } from "@/types";
 
 const PRINT_ERRORS = [
@@ -9,10 +9,12 @@ const PRINT_ERRORS = [
   "ERREUR : Bourrage papier (plateau 1, 2 et 3).",
   "ERREUR : Encre noire vide. Encre couleur aussi. En fait toutes.",
   "ERREUR : Pilote introuvable. Il n'a jamais été trouvé.",
-  "ERREUR : Connexion USB perdue. Essayez de souffler dedans.",
+  "ERREUR : Pilote USB perdu au redémarrage de mardi. Il n'est pas revenu.",
   "ERREUR : Le papier n'est pas du bon format (GunthOS attend du A4½).",
-  "AVERTISSEMENT : 0 feuilles restantes. Impression annulée avec succès.",
+  "AVERTISSEMENT : Plateau vide depuis l'installation. L'imprimante n'a jamais vu de papier.",
+  "ERREUR : Imprimante reconnectée. Reconnexion ignorée par l'imprimante.",
   "SUCCÈS : Document imprimé. Sur l'imprimante de votre voisin.",
+  "SUCCÈS : Document mis en file d'attente derrière 'Photo_vacances_1999.bmp' (en cours depuis 2h14).",
 ];
 
 export function PrinterApp(_: AppProps) {

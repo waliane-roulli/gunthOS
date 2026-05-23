@@ -1,8 +1,10 @@
 "use client";
 
-import { useRef, useCallback, useState } from "react";
+import { useRef, useCallback, useState, useEffect } from "react";
 import type { AppProps } from "@/types";
 import { useAuth } from "@/lib/contexts/auth-context";
+import { PEGGLE_TIPS } from "@/lib/gunth-jokes";
+import { pickRandom } from "@/lib/utils/random";
 import { useMusic } from "./useMusic";
 import { useGameLoop } from "./useGameLoop";
 import { GameHud } from "./components/GameHud";
@@ -28,6 +30,11 @@ export function PeggleApp({ windowId: _windowId }: AppProps) {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [lbLoading, setLbLoading] = useState(false);
   const [scoreSubmitted, setScoreSubmitted] = useState(false);
+  const [tip, setTip] = useState(() => pickRandom(PEGGLE_TIPS));
+
+  useEffect(() => {
+    if (ui.phase === "aim") setTip(pickRandom(PEGGLE_TIPS));
+  }, [ui.phase]);
 
   const fetchLeaderboard = useCallback(async () => {
     setLbLoading(true);
@@ -53,11 +60,14 @@ export function PeggleApp({ windowId: _windowId }: AppProps) {
 
   useMusic();
 
+  const handleUiSync = useCallback((uiState: UiState) => setUi(uiState), []);
+  const handleOrangeTotalChange = useCallback((total: number) => setUi(u => ({ ...u, orangeTotal: total })), []);
+
   const { handleClick, resetGame, nextLevel } = useGameLoop({
     canvasRef,
     mouseRef,
-    onUiSync: setUi,
-    onOrangeTotalChange: (total) => setUi(u => ({ ...u, orangeTotal: total })),
+    onUiSync: handleUiSync,
+    onOrangeTotalChange: handleOrangeTotalChange,
     onBestScore: setBestScore,
     onScoreSubmit: submitScore,
   });
@@ -147,7 +157,7 @@ export function PeggleApp({ windowId: _windowId }: AppProps) {
           }}
         >
           {ui.phase === "aim"
-            ? "Cliquez pour tirer • Détruisez tous les pegs orange"
+            ? tip
             : ui.phase === "firing"
             ? "En vol..."
             : ""}

@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { authClient } from "@/lib/auth-client";
-import { pickRandom } from "@/lib/gunth-jokes";
+import { PROFILE_SAVE_MESSAGES } from "@/lib/gunth-jokes";
+import { pickRandom } from "@/lib/utils/random";
 import type { AppProps } from "@/types";
 import {
   type ProfileData, FAVORITE_APPS, STATUS_SUGGESTIONS, BIO_SUGGESTIONS,
@@ -53,7 +54,7 @@ export function ProfileApp(_: AppProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: editName, bio: editBio, statusMessage: editStatus, favoriteApp: editFavoriteApp }),
       });
-      setSaveMsg("✅ Sauvegardé dans C:\\USERS\\MOI\\PROFIL.txt");
+      setSaveMsg(pickRandom(PROFILE_SAVE_MESSAGES));
       await loadProfile();
       setTab("view");
     } finally {
@@ -210,7 +211,7 @@ function EditTab({
         <div className="flex flex-wrap gap-1 mt-1">
           {STATUS_SUGGESTIONS.slice(0, 4).map((s) => (
             <button key={s} onClick={() => setEditStatus(s)}
-              style={{ fontFamily: "var(--t-font-display)", fontSize: "0.7rem", padding: "1px 6px", border: "1px solid var(--t-border-dark)", backgroundColor: "var(--t-bg-dark)", color: "var(--t-text-muted)", cursor: "pointer" }}
+              style={{ fontFamily: "var(--t-font-display)", fontSize: "var(--t-text-xs)", padding: "1px 6px", border: "1px solid var(--t-border-dark)", backgroundColor: "var(--t-bg-dark)", color: "var(--t-text-muted)", cursor: "pointer" }}
             >{s}</button>
           ))}
         </div>
@@ -227,7 +228,7 @@ function EditTab({
         <div className="flex flex-wrap gap-1">
           {FAVORITE_APPS.map((app) => (
             <button key={app.value} onClick={() => setEditFavoriteApp(editFavoriteApp === app.value ? "" : app.value)} title={app.desc}
-              style={{ fontFamily: "var(--t-font-display)", fontSize: "0.8rem", padding: "3px 10px", border: "2px solid", borderTopColor: editFavoriteApp === app.value ? "var(--t-border-dark)" : "var(--t-border-light)", borderLeftColor: editFavoriteApp === app.value ? "var(--t-border-dark)" : "var(--t-border-light)", borderBottomColor: editFavoriteApp === app.value ? "var(--t-border-light)" : "var(--t-border-dark)", borderRightColor: editFavoriteApp === app.value ? "var(--t-border-light)" : "var(--t-border-dark)", backgroundColor: editFavoriteApp === app.value ? "var(--t-accent)" : "var(--t-bg)", color: editFavoriteApp === app.value ? "var(--t-titlebar-text)" : "var(--t-text)", cursor: "pointer" }}
+              style={{ fontFamily: "var(--t-font-display)", fontSize: "var(--t-text-xs)", padding: "3px 10px", border: "2px solid", borderTopColor: editFavoriteApp === app.value ? "var(--t-border-dark)" : "var(--t-border-light)", borderLeftColor: editFavoriteApp === app.value ? "var(--t-border-dark)" : "var(--t-border-light)", borderBottomColor: editFavoriteApp === app.value ? "var(--t-border-light)" : "var(--t-border-dark)", borderRightColor: editFavoriteApp === app.value ? "var(--t-border-light)" : "var(--t-border-dark)", backgroundColor: editFavoriteApp === app.value ? "var(--t-accent)" : "var(--t-bg)", color: editFavoriteApp === app.value ? "var(--t-titlebar-text)" : "var(--t-text)", cursor: "pointer" }}
             >{app.label}</button>
           ))}
         </div>

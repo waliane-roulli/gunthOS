@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useWindowActions } from "@/lib/contexts/window-manager-context";
-import { pickRandom } from "@/lib/gunth-jokes";
+import { DIRECTORY_LOADING_MSGS, DIRECTORY_EMPTY_SEARCH_MSGS, DIRECTORY_NO_USERS_MSGS } from "@/lib/gunth-jokes";
+import { pickRandom } from "@/lib/utils/random";
 import type { AppProps } from "@/types";
 import { PIXEL_AVATARS, getDaysSinceJoin, getGunthosRank, RetroInput } from "@/apps/profile/_shared";
 
@@ -19,6 +20,9 @@ export function DirectoryApp(_: AppProps) {
   const [users, setUsers] = useState<PublicUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [loadingMsg] = useState(() => pickRandom(DIRECTORY_LOADING_MSGS));
+  const [emptySearchMsg] = useState(() => pickRandom(DIRECTORY_EMPTY_SEARCH_MSGS));
+  const [noUsersMsg] = useState(() => pickRandom(DIRECTORY_NO_USERS_MSGS));
   const { openWindow } = useWindowActions();
 
   useEffect(() => {
@@ -48,7 +52,7 @@ export function DirectoryApp(_: AppProps) {
     return (
       <div className="p-6 text-center" style={{ fontFamily: "var(--t-font-display)", color: "var(--t-text-muted)" }}>
         <div className="text-4xl animate-[blink_1s_step-end_infinite]">⏳</div>
-        <div className="mt-2 tracking-widest">Téléchargement de l&apos;annuaire...</div>
+        <div className="mt-2 tracking-widest">{loadingMsg}</div>
       </div>
     );
   }
@@ -63,7 +67,7 @@ export function DirectoryApp(_: AppProps) {
       <div className="flex-1 overflow-auto">
         {filtered.length === 0 ? (
           <div className="p-6 text-center" style={{ color: "var(--t-text-muted)" }}>
-            {search ? "Aucun utilisateur trouvé. Vérifiez l'orthographe." : "Aucun utilisateur inscrit. Soyez le premier !"}
+            {search ? emptySearchMsg : noUsersMsg}
           </div>
         ) : (
           <div className="flex flex-col">
