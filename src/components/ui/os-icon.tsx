@@ -1,6 +1,7 @@
 "use client";
 
 import { useIconTheme } from "@/lib/contexts/icon-theme-context";
+import type { IconRenderer } from "@/lib/icon-themes/types";
 
 interface OsIconProps {
   slug: string;
@@ -8,56 +9,52 @@ interface OsIconProps {
   className?: string;
 }
 
+interface BoxedIconProps {
+  size: number;
+  bgColor: string;
+  iconColor: string;
+  iconRatio: number;
+  border: string;
+  className?: string;
+  Renderer: IconRenderer;
+  extraStyle?: React.CSSProperties;
+}
+
+function BoxedIcon({ size, bgColor, iconColor, iconRatio, border, className, Renderer, extraStyle }: BoxedIconProps) {
+  return (
+    <div
+      className={className}
+      style={{
+        width: size, height: size,
+        backgroundColor: bgColor,
+        color: iconColor,
+        display: "inline-flex", alignItems: "center", justifyContent: "center",
+        flexShrink: 0,
+        borderTop: `${border} solid var(--t-border-light)`,
+        borderLeft: `${border} solid var(--t-border-light)`,
+        borderBottom: `${border} solid var(--t-border-dark)`,
+        borderRight: `${border} solid var(--t-border-dark)`,
+        ...extraStyle,
+      }}
+    >
+      <Renderer size={Math.round(size * iconRatio)} />
+    </div>
+  );
+}
+
 export function OsIcon({ slug, size, className }: OsIconProps) {
   const theme = useIconTheme();
   const entry = theme.icons[slug];
   const Renderer = entry?.icon ?? theme.fallback;
   const color = entry?.color ?? "var(--t-accent)";
+  const border = size >= 28 ? "2px" : "1px";
 
   if (theme.style === "colored-bg") {
-    const iconSize = Math.round(size * 0.6);
-    const border = size >= 28 ? "2px" : "1px";
-    return (
-      <div
-        className={className}
-        style={{
-          width: size, height: size,
-          backgroundColor: color,
-          color: "white",
-          display: "inline-flex", alignItems: "center", justifyContent: "center",
-          flexShrink: 0,
-          borderTop: `${border} solid var(--t-border-light)`,
-          borderLeft: `${border} solid var(--t-border-light)`,
-          borderBottom: `${border} solid var(--t-border-dark)`,
-          borderRight: `${border} solid var(--t-border-dark)`,
-        }}
-      >
-        <Renderer size={iconSize} />
-      </div>
-    );
+    return <BoxedIcon size={size} bgColor={color} iconColor="white" iconRatio={0.6} border={border} className={className} Renderer={Renderer} />;
   }
 
   if (theme.style === "win98") {
-    const iconSize = Math.round(size * 0.68);
-    const border = size >= 28 ? "2px" : "1px";
-    return (
-      <div
-        className={className}
-        style={{
-          width: size, height: size,
-          backgroundColor: "var(--t-bg)",
-          color,
-          display: "inline-flex", alignItems: "center", justifyContent: "center",
-          flexShrink: 0,
-          borderTop: `${border} solid var(--t-border-light)`,
-          borderLeft: `${border} solid var(--t-border-light)`,
-          borderBottom: `${border} solid var(--t-border-dark)`,
-          borderRight: `${border} solid var(--t-border-dark)`,
-        }}
-      >
-        <Renderer size={iconSize} />
-      </div>
-    );
+    return <BoxedIcon size={size} bgColor="var(--t-bg)" iconColor={color} iconRatio={0.68} border={border} className={className} Renderer={Renderer} />;
   }
 
   if (theme.style === "pixel") {

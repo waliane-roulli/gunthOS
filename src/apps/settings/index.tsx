@@ -398,6 +398,10 @@ function IconsTab({ iconThemeId, setIconTheme }: { iconThemeId: IconThemeId; set
     "colored-bg": "Fond coloré par app",
     "win98": "Boîte Win98 en relief",
     "plain": "Icône seule (plat)",
+    "neon": "Fond noir, lueur colorée",
+    "crt": "Phosphore vert monochrome",
+    "pixel": "Style jeu vidéo 16-bit",
+    "flat": "SVG sans fond",
   };
   return (
     <>

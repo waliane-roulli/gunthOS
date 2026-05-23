@@ -1,26 +1,5 @@
+import { APP_REGISTRY } from "@/apps";
 import type { IconTheme, IconRenderer } from "../types";
-
-const EMOJI_MAP: Record<string, string> = {
-  peggle: "🎯",
-  "plouf-plouf": "💧",
-  profile: "👤",
-  directory: "📋",
-  msn: "💬",
-  radio: "📻",
-  "linked-gunth": "🔗",
-  "gunther-board": "📝",
-  admin: "🗄️",
-  "my-computer": "🖥️",
-  trash: "🗑️",
-  settings: "⚙️",
-  login: "🔐",
-  "public-profile": "👤",
-  solitaire: "🃏",
-  defrag: "🗂️",
-  notepad: "📝",
-  printer: "🖨️",
-  ie: "🌐",
-};
 
 function makeEmojiRenderer(emoji: string): IconRenderer {
   const EmojiIcon = ({ size }: { size: number }) => (
@@ -38,8 +17,10 @@ const FallbackIcon: IconRenderer = ({ size }: { size: number }) => (
 FallbackIcon.displayName = "EmojiFallback";
 
 const icons: IconTheme["icons"] = {};
-for (const [slug, emoji] of Object.entries(EMOJI_MAP)) {
-  icons[slug] = { icon: makeEmojiRenderer(emoji) };
+for (const app of APP_REGISTRY) {
+  if (app.emoji) {
+    icons[app.slug] = { icon: makeEmojiRenderer(app.emoji) };
+  }
 }
 
 export const emojiTheme: IconTheme = {
