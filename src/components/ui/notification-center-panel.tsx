@@ -37,13 +37,13 @@ function formatRelativeTime(date: string | Date): string {
 }
 
 interface Props {
-  anchorBottom: number;
+  anchorTop: number;
   anchorRight: number;
   onClose: () => void;
   onUnreadChange: (count: number) => void;
 }
 
-export function NotificationCenterPanel({ anchorBottom, anchorRight, onClose, onUnreadChange }: Props) {
+export function NotificationCenterPanel({ anchorTop, anchorRight, onClose, onUnreadChange }: Props) {
   const [items, setItems] = useState<DbNotification[]>([]);
   const [loading, setLoading] = useState(true);
   const { openApp } = useOpenApp();
@@ -99,7 +99,7 @@ export function NotificationCenterPanel({ anchorBottom, anchorRight, onClose, on
   const hasUnread = items.some((n) => !n.read);
 
   const panelStyle: React.CSSProperties = {
-    bottom: anchorBottom,
+    top: anchorTop,
     right: anchorRight,
     width: 320,
     maxHeight: 460,
