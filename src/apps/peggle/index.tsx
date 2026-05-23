@@ -60,11 +60,14 @@ export function PeggleApp({ windowId: _windowId }: AppProps) {
 
   useMusic();
 
+  const handleUiSync = useCallback((uiState: UiState) => setUi(uiState), []);
+  const handleOrangeTotalChange = useCallback((total: number) => setUi(u => ({ ...u, orangeTotal: total })), []);
+
   const { handleClick, resetGame, nextLevel } = useGameLoop({
     canvasRef,
     mouseRef,
-    onUiSync: setUi,
-    onOrangeTotalChange: (total) => setUi(u => ({ ...u, orangeTotal: total })),
+    onUiSync: handleUiSync,
+    onOrangeTotalChange: handleOrangeTotalChange,
     onBestScore: setBestScore,
     onScoreSubmit: submitScore,
   });
