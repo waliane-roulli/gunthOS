@@ -5,8 +5,7 @@ import { useAuth } from "@/lib/contexts/auth-context";
 import { useSoundContext } from "@/lib/contexts/sound-context";
 import { GUNTHER_LOADING_HINTS, GUNTHER_STATUS_BAR_MSGS } from "@/lib/gunth-jokes";
 import { pickRandom } from "@/lib/utils/random";
-import { APP_REGISTRY } from "@/apps";
-import type { AppProps } from "@/types";
+import type { AppManifest, AppProps } from "@/types";
 
 const ALLOWED_EMOJIS = ["👍", "❤️", "😂", "😮", "😢", "🔥", "🚀", "👀"];
 
@@ -45,11 +44,11 @@ const OS_SCOPES: { value: string; label: string }[] = [
   { value: "os:core", label: "⚙️ OS Core" },
 ];
 
-function getScopeLabel(scope: string | null): string {
+function getScopeLabel(scope: string | null, registry: AppManifest[]): string {
   if (!scope) return "";
   const os = OS_SCOPES.find((s) => s.value === scope);
   if (os) return os.label;
-  const app = APP_REGISTRY.find((a) => `app:${a.slug}` === scope);
+  const app = registry.find((a) => `app:${a.slug}` === scope);
   if (app) return `${app.emoji} ${app.name}`;
   return scope;
 }
@@ -58,16 +57,18 @@ function ScopeSelect({
   value,
   onChange,
   style,
+  registry,
 }: {
   value: string;
   onChange: (v: string) => void;
   style?: React.CSSProperties;
+  registry: AppManifest[];
 }) {
   return (
     <select value={value} onChange={(e) => onChange(e.target.value)} style={style}>
       <option value="">— aucun —</option>
       <optgroup label="Apps">
-        {APP_REGISTRY.map((a) => (
+        {registry.map((a) => (
           <option key={a.slug} value={`app:${a.slug}`}>
             {a.emoji} {a.name}
           </option>
@@ -249,6 +250,11 @@ export function GuntherBoardApp(_: AppProps) {
   const [colSubtitles] = useState(() =>
     Object.fromEntries(COLUMNS.map((col) => [col.key, pickRandom(col.subtitles)])) as Record<Status, string>
   );
+  const [appRegistry, setAppRegistry] = useState<AppManifest[]>([]);
+
+  useEffect(() => {
+    import("@/apps").then(({ APP_REGISTRY }) => setAppRegistry(APP_REGISTRY));
+  }, []);
 
   useEffect(() => {
     if (!loading) return;
@@ -589,6 +595,7 @@ export function GuntherBoardApp(_: AppProps) {
                       onDragStart={handleDragStart}
                       onDragEnd={handleDragEnd}
                       currentStatus={col.key}
+                      appRegistry={appRegistry}
                     />
                   ))}
                   {colTickets.length === 0 && (
@@ -638,6 +645,7 @@ export function GuntherBoardApp(_: AppProps) {
             onDelete={deleteTicket}
             onCancelEdit={() => setEditingDetail(false)}
             onChange={(patch) => setDetailForm((p) => ({ ...p, ...patch }))}
+            appRegistry={appRegistry}
           />
         )}
       </div>
@@ -668,6 +676,7 @@ export function GuntherBoardApp(_: AppProps) {
           onChange={(patch) => setForm((p) => ({ ...p, ...patch }))}
           onSubmit={createTicket}
           onClose={() => { playClick(); setShowForm(false); setForm(EMPTY_FORM); }}
+          appRegistry={appRegistry}
         />
       )}
     </div>
@@ -734,6 +743,7 @@ function TicketCard({
   onDragStart,
   onDragEnd,
   currentStatus,
+  appRegistry,
 }: {
   ticket: Ticket;
   isSelected: boolean;
@@ -744,6 +754,7 @@ function TicketCard({
   onDragStart: (id: number) => void;
   onDragEnd: () => void;
   currentStatus: Status;
+  appRegistry: AppManifest[];
 }) {
   const prev = currentStatus === "in_progress" ? "todo" : currentStatus === "done" ? "in_progress" : null;
   const next = currentStatus === "todo" ? "in_progress" : currentStatus === "in_progress" ? "done" : null;
@@ -873,7 +884,7 @@ function TicketCard({
                 lineHeight: 1.5,
               }}
             >
-              {getScopeLabel(ticket.scope)}
+              {getScopeLabel(ticket.scope, appRegistry)}
             </span>
           )}
         </div>
@@ -967,6 +978,7 @@ function TicketDetail({
   onDelete,
   onCancelEdit,
   onChange,
+  appRegistry,
 }: {
   ticket: Ticket;
   editing: boolean;
@@ -979,6 +991,7 @@ function TicketDetail({
   onDelete: (id: number) => void;
   onCancelEdit: () => void;
   onChange: (patch: Partial<Ticket>) => void;
+  appRegistry: AppManifest[];
 }) {
   const fieldStyle: React.CSSProperties = {
     ...INSET,
@@ -1101,6 +1114,7 @@ function TicketDetail({
                 value={detailForm.scope ?? ticket.scope ?? ""}
                 onChange={(v) => onChange({ scope: v || null })}
                 style={fieldStyle}
+                registry={appRegistry}
               />
             </Fieldset>
 
@@ -1224,7 +1238,7 @@ function TicketDetail({
                     backgroundColor: "var(--t-bg)",
                   }}
                 >
-                  {getScopeLabel(ticket.scope)}
+                  {getScopeLabel(ticket.scope, appRegistry)}
                 </span>
               )}
             </div>
@@ -1603,6 +1617,7 @@ function NewTicketModal({
   onChange,
   onSubmit,
   onClose,
+  appRegistry,
 }: {
   form: NewTicketForm;
   submitting: boolean;
@@ -1611,6 +1626,7 @@ function NewTicketModal({
   onChange: (patch: Partial<NewTicketForm>) => void;
   onSubmit: () => void;
   onClose: () => void;
+  appRegistry: AppManifest[];
 }) {
   function handleKey(e: React.KeyboardEvent) {
     if (e.key === "Escape") onClose();
@@ -1739,6 +1755,7 @@ function NewTicketModal({
               value={form.scope}
               onChange={(v) => onChange({ scope: v })}
               style={fieldStyle}
+              registry={appRegistry}
             />
           </Fieldset>
 
