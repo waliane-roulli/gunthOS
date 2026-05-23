@@ -32,7 +32,7 @@ export function GameHud({ ui, bestScore, displayName, onActivateMultiball }: Gam
 
       <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
         <StatCard label="SCORE" value={ui.score.toLocaleString()} />
-        <StatCard label="🟠 PEGS" value={`${ui.orangeLeft} / ${ui.orangeTotal}`} accent />
+        <StatCard label="🪟 FENÊTRES" value={`${ui.orangeLeft} / ${ui.orangeTotal}`} accent />
         <StatCard label="BILLES" value={ui.balls} />
         {ui.combo >= 3 && (
           <StatCard label="COMBO" value={`×${Math.max(1, Math.floor(ui.combo / 3))}`} accent />

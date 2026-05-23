@@ -251,11 +251,12 @@ export function useGameLoop({
       for (let i = 0; i < count; i++) {
         const angle = Math.random() * Math.PI * 2;
         const speed = 1.5 + Math.random() * (bomb ? 6 : 3.5);
+        // Win98 theme: bomb=error red, orange(titlebar)=navy/blue, normal=gray
         const colors = bomb
           ? ["#ff6600", "#ffcc00", "#ff2200", "#ffeeaa", "#ffffff"]
           : orange
-          ? ["#ff9900", "#ffcc00", "#ff6600", "#fff4aa", "#ff4400"]
-          : ["#66aaff", "#aaddff", "#4488ff", "#ffffff", "#2266cc"];
+          ? ["#4488ff", "#88bbff", "#0044cc", "#ffffff", "#000080"]
+          : ["#c0c0c0", "#e0e0e0", "#808080", "#ffffff", "#606060"];
         const p: Particle = {
           x, y,
           vx: Math.cos(angle) * speed,
@@ -310,9 +311,9 @@ export function useGameLoop({
         s.flashWhite = 1.0;
         s.floatingTexts.push({
           x: W / 2, y: H / 2 - 30,
-          text: "DERNIER ORANGE !",
+          text: "DERNIÈRE FENÊTRE !",
           life: 1, maxLife: 2.5,
-          color: "#ffcc00", combo: true, fontSize: 16,
+          color: "#88ccff", combo: true, fontSize: 16,
         });
       }
     }
@@ -419,9 +420,9 @@ export function useGameLoop({
               s.flashWhite = 1.0;
               s.floatingTexts.push({
                 x: W / 2, y: H / 2 - 30,
-                text: "DERNIER ORANGE !",
+                text: "DERNIÈRE FENÊTRE !",
                 life: 1, maxLife: 2.5,
-                color: "#ffcc00", combo: true, fontSize: 16,
+                color: "#88ccff", combo: true, fontSize: 16,
               });
             }
           }
@@ -459,7 +460,7 @@ export function useGameLoop({
             x: p.x + (Math.random() - 0.5) * 20,
             y: p.y,
             text: label, life: 1, maxLife: 1,
-            color: p.orange ? "#ffcc00" : p.green ? "#44ff88" : "#aaddff",
+            color: p.orange ? "#88ccff" : p.green ? "#44ff88" : "#ffffff",
             combo: comboBonus,
             fontSize: comboBonus ? popFontSize + 2 : popFontSize,
           });
@@ -468,7 +469,7 @@ export function useGameLoop({
             s.floatingTexts.push({
               x: p.x, y: p.y - 22,
               text: `COMBO ×${comboMult}!`, life: 1, maxLife: 1.6,
-              color: "#ff6600", combo: true,
+              color: "#ffcc44", combo: true,
               fontSize: Math.min(20, 13 + comboMult * 2),
             });
           }
