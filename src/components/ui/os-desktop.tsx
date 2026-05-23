@@ -278,6 +278,10 @@ function MobileDesktopIcon({ icon, selected, onSelect, onOpen }: MobileDesktopIc
   const pointerMoved = useRef(false);
   const pointerStart = useRef({ x: 0, y: 0 });
 
+  useEffect(() => {
+    return () => { if (longPressTimer.current) clearTimeout(longPressTimer.current); };
+  }, []);
+
   const handlePointerDown = useCallback((e: React.PointerEvent<HTMLButtonElement>) => {
     pointerMoved.current = false;
     pointerStart.current = { x: e.clientX, y: e.clientY };
@@ -315,13 +319,13 @@ function MobileDesktopIcon({ icon, selected, onSelect, onOpen }: MobileDesktopIc
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       className="flex flex-col items-center gap-1 p-2 focus:outline-none cursor-default w-full"
-      style={{ userSelect: "none", touchAction: "none", minHeight: 80 }}
+      style={{ userSelect: "none", touchAction: "pan-y", minHeight: 80 }}
     >
       <div className="relative">
         {typeof icon.emoji === "string" ? (
           <span
-            className={`text-[2.4rem] leading-none transition-opacity ${selected ? "opacity-75" : ""}`}
-            style={{ filter: "drop-shadow(1px 1px 2px rgba(0,0,0,0.7))" }}
+            className={`leading-none transition-opacity ${selected ? "opacity-75" : ""}`}
+            style={{ fontSize: "calc(2.4rem * var(--t-font-scale))", filter: "drop-shadow(1px 1px 2px rgba(0,0,0,0.7))" }}
           >
             {icon.emoji}
           </span>

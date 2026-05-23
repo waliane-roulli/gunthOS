@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Fredoka, VT323, Press_Start_2P, Orbitron, Exo_2, Righteous, Nunito, Share_Tech_Mono, Ubuntu_Mono, Audiowide, Rajdhani, Playfair_Display, Lora, Bungee, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { SettingsProvider } from "@/lib/contexts/settings-context";
@@ -101,6 +101,12 @@ export const metadata: Metadata = {
     "GunthOS : le système d'exploitation du web. Tirage au sort, mini-jeux et outils kitsch. Chargement en cours depuis 1998.",
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
+
 export default function RootLayout({
   children,
 }: {
@@ -108,9 +114,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr" className={`${fredoka.variable} ${vt323.variable} ${pressStart.variable} ${orbitron.variable} ${exo2.variable} ${righteous.variable} ${nunito.variable} ${shareTechMono.variable} ${ubuntuMono.variable} ${audiowide.variable} ${rajdhani.variable} ${playfairDisplay.variable} ${lora.variable} ${bungee.variable} ${ibmPlexMono.variable}`}>
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-      </head>
       <body>
         <AuthProvider>
           <SettingsProvider>
