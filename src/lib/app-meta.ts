@@ -3,7 +3,7 @@
  * audioChannels must match the manifest field (used by use-sound to silence on window close). */
 export const APP_META: { slug: string; name: string; emoji: string; audioChannels?: string[] }[] = [
   { slug: "peggle",         name: "Peggle 98",               emoji: "🎯", audioChannels: ["peggle-music"] },
-  { slug: "plouf-plouf",    name: "Plouf Plouf",             emoji: "💧", audioChannels: ["music"] },
+  { slug: "plouf-plouf",    name: "Plouf Plouf",             emoji: "💧", audioChannels: ["ploufplouf-music"] },
   { slug: "profile",        name: "Mon Profil",              emoji: "👤" },
   { slug: "directory",      name: "Annuaire",                emoji: "📋" },
   { slug: "msn",            name: "GunthMessenger™",         emoji: "💬" },

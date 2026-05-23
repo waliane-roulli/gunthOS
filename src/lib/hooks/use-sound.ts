@@ -319,7 +319,7 @@ export function useSound(muted: boolean, schemeId: SoundSchemeId = DEFAULT_SOUND
     ploufPlayerRef.current = null;
 
     const generation = ++ploufGenerationRef.current;
-    const musicChannel = getChannel("music", 1);
+    const musicChannel = getChannel("ploufplouf-music", 1);
     musicChannel.setVolume(1);
     const player = new AudioPlayer(musicChannel);
 
@@ -340,7 +340,7 @@ export function useSound(muted: boolean, schemeId: SoundSchemeId = DEFAULT_SOUND
     onFirstInitRef.current = null;
     ploufPlayerRef.current?.stop();
     ploufPlayerRef.current = null;
-    silenceChannel("music");
+    silenceChannel("ploufplouf-music");
   }, []);
 
   // ── Stop audio par app ───────────────────────────────────────────────────────
