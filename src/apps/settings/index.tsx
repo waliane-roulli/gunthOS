@@ -10,7 +10,8 @@ import { CURSORS, type CursorId } from "@/lib/cursors";
 import { WALLPAPERS, WALLPAPER_MAP, type WallpaperId } from "@/lib/wallpapers";
 import { FONT_PAIRS, type FontPairId } from "@/lib/font-pairs";
 import { SOUND_SCHEMES, type SoundSchemeId } from "@/lib/sound-schemes";
-import { ICON_THEMES, type IconThemeId } from "@/lib/icon-themes";
+import { ICON_THEMES, type IconThemeId, type IconTheme } from "@/lib/icon-themes";
+import { OsIcon } from "@/components/ui/os-icon";
 import { useSoundContext } from "@/lib/contexts/sound-context";
 import { RetroTitlebarBtn } from "@/components/ui/retro-titlebar-btn";
 import { APP_REGISTRY } from "@/apps";
@@ -397,6 +398,18 @@ function SystemTab({ soundEnabled, setSoundEnabled, ambientVolume, setAmbientVol
   );
 }
 
+const ICON_PREVIEW_SLUGS = ["settings", "radio", "msn", "solitaire", "trash", "notepad"];
+
+function IconThemePreview({ theme, size = 24 }: { theme: IconTheme; size?: number }) {
+  return (
+    <div className="flex items-center gap-1 flex-wrap">
+      {ICON_PREVIEW_SLUGS.map((slug) => (
+        <OsIcon key={slug} slug={slug} size={size} theme={theme} />
+      ))}
+    </div>
+  );
+}
+
 function IconsTab({ iconThemeId, setIconTheme }: { iconThemeId: IconThemeId; setIconTheme: (id: IconThemeId) => void }) {
   const STYLE_LABELS: Record<string, string> = {
     "colored-bg": "Fond coloré par app",
@@ -406,20 +419,36 @@ function IconsTab({ iconThemeId, setIconTheme }: { iconThemeId: IconThemeId; set
     "crt": "Phosphore vert monochrome",
     "pixel": "Style jeu vidéo 16-bit",
     "flat": "SVG sans fond",
+    "pastel": "Tons doux, fond pastel",
+    "glass": "Glassmorphisme, flou & reflets",
+    "synthwave": "Rétro-futuriste années 80",
   };
+
+  const activeTheme = ICON_THEMES.find((t) => t.id === iconThemeId);
+
   return (
     <>
       <SectionTitle>🗂️ THÈME D&apos;ICÔNES</SectionTitle>
-      <div className="flex flex-col gap-2">
+
+      {activeTheme && (
+        <div className="mb-4 p-3 border-[2px]" style={{ backgroundColor: "var(--t-inset-from)", borderTopColor: "var(--t-border-dark)", borderLeftColor: "var(--t-border-dark)", borderBottomColor: "var(--t-border-light)", borderRightColor: "var(--t-border-light)" }}>
+          <div className="tracking-widest mb-2" style={{ fontSize: "var(--t-text-xs)", color: "var(--t-accent)", fontFamily: "var(--t-font-display)" }}>
+            ✓ {activeTheme.displayName.toUpperCase()} — APERÇU
+          </div>
+          <IconThemePreview theme={activeTheme} size={32} />
+        </div>
+      )}
+
+      <div className="flex flex-col gap-1.5 max-h-[340px] overflow-y-auto pr-1">
         {ICON_THEMES.map((theme) => {
           const isActive = theme.id === iconThemeId;
           return (
             <button
               key={theme.id}
               onClick={() => setIconTheme(theme.id)}
-              className="flex items-center gap-3 p-3 border-[2px] text-left cursor-pointer w-full"
+              className="flex items-center gap-3 p-2.5 border-[2px] text-left cursor-pointer w-full"
               style={{
-                backgroundColor: isActive ? "var(--t-bg-dark)" : "var(--t-bg)",
+                backgroundColor: isActive ? "var(--t-card-hover)" : "var(--t-bg)",
                 borderTopColor: isActive ? "var(--t-border-dark)" : "var(--t-border-light)",
                 borderLeftColor: isActive ? "var(--t-border-dark)" : "var(--t-border-light)",
                 borderBottomColor: isActive ? "var(--t-border-light)" : "var(--t-border-dark)",
@@ -428,17 +457,17 @@ function IconsTab({ iconThemeId, setIconTheme }: { iconThemeId: IconThemeId; set
                 outlineOffset: "1px",
               }}
             >
-              <span style={{ fontSize: "var(--t-text-xl)", lineHeight: 1 }}>{theme.preview}</span>
+              <div className="shrink-0">
+                <IconThemePreview theme={theme} size={20} />
+              </div>
               <div className="flex-1 min-w-0">
-                <div className="tracking-wider flex items-center gap-2" style={{ fontFamily: "var(--t-font-display)", fontSize: "var(--t-text-sm)", color: isActive ? "var(--t-accent)" : "var(--t-text)" }}>
+                <div className="tracking-wider flex items-center gap-1.5" style={{ fontFamily: "var(--t-font-display)", fontSize: "var(--t-text-xs)", color: isActive ? "var(--t-accent)" : "var(--t-text)" }}>
                   {isActive && <span>✓</span>}
                   {theme.displayName}
+                  <span style={{ color: "var(--t-text-muted)", fontWeight: "normal" }}>— {STYLE_LABELS[theme.style] ?? theme.style}</span>
                 </div>
-                <div style={{ fontFamily: "var(--t-font-body)", fontSize: "var(--t-text-xs)", color: "var(--t-text-subtle)", marginTop: 2 }}>
+                <div style={{ fontFamily: "var(--t-font-body)", fontSize: "var(--t-text-xs)", color: "var(--t-text-subtle)", marginTop: 1 }}>
                   {theme.description}
-                </div>
-                <div style={{ fontFamily: "var(--t-font-display)", fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)", marginTop: 2 }}>
-                  {STYLE_LABELS[theme.style] ?? theme.style}
                 </div>
               </div>
             </button>

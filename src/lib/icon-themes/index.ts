@@ -8,25 +8,35 @@ import { pixelTheme } from "./themes/pixel";
 import { neonTheme } from "./themes/neon";
 import { crtTheme } from "./themes/crt";
 import { flatTheme } from "./themes/flat";
+import { pastelTheme } from "./themes/pastel";
+import { glassTheme } from "./themes/glass";
+import { synthwaveTheme } from "./themes/synthwave";
 
-export { emojiTheme, lucideTheme, win98Theme, pixelTheme, neonTheme, crtTheme, flatTheme };
+export {
+  emojiTheme, lucideTheme, win98Theme, pixelTheme,
+  neonTheme, crtTheme, flatTheme,
+  pastelTheme, glassTheme, synthwaveTheme,
+};
 
 export const ICON_THEMES: IconTheme[] = [
+  emojiTheme,
   win98Theme,
   pixelTheme,
   lucideTheme,
+  pastelTheme,
+  glassTheme,
   neonTheme,
+  synthwaveTheme,
   crtTheme,
   flatTheme,
-  emojiTheme,
 ];
 
-export const DEFAULT_ICON_THEME_ID: IconThemeId = "win98";
+export const DEFAULT_ICON_THEME_ID: IconThemeId = "emoji";
 
 const ICON_THEME_MAP = new Map<IconThemeId, IconTheme>(
   ICON_THEMES.map((t) => [t.id, t])
 );
 
 export function getIconTheme(id: IconThemeId | undefined): IconTheme {
-  return ICON_THEME_MAP.get(id as IconThemeId) ?? win98Theme;
+  return ICON_THEME_MAP.get(id as IconThemeId) ?? emojiTheme;
 }

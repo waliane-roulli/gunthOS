@@ -1,12 +1,13 @@
 "use client";
 
 import { useIconTheme } from "@/lib/contexts/icon-theme-context";
-import type { IconRenderer } from "@/lib/icon-themes/types";
+import type { IconRenderer, IconTheme } from "@/lib/icon-themes/types";
 
 interface OsIconProps {
   slug: string;
   size: number;
   className?: string;
+  theme?: IconTheme;
 }
 
 interface BoxedIconProps {
@@ -42,8 +43,9 @@ function BoxedIcon({ size, bgColor, iconColor, iconRatio, border, className, Ren
   );
 }
 
-export function OsIcon({ slug, size, className }: OsIconProps) {
-  const theme = useIconTheme();
+export function OsIcon({ slug, size, className, theme: themeProp }: OsIconProps) {
+  const contextTheme = useIconTheme();
+  const theme = themeProp ?? contextTheme;
   const entry = theme.icons[slug];
   const Renderer = entry?.icon ?? theme.fallback;
   const color = entry?.color ?? "var(--t-accent)";
@@ -134,6 +136,73 @@ export function OsIcon({ slug, size, className }: OsIconProps) {
         }}
       >
         <Renderer size={size} />
+      </div>
+    );
+  }
+
+  if (theme.style === "pastel") {
+    const bgColor = entry?.bgColor ?? "#e8e8f4";
+    const iconSize = Math.round(size * 0.6);
+    return (
+      <div
+        className={className}
+        style={{
+          width: size, height: size,
+          backgroundColor: bgColor,
+          color,
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+          flexShrink: 0,
+          borderTop: `${border} solid rgba(255,255,255,0.9)`,
+          borderLeft: `${border} solid rgba(255,255,255,0.9)`,
+          borderBottom: `${border} solid rgba(0,0,0,0.12)`,
+          borderRight: `${border} solid rgba(0,0,0,0.12)`,
+          boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+        }}
+      >
+        <Renderer size={iconSize} />
+      </div>
+    );
+  }
+
+  if (theme.style === "glass") {
+    const iconSize = Math.round(size * 0.62);
+    return (
+      <div
+        className={className}
+        style={{
+          width: size, height: size,
+          backgroundColor: `${color}28`,
+          backdropFilter: "blur(10px)",
+          WebkitBackdropFilter: "blur(10px)",
+          color,
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+          flexShrink: 0,
+          border: `1px solid ${color}55`,
+          boxShadow: `inset 0 1px 1px rgba(255,255,255,0.5), 0 2px 8px ${color}22`,
+        }}
+      >
+        <Renderer size={iconSize} />
+      </div>
+    );
+  }
+
+  if (theme.style === "synthwave") {
+    const iconSize = Math.round(size * 0.62);
+    const glow = Math.round(size * 0.45);
+    return (
+      <div
+        className={className}
+        style={{
+          width: size, height: size,
+          background: "linear-gradient(135deg, #1a0533 0%, #2d0a5e 100%)",
+          color,
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+          flexShrink: 0,
+          border: `1px solid ${color}88`,
+          boxShadow: `0 0 ${glow}px ${color}44, inset 0 0 ${Math.round(glow * 0.3)}px rgba(255,50,220,0.1)`,
+        }}
+      >
+        <Renderer size={iconSize} />
       </div>
     );
   }
