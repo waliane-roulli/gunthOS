@@ -25,9 +25,11 @@ interface Ticket {
   assigneeId: string | null;
   assigneeName: string | null;
   assigneeUsername: string | null;
+  assigneeAvatar: string | null;
   createdById: string | null;
   createdByName: string | null;
   createdByUsername: string | null;
+  createdByAvatar: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -202,6 +204,7 @@ interface GunthUser {
   id: string;
   name: string;
   username: string | null;
+  avatarDataUrl: string | null;
 }
 
 interface NewTicketForm {
@@ -332,6 +335,7 @@ export function GuntherBoardApp(_: AppProps) {
         ...updated,
         assigneeName: assignee?.name ?? (updated.assigneeId ? selectedTicket.assigneeName : null),
         assigneeUsername: (assignee as GunthUser | null)?.username ?? (updated.assigneeId ? selectedTicket.assigneeUsername : null),
+        assigneeAvatar: (assignee as GunthUser | null)?.avatarDataUrl ?? (updated.assigneeId ? selectedTicket.assigneeAvatar : null),
       };
       setTickets((prev) => prev.map((t) => t.id === enriched.id ? { ...t, ...enriched } : t));
       setSelectedTicket((prev) => prev ? { ...prev, ...enriched } : null);
@@ -508,61 +512,59 @@ export function GuntherBoardApp(_: AppProps) {
                   transition: "background-color 0.1s",
                 }}
               >
+                {/* Column accent bar */}
+                <div style={{ height: 3, backgroundColor: col.accentColor, flexShrink: 0 }} />
+
                 {/* Column header */}
                 <div
                   style={{
                     borderBottom: "2px solid var(--t-border-dark)",
                     borderTop: "2px solid var(--t-border-light)",
-                    padding: "4px 8px",
+                    padding: "5px 8px 4px",
                     backgroundColor: "var(--t-bg)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    gap: 6,
                     flexShrink: 0,
                   }}
                 >
-                  <div className="flex items-center gap-1">
-                    <span style={{ fontSize: "var(--t-text-base)" }}>{col.icon}</span>
-                    <span
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6 }}>
+                    <div className="flex items-center gap-1">
+                      <span style={{ fontSize: "var(--t-text-base)" }}>{col.icon}</span>
+                      <span
+                        style={{
+                          fontSize: "var(--t-text-sm)",
+                          fontWeight: "bold",
+                          color: col.accentColor,
+                          letterSpacing: "0.08em",
+                        }}
+                      >
+                        {col.label}
+                      </span>
+                    </div>
+                    <div
                       style={{
+                        ...INSET,
+                        minWidth: 22,
+                        textAlign: "center",
                         fontSize: "var(--t-text-sm)",
                         fontWeight: "bold",
-                        color: col.accentColor,
-                        letterSpacing: "0.08em",
+                        color: colTickets.length > 0 ? col.accentColor : "var(--t-text-subtle)",
+                        backgroundColor: "var(--t-app-bg)",
+                        padding: "0px 5px",
+                        lineHeight: "18px",
                       }}
                     >
-                      {col.label}
-                    </span>
+                      {colTickets.length}
+                    </div>
                   </div>
                   <div
                     style={{
-                      ...INSET,
-                      minWidth: 22,
-                      textAlign: "center",
-                      fontSize: "var(--t-text-sm)",
-                      fontWeight: "bold",
-                      color: colTickets.length > 0 ? col.accentColor : "var(--t-text-subtle)",
-                      backgroundColor: "var(--t-app-bg)",
-                      padding: "0px 5px",
-                      lineHeight: "18px",
+                      fontSize: "var(--t-text-xs)",
+                      fontStyle: "italic",
+                      color: "var(--t-text-subtle)",
+                      marginTop: 2,
                     }}
                   >
-                    {colTickets.length}
+                    {colSubtitles[col.key]}
                   </div>
-                </div>
-
-                {/* Column subtitle */}
-                <div style={{
-                  padding: "2px 8px",
-                  fontSize: "var(--t-text-xs)",
-                  fontStyle: "italic",
-                  color: "var(--t-text-subtle)",
-                  borderBottom: "1px solid var(--t-border-dark)",
-                  backgroundColor: "var(--t-app-bg)",
-                  flexShrink: 0,
-                }}>
-                  {colSubtitles[col.key]}
                 </div>
 
                 {/* Tickets list */}
@@ -672,6 +674,54 @@ export function GuntherBoardApp(_: AppProps) {
   );
 }
 
+// ── UserAvatar ────────────────────────────────────────────────────────────────
+
+const AVATAR_COLORS = [
+  "#c0392b", "#2980b9", "#27ae60", "#8e44ad",
+  "#e67e22", "#16a085", "#d35400", "#1a5276",
+];
+
+function UserAvatar({ name, avatarDataUrl, size = 22 }: { name: string; avatarDataUrl?: string | null; size?: number }) {
+  const initials = name.split(" ").map((p) => p[0] ?? "").slice(0, 2).join("").toUpperCase() || "?";
+  const idx = [...name].reduce((acc, c) => acc + c.charCodeAt(0), 0) % AVATAR_COLORS.length;
+  const baseStyle: React.CSSProperties = {
+    width: size,
+    height: size,
+    borderRadius: "50%",
+    flexShrink: 0,
+    border: "1px solid rgba(0,0,0,0.25)",
+    userSelect: "none",
+    overflow: "hidden",
+  };
+  if (avatarDataUrl) {
+    return (
+      <div title={name} style={baseStyle}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={avatarDataUrl} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+      </div>
+    );
+  }
+  return (
+    <div
+      title={name}
+      style={{
+        ...baseStyle,
+        backgroundColor: AVATAR_COLORS[idx],
+        color: "#fff",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: "var(--t-text-xs)",
+        fontWeight: "bold",
+        letterSpacing: 0,
+        fontFamily: "var(--t-font-display)",
+      }}
+    >
+      {initials}
+    </div>
+  );
+}
+
 // ── TicketCard ────────────────────────────────────────────────────────────────
 
 function TicketCard({
@@ -732,10 +782,10 @@ function TicketCard({
       />
 
       {/* Card body */}
-      <div style={{ paddingLeft: 12, paddingRight: 8, paddingTop: 7, paddingBottom: 6 }}>
+      <div style={{ paddingLeft: 11, paddingRight: 7, paddingTop: 6, paddingBottom: 5 }}>
 
-        {/* Top row: title + id */}
-        <div style={{ display: "flex", alignItems: "flex-start", gap: 4, marginBottom: 5 }}>
+        {/* Top row: title + assignee avatar */}
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 6, marginBottom: 4 }}>
           <span
             style={{
               fontWeight: "bold",
@@ -747,25 +797,45 @@ function TicketCard({
           >
             {ticket.title}
           </span>
+          {ticket.assigneeName ? (
+            <UserAvatar name={ticket.assigneeName} avatarDataUrl={ticket.assigneeAvatar} size={22} />
+          ) : (
+            <div
+              title="Non assigné"
+              style={{
+                width: 22,
+                height: 22,
+                borderRadius: "50%",
+                border: "1.5px dashed var(--t-border-dark)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "var(--t-text-xs)",
+                color: "var(--t-text-subtle)",
+                flexShrink: 0,
+                opacity: 0.45,
+              }}
+            >
+              ?
+            </div>
+          )}
+        </div>
+
+        {/* Meta row: #id + priority + label + scope */}
+        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 3, marginBottom: 5 }}>
           <span
             style={{
-              fontSize: "var(--t-text-base)",
+              fontSize: "var(--t-text-xs)",
               color: "var(--t-text-subtle)",
-              whiteSpace: "nowrap",
               fontStyle: "italic",
-              marginTop: 1,
-              flexShrink: 0,
+              marginRight: 1,
             }}
           >
             #{ticket.id}
           </span>
-        </div>
-
-        {/* Badges row */}
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 3, marginBottom: 5 }}>
           <span
             style={{
-              fontSize: "var(--t-text-base)",
+              fontSize: "var(--t-text-xs)",
               padding: "1px 5px",
               color: priorityColor,
               backgroundColor: PRIORITY_BG[ticket.priority],
@@ -777,14 +847,13 @@ function TicketCard({
           >
             {PRIORITY_LABELS[ticket.priority]}
           </span>
-
           {ticket.label && (
             <span
               style={{
                 backgroundColor: LABEL_COLORS[ticket.label],
                 color: "#fff",
                 padding: "1px 5px",
-                fontSize: "var(--t-text-base)",
+                fontSize: "var(--t-text-xs)",
                 whiteSpace: "nowrap",
                 lineHeight: 1.5,
               }}
@@ -792,12 +861,11 @@ function TicketCard({
               {LABEL_ICONS[ticket.label]} {ticket.label}
             </span>
           )}
-
           {ticket.scope && (
             <span
               style={{
                 ...RAISED,
-                padding: "1px 5px",
+                padding: "1px 4px",
                 fontSize: "var(--t-text-xs)",
                 color: "var(--t-text-muted)",
                 backgroundColor: "var(--t-bg)",
@@ -810,28 +878,10 @@ function TicketCard({
           )}
         </div>
 
-        {/* Assignee */}
-        {ticket.assigneeName && (
-          <div
-            style={{
-              fontSize: "var(--t-text-xs)",
-              color: "var(--t-text-muted)",
-              marginBottom: 6,
-              display: "flex",
-              alignItems: "center",
-              gap: 3,
-            }}
-          >
-            <span style={{ opacity: 0.6 }}>👤</span>
-            <span>{ticket.assigneeName}</span>
-          </div>
-        )}
-
-        {/* Action row — séparateur + boutons */}
+        {/* Action row */}
         <div
           style={{
             borderTop: "1px solid var(--t-border-dark)",
-            marginTop: ticket.assigneeName ? 0 : 2,
             paddingTop: 4,
             display: "flex",
             alignItems: "center",
@@ -846,7 +896,7 @@ function TicketCard({
               style={{
                 ...RAISED,
                 fontSize: "var(--t-text-xs)",
-                padding: "1px 7px",
+                padding: "1px 6px",
                 backgroundColor: "var(--t-bg)",
                 color: "var(--t-text-muted)",
                 cursor: "pointer",
@@ -857,9 +907,8 @@ function TicketCard({
               ◀
             </button>
           ) : (
-            <span style={{ width: 22 }} />
+            <span style={{ width: 20 }} />
           )}
-
           {next ? (
             <button
               onClick={() => onMove(ticket.id, next)}
@@ -867,7 +916,7 @@ function TicketCard({
               style={{
                 ...RAISED,
                 fontSize: "var(--t-text-xs)",
-                padding: "1px 7px",
+                padding: "1px 6px",
                 backgroundColor: "var(--t-bg)",
                 color: "var(--t-text-muted)",
                 cursor: "pointer",
@@ -878,11 +927,9 @@ function TicketCard({
               ▶
             </button>
           ) : (
-            <span style={{ width: 22 }} />
+            <span style={{ width: 20 }} />
           )}
-
           <div style={{ flex: 1 }} />
-
           <button
             onClick={() => onDelete(ticket.id)}
             title="Supprimer (méthode Gunther de clôture de ticket)"
@@ -1172,7 +1219,7 @@ function TicketDetail({
                   style={{
                     ...RAISED,
                     padding: "1px 5px",
-                    fontSize: "var(--t-text-base)",
+                    fontSize: "var(--t-text-xs)",
                     color: "var(--t-text-muted)",
                     backgroundColor: "var(--t-bg)",
                   }}
@@ -1220,14 +1267,22 @@ function TicketDetail({
               <div
                 style={{
                   ...INSET,
-                  padding: "3px 6px",
+                  padding: "4px 6px",
                   backgroundColor: "var(--t-app-bg)",
                   fontSize: "var(--t-text-sm)",
                   color: ticket.assigneeName ? "var(--t-text)" : "var(--t-text-subtle)",
                 }}
               >
                 {ticket.assigneeName ? (
-                  <span>👤 {ticket.assigneeName}{ticket.assigneeUsername ? ` @${ticket.assigneeUsername}` : ""}</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                    <UserAvatar name={ticket.assigneeName} avatarDataUrl={ticket.assigneeAvatar} size={20} />
+                    <span style={{ fontWeight: "bold" }}>{ticket.assigneeName}</span>
+                    {ticket.assigneeUsername && (
+                      <span style={{ color: "var(--t-text-muted)", fontSize: "var(--t-text-xs)" }}>
+                        @{ticket.assigneeUsername}
+                      </span>
+                    )}
+                  </div>
                 ) : currentUser ? (
                   <button
                     onClick={onEdit}
@@ -1259,14 +1314,22 @@ function TicketDetail({
               <div
                 style={{
                   ...INSET,
-                  padding: "3px 6px",
+                  padding: "4px 6px",
                   backgroundColor: "var(--t-app-bg)",
                   fontSize: "var(--t-text-sm)",
                   color: ticket.createdByName ? "var(--t-text)" : "var(--t-text-subtle)",
                 }}
               >
                 {ticket.createdByName ? (
-                  <span>✍️ {ticket.createdByName}{ticket.createdByUsername ? ` @${ticket.createdByUsername}` : ""}</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                    <UserAvatar name={ticket.createdByName} avatarDataUrl={ticket.createdByAvatar} size={20} />
+                    <span>{ticket.createdByName}</span>
+                    {ticket.createdByUsername && (
+                      <span style={{ color: "var(--t-text-muted)", fontSize: "var(--t-text-xs)" }}>
+                        @{ticket.createdByUsername}
+                      </span>
+                    )}
+                  </div>
                 ) : (
                   <span style={{ fontStyle: "italic" }}>Inconnu (mystère total)</span>
                 )}
