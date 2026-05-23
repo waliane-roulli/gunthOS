@@ -292,3 +292,12 @@ export const linkedGunthEndorsements = sqliteTable("linked_gunth_endorsements", 
 }, (t) => [
   uniqueIndex("linked_gunth_endorsements_pair_idx").on(t.fromUserId, t.toUserId, t.skillName),
 ]);
+
+// ── GunthOS versioning ────────────────────────────────────────────────────────
+
+export const osVersions = sqliteTable("os_versions", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  version: text("version").notNull(),
+  changelog: text("changelog"),
+  releasedAt: integer("released_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+});

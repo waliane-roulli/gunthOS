@@ -59,19 +59,30 @@ export async function POST(req: NextRequest) {
   if (!session?.user) return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
 
   const body = await req.json();
-  const { name, memberIds } = body as { name: string; memberIds: string[] };
+  const { name, memberIds } = body as { name: unknown; memberIds: unknown };
 
-  if (!name?.trim()) return NextResponse.json({ error: "Nom requis" }, { status: 400 });
+  if (typeof name !== "string" || !name.trim()) return NextResponse.json({ error: "Nom requis" }, { status: 400 });
+  if (name.trim().length > 200) return NextResponse.json({ error: "Nom trop long (max 200 caractères)" }, { status: 400 });
   if (!Array.isArray(memberIds) || memberIds.length === 0) {
     return NextResponse.json({ error: "Au moins un membre requis" }, { status: 400 });
   }
+  if (memberIds.length > 50) return NextResponse.json({ error: "Trop de membres (max 50)" }, { status: 400 });
+  if (!memberIds.every((id) => typeof id === "string")) {
+    return NextResponse.json({ error: "Membres invalides" }, { status: 400 });
+  }
 
   const myId = session.user.id;
-  const allMemberIds = Array.from(new Set([myId, ...memberIds]));
+  const uniqueMemberIds = Array.from(new Set(memberIds as string[]));
+  const validMembers = db().select({ id: user.id }).from(user).where(inArray(user.id, uniqueMemberIds)).all();
+  if (validMembers.length !== uniqueMemberIds.length) {
+    return NextResponse.json({ error: "Certains membres sont introuvables" }, { status: 400 });
+  }
+
+  const allMemberIds = Array.from(new Set([myId, ...uniqueMemberIds]));
 
   const group = db()
     .insert(groupConversations)
-    .values({ name: name.trim(), createdById: myId })
+    .values({ name: (name as string).trim(), createdById: myId })
     .returning()
     .get();
 

@@ -26,7 +26,7 @@ export function useOpenApp() {
       if (!app) return "";
       init();
       playWindowOpen();
-      markSeen(slug);
+      markSeen(slug, app.version);
       const icon = <OsIcon slug={app.slug} size={20} />;
       return openWindow(app.slug, app.name, icon, { startMaximized: app.startMaximized, defaultSize: app.defaultSize });
     },

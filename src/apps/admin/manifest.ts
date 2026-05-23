@@ -5,6 +5,7 @@ export const manifest: AppManifest = {
   slug: "admin",
   name: "Admin",
   emoji: "🗄️",
+  version: "1.2.0",
   description: "Administration de GunthOS",
   component: DbAdmin,
   defaultSize: { w: 1100, h: 720 },

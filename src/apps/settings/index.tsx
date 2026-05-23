@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type CSSProperties } from "react";
+import { useState, useEffect, type CSSProperties } from "react";
 import { useWindowActions } from "@/lib/contexts/window-manager-context";
 import { useSettings } from "@/lib/contexts/settings-context";
 import { SETTINGS_RAM_STATUSES, SETTINGS_LICENSES } from "@/lib/gunth-jokes";
@@ -13,9 +13,10 @@ import { SOUND_SCHEMES, type SoundSchemeId } from "@/lib/sound-schemes";
 import { ICON_THEMES, type IconThemeId } from "@/lib/icon-themes";
 import { useSoundContext } from "@/lib/contexts/sound-context";
 import { RetroTitlebarBtn } from "@/components/ui/retro-titlebar-btn";
-import type { AppProps } from "@/types";
+import { APP_REGISTRY } from "@/apps";
+import type { AppProps, OsRelease } from "@/types";
 
-type Tab = "theme" | "wallpaper" | "display" | "icons" | "system";
+type Tab = "theme" | "wallpaper" | "display" | "icons" | "system" | "about";
 
 const TABS: { id: Tab; label: string; icon: string }[] = [
   { id: "theme", label: "THÈME", icon: "🎨" },
@@ -23,6 +24,7 @@ const TABS: { id: Tab; label: string; icon: string }[] = [
   { id: "display", label: "AFFICHAGE", icon: "🖥️" },
   { id: "icons", label: "ICÔNES", icon: "🗂️" },
   { id: "system", label: "SYSTÈME", icon: "⚙️" },
+  { id: "about", label: "À PROPOS", icon: "ℹ️" },
 ];
 
 export function SettingsApp({ windowId }: AppProps) {
@@ -54,6 +56,7 @@ export function SettingsApp({ windowId }: AppProps) {
         {activeTab === "display" && <DisplayTab animationsEnabled={settings.animationsEnabled} scanlinesEnabled={settings.scanlinesEnabled} pixelizeEnabled={settings.pixelizeEnabled} cursorId={settings.cursorId} fontPairId={settings.fontPairId} fontSize={settings.fontSize} setAnimationsEnabled={setAnimationsEnabled} setScanlinesEnabled={setScanlinesEnabled} setPixelizeEnabled={setPixelizeEnabled} setCursorId={setCursorId} setFontPairId={setFontPairId} setFontSize={setFontSize} />}
         {activeTab === "icons" && <IconsTab iconThemeId={settings.iconThemeId} setIconTheme={setIconTheme} />}
         {activeTab === "system" && <SystemTab soundEnabled={settings.soundEnabled} setSoundEnabled={setSoundEnabled} ambientVolume={settings.ambientVolume} setAmbientVolume={setAmbientVolume} soundSchemeId={settings.soundSchemeId} setSoundScheme={setSoundScheme} performanceModeEnabled={settings.performanceModeEnabled} setPerformanceModeEnabled={setPerformanceModeEnabled} />}
+        {activeTab === "about" && <AboutTab />}
 
         <div className="flex justify-end mt-5">
           <button
@@ -94,6 +97,7 @@ export function SettingsPanel({ onClose }: { onClose: () => void }) {
         {activeTab === "display" && <DisplayTab animationsEnabled={settings.animationsEnabled} scanlinesEnabled={settings.scanlinesEnabled} pixelizeEnabled={settings.pixelizeEnabled} cursorId={settings.cursorId} fontPairId={settings.fontPairId} fontSize={settings.fontSize} setAnimationsEnabled={setAnimationsEnabled} setScanlinesEnabled={setScanlinesEnabled} setPixelizeEnabled={setPixelizeEnabled} setCursorId={setCursorId} setFontPairId={setFontPairId} setFontSize={setFontSize} />}
         {activeTab === "icons" && <IconsTab iconThemeId={settings.iconThemeId} setIconTheme={setIconTheme} />}
         {activeTab === "system" && <SystemTab soundEnabled={settings.soundEnabled} setSoundEnabled={setSoundEnabled} ambientVolume={settings.ambientVolume} setAmbientVolume={setAmbientVolume} soundSchemeId={settings.soundSchemeId} setSoundScheme={setSoundScheme} performanceModeEnabled={settings.performanceModeEnabled} setPerformanceModeEnabled={setPerformanceModeEnabled} />}
+        {activeTab === "about" && <AboutTab />}
         <div className="flex justify-end mt-5">
           <button onClick={onClose} className="px-6 py-1.5 border-[2px] tracking-wider cursor-pointer" style={{ backgroundColor: "var(--t-bg)", color: "var(--t-text)", fontFamily: "var(--t-font-display)", borderTopColor: "var(--t-border-light)", borderLeftColor: "var(--t-border-light)", borderBottomColor: "var(--t-border-dark)", borderRightColor: "var(--t-border-dark)" }}>OK</button>
         </div>
@@ -440,6 +444,107 @@ function IconsTab({ iconThemeId, setIconTheme }: { iconThemeId: IconThemeId; set
             </button>
           );
         })}
+      </div>
+    </>
+  );
+}
+
+function AboutTab() {
+  const [releases, setReleases] = useState<OsRelease[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/version")
+      .then((r) => r.json())
+      .then((data: { releases?: OsRelease[] }) => setReleases(data.releases ?? []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const latest = releases[0];
+  const appCount = APP_REGISTRY.length;
+  const versionedCount = APP_REGISTRY.filter((a) => a.version).length;
+
+  return (
+    <>
+      <SectionTitle>🖥️ GUNTHOS</SectionTitle>
+      <div
+        className="p-3 mb-4 border-[2px]"
+        style={{ backgroundColor: "var(--t-inset-from)", borderTopColor: "var(--t-border-dark)", borderLeftColor: "var(--t-border-dark)", borderBottomColor: "var(--t-border-light)", borderRightColor: "var(--t-border-light)" }}
+      >
+        <div className="flex items-center gap-3 mb-2">
+          <span style={{ fontSize: 32, lineHeight: 1 }}>💾</span>
+          <div>
+            <div style={{ fontFamily: "var(--t-font-display)", fontSize: "var(--t-text-md)", color: "var(--t-accent)" }}>
+              GunthOS™
+            </div>
+            <div style={{ fontFamily: "var(--t-font-display)", fontSize: "var(--t-text-sm)", color: "var(--t-text-muted)" }}>
+              {loading ? "Chargement…" : latest ? `Version ${latest.version}` : "Version inconnue"}
+            </div>
+          </div>
+        </div>
+        <div className="space-y-0.5" style={{ fontFamily: "var(--t-font-display)", fontSize: "var(--t-text-xs)", color: "var(--t-text-subtle)" }}>
+          <div>Build: Next.js 15 + SQLite + better-auth</div>
+          <div>Apps installées: {appCount} ({versionedCount} versionnées)</div>
+          {latest && <div>Dernière mise à jour: {new Date(latest.releasedAt).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}</div>}
+        </div>
+      </div>
+
+      <SectionTitle>📋 HISTORIQUE DES VERSIONS</SectionTitle>
+      {loading && (
+        <div style={{ fontFamily: "var(--t-font-display)", fontSize: "var(--t-text-sm)", color: "var(--t-text-muted)" }}>
+          Chargement…
+        </div>
+      )}
+      {!loading && releases.length === 0 && (
+        <div
+          className="p-3 border-[2px]"
+          style={{ backgroundColor: "var(--t-inset-from)", borderTopColor: "var(--t-border-dark)", borderLeftColor: "var(--t-border-dark)", borderBottomColor: "var(--t-border-light)", borderRightColor: "var(--t-border-light)", fontFamily: "var(--t-font-display)", fontSize: "var(--t-text-sm)", color: "var(--t-text-muted)" }}
+        >
+          Aucune version publiée pour l&apos;instant.
+        </div>
+      )}
+      <div className="flex flex-col gap-2 max-h-[240px] overflow-y-auto pr-1">
+        {releases.map((r) => (
+          <div
+            key={r.id}
+            className="p-2.5 border-[2px]"
+            style={{ backgroundColor: "var(--t-bg-dark)", borderTopColor: "var(--t-border-light)", borderLeftColor: "var(--t-border-light)", borderBottomColor: "var(--t-border-dark)", borderRightColor: "var(--t-border-dark)" }}
+          >
+            <div className="flex items-center justify-between mb-1">
+              <span style={{ fontFamily: "var(--t-font-display)", fontSize: "var(--t-text-sm)", color: "var(--t-accent)" }}>
+                v{r.version}
+              </span>
+              <span style={{ fontFamily: "var(--t-font-display)", fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)" }}>
+                {new Date(r.releasedAt).toLocaleDateString("fr-FR")}
+              </span>
+            </div>
+            {r.changelog && (
+              <div style={{ fontFamily: "var(--t-font-body)", fontSize: "var(--t-text-xs)", color: "var(--t-text-subtle)", whiteSpace: "pre-wrap", lineHeight: 1.5 }}>
+                {r.changelog}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <SectionTitle>📦 APPS INSTALLÉES</SectionTitle>
+      <div
+        className="grid grid-cols-2 gap-1 max-h-[180px] overflow-y-auto pr-1"
+      >
+        {APP_REGISTRY.filter((a) => a.version).map((app) => (
+          <div
+            key={app.slug}
+            className="flex items-center gap-2 px-2 py-1 border-[2px]"
+            style={{ backgroundColor: "var(--t-bg-dark)", borderTopColor: "var(--t-border-light)", borderLeftColor: "var(--t-border-light)", borderBottomColor: "var(--t-border-dark)", borderRightColor: "var(--t-border-dark)" }}
+          >
+            <span style={{ fontSize: 14 }}>{app.emoji}</span>
+            <div className="flex-1 min-w-0">
+              <div className="truncate" style={{ fontFamily: "var(--t-font-display)", fontSize: "var(--t-text-xs)", color: "var(--t-text)" }}>{app.name}</div>
+            </div>
+            <span style={{ fontFamily: "var(--t-font-display)", fontSize: "10px", color: "var(--t-text-muted)", flexShrink: 0 }}>v{app.version}</span>
+          </div>
+        ))}
       </div>
     </>
   );

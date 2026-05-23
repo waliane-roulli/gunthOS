@@ -6,6 +6,7 @@ export const manifest: AppManifest = {
   name: "Bloc-notes",
   description: "Éditeur de texte GunthOS (données non garanties)",
   emoji: "📝",
+  version: "1.0.0",
   loadDuration: 800,
   showInLauncher: false,
   component: NotepadApp,

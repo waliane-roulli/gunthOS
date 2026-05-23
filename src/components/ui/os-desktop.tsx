@@ -105,7 +105,7 @@ export function OsDesktop() {
   const { settings } = useSettings();
   const { openApp, openNamedWindow } = useOpenApp();
   const { totalUnread } = useUnread();
-  const { seen } = useSeenApps();
+  const { seen, isNewVersion } = useSeenApps();
   const { user, isPending } = useAuth();
   const isMobile = useMobile();
 
@@ -131,7 +131,11 @@ export function OsDesktop() {
       badge:
         app.slug === "msn" && totalUnread > 0
           ? String(totalUnread > 9 ? "9+" : totalUnread)
-          : app.badge && !seen.has(app.slug) ? app.badge : undefined,
+          : isNewVersion(app.slug, app.version)
+          ? "NEW"
+          : app.badge && !seen.has(app.slug)
+          ? app.badge
+          : undefined,
       hot: app.hot,
       locked: app.requiresAuth && !isPending && !user,
       onOpen: () => handleOpenApp(app.slug),

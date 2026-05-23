@@ -6,6 +6,7 @@ import { OsIcon } from "./os-icon";
 import { useWindowState, useWindowActions } from "@/lib/contexts/window-manager-context";
 import { LAUNCHER_APPS } from "@/apps";
 import { useTheme, useSettings } from "@/lib/contexts/settings-context";
+import { useSeenApps } from "@/lib/contexts/seen-apps-context";
 import { THEMES, type ThemeId } from "@/lib/themes";
 import { GUNTH_SHUTDOWN_MESSAGES, GUNTH_REBOOT_MESSAGES } from "@/lib/gunth-jokes";
 import { pickRandom } from "@/lib/utils/random";
@@ -27,6 +28,7 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
   const { init, playClick, playWindowOpen, playWindowMinimize } = useSoundContext();
   const { user } = useAuth();
   const { totalUnread } = useUnread();
+  const { seen, isNewVersion } = useSeenApps();
   const time = useOsClock();
   const visitorCount = useVisitorCountApi();
   const isMobile = useMobile();
@@ -185,15 +187,23 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
           </div>
 
           <div className="py-1 overflow-y-auto" style={{ maxHeight: isMobile ? "60vh" : "calc(100vh - 80px)" }}>
-            {LAUNCHER_APPS.map((app) => (
-              <StartMenuItem
-                key={app.slug}
-                icon={<OsIcon slug={app.slug} size={18} />}
-                label={app.name}
-                onClick={() => handleOpenApp(app.slug)}
-                tall={isMobile}
-              />
-            ))}
+            {LAUNCHER_APPS.map((app) => {
+              const badge = isNewVersion(app.slug, app.version)
+                ? "NEW"
+                : app.badge && !seen.has(app.slug)
+                ? app.badge
+                : undefined;
+              return (
+                <StartMenuItem
+                  key={app.slug}
+                  icon={<OsIcon slug={app.slug} size={18} />}
+                  label={app.name}
+                  badge={badge}
+                  onClick={() => handleOpenApp(app.slug)}
+                  tall={isMobile}
+                />
+              );
+            })}
 
             <div className="my-1 mx-2 border-t border-b" style={{ borderColor: "var(--t-border-dark)", borderBottomColor: "var(--t-border-light)" }} />
 
@@ -678,12 +688,14 @@ function StartMenuItem({
   onClick,
   active,
   tall,
+  badge,
 }: {
   icon: ReactNode;
   label: string;
   onClick: () => void;
   active?: boolean;
   tall?: boolean;
+  badge?: string;
 }) {
   return (
     <button
@@ -699,7 +711,20 @@ function StartMenuItem({
       }}
     >
       <span className="shrink-0 icon-constrained">{icon}</span>
-      <span className="tracking-wider truncate">{label}</span>
+      <span className="tracking-wider truncate flex-1">{label}</span>
+      {badge && (
+        <span
+          className="shrink-0 px-1 text-xs font-bold border border-black"
+          style={{
+            backgroundColor: "var(--t-badge-bg)",
+            color: "var(--t-badge-text)",
+            fontFamily: "var(--t-font-display)",
+            fontSize: "10px",
+          }}
+        >
+          {badge}
+        </span>
+      )}
       {active && <span className="ml-auto shrink-0">✓</span>}
     </button>
   );
