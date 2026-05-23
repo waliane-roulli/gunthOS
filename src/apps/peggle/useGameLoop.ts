@@ -13,6 +13,7 @@ import {
   BOMB_RADIUS, MAX_SHAKE, TRAUMA_DECAY,
   HIT_FREEZE_NORMAL, HIT_FREEZE_ORANGE,
   ZOOM_SCALE, STAR_COUNT,
+  BONUS_BUCKET_XS, BONUS_BUCKET_MULTS,
 } from "./constants";
 import type { GameState, UiState, Particle, Peg, Ball, Star } from "./types";
 
@@ -56,6 +57,8 @@ function makeInitialState(level: number, keepScore = false, prevScore = 0): Game
     multiballReady: true,
     multiballPending: false,
     multiballUsed: false,
+    turnScoreStart: 0,
+    bonusBucketFlash: [0, 0, 0],
   };
 }
 
@@ -172,6 +175,7 @@ export function useGameLoop({
       };
     }
     s.balls -= 1;
+    s.turnScoreStart = s.score;
     s.phase = "firing";
     syncUI();
   }, [syncUI]);
@@ -465,18 +469,54 @@ export function useGameLoop({
 
       // Bucket catch
       const bucketTop = H - BUCKET_H - 4;
-      if (b.y + BALL_R >= bucketTop && b.x >= s.bucket && b.x <= s.bucket + BUCKET_W) {
-        s.balls += 1;
-        s.score += 500;
-        s.bucketFlash = 1;
-        s.trauma = Math.min(1, s.trauma + 0.15);
-        s.floatingTexts.push({
-          x: s.bucket + BUCKET_W / 2, y: bucketTop - 14,
-          text: "+500 FREE BALL!", life: 1, maxLife: 1.8,
-          color: "#00ffcc", combo: true, fontSize: 14,
-        });
-        playVictory();
-        b.active = false;
+      const isLastBall = s.balls === 0;
+
+      if (isLastBall) {
+        for (let i = 0; i < 3; i++) {
+          const bx = BONUS_BUCKET_XS[i]!;
+          if (b.y + BALL_R >= bucketTop && b.x >= bx && b.x <= bx + BUCKET_W) {
+            const mult = BONUS_BUCKET_MULTS[i]!;
+            const turnScore = Math.max(0, s.score - s.turnScoreStart);
+            const bonus = (mult - 1) * turnScore;
+            s.balls += 1;
+            s.bonusBucketFlash[i] = 1;
+            s.trauma = Math.min(1, s.trauma + 0.2);
+            if (bonus > 0) {
+              s.score += bonus;
+              s.floatingTexts.push({
+                x: bx + BUCKET_W / 2, y: bucketTop - 14,
+                text: `×${mult} BONUS +${bonus.toLocaleString()}`,
+                life: 1, maxLife: 2.2,
+                color: mult === 5 ? "#ffcc00" : "#cc44ff",
+                combo: true, fontSize: 15,
+              });
+            } else {
+              s.floatingTexts.push({
+                x: bx + BUCKET_W / 2, y: bucketTop - 14,
+                text: mult > 1 ? `×${mult} FREE BALL!` : "FREE BALL!",
+                life: 1, maxLife: 1.8,
+                color: mult === 5 ? "#ffcc00" : mult === 3 ? "#cc44ff" : "#00ffcc",
+                combo: mult > 1, fontSize: 14,
+              });
+            }
+            playVictory();
+            b.active = false;
+            break;
+          }
+        }
+      } else {
+        if (b.y + BALL_R >= bucketTop && b.x >= s.bucket && b.x <= s.bucket + BUCKET_W) {
+          s.balls += 1;
+          s.bucketFlash = 1;
+          s.trauma = Math.min(1, s.trauma + 0.15);
+          s.floatingTexts.push({
+            x: s.bucket + BUCKET_W / 2, y: bucketTop - 14,
+            text: "FREE BALL!", life: 1, maxLife: 1.8,
+            color: "#00ffcc", combo: true, fontSize: 14,
+          });
+          playVictory();
+          b.active = false;
+        }
       }
 
       if (b.y > H + 40) b.active = false;
@@ -514,6 +554,9 @@ export function useGameLoop({
       if (s.bucket <= 0) { s.bucket = 0; s.bucketDir = Math.abs(s.bucketDir); }
       if (s.bucket + BUCKET_W >= W) { s.bucket = W - BUCKET_W; s.bucketDir = -Math.abs(s.bucketDir); }
       if (s.bucketFlash > 0) s.bucketFlash -= 0.06;
+      for (let i = 0; i < 3; i++) {
+        if ((s.bonusBucketFlash[i] ?? 0) > 0) s.bonusBucketFlash[i] = Math.max(0, (s.bonusBucketFlash[i] ?? 0) - 0.06);
+      }
 
       // Fever pulse
       const orangeLeft = s.pegs.filter(p => p.orange && !p.hit).length;

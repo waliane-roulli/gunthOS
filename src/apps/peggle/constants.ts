@@ -22,3 +22,6 @@ export const HIT_FREEZE_NORMAL = 4;
 export const HIT_FREEZE_ORANGE = 9;
 export const ZOOM_SCALE = 1.6;
 export const STAR_COUNT = 55;
+
+export const BONUS_BUCKET_MULTS = [1, 3, 5] as const;
+export const BONUS_BUCKET_XS = [60, 200, 340] as const;

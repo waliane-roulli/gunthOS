@@ -1,4 +1,4 @@
-import { W, H, PEG_R, BALL_R, BUCKET_W, BUCKET_H, FEVER_THRESHOLD, SLOW_MO_DURATION, ZOOM_SCALE } from "./constants";
+import { W, H, PEG_R, BALL_R, BUCKET_W, BUCKET_H, FEVER_THRESHOLD, SLOW_MO_DURATION, ZOOM_SCALE, BONUS_BUCKET_XS, BONUS_BUCKET_MULTS } from "./constants";
 import { computeAimLine } from "./physics";
 import type { GameState, Ball, Peg } from "./types";
 
@@ -417,27 +417,63 @@ export function draw(
   ctx.shadowBlur = 0;
   ctx.restore();
 
-  // Bucket
-  const bx = s.bucket, by = H - BUCKET_H - 4;
+  // Bucket(s)
+  const bucketTop = H - BUCKET_H - 4;
   ctx.save();
-  const bucketGlow = s.bucketFlash > 0 ? s.bucketFlash : 1;
-  ctx.shadowColor = s.bucketFlash > 0 ? "#ffffff" : "#00ffcc";
-  ctx.shadowBlur = 8 + bucketGlow * 22;
 
-  const bucketGrad = ctx.createLinearGradient(bx, by, bx, by + BUCKET_H);
-  bucketGrad.addColorStop(0, s.bucketFlash > 0 ? `rgba(200,255,240,${0.3 + s.bucketFlash * 0.7})` : "#005544");
-  bucketGrad.addColorStop(1, s.bucketFlash > 0 ? `rgba(0,255,200,${0.5 + s.bucketFlash * 0.5})` : "#003322");
-  ctx.fillStyle = bucketGrad;
-  ctx.strokeStyle = s.bucketFlash > 0 ? `rgba(255,255,255,${0.5 + s.bucketFlash * 0.5})` : "#00ffcc";
-  ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.roundRect(bx, by, BUCKET_W, BUCKET_H, 3); ctx.fill(); ctx.stroke();
-  ctx.shadowBlur = 0;
+  if (s.balls === 0 && s.phase === "firing") {
+    // Last ball: draw 3 bonus buckets at fixed positions
+    const BONUS_STYLES = [
+      { bg0: "#005544", bg1: "#003322", glow: "#00ffcc" },
+      { bg0: "#330044", bg1: "#1a0022", glow: "#cc44ff" },
+      { bg0: "#554400", bg1: "#332200", glow: "#ffcc00" },
+    ] as const;
+    for (let i = 0; i < 3; i++) {
+      const bx = BONUS_BUCKET_XS[i]!;
+      const by = bucketTop;
+      const flash = s.bonusBucketFlash[i] ?? 0;
+      const style = BONUS_STYLES[i]!;
+      const mult = BONUS_BUCKET_MULTS[i]!;
 
-  ctx.fillStyle = `rgba(0,255,200,${0.12 + s.bucketFlash * 0.2})`;
-  ctx.beginPath(); ctx.roundRect(bx + 3, by + 3, BUCKET_W - 6, BUCKET_H / 2 - 2, 2); ctx.fill();
-  ctx.fillStyle = s.bucketFlash > 0 ? "#ffffff" : "#00ffcc";
-  ctx.font = "bold 9px monospace"; ctx.textAlign = "center";
-  ctx.fillText("FREE BALL", bx + BUCKET_W / 2, by + BUCKET_H - 5);
+      ctx.shadowColor = flash > 0 ? "#ffffff" : style.glow;
+      ctx.shadowBlur = 8 + (flash > 0 ? flash : 0.4) * 22;
+
+      const grad = ctx.createLinearGradient(bx, by, bx, by + BUCKET_H);
+      grad.addColorStop(0, flash > 0 ? `rgba(200,255,240,${0.3 + flash * 0.7})` : style.bg0);
+      grad.addColorStop(1, flash > 0 ? `rgba(0,255,200,${0.5 + flash * 0.5})` : style.bg1);
+      ctx.fillStyle = grad;
+      ctx.strokeStyle = flash > 0 ? `rgba(255,255,255,${0.5 + flash * 0.5})` : style.glow;
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.roundRect(bx, by, BUCKET_W, BUCKET_H, 3); ctx.fill(); ctx.stroke();
+      ctx.shadowBlur = 0;
+
+      ctx.fillStyle = flash > 0 ? "#ffffff" : style.glow;
+      ctx.font = "bold 10px monospace"; ctx.textAlign = "center";
+      ctx.fillText(`×${mult}`, bx + BUCKET_W / 2, by + BUCKET_H - 5);
+    }
+  } else {
+    // Normal single moving bucket
+    const bx = s.bucket, by = bucketTop;
+    const bucketGlow = s.bucketFlash > 0 ? s.bucketFlash : 1;
+    ctx.shadowColor = s.bucketFlash > 0 ? "#ffffff" : "#00ffcc";
+    ctx.shadowBlur = 8 + bucketGlow * 22;
+
+    const bucketGrad = ctx.createLinearGradient(bx, by, bx, by + BUCKET_H);
+    bucketGrad.addColorStop(0, s.bucketFlash > 0 ? `rgba(200,255,240,${0.3 + s.bucketFlash * 0.7})` : "#005544");
+    bucketGrad.addColorStop(1, s.bucketFlash > 0 ? `rgba(0,255,200,${0.5 + s.bucketFlash * 0.5})` : "#003322");
+    ctx.fillStyle = bucketGrad;
+    ctx.strokeStyle = s.bucketFlash > 0 ? `rgba(255,255,255,${0.5 + s.bucketFlash * 0.5})` : "#00ffcc";
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.roundRect(bx, by, BUCKET_W, BUCKET_H, 3); ctx.fill(); ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    ctx.fillStyle = `rgba(0,255,200,${0.12 + s.bucketFlash * 0.2})`;
+    ctx.beginPath(); ctx.roundRect(bx + 3, by + 3, BUCKET_W - 6, BUCKET_H / 2 - 2, 2); ctx.fill();
+    ctx.fillStyle = s.bucketFlash > 0 ? "#ffffff" : "#00ffcc";
+    ctx.font = "bold 9px monospace"; ctx.textAlign = "center";
+    ctx.fillText("FREE BALL", bx + BUCKET_W / 2, by + BUCKET_H - 5);
+  }
+
   ctx.restore();
 
   // Floor strip
