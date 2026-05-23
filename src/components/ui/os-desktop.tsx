@@ -194,7 +194,7 @@ export function OsDesktop() {
   if (isMobile) {
     return (
       <div
-        className="flex-1 overflow-y-auto select-none"
+        className="flex-1 overflow-y-auto select-none relative"
         style={{
           ...wallpaper.style,
           padding: "12px 8px",
@@ -212,6 +212,8 @@ export function OsDesktop() {
             display: "grid",
             gridTemplateColumns: "repeat(auto-fill, minmax(90px, 1fr))",
             gap: "8px",
+            position: "relative",
+            zIndex: 1,
           }}
         >
           {icons.map((icon) => (
@@ -220,6 +222,7 @@ export function OsDesktop() {
               icon={icon}
               selected={selectedId === icon.id}
               onSelect={() => setSelectedId(icon.id)}
+              onOpen={icon.onOpen}
             />
           ))}
         </div>
@@ -267,9 +270,10 @@ interface MobileDesktopIconProps {
   icon: IconDef;
   selected: boolean;
   onSelect: () => void;
+  onOpen: () => void;
 }
 
-function MobileDesktopIcon({ icon, selected, onSelect }: MobileDesktopIconProps) {
+function MobileDesktopIcon({ icon, selected, onSelect, onOpen }: MobileDesktopIconProps) {
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pointerMoved = useRef(false);
   const pointerStart = useRef({ x: 0, y: 0 });
@@ -301,9 +305,9 @@ function MobileDesktopIcon({ icon, selected, onSelect }: MobileDesktopIconProps)
       longPressTimer.current = null;
     }
     if (!pointerMoved.current) {
-      icon.onOpen();
+      onOpen();
     }
-  }, [icon]);
+  }, [onOpen]);
 
   return (
     <button
@@ -365,7 +369,7 @@ function MobileDesktopIcon({ icon, selected, onSelect }: MobileDesktopIconProps)
         )}
       </div>
       <span
-        className="text-center leading-tight px-0.5 max-w-full break-words"
+        className="block text-center leading-tight w-full break-words"
         style={{
           fontFamily: "var(--t-font-display)",
           fontSize: "var(--t-text-sm)",
