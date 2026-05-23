@@ -44,11 +44,12 @@ Every app lives in `src/apps/<slug>/` with exactly two files: `index.tsx` (compo
 
 `src/apps/index.ts` is the **single source of truth** — import the manifest and add it to `APP_REGISTRY`. Window manager, taskbar, launcher, and audio cleanup all derive from this automatically.
 
-**Adding a new app — 4 steps:**
+**Adding a new app — 5 steps:**
 1. `src/apps/my-app/manifest.ts` with `AppManifest`
 2. `src/apps/my-app/index.tsx` with `export function MyApp({ windowId }: AppProps)`
 3. Import and add to `APP_REGISTRY` in `src/apps/index.ts`
 4. Set `showInLauncher: true` to appear in Start menu and desktop
+5. Add `{ slug, name, emoji }` to `src/lib/app-meta.ts` (used by GuntherBoard's scope picker — kept separate to avoid a circular import)
 
 ### Key `AppManifest` fields
 
