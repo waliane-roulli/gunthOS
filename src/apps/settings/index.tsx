@@ -14,7 +14,7 @@ import { ICON_THEMES, type IconThemeId } from "@/lib/icon-themes";
 import { useSoundContext } from "@/lib/contexts/sound-context";
 import { RetroTitlebarBtn } from "@/components/ui/retro-titlebar-btn";
 import { APP_REGISTRY } from "@/apps";
-import type { AppProps } from "@/types";
+import type { AppProps, OsRelease } from "@/types";
 
 type Tab = "theme" | "wallpaper" | "display" | "icons" | "system" | "about";
 
@@ -448,8 +448,6 @@ function IconsTab({ iconThemeId, setIconTheme }: { iconThemeId: IconThemeId; set
     </>
   );
 }
-
-type OsRelease = { id: number; version: string; changelog: string | null; releasedAt: string | Date };
 
 function AboutTab() {
   const [releases, setReleases] = useState<OsRelease[]>([]);

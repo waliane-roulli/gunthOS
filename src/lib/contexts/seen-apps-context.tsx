@@ -133,7 +133,12 @@ export function SeenAppsProvider({ children }: { children: ReactNode }) {
       ]);
 
       const mergedSeen = new Set([...localSeen, ...remoteApps]);
-      const mergedVersions = { ...remoteVersions, ...localVersions };
+      // Take the lexicographically greater version per key to avoid regressing "seen" state
+      // across devices (higher semver string = more recently opened).
+      const mergedVersions: Record<string, string> = { ...localVersions };
+      for (const [k, v] of Object.entries(remoteVersions)) {
+        if (!mergedVersions[k] || v > mergedVersions[k]) mergedVersions[k] = v;
+      }
       const seeded = seedVersionsFromSeen(mergedSeen, mergedVersions);
 
       setSeen(mergedSeen);
@@ -142,8 +147,8 @@ export function SeenAppsProvider({ children }: { children: ReactNode }) {
       saveVersionsToLocalStorage(seeded);
 
       const hasNewSeen = [...localSeen].some((s) => !remoteApps.includes(s));
-      const hasNewVersions = Object.keys(localVersions).some(
-        (k) => remoteVersions[k] !== localVersions[k]
+      const hasNewVersions = Object.keys(seeded).some(
+        (k) => remoteVersions[k] !== seeded[k]
       );
       if (hasNewSeen || hasNewVersions) {
         await pushToApi([...mergedSeen], seeded).catch(() => {});

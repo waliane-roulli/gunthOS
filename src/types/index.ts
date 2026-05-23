@@ -54,3 +54,10 @@ export interface AppManifest {
 export interface AppProps {
   windowId: string;
 }
+
+export type OsRelease = {
+  id: number;
+  version: string;
+  changelog: string | null;
+  releasedAt: string | Date;
+};

@@ -19,6 +19,7 @@ export async function GET(req: NextRequest) {
   if (!groupIdStr) return NextResponse.json({ error: "Paramètre 'groupId' manquant" }, { status: 400 });
 
   const groupId = parseInt(groupIdStr, 10);
+  if (!Number.isFinite(groupId) || groupId <= 0) return NextResponse.json({ error: "groupId invalide" }, { status: 400 });
   const myId = session.user.id;
 
   // Vérifier que l'utilisateur est membre du groupe
@@ -59,10 +60,12 @@ export async function POST(req: NextRequest) {
   if (!session?.user) return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
 
   const body = await req.json();
-  const { groupId, content } = body as { groupId: number; content: string };
+  const { groupId, content } = body as { groupId: unknown; content: unknown };
 
-  if (!groupId || !content?.trim()) return NextResponse.json({ error: "Données invalides" }, { status: 400 });
+  if (!Number.isInteger(groupId) || (groupId as number) <= 0) return NextResponse.json({ error: "groupId invalide" }, { status: 400 });
+  if (typeof content !== "string" || !content.trim()) return NextResponse.json({ error: "Données invalides" }, { status: 400 });
   if (content.length > 500) return NextResponse.json({ error: "Message trop long (max 500 caractères)" }, { status: 400 });
+  const groupIdNum = groupId as number;
 
   const myId = session.user.id;
 
@@ -70,17 +73,17 @@ export async function POST(req: NextRequest) {
   const membership = db()
     .select()
     .from(groupMembers)
-    .where(and(eq(groupMembers.groupId, groupId), eq(groupMembers.userId, myId)))
+    .where(and(eq(groupMembers.groupId, groupIdNum), eq(groupMembers.userId, myId)))
     .get();
 
   if (!membership) return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
 
-  const group = db().select().from(groupConversations).where(eq(groupConversations.id, groupId)).get();
+  const group = db().select().from(groupConversations).where(eq(groupConversations.id, groupIdNum)).get();
   if (!group) return NextResponse.json({ error: "Groupe introuvable" }, { status: 404 });
 
   const msg = db()
     .insert(groupMessages)
-    .values({ groupId, fromUserId: myId, content: content.trim() })
+    .values({ groupId: groupIdNum, fromUserId: myId, content: content.trim() })
     .returning()
     .get();
 
@@ -88,14 +91,14 @@ export async function POST(req: NextRequest) {
   const members = db()
     .select({ userId: groupMembers.userId })
     .from(groupMembers)
-    .where(eq(groupMembers.groupId, groupId))
+    .where(eq(groupMembers.groupId, groupIdNum))
     .all();
 
   for (const member of members) {
     if (member.userId === myId) continue;
     publish(member.userId, {
       type: "group_message",
-      groupId,
+      groupId: groupIdNum,
       groupName: group.name,
       fromUserId: myId,
       fromName: session.user.name,

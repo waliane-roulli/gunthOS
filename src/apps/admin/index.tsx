@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { AppProps } from "@/types";
+import type { AppProps, OsRelease } from "@/types";
 import { useNotify } from "@/lib/contexts/notification-context";
 import type { NotificationType } from "@/lib/contexts/notification-context";
 
@@ -910,8 +910,6 @@ const JOKES: { label: string; type: NotificationType; title: string; message?: s
   { label: "Reboot demandé",       type: "info",    title: "Reboot recommandé",      message: "Un redémarrage de toi-même est conseillé. Va faire un tour.", duration: null },
 ];
 
-type OsRelease = { id: number; version: string; changelog: string | null; releasedAt: string | Date };
-
 function BroadcastPanel() {
   const notify = useNotify();
   const [sending, setSending] = useState(false);
@@ -939,19 +937,13 @@ function BroadcastPanel() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ version: versionStr.trim(), changelog: changelog.trim() || undefined }),
       });
-      const data = await res.json() as { ok?: boolean; reached?: number; error?: string };
-      if (data.ok) {
+      const data = await res.json() as { ok?: boolean; reached?: number; error?: string; release?: OsRelease };
+      if (data.ok && data.release) {
         notify({ type: "success", title: `Version ${versionStr} diffusée à ${data.reached} client${(data.reached ?? 0) !== 1 ? "s" : ""}` });
-        const newRelease: OsRelease = {
-          id: Date.now(),
-          version: versionStr.trim(),
-          changelog: changelog.trim() || null,
-          releasedAt: new Date(),
-        };
-        setReleases((prev) => [newRelease, ...prev]);
+        setReleases((prev) => [data.release!, ...prev]);
         setVersionStr("");
         setChangelog("");
-      } else {
+      } else if (!data.ok) {
         notify({ type: "error", title: "Erreur", message: data.error });
       }
     } finally {
