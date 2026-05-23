@@ -9,6 +9,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { TASKBAR_H_MOBILE } from "@/lib/constants/layout";
 
 export type WindowState = "normal" | "minimized" | "maximized";
 
@@ -65,14 +66,14 @@ function isMobileViewport(): boolean {
 }
 
 function getDefaultPosition(index: number): { x: number; y: number } {
-  if (isMobileViewport()) return { x: 0, y: 48 };
+  if (isMobileViewport()) return { x: 0, y: TASKBAR_H_MOBILE };
   const offset = (index % 8) * 32;
   return { x: 80 + offset, y: 60 + offset };
 }
 
 function getDefaultSize(): { w: number; h: number } {
   if (typeof window === "undefined") return { w: 760, h: 600 };
-  if (isMobileViewport()) return { w: window.innerWidth, h: window.innerHeight - 48 };
+  if (isMobileViewport()) return { w: window.innerWidth, h: window.innerHeight - TASKBAR_H_MOBILE };
   return {
     w: Math.min(760, window.innerWidth - 40),
     h: Math.min(600, window.innerHeight - 100),

@@ -16,6 +16,7 @@ import { useAuth } from "@/lib/contexts/auth-context";
 import { useUnread } from "@/lib/contexts/unread-context";
 import { useRadio, type StationId } from "@/lib/contexts/radio-context";
 import { useMobile } from "@/lib/hooks/use-mobile";
+import { TASKBAR_H, TASKBAR_H_MOBILE } from "@/lib/constants/layout";
 
 export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShutdown?: () => void }) {
   const { windows, activeWindowId } = useWindowState();
@@ -34,7 +35,7 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
   const [rebootMsg, setRebootMsg] = useState<string | null>(null);
   const [trayDrawerOpen, setTrayDrawerOpen] = useState(false);
 
-  const taskbarH = isMobile ? 48 : 40;
+  const taskbarH = isMobile ? TASKBAR_H_MOBILE : TASKBAR_H;
 
   const handleShutdownConfirm = () => {
     setShutdownMsg(null);
@@ -459,7 +460,7 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
             className={`cursor-pointer select-none hover:opacity-80 ${!isMobile ? "border-r pr-2" : ""}`}
             style={{ borderColor: "var(--t-border-dark)", background: "none", fontFamily: "var(--t-font-display)", color: "var(--t-text)", fontSize: "var(--t-text-base)" }}
           >
-            {isMobile ? (user ? "👤" : "👤") : (user ? `👤 ${user.name}` : "👤 Invité")}
+            {isMobile ? "👤" : (user ? `👤 ${user.name}` : "👤 Invité")}
           </button>
 
           {/* Mobile: MSN badge inline */}

@@ -333,8 +333,8 @@ function MobileDesktopIcon({ icon, selected, onSelect }: MobileDesktopIconProps)
           <span
             className="absolute -top-2 -left-2 text-xs font-bold px-1 border border-black animate-hot-badge"
             style={{
-              backgroundColor: "#ff3300",
-              color: "#fff",
+              backgroundColor: "var(--t-hot-bg, #ff3300)",
+              color: "var(--t-hot-text, #fff)",
               fontFamily: "var(--t-font-display)",
               transform: "rotate(-12deg)",
               transformOrigin: "center",
@@ -515,8 +515,8 @@ function DraggableDesktopIcon({
           <span
             className="absolute -top-2 -left-2 text-xs font-bold px-1 border border-black animate-hot-badge"
             style={{
-              backgroundColor: "#ff3300",
-              color: "#fff",
+              backgroundColor: "var(--t-hot-bg, #ff3300)",
+              color: "var(--t-hot-text, #fff)",
               fontFamily: "var(--t-font-display)",
               transform: "rotate(-12deg)",
               transformOrigin: "center",

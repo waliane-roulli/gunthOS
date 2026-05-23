@@ -6,6 +6,7 @@ import type { WindowInstance } from "@/lib/contexts/window-manager-context";
 import { RetroTitlebarBtn } from "./retro-titlebar-btn";
 import { useSoundContext } from "@/lib/contexts/sound-context";
 import { useMobile } from "@/lib/hooks/use-mobile";
+import { TASKBAR_H, TASKBAR_H_MOBILE } from "@/lib/constants/layout";
 
 interface OsWindowProps {
   win: WindowInstance;
@@ -22,8 +23,6 @@ const CURSOR: Record<ResizeEdge, string> = {
 const EDGE_SIZE = 6;
 const MIN_W = 240;
 const MIN_H = 160;
-const TASKBAR_H = 40;
-const TASKBAR_H_MOBILE = 48;
 const SWIPE_THRESHOLD = 30;
 
 export function OsWindow({ win, children }: OsWindowProps) {
