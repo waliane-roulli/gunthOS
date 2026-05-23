@@ -11,11 +11,17 @@ import { flatTheme } from "./themes/flat";
 import { pastelTheme } from "./themes/pastel";
 import { glassTheme } from "./themes/glass";
 import { synthwaveTheme } from "./themes/synthwave";
+import { aquaTheme } from "./themes/aqua";
+import { gameboyTheme } from "./themes/gameboy";
+import { blueprintTheme } from "./themes/blueprint";
+import { candyTheme } from "./themes/candy";
+import { vintageTheme } from "./themes/vintage";
 
 export {
   emojiTheme, lucideTheme, win98Theme, pixelTheme,
   neonTheme, crtTheme, flatTheme,
   pastelTheme, glassTheme, synthwaveTheme,
+  aquaTheme, gameboyTheme, blueprintTheme, candyTheme, vintageTheme,
 };
 
 export const ICON_THEMES: IconTheme[] = [
@@ -24,10 +30,15 @@ export const ICON_THEMES: IconTheme[] = [
   pixelTheme,
   lucideTheme,
   pastelTheme,
+  aquaTheme,
+  candyTheme,
   glassTheme,
   neonTheme,
   synthwaveTheme,
+  gameboyTheme,
   crtTheme,
+  blueprintTheme,
+  vintageTheme,
   flatTheme,
 ];
 

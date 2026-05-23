@@ -1,10 +1,16 @@
 import type { ComponentType } from "react";
 
-export type IconThemeId = "emoji" | "lucide" | "win98" | "pixel" | "neon" | "crt" | "flat" | "pastel" | "glass" | "synthwave";
+export type IconThemeId =
+  | "emoji" | "lucide" | "win98" | "pixel" | "neon" | "crt" | "flat"
+  | "pastel" | "glass" | "synthwave"
+  | "aqua" | "gameboy" | "blueprint" | "candy" | "vintage";
 
 export type IconRenderer = ComponentType<{ size: number }>;
 
-export type IconThemeStyle = "plain" | "colored-bg" | "win98" | "pixel" | "neon" | "crt" | "flat" | "pastel" | "glass" | "synthwave";
+export type IconThemeStyle =
+  | "plain" | "colored-bg" | "win98" | "pixel" | "neon" | "crt" | "flat"
+  | "pastel" | "glass" | "synthwave"
+  | "aqua" | "gameboy" | "blueprint" | "candy" | "vintage";
 
 export interface IconThemeEntry {
   icon: IconRenderer;
