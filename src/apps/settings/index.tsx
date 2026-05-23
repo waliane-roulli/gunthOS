@@ -422,6 +422,11 @@ function IconsTab({ iconThemeId, setIconTheme }: { iconThemeId: IconThemeId; set
     "pastel": "Tons doux, fond pastel",
     "glass": "Glassmorphisme, flou & reflets",
     "synthwave": "Rétro-futuriste années 80",
+    "aqua": "Bulle brillante style macOS/XP",
+    "gameboy": "Monochrome LCD olive Game Boy",
+    "blueprint": "Plan technique bleu cobalt",
+    "candy": "Dégradé radial acidulé",
+    "vintage": "Papier sépia vieux document",
   };
 
   const activeTheme = ICON_THEMES.find((t) => t.id === iconThemeId);

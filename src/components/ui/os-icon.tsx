@@ -240,7 +240,6 @@ export function OsIcon({ slug, size, className, theme: themeProp }: OsIconProps)
           display: "inline-flex", alignItems: "center", justifyContent: "center",
           flexShrink: 0,
           border: `${border} solid #306230`,
-          imageRendering: "pixelated",
           boxShadow: `inset 1px 1px 0 #8bac0f, inset -1px -1px 0 #306230`,
         }}
       >
