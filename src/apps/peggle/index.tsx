@@ -63,7 +63,7 @@ export function PeggleApp({ windowId: _windowId }: AppProps) {
   const handleUiSync = useCallback((uiState: UiState) => setUi(uiState), []);
   const handleOrangeTotalChange = useCallback((total: number) => setUi(u => ({ ...u, orangeTotal: total })), []);
 
-  const { handleClick, resetGame, nextLevel } = useGameLoop({
+  const { handleClick, handleTouchMove, handleTouchEnd, resetGame, nextLevel } = useGameLoop({
     canvasRef,
     mouseRef,
     onUiSync: handleUiSync,
@@ -143,6 +143,8 @@ export function PeggleApp({ windowId: _windowId }: AppProps) {
           user={user}
           onMouseMove={handleMouseMove}
           onClick={handleClick}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
           onReplay={() => { resetGame(false); setScoreSubmitted(false); }}
           onNextLevel={handleNextLevel}
           onLeaderboard={handleTabLeaderboard}
