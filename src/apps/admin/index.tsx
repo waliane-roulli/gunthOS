@@ -910,6 +910,8 @@ const JOKES: { label: string; type: NotificationType; title: string; message?: s
   { label: "Reboot demandé",       type: "info",    title: "Reboot recommandé",      message: "Un redémarrage de toi-même est conseillé. Va faire un tour.", duration: null },
 ];
 
+type OsRelease = { id: number; version: string; changelog: string | null; releasedAt: string | Date };
+
 function BroadcastPanel() {
   const notify = useNotify();
   const [sending, setSending] = useState(false);
@@ -917,6 +919,16 @@ function BroadcastPanel() {
   const [versionStr, setVersionStr] = useState("");
   const [changelog, setChangelog] = useState("");
   const [sendingVersion, setSendingVersion] = useState(false);
+  const [releases, setReleases] = useState<OsRelease[]>([]);
+  const [loadingReleases, setLoadingReleases] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/version")
+      .then((r) => r.json())
+      .then((d: { releases?: OsRelease[] }) => setReleases(d.releases ?? []))
+      .catch(() => {})
+      .finally(() => setLoadingReleases(false));
+  }, []);
 
   async function sendVersion() {
     if (!versionStr.trim()) { notify({ type: "warning", title: "Version requise" }); return; }
@@ -930,6 +942,13 @@ function BroadcastPanel() {
       const data = await res.json() as { ok?: boolean; reached?: number; error?: string };
       if (data.ok) {
         notify({ type: "success", title: `Version ${versionStr} diffusée à ${data.reached} client${(data.reached ?? 0) !== 1 ? "s" : ""}` });
+        const newRelease: OsRelease = {
+          id: Date.now(),
+          version: versionStr.trim(),
+          changelog: changelog.trim() || null,
+          releasedAt: new Date(),
+        };
+        setReleases((prev) => [newRelease, ...prev]);
         setVersionStr("");
         setChangelog("");
       } else {
@@ -1128,6 +1147,55 @@ function BroadcastPanel() {
               >
                 {sendingVersion ? "Envoi…" : "🚀 Diffuser la version"}
               </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Historique des versions */}
+        <div style={{ flex: 1, maxWidth: 380 }}>
+          <div style={panelBox}>
+            <div style={panelTitle}>Historique des versions 📋</div>
+            <div style={{ padding: 8 }}>
+              {loadingReleases && (
+                <div style={{ fontFamily: "var(--t-font-body)", fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)", padding: 4 }}>
+                  Chargement…
+                </div>
+              )}
+              {!loadingReleases && releases.length === 0 && (
+                <div style={{ fontFamily: "var(--t-font-body)", fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)", padding: 4 }}>
+                  Aucune version publiée.
+                </div>
+              )}
+              <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 260, overflowY: "auto" }}>
+                {releases.map((r) => (
+                  <div
+                    key={r.id}
+                    style={{
+                      border: "2px solid",
+                      borderTopColor: "var(--t-border-light)",
+                      borderLeftColor: "var(--t-border-light)",
+                      borderBottomColor: "var(--t-border-dark)",
+                      borderRightColor: "var(--t-border-dark)",
+                      background: "var(--t-app-bg)",
+                      padding: "6px 8px",
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: r.changelog ? 4 : 0 }}>
+                      <span style={{ fontFamily: "var(--t-font-display)", fontSize: "var(--t-text-sm)", color: "var(--t-accent)" }}>
+                        v{r.version}
+                      </span>
+                      <span style={{ fontFamily: "var(--t-font-body)", fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)" }}>
+                        {new Date(r.releasedAt).toLocaleDateString("fr-FR")}
+                      </span>
+                    </div>
+                    {r.changelog && (
+                      <div style={{ fontFamily: "var(--t-font-body)", fontSize: "var(--t-text-xs)", color: "var(--t-text-subtle)", whiteSpace: "pre-wrap", lineHeight: 1.4 }}>
+                        {r.changelog}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>

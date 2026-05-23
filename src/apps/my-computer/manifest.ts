@@ -6,6 +6,7 @@ export const manifest: AppManifest = {
   name: "Mon Ordinateur",
   description: "Propriété de Gunth Corp™",
   emoji: "🖥️",
+  version: "1.0.0",
   loadDuration: 1000,
   showInLauncher: false,
   component: MyComputerApp,

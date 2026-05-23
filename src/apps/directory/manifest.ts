@@ -6,9 +6,9 @@ export const manifest: AppManifest = {
   name: "Annuaire",
   description: "Tous les utilisateurs GunthOS",
   emoji: "📋",
+  version: "1.0.0",
   loadDuration: 1700,
   showInLauncher: true,
-  badge: "NEW",
   href: "/directory",
   component: DirectoryApp,
 };

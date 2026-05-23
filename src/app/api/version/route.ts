@@ -1,14 +1,21 @@
-import { NextResponse } from "next/server";
-import { readFileSync } from "fs";
-import { join } from "path";
-
 export const dynamic = "force-dynamic";
+
+import { NextResponse } from "next/server";
+import { db } from "@/lib/db";
+import { osVersions } from "@/lib/db/schema";
+import { desc } from "drizzle-orm";
 
 export async function GET() {
   try {
-    const buildId = readFileSync(join(process.cwd(), ".next", "BUILD_ID"), "utf8").trim();
-    return NextResponse.json({ buildId });
-  } catch {
-    return NextResponse.json({ buildId: "dev" });
+    const releases = db()
+      .select()
+      .from(osVersions)
+      .orderBy(desc(osVersions.releasedAt))
+      .all();
+
+    return NextResponse.json({ releases });
+  } catch (err) {
+    console.error("version GET error:", err);
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }

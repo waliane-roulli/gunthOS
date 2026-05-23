@@ -6,6 +6,7 @@ export const manifest: AppManifest = {
   name: "GunthPrint 3000™",
   description: "Imprimante hors ligne depuis 2003",
   emoji: "🖨️",
+  version: "1.0.0",
   loadDuration: 1500,
   showInLauncher: false,
   component: PrinterApp,

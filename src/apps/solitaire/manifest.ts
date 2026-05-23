@@ -6,6 +6,7 @@ export const manifest: AppManifest = {
   name: "Solitaire GunthOS™",
   description: "Le jeu de cartes le plus perdu du monde",
   emoji: "🃏",
+  version: "1.0.0",
   loadDuration: 1300,
   showInLauncher: false,
   component: SolitaireApp,

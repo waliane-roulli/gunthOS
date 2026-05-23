@@ -7,6 +7,7 @@ export const manifest: AppManifest = {
   name: "GunthMessenger™",
   description: "Messagerie instantanée style MSN",
   emoji: "💬",
+  version: "1.0.0",
   iconComponent: MsnLogo,
   loadDuration: 1200,
   showInLauncher: true,

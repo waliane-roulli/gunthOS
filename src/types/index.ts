@@ -31,8 +31,10 @@ export interface AppManifest {
   requiresAuth?: boolean;
   /** Optional Next.js page route (for nav-bar / direct URL access) */
   href?: string;
-  /** Optional badge text ("NEW", "3", etc.) */
+  /** Optional badge text ("NEW", "3", etc.) — static fallback; prefer `version` for dynamic badges */
   badge?: string;
+  /** Semantic version string — enables dynamic "NEW" badge until user opens this version */
+  version?: string;
   /** Show a "HOT 🔥" badge on the top-left of the icon */
   hot?: boolean;
   /** The React component rendered inside the window */

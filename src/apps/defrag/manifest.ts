@@ -6,6 +6,7 @@ export const manifest: AppManifest = {
   name: "Défragmenteur de disque",
   description: "Optimise votre disque (résultat non garanti)",
   emoji: "🗂️",
+  version: "1.0.0",
   loadDuration: 1800,
   showInLauncher: false,
   component: DefragApp,
