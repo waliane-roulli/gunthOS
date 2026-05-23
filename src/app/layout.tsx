@@ -99,6 +99,19 @@ export const metadata: Metadata = {
   title: "GunthOS v1.0 — Chargement en cours… (depuis 1998)",
   description:
     "GunthOS : le système d'exploitation du web. Tirage au sort, mini-jeux et outils kitsch. Chargement en cours depuis 1998.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "GunthOS",
+  },
+  icons: {
+    icon: [
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/icons/icon-192.png" }],
+  },
 };
 
 export const viewport: Viewport = {

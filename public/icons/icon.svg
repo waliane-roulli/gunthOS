@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Background: teal Win98 color -->
+  <rect width="512" height="512" fill="#008080"/>
+  <!-- Window frame -->
+  <rect x="56" y="80" width="400" height="320" fill="#c0c0c0" stroke="#808080" stroke-width="2"/>
+  <!-- Title bar -->
+  <rect x="56" y="80" width="400" height="28" fill="#000080"/>
+  <!-- Title bar buttons -->
+  <rect x="408" y="84" width="18" height="18" fill="#c0c0c0" stroke="#808080" stroke-width="1"/>
+  <rect x="430" y="84" width="18" height="18" fill="#c0c0c0" stroke="#808080" stroke-width="1"/>
+  <!-- Window content area -->
+  <rect x="60" y="112" width="392" height="284" fill="#ffffff"/>
+  <!-- Desktop icons (simplified) -->
+  <rect x="80" y="130" width="48" height="48" fill="#ffff00" rx="2"/>
+  <rect x="80" y="130" width="48" height="12" fill="#000080" rx="2"/>
+  <rect x="80" y="195" width="48" height="48" fill="#00ff00" rx="2"/>
+  <rect x="80" y="195" width="48" height="12" fill="#000080" rx="2"/>
+  <!-- Monitor bezel -->
+  <rect x="140" y="130" width="290" height="180" fill="#c0c0c0" stroke="#808080" stroke-width="2"/>
+  <rect x="148" y="138" width="274" height="164" fill="#000040"/>
+  <!-- Screen text glow -->
+  <text x="285" y="215" font-family="monospace" font-size="28" font-weight="bold" fill="#00ff00" text-anchor="middle">GunthOS</text>
+  <text x="285" y="248" font-family="monospace" font-size="14" fill="#00cc00" text-anchor="middle">v1.0 — 1998</text>
+  <!-- Taskbar -->
+  <rect x="56" y="368" width="400" height="32" fill="#c0c0c0" stroke="#808080" stroke-width="1"/>
+  <rect x="62" y="372" width="64" height="22" fill="#c0c0c0" stroke="#808080" stroke-width="1"/>
+  <text x="94" y="387" font-family="monospace" font-size="13" font-weight="bold" fill="#000000" text-anchor="middle">Start</text>
+</svg>
