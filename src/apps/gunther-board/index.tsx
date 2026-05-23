@@ -1219,7 +1219,7 @@ function TicketDetail({
                   style={{
                     ...RAISED,
                     padding: "1px 5px",
-                    fontSize: "var(--t-text-base)",
+                    fontSize: "var(--t-text-xs)",
                     color: "var(--t-text-muted)",
                     backgroundColor: "var(--t-bg)",
                   }}
