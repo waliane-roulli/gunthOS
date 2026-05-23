@@ -10,7 +10,7 @@ export const manifest: AppManifest = {
   name: "Peggle 98",
   description: "Lancez des billes, détruisez des pegs !",
   emoji: "🎯",
-  version: "1.1.0",
+  version: "1.2.0",
   defaultSize: { w: 520, h: 640 },
   loadDuration: 1800,
   showInLauncher: true,
