@@ -310,7 +310,7 @@ function MobileDesktopIcon({ icon, selected, onSelect }: MobileDesktopIconProps)
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
-      className="flex flex-col items-center gap-1 p-2 focus:outline-none cursor-default"
+      className="flex flex-col items-center gap-1 p-2 focus:outline-none cursor-default w-full"
       style={{ userSelect: "none", touchAction: "none", minHeight: 80 }}
     >
       <div className="relative">
