@@ -174,7 +174,7 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
       {/* Notification center panel */}
       {notifPanelOpen && (
         <NotificationCenterPanel
-          anchorBottom={taskbarH + 4}
+          anchorTop={taskbarH + 4}
           anchorRight={8}
           onClose={() => setNotifPanelOpen(false)}
           onUnreadChange={setNotifUnread}
