@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef } from "react";
 import { useWindowActions, useWindowState } from "@/lib/contexts/window-manager-context";
 import type { WindowInstance } from "@/lib/contexts/window-manager-context";
 import { RetroTitlebarBtn } from "./retro-titlebar-btn";
+import { OsIcon } from "./os-icon";
 import { useSoundContext } from "@/lib/contexts/sound-context";
 import { useMobile } from "@/lib/hooks/use-mobile";
 import { TASKBAR_H, TASKBAR_H_MOBILE } from "@/lib/constants/layout";
@@ -162,7 +163,7 @@ export function OsWindow({ win, children }: OsWindowProps) {
         left: 0,
         top: taskbarH,
         width: "100vw",
-        height: `calc(100vh - ${taskbarH}px)`,
+        height: `calc(100dvh - ${taskbarH}px)`,
         zIndex: win.zIndex,
         margin: 0,
         display: "flex",
@@ -235,8 +236,8 @@ export function OsWindow({ win, children }: OsWindowProps) {
         }}
       >
         <span className="truncate flex items-center gap-1.5 min-w-0">
-          <span className="shrink-0" style={{ width: 16, height: 16, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
-            <span style={{ transform: `scale(${16 / 46})`, transformOrigin: "center", display: "inline-flex" }}>{win.icon}</span>
+          <span className="shrink-0" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+            <OsIcon slug={win.appSlug} size={16} />
           </span>
           {win.title}
         </span>

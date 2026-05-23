@@ -21,6 +21,7 @@ import {
 import { WALLPAPERS, WALLPAPER_MAP, type WallpaperId } from "@/lib/wallpapers";
 import { FONT_PAIRS, type FontPairId } from "@/lib/font-pairs";
 import { type SoundSchemeId } from "@/lib/sound-schemes";
+import { type IconThemeId } from "@/lib/icon-themes";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { useThemeApplication } from "@/lib/hooks/use-theme-application";
 
@@ -46,6 +47,7 @@ interface SettingsActionsContextValue {
   resetWallpaperToTheme: () => void;
   setFontPairId: (v: FontPairId) => void;
   setFontSize: (v: number) => void;
+  setIconTheme: (v: IconThemeId) => void;
   updateSettings: (patch: Partial<AppSettings>) => void;
 }
 
@@ -69,6 +71,7 @@ const SettingsActionsContext = createContext<SettingsActionsContextValue>({
   resetWallpaperToTheme: () => {},
   setFontPairId: () => {},
   setFontSize: () => {},
+  setIconTheme: () => {},
   updateSettings: () => {},
 });
 
@@ -147,6 +150,9 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
           soundSchemeId: local.soundSchemeId !== DEFAULT_SETTINGS.soundSchemeId
             ? local.soundSchemeId
             : (remote.soundSchemeId ?? DEFAULT_SETTINGS.soundSchemeId),
+          iconThemeId: local.iconThemeId !== DEFAULT_SETTINGS.iconThemeId
+            ? local.iconThemeId
+            : (remote.iconThemeId ?? DEFAULT_SETTINGS.iconThemeId),
         };
         setSettings(merged);
         saveSettings(merged);
@@ -220,6 +226,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const setWallpaperId = useCallback((v: WallpaperId) => updateSettings({ wallpaperId: v, wallpaperOverridden: true }), [updateSettings]);
   const setFontPairId = useCallback((v: FontPairId) => updateSettings({ fontPairId: v }), [updateSettings]);
   const setFontSize = useCallback((v: number) => updateSettings({ fontSize: Math.max(0.85, Math.min(1.3, v)) }), [updateSettings]);
+  const setIconTheme = useCallback((v: IconThemeId) => updateSettings({ iconThemeId: v }), [updateSettings]);
   const resetWallpaperToTheme = useCallback(() => {
     setSettings((prev) => {
       const themeObj = THEME_MAP.get(prev.themeId);
@@ -237,8 +244,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const stateValue = useMemo(() => ({ settings, theme }), [settings, theme]);
 
   const actionsValue = useMemo(
-    () => ({ setTheme, setSoundEnabled, setMasterVolume, setAmbientVolume, setSoundScheme, setAnimationsEnabled, setScanlinesEnabled, setPixelizeEnabled, setPerformanceModeEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, setFontPairId, setFontSize, updateSettings }),
-    [setTheme, setSoundEnabled, setMasterVolume, setAmbientVolume, setSoundScheme, setAnimationsEnabled, setScanlinesEnabled, setPixelizeEnabled, setPerformanceModeEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, setFontPairId, setFontSize, updateSettings]
+    () => ({ setTheme, setSoundEnabled, setMasterVolume, setAmbientVolume, setSoundScheme, setAnimationsEnabled, setScanlinesEnabled, setPixelizeEnabled, setPerformanceModeEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, setFontPairId, setFontSize, setIconTheme, updateSettings }),
+    [setTheme, setSoundEnabled, setMasterVolume, setAmbientVolume, setSoundScheme, setAnimationsEnabled, setScanlinesEnabled, setPixelizeEnabled, setPerformanceModeEnabled, setCursorId, setWallpaperId, resetWallpaperToTheme, setFontPairId, setFontSize, setIconTheme, updateSettings]
   );
 
   return (

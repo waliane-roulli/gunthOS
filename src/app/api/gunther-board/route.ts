@@ -27,8 +27,10 @@ export async function GET() {
       updatedAt: guntherBoardTickets.updatedAt,
       assigneeName: assignee.name,
       assigneeUsername: assignee.username,
+      assigneeAvatar: assignee.avatarDataUrl,
       createdByName: creator.name,
       createdByUsername: creator.username,
+      createdByAvatar: creator.avatarDataUrl,
     })
     .from(guntherBoardTickets)
     .leftJoin(assignee, eq(guntherBoardTickets.assigneeId, assignee.id))
