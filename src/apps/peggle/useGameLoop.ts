@@ -119,28 +119,49 @@ export function useGameLoop({
     fireBallAtClientPos(e.currentTarget.getBoundingClientRect(), e.clientX, e.clientY);
   }, [fireBallAtClientPos]);
 
-  const handleTouchMove = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
-    e.preventDefault();
-    const touch = e.touches[0];
-    if (!touch) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    mouseRef.current = {
-      x: (touch.clientX - rect.left) * (W / rect.width),
-      y: (touch.clientY - rect.top) * (H / rect.height),
-    };
-  }, []);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-  const handleTouchEnd = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
-    e.preventDefault();
-    const touch = e.changedTouches[0];
-    if (!touch) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    mouseRef.current = {
-      x: (touch.clientX - rect.left) * (W / rect.width),
-      y: (touch.clientY - rect.top) * (H / rect.height),
+    const updateAimFromTouch = (t: Touch) => {
+      const rect = canvas.getBoundingClientRect();
+      mouseRef.current = {
+        x: (t.clientX - rect.left) * (W / rect.width),
+        y: (t.clientY - rect.top) * (H / rect.height),
+      };
     };
-    fireBallAtClientPos(rect, touch.clientX, touch.clientY);
-  }, [fireBallAtClientPos]);
+
+    const onTouchStart = (e: TouchEvent) => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      if (touch) updateAimFromTouch(touch);
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      if (touch) updateAimFromTouch(touch);
+    };
+
+    const onTouchEnd = (e: TouchEvent) => {
+      e.preventDefault();
+      const touch = e.changedTouches[0];
+      if (!touch) return;
+      updateAimFromTouch(touch);
+      const rect = canvas.getBoundingClientRect();
+      fireBallAtClientPos(rect, touch.clientX, touch.clientY);
+    };
+
+    canvas.addEventListener("touchstart", onTouchStart, { passive: false });
+    canvas.addEventListener("touchmove", onTouchMove, { passive: false });
+    canvas.addEventListener("touchend", onTouchEnd, { passive: false });
+
+    return () => {
+      canvas.removeEventListener("touchstart", onTouchStart);
+      canvas.removeEventListener("touchmove", onTouchMove);
+      canvas.removeEventListener("touchend", onTouchEnd);
+    };
+  }, [fireBallAtClientPos, mouseRef]);
 
   useEffect(() => {
     const pegs = stateRef.current.pegs;
@@ -391,5 +412,5 @@ export function useGameLoop({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [playBip, playPop, playVictory, playDelete, syncUI, onBestScore, onScoreSubmit]);
 
-  return { stateRef, handleClick, handleTouchMove, handleTouchEnd, resetGame, nextLevel };
+  return { stateRef, handleClick, resetGame, nextLevel };
 }

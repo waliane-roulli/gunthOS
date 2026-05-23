@@ -10,8 +10,6 @@ interface GameCanvasProps {
   user: { name?: string | null; email?: string | null; id?: string } | null;
   onMouseMove: (e: React.MouseEvent<HTMLCanvasElement>) => void;
   onClick: (e: React.MouseEvent<HTMLCanvasElement>) => void;
-  onTouchMove: (e: React.TouchEvent<HTMLCanvasElement>) => void;
-  onTouchEnd: (e: React.TouchEvent<HTMLCanvasElement>) => void;
   onReplay: () => void;
   onNextLevel: () => void;
   onLeaderboard: () => void;
@@ -24,8 +22,6 @@ export function GameCanvas({
   user,
   onMouseMove,
   onClick,
-  onTouchMove,
-  onTouchEnd,
   onReplay,
   onNextLevel,
   onLeaderboard,
@@ -59,8 +55,6 @@ export function GameCanvas({
         }}
         onMouseMove={onMouseMove}
         onClick={onClick}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
       />
 
       {(ui.phase === "won" || ui.phase === "lost") && (
