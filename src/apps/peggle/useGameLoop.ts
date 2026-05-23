@@ -134,7 +134,12 @@ export function useGameLoop({
     e.preventDefault();
     const touch = e.changedTouches[0];
     if (!touch) return;
-    fireBallAtClientPos(e.currentTarget.getBoundingClientRect(), touch.clientX, touch.clientY);
+    const rect = e.currentTarget.getBoundingClientRect();
+    mouseRef.current = {
+      x: (touch.clientX - rect.left) * (W / rect.width),
+      y: (touch.clientY - rect.top) * (H / rect.height),
+    };
+    fireBallAtClientPos(rect, touch.clientX, touch.clientY);
   }, [fireBallAtClientPos]);
 
   useEffect(() => {
