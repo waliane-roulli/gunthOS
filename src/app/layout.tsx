@@ -108,6 +108,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr" className={`${fredoka.variable} ${vt323.variable} ${pressStart.variable} ${orbitron.variable} ${exo2.variable} ${righteous.variable} ${nunito.variable} ${shareTechMono.variable} ${ubuntuMono.variable} ${audiowide.variable} ${rajdhani.variable} ${playfairDisplay.variable} ${lora.variable} ${bungee.variable} ${ibmPlexMono.variable}`}>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+      </head>
       <body>
         <AuthProvider>
           <SettingsProvider>

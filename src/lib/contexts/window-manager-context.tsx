@@ -59,13 +59,20 @@ const WindowActionsContext = createContext<WindowActionsContextValue>({
 
 const BASE_Z = 100;
 
+function isMobileViewport(): boolean {
+  if (typeof window === "undefined") return false;
+  return window.innerWidth < 768;
+}
+
 function getDefaultPosition(index: number): { x: number; y: number } {
+  if (isMobileViewport()) return { x: 0, y: 48 };
   const offset = (index % 8) * 32;
   return { x: 80 + offset, y: 60 + offset };
 }
 
 function getDefaultSize(): { w: number; h: number } {
   if (typeof window === "undefined") return { w: 760, h: 600 };
+  if (isMobileViewport()) return { w: window.innerWidth, h: window.innerHeight - 48 };
   return {
     w: Math.min(760, window.innerWidth - 40),
     h: Math.min(600, window.innerHeight - 100),
@@ -73,6 +80,7 @@ function getDefaultSize(): { w: number; h: number } {
 }
 
 function getSizeForApp(defaultSize?: { w: number; h: number }): { w: number; h: number } {
+  if (isMobileViewport()) return getDefaultSize();
   if (!defaultSize) return getDefaultSize();
   if (typeof window === "undefined") return defaultSize;
   return {
@@ -106,6 +114,7 @@ export function WindowManagerProvider({ children }: { children: ReactNode }) {
       }
 
       const id = `win-${++idCounterRef.current}`;
+      const mobile = isMobileViewport();
       const position = getDefaultPosition(windowsRef.current.length);
       const size = getSizeForApp(opts?.defaultSize);
 
@@ -116,7 +125,7 @@ export function WindowManagerProvider({ children }: { children: ReactNode }) {
           appSlug,
           title,
           icon,
-          state: startMaximized ? "maximized" : "normal",
+          state: (startMaximized || mobile) ? "maximized" : "normal",
           zIndex: ++topZRef.current,
           position,
           size,
