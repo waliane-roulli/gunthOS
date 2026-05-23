@@ -18,6 +18,17 @@ function shuffle<T>(arr: readonly T[]): T[] {
 
 // ── Boot pools ────────────────────────────────────────────────────────────────
 
+const MEMORY_TEST_POOL = [
+  "  Mémoire vive : 640K RAM ...................... PAS ASSEZ",
+  "  Mémoire vive : 640K RAM ...................... INSUFFISANT (depuis 1982)",
+  "  Mémoire vive : 640K RAM ...................... ÇA DEVRAIT ALLER (non)",
+  "  Mémoire vive : 640K RAM ...................... LIMITE. MAIS BON.",
+  "  Mémoire vive : 640K RAM ...................... MOINS QU'UN BADGE NFC",
+  "  Mémoire vive : 640K RAM ...................... BILL GATES APPROUVE",
+  "  Mémoire vive : 640K RAM ...................... COMPTE TENU DES CIRCONSTANCES, OK",
+  "  Mémoire vive : 640K RAM ...................... C'EST TOUT CE QU'ON A",
+] as const;
+
 const HARDWARE_POOL = [
   "  Imprimante LPT1 : ............................ PLEURE EN SILENCE",
   "  Pile CMOS : .................................. VIDE (heure : 01/01/1980)",
@@ -27,6 +38,37 @@ const HARDWARE_POOL = [
   "  Écran : ....................................... RÉSIGNÉ",
   "  Horloge temps réel : .......................... À LA TRAÎNE",
   "  Port série COM1 : ............................. JALOUX DU USB",
+  "  IRQ 7 : ....................................... CONFLIT. RÉSOLU PAR L'IGNORANCE.",
+  "  Bus ISA : ..................................... LÉGENDAIRE",
+  "  Coprocesseur mathématique : ................... EN THÉORIE",
+  "  Carte réseau NE2000 : ......................... NE PAS LUI PARLER",
+  "  Cache L2 : .................................... PEUT-ÊTRE",
+  "  Port game : ................................... VIDE (le joystick est parti)",
+  "  Capteur de température : ...................... OPTIMISTE",
+  "  Alimentation ATX : ............................ SUFFISANTE (pour l'instant)",
+  "  Bus PCI : ..................................... EN NÉGOCIATION",
+  "  Scanner SCSI : ................................ INTROUVABLE (comme d'habitude)",
+  "  Disque ZIP : .................................. OÙ AVEZ-VOUS MIS LA DISQUETTE",
+  "  Port infrarouge : ............................. DANS L'OBSCURITÉ",
+  "  Carte vidéo S3 Trio : ......................... 256 COULEURS (luxe)",
+  "  Clavier : ..................................... TOUS LES BOUTONS COLLANTS",
+  "  Souris PS/2 : ................................. 2 BOUTONS (édition deluxe)",
+  "  Port COM2 : ................................... SILENCIEUX. TROP SILENCIEUX.",
+] as const;
+
+const BIOS_WARNING_POOL = [
+  "  Batterie CMOS faible : ....................... DATE REMISE À 01/01/1980",
+  "  Température CPU : ............................. ÉLEVÉE (c'est normal pour lui)",
+  "  Tension alimentation instable : ............... ON CROISE LES DOIGTS",
+  "  IRQ conflict détecté : ........................ RÉSOLU. OU PAS.",
+  "  Espace mémoire haute insuffisant : ............ HABITUEL",
+  "  Configuration non standard : .................. STANDARD POUR NOUS",
+  "  CMOS checksum error : ......................... VALEURS PAR DÉFAUT CHARGÉES",
+  "  Fan failure warning : ......................... PEUT-ÊTRE UN PROBLÈME",
+  "  Hard disk S.M.A.R.T. failure : ................ IGNORÉ (c'est plus simple)",
+  "  Boot device not found : ....................... TROUVÉ EN CHERCHANT BIEN",
+  "  Keyboard error or no keyboard present : ....... CONTINUER QUAND MÊME",
+  "  PXE boot timeout : ............................ RÉSEAU ABANDONNÉ. BIENVENUE.",
 ] as const;
 
 const DISK_POOL = [
@@ -36,6 +78,18 @@ const DISK_POOL = [
   "  Fichiers orphelins : ......................... 1 247. LAISSEZ-LES.",
   "  Défragmentation conseillée : ................. DEPUIS 3 ANS",
   "  Espace libre : ................................ OPTIMISTE",
+  "  Secteur de boot : ............................. TROUVÉ (de justesse)",
+  "  Table d'allocation FAT16 : .................... FATIGUÉE",
+  "  Bad clusters : ................................ PLUS QUE LA DERNIÈRE FOIS",
+  "  CHKDSK recommandé : ........................... DEPUIS LE 12 MARS 1997",
+  "  Répertoire racine : ........................... 89 FICHIERS DONT 71 MYSTÈRES",
+  "  Volume label : ................................ DISQUE_C (original)",
+  "  Temps d'accès : ............................... 28ms (dans ses rêves)",
+  "  Swap file : ................................... GROS. TRÈS GROS.",
+  "  Compression disque DoubleSpace : .............. TENTÉE. ABANDONNÉE.",
+  "  SCANDISK interrompu : ......................... IL L'EST TOUJOURS",
+  "  Cylindres : ................................... USÉS",
+  "  Secteurs par piste : .......................... NOMBREUX ET MÉLANCOLIQUES",
 ] as const;
 
 const DRIVER_POOL = [
@@ -47,6 +101,22 @@ const DRIVER_POOL = [
   "  CONFIG.SYS .................................... DÉCOURAGÉ",
   "  DELTREE.EXE ................................... NE PAS LANCER",
   "  CHOICE.COM .................................... INDÉCIS",
+  "  ANSI.SYS ....................................... COLORÉ",
+  "  KEYB.COM ........................................ AZERTY DÉTECTÉ (enfin)",
+  "  SMARTDRV.EXE ................................... PAS SI MALIN",
+  "  DRVSPACE.BIN ................................... GONFLÉ",
+  "  MSCDEX.EXE ..................................... OPTIONNEL (comme vous)",
+  "  SCANDISK.EXE ................................... PLUS TARD",
+  "  DEFRAG.EXE ..................................... NE PAS LANCER MAINTENANT",
+  "  GRAPHICS.COM ................................... PIXEL PAR PIXEL",
+  "  SHARE.EXE ...................................... AVARE",
+  "  APPEND.EXE ..................................... APPENDICE INUTILE",
+  "  INTERSVR.EXE ................................... SANS CÂBLE",
+  "  LOADHIGH.COM ................................... IL ESSAIE",
+  "  DOSKEY.COM ..................................... SE SOUVIENT DE TOUT",
+  "  NLSFUNC.EXE .................................... MULTILINGUE (mais pas beaucoup)",
+  "  SUBST.EXE ...................................... A SUBSTITUÉ QUELQUE CHOSE",
+  "  WINA20.386 ..................................... MYSTÈRE COMPLET",
 ] as const;
 
 const NETWORK_POOL = [
@@ -57,6 +127,17 @@ const NETWORK_POOL = [
   "  Pare-feu : .................................... IL ESSAIE",
   "  Protocole TCP/IP : ........................... NÉGOCIATION EN COURS",
   "  DNS : .......................................... OÙ SUIS-JE",
+  "  Adresse IP : .................................. 192.168.666.1 (suspicieux)",
+  "  Serveur proxy : ............................... NE RÉPOND PAS",
+  "  Protocole IPX/SPX : .......................... NOSTALGIQUE",
+  "  NetBIOS : ..................................... BAVARD",
+  "  Bande passante : .............................. 28.8 Kbps (optimiste)",
+  "  Passerelle par défaut : ....................... INJOIGNABLE (surprise)",
+  "  Speaker modem : ............................... ACTIVÉ (désolé pour les voisins)",
+  "  Email en attente : ............................ 3 (dont 2 de 1998)",
+  "  Winsock : ..................................... PRESQUE PRÊT",
+  "  Protocole NetBEUI : ........................... VERBEUX",
+  "  Connexion partagée : .......................... NON (et non)",
 ] as const;
 
 const MENTAL_HEALTH_SECTIONS = [
@@ -78,7 +159,22 @@ const MENTAL_HEALTH_SECTIONS = [
   [
     "Auto-diagnostic émotionnel...",
     "  Rancœurs accumulées : ........................ 14 (en hausse)",
-    "  Espoir résiduel : ............................ DÉTECTÉ (faible signal)",
+    "  Espoir résiduel : ............................ DÉTECTÉ (signal faible)",
+  ],
+  [
+    "Vérification de la mémoire traumatique...",
+    "  Erreurs passées : ............................ NOMBREUSES ET DOCUMENTÉES",
+    "  Capacité à en tirer des leçons : ............. EN DÉBAT",
+  ],
+  [
+    "Inventaire des ressources internes...",
+    "  RAM disponible pour les rêves : .............. 0 Ko",
+    "  Espace disque pour les regrets : ............. 4,2 Go (et ça augmente)",
+  ],
+  [
+    "Diagnostic de personnalité système...",
+    "  Introversion du processeur : ................. CONFIRMÉE",
+    "  Anxiété de démarrage : ....................... STANDARD (pour un lundi)",
   ],
 ] as const;
 
@@ -89,6 +185,16 @@ const STARTUP_POOL = [
   "  Attentes déraisonnables : ..................... CHARGÉES",
   "  Illusions de performance : .................... ACTIVÉES",
   "  Café de l'utilisateur : ....................... TROP CHAUD POUR L'INSTANT",
+  "  Fond d'écran : ................................ PLUS MOCHE QUE DANS LE SOUVENIR",
+  "  Barre des tâches : ............................ EN BAS (pour l'instant)",
+  "  Icônes bureau : ............................... EN FORMATION CHAOTIQUE",
+  "  Raccourcis cassés : ........................... 3 (record cette semaine)",
+  "  Mise à jour ignorée : ......................... POUR LA 47ème FOIS",
+  "  Heure système : ............................... APPROXIMATIVE",
+  "  Poubelle bureau : ............................. VIDE (miracle du mois)",
+  "  Résolution d'écran : .......................... 800×600 (ne pas toucher)",
+  "  Thème bureau : ................................ CONSERVÉ PAR INERTIE",
+  "  Sons système : ................................ ACTIVÉS (désolé)",
 ] as const;
 
 const CLOSING_POOL = [
@@ -97,7 +203,16 @@ const CLOSING_POOL = [
   "  Durée de vie estimée : encore un peu.",
   "  Mode sans échec disponible (de toute façon).",
   "  Bonne chance. Sincèrement.",
-  "  En cas de problème, relancez. En cas de problème grave, relancez plus fort.",
+  "  En cas de problème, relancez. En cas de grave problème, relancez plus fort.",
+  "  En cas d'écran bleu : prenez une photo d'abord.",
+  "  Toute ressemblance avec un OS fonctionnel est purement fortuite.",
+  "  Le manuel est dans la boîte. Quelque part.",
+  "  Vos attentes ont été ajustées à la baisse.",
+  "  GunthOS décline toute responsabilité pour les données perdues.",
+  "  Si rien ne marche, c'est dans les normes.",
+  "  Rechargez en cas de comportement inattendu. Souvent.",
+  "  Profitez-en. L'écran bleu peut venir à tout moment.",
+  "  Toute perte de données est une opportunité de repartir à zéro.",
 ] as const;
 
 function buildBootLines(): BootLine[] {
@@ -110,55 +225,75 @@ function buildBootLines(): BootLine[] {
   };
   const blank = (gap = 200) => add("", gap);
 
+  // ─ Header BIOS
   add("GunthOS v1.0 - Copyright (C) 1998 Gunther Corp.", 300);
   add("All rights reserved. Surtout le droit à l'erreur.", 200);
   blank(200);
 
+  // ─ Hardware detection
   add("Détection du matériel en cours...", 300);
   add("  Processeur : Gunth686 DX2 66MHz .............. OK", 300, "ok");
-  add("  Mémoire vive : 640K RAM ...................... PAS ASSEZ", 300);
+  add(pickRandom(MEMORY_TEST_POOL), 300);
   add("  Mémoire vive (étendue) : 4Mo ................. OK (à peine)", 300);
   add("  Lecteur disquette A: ......................... ABSENT (votre faute)", 300, "hdd");
   add("  Lecteur CD-ROM : ............................. OUVERT (fermez-le)", 300);
   add("  Carte son : SoundBlaster 16 .................. BRUIT DETECÉ", 300);
   add("  Modem 14.4k : ................................ CONNEXION IMMINENTE", 250, "ok");
-  const hwCount = Math.random() < 0.5 ? 1 : 2;
+  const hwCount = Math.random() < 0.35 ? 1 : Math.random() < 0.7 ? 2 : 3;
   shuffle(HARDWARE_POOL).slice(0, hwCount).forEach(text => add(text, 270));
   blank(200);
 
+  // ─ Optional BIOS warnings (65% chance)
+  if (Math.random() < 0.65) {
+    add("Avertissements BIOS...", 250);
+    add(pickRandom(BIOS_WARNING_POOL), 230);
+    if (Math.random() < 0.45) add(pickRandom(BIOS_WARNING_POOL), 230);
+    blank(200);
+  }
+
+  // ─ Disk check
   add("Vérification du disque dur...", 300, "hdd");
   add("  C:\\ [XXXXXXXXXXXXXXXXXX____] 2147 erreurs trouvées", 300, "hdd");
   add("  Correction des erreurs : IGNORÉE (on verra plus tard)", 250);
-  add(pickRandom(DISK_POOL), 200);
+  const diskCount = Math.random() < 0.45 ? 1 : 2;
+  shuffle(DISK_POOL).slice(0, diskCount).forEach(text => add(text, 220));
   blank(200);
 
+  // ─ Drivers
   add("Chargement des pilotes...", 200);
   add("  HIMEM.SYS ..................................... OK", 200);
   add("  EMM386.EXE .................................... CONFUS", 200);
   add("  MOUSE.COM ..................................... CLIQUÉ", 200);
   add("  GUNTH.DRV ..................................... MYSTÉRIEUX", 200);
   add("  PLOUF.SYS ..................................... MOUILLÉ", 200);
-  add(pickRandom(DRIVER_POOL), 200);
+  const driverCount = Math.random() < 0.3 ? 1 : Math.random() < 0.65 ? 2 : 3;
+  shuffle(DRIVER_POOL).slice(0, driverCount).forEach(text => add(text, 200));
   blank(200);
 
+  // ─ Network
   add("Initialisation réseau...", 300);
   add("  Tentative de connexion à Internet... 14400 bps", 400);
   add("  SKRRRR KSSHHH BOING SKRRRR DING DING KSSSHH", 600, "modem");
   add("  Connexion établie ! (elle tiendra peut-être)", 250);
-  add(pickRandom(NETWORK_POOL), 200);
+  const netCount = Math.random() < 0.4 ? 1 : 2;
+  shuffle(NETWORK_POOL).slice(0, netCount).forEach(text => add(text, 220));
   blank(200);
 
+  // ─ Existential section (always one, picked randomly)
   pickRandom(MENTAL_HEALTH_SECTIONS).forEach(text => add(text, 250));
   blank(200);
 
+  // ─ Startup
   add("Démarrage de GunthOS...", 300);
   add("  Chargement du bureau ......................... EN COURS", 300);
   add("  Application des préférences .................. OK", 300);
   add("  Activation du papier peint ................... HIDEUX", 300);
   add("  Démarrage automatique ........................ 3 programmes inutiles", 250);
-  add(pickRandom(STARTUP_POOL), 200);
+  const startupCount = Math.random() < 0.4 ? 1 : 2;
+  shuffle(STARTUP_POOL).slice(0, startupCount).forEach(text => add(text, 220));
   blank(300);
 
+  // ─ Final banner
   add("========================================================", 200);
   add("  GunthOS est prêt. Nous pensons.", 200);
   add("  En cas de problème : éteignez et rallumez.", 200);
@@ -178,6 +313,18 @@ const SHUTDOWN_APP_POOL = [
   "  Screensaver ............................... INTERROMPU (c'était si beau)",
   "  Minesweeper ............................... FERMÉ (mine non déminée)",
   "  WordPad ................................... FERMÉ (roman inachevé : votre vie)",
+  "  Excel ..................................... FERMÉ (la formule était fausse)",
+  "  Defrag .................................... FERMÉ (était à 3% depuis 6h)",
+  "  3D Pinball ................................ FERMÉ (highscore non enregistré)",
+  "  Outlook Express ........................... FERMÉ (12 non lus depuis 2001)",
+  "  RealPlayer ................................ FERMÉ (désolé pour le bruit)",
+  "  ICQ ....................................... OFFLINE (statut : disparu dans la nature)",
+  "  Compagnon Office .......................... RENVOYÉ DÉFINITIVEMENT",
+  "  Doom II ................................... FERMÉ (niveau E2M4 perdu à jamais)",
+  "  WinZip .................................... FERMÉ (archive en cours : abandonnée)",
+  "  Notepad ................................... FERMÉ (contenu : aaaaaaaaaaaaa)",
+  "  Windows Media Player ...................... FERMÉ (musique : coupée au solo)",
+  "  HyperTerminal ............................. DÉCONNECTÉ (sans explication)",
 ] as const;
 
 const SHUTDOWN_CACHE_POOL = [
@@ -187,6 +334,14 @@ const SHUTDOWN_CACHE_POOL = [
   "  Doutes existentiels : ..................... REPORTÉS AU PROCHAIN BOOT",
   "  Regrets du jour : ......................... DÉFRAGMENTÉS",
   "  Souvenirs inutiles : ....................... CONSERVÉS PAR SENTIMENTALISME",
+  "  Clipboard : ............................... EFFACÉ (aurait dû coller avant)",
+  "  Polices installées : ...................... 312 CONSERVÉES (utilisées : 2)",
+  "  Thèmes téléchargés : ...................... 47 (utilisés : 0)",
+  "  Log des erreurs : ......................... TROP LONG POUR ÊTRE LU",
+  "  Corbeille : ............................... IGNORÉE (comme toujours)",
+  "  Fichier .tmp de 2,1 Go : .................. SUPPRIMÉ (enfin)",
+  "  Mots de passe mémorisés : ................. PROBABLEMENT QUELQUE PART",
+  "  Fond d'écran temporaire : ................. DEVENU PERMANENT EN 1999",
 ] as const;
 
 const SHUTDOWN_NETWORK_POOL = [
@@ -195,6 +350,13 @@ const SHUTDOWN_NETWORK_POOL = [
   "  Localisation approximative : ............. ENREGISTRÉE",
   "  Cookies tiers : ........................... TRÈS BIEN CONSERVÉS",
   "  Données personnelles : .................... QUELQUE PART",
+  "  Email non lu depuis 2003 : ................ TOUJOURS EN ATTENTE",
+  "  Site en construction : ..................... TOUJOURS EN CONSTRUCTION",
+  "  Téléchargement Netscape à 3% : ............ ANNULÉ",
+  "  Favoris IE : .............................. 847 LIENS (dont 831 morts)",
+  "  NetMeeting : .............................. PERSONNE N'A RÉPONDU",
+  "  Dernier chat IRC : ........................ DÉCONNECTÉ SANS PRÉVENIR",
+  "  IP dynamique : ............................. CHANGÉE (sans prévenir)",
 ] as const;
 
 const SHUTDOWN_SYSTEM_POOL = [
@@ -204,6 +366,14 @@ const SHUTDOWN_SYSTEM_POOL = [
   "  Nostalgie système : ....................... SAUVEGARDÉE",
   "  Ventilateur : ............................. ENFIN DU REPOS",
   "  Registre Windows : ........................ INTACT (miracle)",
+  "  IRQ conflictuels : ........................ RESTÉS EN CONFLIT",
+  "  Swap file : ............................... LIBÉRÉ (il était épuisé)",
+  "  Drivers orphelins : ....................... 23. LAISSEZ-LES.",
+  "  Services inutiles : ....................... MAINTENUS PAR PRINCIPE",
+  "  Processus zombies : ....................... PERSISTENT (comme toujours)",
+  "  Pile TCP/IP : ............................. DÉSEMPILÉE",
+  "  Gestionnaire de tâches : .................. A DÉMISSIONNÉ",
+  "  Mémoire virtuelle : ....................... LIBÉRÉE (elle méritait mieux)",
 ] as const;
 
 const SHUTDOWN_CLOSING_POOL = [
@@ -213,6 +383,12 @@ const SHUTDOWN_CLOSING_POOL = [
   "  Rappel : ça repart rarement mieux qu'avant.",
   "  Rappel : avez-vous essayé d'éteindre et de rallumer ?",
   "  Rappel : vos fichiers non sauvegardés sont partis pour toujours.",
+  "  Rappel : le disque dur qui clique, c'est normal. Probablement.",
+  "  Rappel : la mise à jour attend depuis mardi.",
+  "  Rappel : n'éteignez pas par le bouton. Ou si, on verra.",
+  "  Rappel : nous ne sommes pas responsables des pertes de données.",
+  "  Rappel : relancez si problème. Relancez si pas de problème aussi.",
+  "  Rappel : les données importantes étaient où, déjà ?",
 ] as const;
 
 function buildShutdownLines(): { text: string; delay: number }[] {
@@ -228,43 +404,53 @@ function buildShutdownLines(): { text: string; delay: number }[] {
   add("GunthOS v1.0 — Procédure d'arrêt initiée.", 200);
   blank(200);
 
+  // ─ App closing
   add("Fermeture des applications en cours...", 300);
   add("  Solitaire ..................................... REFUS (il était en train de gagner)", 350);
   add("  Bloc-notes .................................... FERMÉ (contenu non sauvegardé : votre vie)", 350);
   add("  Internet Explorer ............................. TOUJOURS EN COURS DE FERMETURE", 350);
-  add(pickRandom(SHUTDOWN_APP_POOL), 300);
+  const appCount = Math.random() < 0.4 ? 1 : 2;
+  shuffle(SHUTDOWN_APP_POOL).slice(0, appCount).forEach(text => add(text, 300));
   add("  Processus mystérieux (PID 666) ............... QU'EST-CE QUE C'EST", 300);
   add("  Processus mystérieux (PID 666) ............... IGNORÉ", 150);
   blank(200);
 
+  // ─ Preferences
   add("Sauvegarde des préférences...", 250);
   add("  Thème de bureau .............................. ENREGISTRÉ (il était hideux)", 300);
   add("  Raccourcis bureau ............................ 47 icônes sauvegardées", 300);
   add("  Vos données importantes ...................... PEUT-ÊTRE", 200);
   blank(150);
 
+  // ─ Cache
   add("Nettoyage du cache...", 200);
   add("  Fichiers temporaires ......................... 4,7 Go supprimés (ça faisait longtemps)", 350);
   add("  Cookies ...................................... CONSERVÉS (pour la nostalgie)", 350);
   add("  Historique ................................... EFFACÉ. On ne demande pas.", 300);
-  add(pickRandom(SHUTDOWN_CACHE_POOL), 250);
+  const cacheCount = Math.random() < 0.45 ? 1 : 2;
+  shuffle(SHUTDOWN_CACHE_POOL).slice(0, cacheCount).forEach(text => add(text, 260));
   blank(200);
 
+  // ─ Network
   add("Déconnexion du réseau...", 250);
   add("  Modem 14.4k : raccrochage .................... KSHHH BOING DING KRRSSH", 600);
   add("  Connexion Internet ........................... PERDUE (comme d'habitude)", 300);
   add("  Votre email non lu ........................... 1 message en attente depuis 2002", 300);
-  add(pickRandom(SHUTDOWN_NETWORK_POOL), 250);
+  const sdNetCount = Math.random() < 0.4 ? 1 : 2;
+  shuffle(SHUTDOWN_NETWORK_POOL).slice(0, sdNetCount).forEach(text => add(text, 260));
   blank(200);
 
+  // ─ System shutdown
   add("Arrêt des services système...", 250);
   add("  Horloge système .............................. STOPPÉE (le temps c'est de l'argent)", 350);
   add("  Gestionnaire de mémoire ...................... LIBÉRÉ (640K, c'est plus que suffisant)", 350);
   add("  Pilote PLOUF.SYS ............................. RESTÉ MOUILLÉ", 300);
-  add(pickRandom(SHUTDOWN_SYSTEM_POOL), 300);
+  const sysCount = Math.random() < 0.4 ? 1 : 2;
+  shuffle(SHUTDOWN_SYSTEM_POOL).slice(0, sysCount).forEach(text => add(text, 300));
   add("  GUNTH.DRV .................................... TOUJOURS MYSTÉRIEUX", 200);
   blank(200);
 
+  // ─ Final banner
   add("================================================================", 150);
   add("  GunthOS s'éteint correctement.", 200);
   add("  Merci d'avoir utilisé GunthOS v1.0.", 200);
