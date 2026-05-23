@@ -97,12 +97,11 @@ export function useGameLoop({
     return Math.max(0.15, Math.min(Math.PI - 0.15, angle));
   }
 
-  const handleClick = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+  const fireBallAtClientPos = useCallback((rect: DOMRect, clientX: number, clientY: number) => {
     const s = stateRef.current;
     if (s.phase !== "aim" || s.ball) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const mx = (e.clientX - rect.left) * (W / rect.width);
-    const my = (e.clientY - rect.top) * (H / rect.height);
+    const mx = (clientX - rect.left) * (W / rect.width);
+    const my = (clientY - rect.top) * (H / rect.height);
     const angle = Math.max(0.15, Math.min(Math.PI - 0.15, Math.atan2(my - LAUNCHER_Y, mx - LAUNCHER_X)));
     s.ball = {
       x: LAUNCHER_X, y: LAUNCHER_Y,
@@ -115,6 +114,33 @@ export function useGameLoop({
     s.phase = "firing";
     syncUI();
   }, [syncUI]);
+
+  const handleClick = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+    fireBallAtClientPos(e.currentTarget.getBoundingClientRect(), e.clientX, e.clientY);
+  }, [fireBallAtClientPos]);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
+    const touch = e.touches[0];
+    if (!touch) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    mouseRef.current = {
+      x: (touch.clientX - rect.left) * (W / rect.width),
+      y: (touch.clientY - rect.top) * (H / rect.height),
+    };
+  }, []);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
+    const touch = e.changedTouches[0];
+    if (!touch) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    mouseRef.current = {
+      x: (touch.clientX - rect.left) * (W / rect.width),
+      y: (touch.clientY - rect.top) * (H / rect.height),
+    };
+    fireBallAtClientPos(rect, touch.clientX, touch.clientY);
+  }, [fireBallAtClientPos]);
 
   useEffect(() => {
     const pegs = stateRef.current.pegs;
@@ -365,5 +391,5 @@ export function useGameLoop({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [playBip, playPop, playVictory, playDelete, syncUI, onBestScore, onScoreSubmit]);
 
-  return { stateRef, handleClick, resetGame, nextLevel };
+  return { stateRef, handleClick, handleTouchMove, handleTouchEnd, resetGame, nextLevel };
 }
