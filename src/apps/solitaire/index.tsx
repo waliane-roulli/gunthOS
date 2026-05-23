@@ -126,7 +126,7 @@ export function SolitaireApp(_: AppProps) {
               borderBottomColor: clicked === i ? "var(--t-border-light)" : "var(--t-border-dark)",
               borderRightColor: clicked === i ? "var(--t-border-light)" : "var(--t-border-dark)",
               color: c.red ? "var(--t-defrag-fragmented, #cc0000)" : "var(--t-app-text)",
-              fontSize: "0.875rem",
+              fontSize: "var(--t-text-sm)",
               fontWeight: "bold",
             }}
           >

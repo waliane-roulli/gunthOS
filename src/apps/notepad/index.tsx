@@ -76,7 +76,7 @@ export function NotepadApp(_: AppProps) {
           backgroundColor: "var(--t-app-bg)",
           color: "var(--t-app-text)",
           fontFamily: "var(--t-font-mono)",
-          fontSize: "0.875rem",
+          fontSize: "var(--t-text-sm)",
           lineHeight: 1.6,
           border: "none",
         }}

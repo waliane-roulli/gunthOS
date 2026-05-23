@@ -129,22 +129,22 @@ export function IEApp(_: AppProps) {
         style={{ backgroundColor: "var(--t-app-bg)", color: "var(--t-app-text)" }}
       >
         {loading ? (
-          <div style={{ fontFamily: "var(--t-font-mono)", fontSize: "0.875rem", color: "var(--t-accent)" }}>
+          <div style={{ fontFamily: "var(--t-font-mono)", fontSize: "var(--t-text-sm)", color: "var(--t-accent)" }}>
             Connexion à {url}…<br />
-            <span style={{ fontSize: "0.75rem", color: "var(--t-text-muted)" }}>
+            <span style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)" }}>
               {Math.floor(loadProgress)}% chargé — ne cliquez pas ailleurs
             </span>
           </div>
         ) : error ? (
           <div>
             <div style={{ fontSize: "2rem", marginBottom: 8 }}>🚫</div>
-            <div style={{ fontFamily: "var(--t-font-display)", fontSize: "1.1rem", fontWeight: "bold", color: "var(--t-accent)", marginBottom: 6 }}>
+            <div style={{ fontFamily: "var(--t-font-display)", fontSize: "var(--t-text-md)", fontWeight: "bold", color: "var(--t-accent)", marginBottom: 6 }}>
               Cette page ne peut pas être affichée
             </div>
-            <div style={{ fontFamily: "var(--t-font-mono)", fontSize: "0.75rem", color: "var(--t-app-text-muted)", maxWidth: 280 }}>
+            <div style={{ fontFamily: "var(--t-font-mono)", fontSize: "var(--t-text-xs)", color: "var(--t-app-text-muted)", maxWidth: 280 }}>
               {error}
             </div>
-            <div style={{ marginTop: 12, fontSize: "0.75rem", color: "var(--t-text-subtle)" }}>
+            <div style={{ marginTop: 12, fontSize: "var(--t-text-xs)", color: "var(--t-text-subtle)" }}>
               Internet Explorer 6.0 — GunthOS Edition
             </div>
             <div className="flex gap-2 justify-center mt-4">
@@ -153,7 +153,7 @@ export function IEApp(_: AppProps) {
                   key={s.url}
                   onClick={() => navigate(s.url)}
                   style={{
-                    fontSize: "0.75rem",
+                    fontSize: "var(--t-text-xs)",
                     color: "var(--t-accent)",
                     textDecoration: "underline",
                     background: "none",
@@ -169,13 +169,13 @@ export function IEApp(_: AppProps) {
           </div>
         ) : visitedSite ? (
           <div>
-            <div style={{ fontSize: "1.2rem", fontWeight: "bold", color: "var(--t-accent)", fontFamily: "var(--t-font-display)", marginBottom: 8 }}>
+            <div style={{ fontSize: "var(--t-text-md)", fontWeight: "bold", color: "var(--t-accent)", fontFamily: "var(--t-font-display)", marginBottom: 8 }}>
               {visitedSite.url}
             </div>
-            <div style={{ fontSize: "0.75rem", color: "var(--t-app-text-muted)", fontFamily: "var(--t-font-display)", marginBottom: 16 }}>
+            <div style={{ fontSize: "var(--t-text-xs)", color: "var(--t-app-text-muted)", fontFamily: "var(--t-font-display)", marginBottom: 16 }}>
               {visitedSite.joke}
             </div>
-            <div style={{ fontSize: "0.75rem", color: "var(--t-text-subtle)" }}>
+            <div style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-subtle)" }}>
               🔒 Ce site est certifié sécurisé par GunthCert™ (certificat expiré)
             </div>
           </div>

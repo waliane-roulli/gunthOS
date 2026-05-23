@@ -34,7 +34,7 @@ export function NavBar({ onSettingsClick }: NavBarProps) {
           borderRightColor: "var(--t-border-dark)",
           color: "var(--t-accent)",
           fontFamily: "var(--t-font-display)",
-          fontSize: "1rem",
+          fontSize: "var(--t-text-base)",
         }}
       >
         🌐 <span>GunthOS</span>
@@ -59,7 +59,7 @@ export function NavBar({ onSettingsClick }: NavBarProps) {
               className="flex items-center gap-1 px-2 py-0.5 border-[2px] tracking-wider select-none whitespace-nowrap transition-none"
               style={{
                 fontFamily: "var(--t-font-display)",
-                fontSize: "1rem",
+                fontSize: "var(--t-text-base)",
                 backgroundColor: isActive ? "var(--t-bg-light)" : "var(--t-bg)",
                 color: isActive ? "var(--t-accent)" : "var(--t-text)",
                 borderTopColor: isActive ? "var(--t-border-dark)" : "var(--t-border-light)",
@@ -96,7 +96,7 @@ export function NavBar({ onSettingsClick }: NavBarProps) {
           className="flex items-center gap-1 px-2 py-0.5 border-[2px] tracking-wider select-none whitespace-nowrap transition-none hover:opacity-90 active:opacity-70"
           style={{
             fontFamily: "var(--t-font-display)",
-            fontSize: "1rem",
+            fontSize: "var(--t-text-base)",
             backgroundColor: "var(--t-bg)",
             color: "var(--t-text)",
             borderTopColor: "var(--t-border-light)",

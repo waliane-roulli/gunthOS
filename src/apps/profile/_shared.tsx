@@ -114,7 +114,7 @@ export function RetroBtn({
 }) {
   const [pressed, setPressed] = useState(false);
   const base: React.CSSProperties = {
-    fontFamily: "var(--t-font-display)", fontSize: "0.875rem", letterSpacing: "0.05em",
+    fontFamily: "var(--t-font-display)", fontSize: "var(--t-text-sm)", letterSpacing: "0.05em",
     cursor: disabled ? "not-allowed" : "pointer", padding: "4px 14px", border: "2px solid", opacity: disabled ? 0.5 : 1,
     background: variant === "primary" ? "linear-gradient(180deg, var(--t-titlebar-from), var(--t-titlebar-to))" : "var(--t-bg)",
     color: variant === "primary" ? "var(--t-titlebar-text)" : variant === "danger" ? "var(--t-defrag-fragmented, #cc2200)" : "var(--t-text)",
@@ -141,7 +141,7 @@ export function RetroInput({
   value: string; onChange: (v: string) => void; placeholder?: string; maxLength?: number; multiline?: boolean; rows?: number; type?: string;
 }) {
   const base: React.CSSProperties = {
-    fontFamily: "var(--t-font-display)", fontSize: "0.875rem",
+    fontFamily: "var(--t-font-display)", fontSize: "var(--t-text-sm)",
     backgroundColor: "var(--t-app-bg)", color: "var(--t-app-text)",
     border: "2px solid",
     borderTopColor: "var(--t-border-dark)", borderLeftColor: "var(--t-border-dark)",
@@ -171,7 +171,7 @@ export function AvatarBlock({
           <span style={{ fontSize: "3.5rem", lineHeight: 1 }}>{pixelEmoji}</span>
         )}
         {uploading && (
-          <div style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--t-font-display)", color: "#c0c0c0", fontSize: "0.75rem" }}>⏳</div>
+          <div style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--t-font-display)", color: "#c0c0c0", fontSize: "var(--t-text-xs)" }}>⏳</div>
         )}
       </div>
       {editable && (
