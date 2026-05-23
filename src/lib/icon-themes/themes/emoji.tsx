@@ -1,4 +1,4 @@
-import { APP_REGISTRY } from "@/apps";
+import { APP_META } from "@/lib/app-meta";
 import type { IconTheme, IconRenderer } from "../types";
 
 function makeEmojiRenderer(emoji: string): IconRenderer {
@@ -17,7 +17,7 @@ const FallbackIcon: IconRenderer = ({ size }: { size: number }) => (
 FallbackIcon.displayName = "EmojiFallback";
 
 const icons: IconTheme["icons"] = {};
-for (const app of APP_REGISTRY) {
+for (const app of APP_META) {
   if (app.emoji) {
     icons[app.slug] = { icon: makeEmojiRenderer(app.emoji) };
   }
