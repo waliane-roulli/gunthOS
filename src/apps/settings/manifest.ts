@@ -1,5 +1,9 @@
-import type { AppManifest } from "@/types";
-import { SettingsApp } from "./index";
+import { lazy, type ComponentType } from "react";
+import type { AppManifest, AppProps } from "@/types";
+
+const SettingsApp = lazy(
+  () => import("./index").then((m) => ({ default: m.SettingsApp }))
+) as ComponentType<AppProps>;
 
 export const manifest: AppManifest = {
   slug: "settings",

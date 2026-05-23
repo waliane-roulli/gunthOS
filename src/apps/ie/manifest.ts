@@ -1,5 +1,9 @@
-import type { AppManifest } from "@/types";
-import { IEApp } from "./index";
+import { lazy, type ComponentType } from "react";
+import type { AppManifest, AppProps } from "@/types";
+
+const IEApp = lazy(
+  () => import("./index").then((m) => ({ default: m.IEApp }))
+) as ComponentType<AppProps>;
 
 export const manifest: AppManifest = {
   slug: "ie",

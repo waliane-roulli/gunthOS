@@ -1,5 +1,9 @@
-import type { AppManifest } from "@/types";
-import { GuntherBoardApp } from "./index";
+import { lazy, type ComponentType } from "react";
+import type { AppManifest, AppProps } from "@/types";
+
+const GuntherBoardApp = lazy(
+  () => import("./index").then((m) => ({ default: m.GuntherBoardApp }))
+) as ComponentType<AppProps>;
 
 export const manifest: AppManifest = {
   slug: "gunther-board",
