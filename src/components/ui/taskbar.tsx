@@ -2,6 +2,7 @@
 
 import { useCallback, useRef, useState, type ReactNode } from "react";
 import { MsnLogo } from "./msn-logo";
+import { OsIcon } from "./os-icon";
 import { useWindowState, useWindowActions } from "@/lib/contexts/window-manager-context";
 import { LAUNCHER_APPS } from "@/apps";
 import { useTheme, useSettings } from "@/lib/contexts/settings-context";
@@ -187,7 +188,7 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
             {LAUNCHER_APPS.map((app) => (
               <StartMenuItem
                 key={app.slug}
-                icon={app.iconComponent ? <app.iconComponent size={18} /> : (app.iconNode ?? app.emoji)}
+                icon={<OsIcon slug={app.slug} size={18} />}
                 label={app.name}
                 onClick={() => handleOpenApp(app.slug)}
                 tall={isMobile}
@@ -392,7 +393,7 @@ export function Taskbar({ onReboot, onShutdown }: { onReboot?: () => void; onShu
                 title={win.title}
               >
                 <span className="shrink-0" style={{ lineHeight: 0, display: "flex", alignItems: "center" }}>
-                  {win.icon}
+                  <OsIcon slug={win.appSlug} size={16} />
                 </span>
                 {!isMobile && <span className="truncate">{win.title}</span>}
               </button>

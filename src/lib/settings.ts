@@ -3,6 +3,7 @@ import { CURSORS, DEFAULT_CURSOR_ID, type CursorId } from "@/lib/cursors";
 import { WALLPAPERS, DEFAULT_WALLPAPER_ID, type WallpaperId } from "@/lib/wallpapers";
 import { FONT_PAIRS, DEFAULT_FONT_PAIR_ID, type FontPairId } from "@/lib/font-pairs";
 import { SOUND_SCHEMES, DEFAULT_SOUND_SCHEME_ID, type SoundSchemeId } from "@/lib/sound-schemes";
+import { ICON_THEMES, DEFAULT_ICON_THEME_ID, type IconThemeId } from "@/lib/icon-themes";
 export type { SoundSchemeId };
 
 export interface AppSettings {
@@ -22,6 +23,7 @@ export interface AppSettings {
   fontSize: number;
   pixelizeEnabled: boolean;
   performanceModeEnabled: boolean;
+  iconThemeId: IconThemeId;
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -39,6 +41,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   fontSize: 1.0,
   pixelizeEnabled: false,
   performanceModeEnabled: false,
+  iconThemeId: DEFAULT_ICON_THEME_ID,
 };
 
 const STORAGE_KEY = "gunth-settings";
@@ -81,6 +84,9 @@ export function loadSettings(): AppSettings {
         : DEFAULT_SETTINGS.fontSize,
       pixelizeEnabled: parsed.pixelizeEnabled ?? DEFAULT_SETTINGS.pixelizeEnabled,
       performanceModeEnabled: parsed.performanceModeEnabled ?? DEFAULT_SETTINGS.performanceModeEnabled,
+      iconThemeId: ICON_THEMES.some((t) => t.id === parsed.iconThemeId)
+        ? (parsed.iconThemeId as IconThemeId)
+        : DEFAULT_SETTINGS.iconThemeId,
     };
   } catch {
     return DEFAULT_SETTINGS;
