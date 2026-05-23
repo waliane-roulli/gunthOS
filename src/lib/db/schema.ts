@@ -248,6 +248,40 @@ export const peggleScores = sqliteTable("peggle_scores", {
   createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
 });
 
+// ── GunthMessenger groupes ────────────────────────────────────────────────────
+
+export const groupConversations = sqliteTable("group_conversations", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  name: text("name").notNull(),
+  createdById: text("created_by_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+});
+
+export const groupMembers = sqliteTable("group_members", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  groupId: integer("group_id").notNull().references(() => groupConversations.id, { onDelete: "cascade" }),
+  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  joinedAt: integer("joined_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+}, (t) => [
+  uniqueIndex("group_members_unique_idx").on(t.groupId, t.userId),
+]);
+
+export const groupMessages = sqliteTable("group_messages", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  groupId: integer("group_id").notNull().references(() => groupConversations.id, { onDelete: "cascade" }),
+  fromUserId: text("from_user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  content: text("content").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+});
+
+export const groupMessageReads = sqliteTable("group_message_reads", {
+  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  groupId: integer("group_id").notNull().references(() => groupConversations.id, { onDelete: "cascade" }),
+  readAt: integer("read_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+}, (t) => [
+  uniqueIndex("group_message_reads_pair_idx").on(t.userId, t.groupId),
+]);
+
 // validations de compétences entre vrais users
 export const linkedGunthEndorsements = sqliteTable("linked_gunth_endorsements", {
   id: integer("id").primaryKey({ autoIncrement: true }),

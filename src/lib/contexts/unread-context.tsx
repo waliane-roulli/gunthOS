@@ -18,12 +18,23 @@ export interface ChatAPI {
   triggerEffect: (effect: ChatEffect, fromName: string) => void;
 }
 
+export interface GroupChatAPI {
+  pushMessage: (msg: {
+    id: number; groupId: number; fromUserId: string; fromName: string; content: string; createdAt: string | Date;
+  }) => void;
+  triggerTyping: (fromName: string) => void;
+}
+
 interface MessengerContextValue {
   totalUnread: number;
   unreadCounts: Record<string, number>;
+  groupUnreadCounts: Record<number, number>;
   markRead: (contactId: string) => void;
+  markGroupRead: (groupId: number) => void;
   registerChat: (contactId: string, api: ChatAPI) => void;
   unregisterChat: (contactId: string) => void;
+  registerGroupChat: (groupId: number, api: GroupChatAPI) => void;
+  unregisterGroupChat: (groupId: number) => void;
   onNudgeOpen: React.RefObject<((contactId: string) => void) | null>;
   onStatusUpdate: React.RefObject<((userId: string, status: "online" | "away" | "busy" | "offline") => void) | null>;
 }
@@ -31,9 +42,13 @@ interface MessengerContextValue {
 const MessengerContext = createContext<MessengerContextValue>({
   totalUnread: 0,
   unreadCounts: {},
+  groupUnreadCounts: {},
   markRead: () => {},
+  markGroupRead: () => {},
   registerChat: () => {},
   unregisterChat: () => {},
+  registerGroupChat: () => {},
+  unregisterGroupChat: () => {},
   onNudgeOpen: { current: null },
   onStatusUpdate: { current: null },
 });
@@ -44,8 +59,10 @@ export function UnreadProvider({ children }: { children: React.ReactNode }) {
   const { openApp } = useOpenApp();
   const [totalUnread, setTotalUnread] = useState(0);
   const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
+  const [groupUnreadCounts, setGroupUnreadCounts] = useState<Record<number, number>>({});
 
   const chatApis = useRef<Record<string, ChatAPI>>({});
+  const groupChatApis = useRef<Record<number, GroupChatAPI>>({});
   const pendingNudges = useRef<Record<string, string>>({});
   const onNudgeOpen = useRef<((contactId: string) => void) | null>(null);
   const onStatusUpdate = useRef<((userId: string, status: "online" | "away" | "busy" | "offline") => void) | null>(null);
@@ -55,7 +72,6 @@ export function UnreadProvider({ children }: { children: React.ReactNode }) {
       if (!prev[contactId]) return prev;
       return { ...prev, [contactId]: 0 };
     });
-    // Persist to DB — fire and forget
     fetch("/api/messages/read", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -63,9 +79,20 @@ export function UnreadProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  const markGroupRead = useCallback((groupId: number) => {
+    setGroupUnreadCounts(prev => {
+      if (!prev[groupId]) return prev;
+      return { ...prev, [groupId]: 0 };
+    });
+    fetch("/api/groups/read", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ groupId }),
+    });
+  }, []);
+
   const registerChat = useCallback((contactId: string, api: ChatAPI) => {
     chatApis.current[contactId] = api;
-    // markRead handles both clearing the badge and persisting the receipt
     markRead(contactId);
     const pending = pendingNudges.current[contactId];
     if (pending) {
@@ -78,11 +105,22 @@ export function UnreadProvider({ children }: { children: React.ReactNode }) {
     delete chatApis.current[contactId];
   }, []);
 
-  useEffect(() => {
-    setTotalUnread(Object.values(unreadCounts).reduce((a, b) => a + b, 0));
-  }, [unreadCounts]);
+  const registerGroupChat = useCallback((groupId: number, api: GroupChatAPI) => {
+    groupChatApis.current[groupId] = api;
+    markGroupRead(groupId);
+  }, [markGroupRead]);
 
-  // Initial fetch — server already knows what's unread via read receipts
+  const unregisterGroupChat = useCallback((groupId: number) => {
+    delete groupChatApis.current[groupId];
+  }, []);
+
+  useEffect(() => {
+    const dmTotal = Object.values(unreadCounts).reduce((a, b) => a + b, 0);
+    const groupTotal = Object.values(groupUnreadCounts).reduce((a, b) => a + b, 0);
+    setTotalUnread(dmTotal + groupTotal);
+  }, [unreadCounts, groupUnreadCounts]);
+
+  // Initial fetch unread DM counts
   useEffect(() => {
     if (!user) return;
     fetch("/api/messages/unread")
@@ -152,12 +190,47 @@ export function UnreadProvider({ children }: { children: React.ReactNode }) {
     if (event.type === "effect") {
       chatApis.current[event.fromUserId]?.triggerEffect(event.effect, event.fromName);
     }
+
+    if (event.type === "group_message") {
+      if (event.fromUserId === user?.id) return;
+      const groupId = event.groupId;
+      const api = groupChatApis.current[groupId];
+      if (api) {
+        api.pushMessage({
+          id: event.messageId,
+          groupId,
+          fromUserId: event.fromUserId,
+          fromName: event.fromName,
+          content: event.content,
+          createdAt: event.createdAt,
+        });
+      } else {
+        setGroupUnreadCounts(prev => ({ ...prev, [groupId]: (prev[groupId] ?? 0) + 1 }));
+        notify({
+          type: "info",
+          title: `👥 ${event.groupName}`,
+          message: `${event.fromName} : ${event.content.length > 50 ? event.content.slice(0, 50) + "…" : event.content}`,
+          duration: 5000,
+          onClick: () => openApp("msn"),
+        });
+      }
+    }
+
+    if (event.type === "group_typing") {
+      groupChatApis.current[event.groupId]?.triggerTyping(event.fromName);
+    }
   }, [notify, user, openApp]);
 
   useSSE(handleSSE, !!user);
 
   return (
-    <MessengerContext.Provider value={{ totalUnread, unreadCounts, markRead, registerChat, unregisterChat, onNudgeOpen, onStatusUpdate }}>
+    <MessengerContext.Provider value={{
+      totalUnread, unreadCounts, groupUnreadCounts,
+      markRead, markGroupRead,
+      registerChat, unregisterChat,
+      registerGroupChat, unregisterGroupChat,
+      onNudgeOpen, onStatusUpdate,
+    }}>
       {children}
     </MessengerContext.Provider>
   );

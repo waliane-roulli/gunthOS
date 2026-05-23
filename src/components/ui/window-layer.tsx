@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, Component, type ReactNode, type ErrorInfo } from "react";
-import { useWindowState } from "@/lib/contexts/window-manager-context";
+import { useWindowState, useWindowActions } from "@/lib/contexts/window-manager-context";
 import { getAppManifest } from "@/apps";
 import { OsWindow } from "./os-window";
 import { useSoundContext } from "@/lib/contexts/sound-context";
@@ -9,6 +9,8 @@ import { useSettingsState } from "@/lib/contexts/settings-context";
 import { APP_REGISTRY } from "@/apps";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { useOpenApp } from "@/lib/hooks/use-open-app";
+import { useChatWindows } from "@/lib/contexts/chat-windows-context";
+import { ChatWindowContent, GroupChatWindowContent } from "@/apps/msn";
 
 class AppErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
   constructor(props: { children: ReactNode }) {
@@ -232,9 +234,44 @@ function AuthWall({ appName }: { appName: string }) {
   );
 }
 
+function ChatWindowWrapper({ win }: { win: { id: string; appSlug: string } }) {
+  const { getChat, myAvatar } = useChatWindows();
+  const { user } = useAuth();
+  const { closeWindow } = useWindowActions();
+
+  if (!user) return null;
+  const entry = getChat(win.appSlug);
+  if (!entry) return <div style={{ padding: 16, fontFamily: "var(--t-font-display)", color: "var(--t-text-muted)" }}>Conversation introuvable</div>;
+
+  if (entry.kind === "dm") {
+    return (
+      <ChatWindowContent
+        contact={entry.contact}
+        myId={user.id}
+        myAvatar={myAvatar}
+        onClose={() => closeWindow(win.id)}
+      />
+    );
+  }
+
+  return (
+    <GroupChatWindowContent
+      group={entry.group}
+      myId={user.id}
+      myAvatar={myAvatar}
+      onClose={() => closeWindow(win.id)}
+    />
+  );
+}
+
 function WindowContent({ win }: { win: { id: string; appSlug: string } }) {
   const [loaded, setLoaded] = useState(false);
   const { user, isPending } = useAuth();
+
+  // Chat and group windows bypass the app registry
+  if (win.appSlug.startsWith("chat:") || win.appSlug.startsWith("group:")) {
+    return <ChatWindowWrapper win={win} />;
+  }
 
   const manifest = getAppManifest(win.appSlug);
   const AppComponent = manifest?.component;

@@ -6,7 +6,9 @@ export type SSEEvent =
   | { type: "nudge"; fromUserId: string; toUserId: string; fromName: string }
   | { type: "status"; userId: string; status: "online" | "away" | "busy" | "offline" }
   | { type: "typing"; fromUserId: string; toUserId: string; fromName: string }
-  | { type: "effect"; fromUserId: string; toUserId: string; fromName: string; effect: "confetti" | "bsod" | "rain" | "shake" | "matrix" | "heart" };
+  | { type: "effect"; fromUserId: string; toUserId: string; fromName: string; effect: "confetti" | "bsod" | "rain" | "shake" | "matrix" | "heart" }
+  | { type: "group_message"; groupId: number; groupName: string; fromUserId: string; fromName: string; messageId: number; content: string; createdAt: string }
+  | { type: "group_typing"; groupId: number; fromUserId: string; fromName: string };
 
 type Listener = (event: SSEEvent) => void;
 

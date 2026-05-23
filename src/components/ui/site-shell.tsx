@@ -13,6 +13,7 @@ import { GunthTitle } from "./gunth-title";
 import { BootScreen, ShutdownScreen } from "./boot-screen";
 import { NotificationProvider } from "@/lib/contexts/notification-context";
 import { UnreadProvider } from "@/lib/contexts/unread-context";
+import { ChatWindowsProvider } from "@/lib/contexts/chat-windows-context";
 import { useLiveNotifications } from "@/lib/hooks/use-live-notifications";
 
 function LiveNotificationsBridge() {
@@ -44,6 +45,7 @@ export function SiteShell({ children: _children }: { children?: React.ReactNode 
           <WindowManagerProvider>
             <NotificationProvider>
               <UnreadProvider>
+                <ChatWindowsProvider>
                 <LiveNotificationsBridge />
                 <GunthTitle />
                 <div className="fixed inset-0 flex flex-col overflow-hidden scanlines">
@@ -52,6 +54,7 @@ export function SiteShell({ children: _children }: { children?: React.ReactNode 
                   <WindowLayer />
                   <NotificationLayer />
                 </div>
+                </ChatWindowsProvider>
               </UnreadProvider>
             </NotificationProvider>
           </WindowManagerProvider>
