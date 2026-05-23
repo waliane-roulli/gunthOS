@@ -159,6 +159,17 @@ export function UnreadProvider({ children }: { children: React.ReactNode }) {
           duration: 5000,
           onClick: () => openApp("msn"),
         });
+        fetch("/api/notifications", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            source: "msn",
+            type: "info",
+            title: `💬 Message de ${event.fromName}`,
+            message: event.content.length > 80 ? event.content.slice(0, 80) + "…" : event.content,
+            actionAppSlug: "msn",
+          }),
+        }).catch(() => {});
       }
     }
 
@@ -176,6 +187,16 @@ export function UnreadProvider({ children }: { children: React.ReactNode }) {
           duration: 4000,
           onClick: () => openApp("msn"),
         });
+        fetch("/api/notifications", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            source: "msn",
+            type: "warning",
+            title: `🫨 Nudge de ${event.fromName}`,
+            actionAppSlug: "msn",
+          }),
+        }).catch(() => {});
       }
     }
 
@@ -206,13 +227,25 @@ export function UnreadProvider({ children }: { children: React.ReactNode }) {
         });
       } else {
         setGroupUnreadCounts(prev => ({ ...prev, [groupId]: (prev[groupId] ?? 0) + 1 }));
+        const groupMsg = `${event.fromName} : ${event.content.length > 50 ? event.content.slice(0, 50) + "…" : event.content}`;
         notify({
           type: "info",
           title: `👥 ${event.groupName}`,
-          message: `${event.fromName} : ${event.content.length > 50 ? event.content.slice(0, 50) + "…" : event.content}`,
+          message: groupMsg,
           duration: 5000,
           onClick: () => openApp("msn"),
         });
+        fetch("/api/notifications", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            source: "msn",
+            type: "info",
+            title: `👥 ${event.groupName}`,
+            message: groupMsg,
+            actionAppSlug: "msn",
+          }),
+        }).catch(() => {});
       }
     }
 

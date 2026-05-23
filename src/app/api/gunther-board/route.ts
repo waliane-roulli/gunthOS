@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { guntherBoardTickets, user } from "@/lib/db/schema";
+import { guntherBoardTickets, notifications, user } from "@/lib/db/schema";
 import { auth } from "@/lib/auth";
 import { desc, eq } from "drizzle-orm";
 import { alias } from "drizzle-orm/sqlite-core";
@@ -64,6 +64,17 @@ export async function POST(req: NextRequest) {
     })
     .returning()
     .all();
+
+  if (ticket?.assigneeId && ticket.assigneeId !== session.user.id) {
+    db().insert(notifications).values({
+      userId: ticket.assigneeId,
+      source: "gunther-board",
+      type: "info",
+      title: `📋 Ticket assigné : ${ticket.title}`,
+      message: `Créé par ${session.user.name}`,
+      actionAppSlug: "gunther-board",
+    }).run();
+  }
 
   return NextResponse.json(ticket, { status: 201 });
 }
