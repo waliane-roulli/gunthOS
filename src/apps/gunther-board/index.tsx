@@ -611,23 +611,7 @@ export function GuntherBoardApp(_: AppProps) {
           })}
         </div>
 
-        {/* ── Status bar ──────────────────────────────────────────────── */}
-        <div
-          className="shrink-0 flex items-center px-3"
-          style={{
-            borderTop: "2px solid var(--t-border-dark)",
-            backgroundColor: "var(--t-bg)",
-            fontSize: "0.78rem",
-            color: "var(--t-text-muted)",
-            fontStyle: "italic",
-            minHeight: 22,
-            letterSpacing: "0.04em",
-          }}
-        >
-          {statusBarMsg}
-        </div>
-
-        {/* ── Detail panel ────────────────────────────────────────────── */}
+          {/* ── Detail panel ────────────────────────────────────────────── */}
         {selectedTicket && (
           <TicketDetail
             ticket={selectedTicket}
@@ -654,6 +638,22 @@ export function GuntherBoardApp(_: AppProps) {
             onChange={(patch) => setDetailForm((p) => ({ ...p, ...patch }))}
           />
         )}
+      </div>
+
+      {/* ── Status bar ──────────────────────────────────────────────── */}
+      <div
+        className="shrink-0 flex items-center px-3"
+        style={{
+          borderTop: "2px solid var(--t-border-dark)",
+          backgroundColor: "var(--t-bg)",
+          fontSize: "0.78rem",
+          color: "var(--t-text-muted)",
+          fontStyle: "italic",
+          minHeight: 22,
+          letterSpacing: "0.04em",
+        }}
+      >
+        {statusBarMsg}
       </div>
 
       {/* ── New ticket modal ─────────────────────────────────────────── */}
