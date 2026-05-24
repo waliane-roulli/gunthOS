@@ -119,7 +119,7 @@ export const CLASSES: Record<ClassId, PlayerClass> = {
     id: "sniper",
     name: "Sniper",
     desc: "Ligne de visée ×2. Balles plus petites (−30%).",
-    emoji: "🎯",
+    emoji: "🔭",
     startBalls: 10,
     startRelics: ["blessed_cursor"],
     greenPowerupPool: ["multiball", "extraball", "magnet", "spooky"],
@@ -137,7 +137,6 @@ export interface RunState {
   relics: RelicId[];
   upgrades: UpgradeId[];
   ironWillUsed: boolean;
-  stars: number;
 }
 
 export function makeInitialRunState(classId: ClassId): RunState {
@@ -155,7 +154,6 @@ export function makeInitialRunState(classId: ClassId): RunState {
     relics,
     upgrades: [],
     ironWillUsed: false,
-    stars: 0,
   };
 }
 
@@ -191,9 +189,9 @@ export function generateUpgradeOffer(existing: UpgradeId[], bossKilled: boolean)
     if (!seen.has(id)) { result.push(id); seen.add(id); }
   }
 
-  // Fill from all if not enough unique non-owned
+  // Fill from non-owned if not enough (avoids offering already-owned upgrades)
   if (result.length < 3) {
-    for (const id of all.sort(() => Math.random() - 0.5)) {
+    for (const id of notOwned.sort(() => Math.random() - 0.5)) {
       if (result.length >= 3) break;
       if (!seen.has(id)) { result.push(id); seen.add(id); }
     }

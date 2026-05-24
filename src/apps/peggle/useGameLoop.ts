@@ -791,7 +791,6 @@ export function useGameLoop({
           s.phase = "won";
           s.message = `NIVEAU ${s.level} TERMINÉ !`;
           playVictory();
-          onScoreSubmitRef.current(s.score, true);
           onLevelWonRef.current(s.bossKilledThisLevel);
 
         } else if (s.balls <= 0) {

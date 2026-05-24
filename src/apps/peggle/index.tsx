@@ -104,13 +104,11 @@ export function PeggleApp({ windowId: _windowId }: AppProps) {
   const handleUpgradePick = useCallback((id: UpgradeId) => {
     runStateRef.current = { ...runStateRef.current, upgrades: [...runStateRef.current.upgrades, id] };
     setUpgradeOffer(null);
-    setScoreSubmitted(false);
     nextLevel();
   }, [nextLevel]);
 
   const handleUpgradeSkip = useCallback(() => {
     setUpgradeOffer(null);
-    setScoreSubmitted(false);
     nextLevel();
   }, [nextLevel]);
 
@@ -143,6 +141,13 @@ export function PeggleApp({ windowId: _windowId }: AppProps) {
     setScreen("leaderboard");
     fetchLeaderboard();
   }, [fetchLeaderboard]);
+
+  const handleReplay = useCallback(() => {
+    runStateRef.current = makeInitialRunState(runStateRef.current.classId);
+    resetGame(false);
+    setScoreSubmitted(false);
+    setUpgradeOffer(null);
+  }, [resetGame]);
 
   const displayName = user ? (user.name || user.email || "Joueur") : null;
   const userId = user?.id;
@@ -203,7 +208,7 @@ export function PeggleApp({ windowId: _windowId }: AppProps) {
             upgradeOfferPending={!!upgradeOffer}
             onMouseMove={handleMouseMove}
             onClick={handleClick}
-            onReplay={() => { runStateRef.current = makeInitialRunState(runStateRef.current.classId); resetGame(false); setScoreSubmitted(false); setUpgradeOffer(null); }}
+            onReplay={handleReplay}
             onLeaderboard={handleGoToLeaderboard}
             onMenu={handleGoToMenu}
           />

@@ -143,7 +143,16 @@ export function ClassPicker({ onPick }: ClassPickerProps) {
                 </div>
 
                 {/* Starting relics */}
-                {cls.startRelics.length > 0 && (
+                {cls.id === "alchimiste" ? (
+                  <div>
+                    <div style={{ fontSize: 9, color: "var(--t-text-muted)", marginBottom: 3 }}>
+                      RELIQUES DE DÉPART
+                    </div>
+                    <div style={{ fontSize: 9, color: "#cc44ff", fontStyle: "italic" }}>
+                      2 reliques aléatoires
+                    </div>
+                  </div>
+                ) : cls.startRelics.length > 0 && (
                   <div>
                     <div style={{ fontSize: 9, color: "var(--t-text-muted)", marginBottom: 3, letterSpacing: "0.05em" }}>
                       RELIQUE DE DÉPART
@@ -169,17 +178,6 @@ export function ClassPicker({ onPick }: ClassPickerProps) {
                           </span>
                         );
                       })}
-                    </div>
-                  </div>
-                )}
-
-                {cls.id === "alchimiste" && (
-                  <div>
-                    <div style={{ fontSize: 9, color: "var(--t-text-muted)", marginBottom: 3 }}>
-                      RELIQUES DE DÉPART
-                    </div>
-                    <div style={{ fontSize: 9, color: "#cc44ff", fontStyle: "italic" }}>
-                      2 reliques aléatoires
                     </div>
                   </div>
                 )}
