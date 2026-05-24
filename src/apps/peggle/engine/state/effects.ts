@@ -1,4 +1,6 @@
 import type { GameState, Particle } from "../types";
+import { PEGGLE_THEME } from "../../renderer/theme";
+import { BALANCE } from "../balance";
 
 export function spawnParticles(
   s: GameState,
@@ -8,14 +10,18 @@ export function spawnParticles(
   count: number,
   bomb = false,
 ): void {
+  const colors = bomb
+    ? PEGGLE_THEME.particles.bomb
+    : orange
+    ? PEGGLE_THEME.particles.orange
+    : PEGGLE_THEME.particles.normal;
+
   for (let i = 0; i < count; i++) {
+    // Evict oldest particles to stay under the cap
+    if (s.particles.length >= BALANCE.particles.maxCount) s.particles.shift();
+
     const angle = Math.random() * Math.PI * 2;
     const speed = 1.5 + Math.random() * (bomb ? 6 : 3.5);
-    const colors = bomb
-      ? ["#ff6600", "#ffcc00", "#ff2200", "#ffeeaa", "#ffffff"]
-      : orange
-      ? ["#4488ff", "#88bbff", "#0044cc", "#ffffff", "#000080"]
-      : ["#c0c0c0", "#e0e0e0", "#808080", "#ffffff", "#606060"];
     const p: Particle = {
       x, y,
       vx: Math.cos(angle) * speed,

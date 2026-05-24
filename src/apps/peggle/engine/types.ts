@@ -2,6 +2,19 @@ import type { GreenPowerupId, RelicId, ClassId, UpgradeId } from "./roguelite";
 
 export type { GreenPowerupId, RelicId, ClassId, UpgradeId };
 
+// Ordered by rendering priority (first match wins in drawPegs)
+export type PegType = "warp" | "boss" | "bomb" | "armor" | "orange" | "green" | "normal";
+
+export function getPegType(p: { warpId?: number; boss: boolean; bomb: boolean; armorHits: number; orange: boolean; green: boolean }): PegType {
+  if (p.warpId !== undefined) return "warp";
+  if (p.boss) return "boss";
+  if (p.bomb) return "bomb";
+  if (p.armorHits > 0) return "armor";
+  if (p.orange) return "orange";
+  if (p.green) return "green";
+  return "normal";
+}
+
 export interface Peg {
   x: number;
   y: number;

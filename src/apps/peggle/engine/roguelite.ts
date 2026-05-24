@@ -88,6 +88,12 @@ export interface PlayerClass {
   flavorText: string;
 }
 
+export const CLASS_COLORS: Record<ClassId, string> = {
+  canonnier: "#4488ff",
+  alchimiste: "#cc44ff",
+  sniper: "#44ffaa",
+};
+
 export const CLASSES: Record<ClassId, PlayerClass> = {
   canonnier: {
     id: "canonnier",

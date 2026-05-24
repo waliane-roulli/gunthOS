@@ -10,6 +10,7 @@ import { endOfTurn } from "./turn";
 export interface TickResult {
   events: GameEvent[];
   syncUI: boolean;
+  orangeLeft: number;
 }
 
 export function tick(s: GameState, ironWillUsed: boolean): TickResult {
@@ -21,7 +22,8 @@ export function tick(s: GameState, ironWillUsed: boolean): TickResult {
   if (s.hitFreezeFrames > 0) {
     s.hitFreezeFrames--;
     updatePegAnimations(s);
-    return { events, syncUI: false };
+    const frozenOrangeLeft = s.pegs.filter(p => p.orange && !p.hit).length;
+    return { events, syncUI: false, orangeLeft: frozenOrangeLeft };
   }
 
   const inSlowMo = s.slowMoFrames > 0;
@@ -35,7 +37,7 @@ export function tick(s: GameState, ironWillUsed: boolean): TickResult {
   updateBucket(s, timeScale);
   if (s.magnetFrames > 0) s.magnetFrames--;
 
-  // Fever pulse
+  // Fever pulse — computed once per tick and returned to avoid re-filtering in renderer/UI
   const orangeLeft = s.pegs.filter(p => p.orange && !p.hit).length;
   const inFever = orangeLeft <= s.effectiveFeverThreshold && orangeLeft > 0;
   if (inFever) s.feverPulse = (s.feverPulse + 0.08) % (Math.PI * 2);
@@ -77,8 +79,8 @@ export function tick(s: GameState, ironWillUsed: boolean): TickResult {
   const anyBallActive = s.ball?.active === true || s.extraBalls.length > 0;
   if (s.phase === "firing" && !anyBallActive) {
     endOfTurn(s, ironWillUsed, events);
-    return { events, syncUI: true };
+    return { events, syncUI: true, orangeLeft };
   }
 
-  return { events, syncUI: false };
+  return { events, syncUI: false, orangeLeft };
 }

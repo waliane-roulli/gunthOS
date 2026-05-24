@@ -3,7 +3,8 @@ import {
   LAUNCH_SPEED, HIT_FREEZE_NORMAL, HIT_FREEZE_ORANGE, SLOW_MO_DURATION,
   W, H, BONUS_BUCKET_XS,
 } from "../constants";
-import type { GameState, Ball, Peg } from "../types";
+import { BALANCE } from "../balance";
+import type { GameState, Ball } from "../types";
 import type { GameEvent } from "../events";
 import { circleCollide } from "../physics";
 import { spawnParticles } from "./effects";
@@ -23,22 +24,24 @@ export function processBallPhysics(
   const dt = timeScale / substeps;
   const wallBounce = WALL_BOUNCE * (s.runRelics.includes("boomerang") ? 1.4 : 1);
 
+  // Cache orange pegs for magnet — avoids repeated filter per substep
+  const orangePegsForMagnet = s.magnetFrames > 0
+    ? s.pegs.filter(p => p.orange && !p.hit && p.hitCooldown === 0)
+    : [];
+
   for (let step = 0; step < substeps; step++) {
     // Magnet: attract toward nearest orange peg
-    if (s.magnetFrames > 0) {
-      const orangePegs = s.pegs.filter(p => p.orange && !p.hit && p.hitCooldown === 0);
-      if (orangePegs.length > 0) {
-        let nearest = orangePegs[0]!;
-        let nearDist = Math.hypot(b.x - nearest.x, b.y - nearest.y);
-        for (const op of orangePegs) {
-          const d = Math.hypot(b.x - op.x, b.y - op.y);
-          if (d < nearDist) { nearest = op; nearDist = d; }
-        }
-        if (nearDist > 0) {
-          const force = 0.06 * dt;
-          b.vx += ((nearest.x - b.x) / nearDist) * force;
-          b.vy += ((nearest.y - b.y) / nearDist) * force;
-        }
+    if (s.magnetFrames > 0 && orangePegsForMagnet.length > 0) {
+      let nearest = orangePegsForMagnet[0]!;
+      let nearDist = Math.hypot(b.x - nearest.x, b.y - nearest.y);
+      for (const op of orangePegsForMagnet) {
+        const d = Math.hypot(b.x - op.x, b.y - op.y);
+        if (d < nearDist) { nearest = op; nearDist = d; }
+      }
+      if (nearDist > 0) {
+        const force = BALANCE.magnet.force * dt;
+        b.vx += ((nearest.x - b.x) / nearDist) * force;
+        b.vy += ((nearest.y - b.y) / nearDist) * force;
       }
     }
 
@@ -50,12 +53,12 @@ export function processBallPhysics(
     if (b.x - s.effectiveBallR < 0) {
       b.vx = Math.abs(b.vx) * wallBounce;
       b.x = s.effectiveBallR;
-      if (step === 0) { events.push({ kind: "sound", id: "bip" }); s.trauma = Math.min(1, s.trauma + 0.06); }
+      if (step === 0) { events.push({ kind: "sound", id: "bip" }); s.trauma = Math.min(1, s.trauma + BALANCE.wall.traumaPerHit); }
     }
     if (b.x + s.effectiveBallR > W) {
       b.vx = -Math.abs(b.vx) * wallBounce;
       b.x = W - s.effectiveBallR;
-      if (step === 0) { events.push({ kind: "sound", id: "bip" }); s.trauma = Math.min(1, s.trauma + 0.06); }
+      if (step === 0) { events.push({ kind: "sound", id: "bip" }); s.trauma = Math.min(1, s.trauma + BALANCE.wall.traumaPerHit); }
     }
 
     for (const p of s.pegs) {
@@ -66,7 +69,7 @@ export function processBallPhysics(
       // Ghost ball: pass through first peg this shot
       if (s.ghostBallActive && b === s.ball) {
         s.ghostBallActive = false;
-        p.hitCooldown = 20;
+        p.hitCooldown = BALANCE.peg.ghostCooldown;
         s.floatingTexts.push({ x: p.x, y: p.y - 12, text: "👻 FANTÔME", life: 1, maxLife: 1.2, color: "#cc88ff", combo: false, fontSize: 11 });
         continue;
       }
@@ -81,10 +84,10 @@ export function processBallPhysics(
       // Boss armor hit (not final kill)
       if (p.boss && p.armorHits > 0) {
         p.armorHits--;
-        p.hitCooldown = 12;
-        p.scale = 1.6;
-        s.trauma = Math.min(1, s.trauma + 0.22);
-        s.flashWhite = Math.max(s.flashWhite, 0.35);
+        p.hitCooldown = BALANCE.peg.armorCooldown;
+        p.scale = BALANCE.peg.bossArmorScale;
+        s.trauma = Math.min(1, s.trauma + BALANCE.trauma.bossArmorPeg);
+        s.flashWhite = Math.max(s.flashWhite, BALANCE.flash.bossArmorPeg);
         s.hitFreezeFrames = Math.max(s.hitFreezeFrames, HIT_FREEZE_ORANGE);
         spawnParticles(s, p.x, p.y, true, 12);
         const hpLeft = p.armorHits + 1;
@@ -96,9 +99,9 @@ export function processBallPhysics(
       // Armor peg hit
       if (p.armorHits > 0) {
         p.armorHits--;
-        p.hitCooldown = 12;
-        p.scale = 1.5;
-        s.trauma = Math.min(1, s.trauma + 0.12);
+        p.hitCooldown = BALANCE.peg.armorCooldown;
+        p.scale = BALANCE.peg.armorScale;
+        s.trauma = Math.min(1, s.trauma + BALANCE.trauma.armorPeg);
         s.hitFreezeFrames = Math.max(s.hitFreezeFrames, HIT_FREEZE_NORMAL);
         spawnParticles(s, p.x, p.y, false, 8);
         s.floatingTexts.push({ x: p.x, y: p.y - 12, text: "CRACK!", life: 1, maxLife: 0.9, color: "#aaccff", combo: false, fontSize: 11 });
@@ -114,43 +117,44 @@ export function processBallPhysics(
           b.y = partner.y + (dy / dist) * (s.effectiveBallR + PEG_R + 2);
           spawnParticles(s, p.x, p.y, false, 14);
           spawnParticles(s, partner.x, partner.y, false, 14);
-          s.flashWhite = Math.max(s.flashWhite, 0.3);
+          s.flashWhite = Math.max(s.flashWhite, BALANCE.flash.warpPeg);
           s.floatingTexts.push({ x: partner.x, y: partner.y - 14, text: "✦ WARP!", life: 1, maxLife: 1.2, color: "#cc88ff", combo: true, fontSize: 13 });
-          partner.hitCooldown = 20;
+          partner.hitCooldown = BALANCE.peg.warpCooldown;
         }
-        p.hit = true; p.popping = true; p.popAlpha = 0.25; p.scale = 1.7;
-        s.score += 30 * s.scoreMultiplier;
+        p.hit = true; p.popping = true; p.popAlpha = BALANCE.peg.popStartAlpha; p.scale = BALANCE.peg.popStartScale;
+        s.score += BALANCE.score.warpBase * s.scoreMultiplier;
         events.push({ kind: "sound", id: "pop" });
         continue;
       }
 
       // Normal peg pop
-      p.hit = true; p.popping = true; p.popAlpha = 0.25; p.scale = 1.7;
+      p.hit = true; p.popping = true; p.popAlpha = BALANCE.peg.popStartAlpha; p.scale = BALANCE.peg.popStartScale;
       s.combo += 1;
       s.cursedLuckHits += 1;
 
       // Boss final kill
       if (p.boss) {
         s.bossKilledThisLevel = true;
-        s.score += 5000 * s.scoreMultiplier;
-        s.balls += 2;
-        s.trauma = Math.min(1, s.trauma + 0.9);
-        s.flashWhite = 1.0;
-        s.floatingTexts.push({ x: p.x, y: p.y - 30, text: "👑 BOSS VAINCU! +5000", life: 1, maxLife: 3, color: "#ffd700", combo: true, fontSize: 15 });
-        s.floatingTexts.push({ x: p.x, y: p.y - 48, text: "+2 BALLES", life: 1, maxLife: 2.5, color: "#00ffcc", combo: true, fontSize: 13 });
+        s.score += BALANCE.score.bossKill * s.scoreMultiplier;
+        s.balls += BALANCE.score.bossBallBonus;
+        s.trauma = Math.min(1, s.trauma + BALANCE.trauma.bossPeg);
+        s.flashWhite = BALANCE.flash.bossPeg;
+        s.floatingTexts.push({ x: p.x, y: p.y - 30, text: `👑 BOSS VAINCU! +${BALANCE.score.bossKill}`, life: 1, maxLife: 3, color: "#ffd700", combo: true, fontSize: 15 });
+        s.floatingTexts.push({ x: p.x, y: p.y - 48, text: `+${BALANCE.score.bossBallBonus} BALLES`, life: 1, maxLife: 2.5, color: "#00ffcc", combo: true, fontSize: 13 });
         spawnParticles(s, p.x, p.y, true, 60, true);
         events.push({ kind: "sound", id: "victory" });
       }
 
       // Green peg power-up
       if (p.green) {
-        s.flashWhite = Math.max(s.flashWhite, 0.4);
+        s.flashWhite = Math.max(s.flashWhite, BALANCE.flash.greenPeg);
         switch (p.greenPowerup) {
           case "multiball": {
             const spd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
             const baseA = Math.atan2(b.vy, b.vx);
-            s.extraBalls.push({ x: b.x, y: b.y, vx: Math.cos(baseA - 0.22) * spd, vy: Math.sin(baseA - 0.22) * spd, active: true, trail: [], tint: "#ffdd88" });
-            s.extraBalls.push({ x: b.x, y: b.y, vx: Math.cos(baseA + 0.22) * spd, vy: Math.sin(baseA + 0.22) * spd, active: true, trail: [], tint: "#88ffcc" });
+            const spread = BALANCE.multiball.spreadAngle;
+            s.extraBalls.push({ x: b.x, y: b.y, vx: Math.cos(baseA - spread) * spd, vy: Math.sin(baseA - spread) * spd, active: true, trail: [], tint: "#ffdd88" });
+            s.extraBalls.push({ x: b.x, y: b.y, vx: Math.cos(baseA + spread) * spd, vy: Math.sin(baseA + spread) * spd, active: true, trail: [], tint: "#88ffcc" });
             s.floatingTexts.push({ x: p.x, y: p.y - 22, text: "⚡ MULTIBALL!", life: 1, maxLife: 2, color: "#ffcc44", combo: true, fontSize: 15 });
             break;
           }
@@ -163,7 +167,7 @@ export function processBallPhysics(
             s.floatingTexts.push({ x: p.x, y: p.y - 22, text: "🔮 +1 BALLE!", life: 1, maxLife: 2, color: "#00ffcc", combo: true, fontSize: 15 });
             break;
           case "magnet":
-            s.magnetFrames = 300;
+            s.magnetFrames = BALANCE.magnet.duration;
             s.floatingTexts.push({ x: p.x, y: p.y - 22, text: "🧲 AIMANT!", life: 1, maxLife: 2, color: "#4488ff", combo: true, fontSize: 15 });
             break;
           case "pyromaniac": {
@@ -195,9 +199,9 @@ export function processBallPhysics(
 
       // Cursed luck relic
       let cursedMult = 1;
-      if (s.runRelics.includes("cursed_luck") && s.cursedLuckHits % 5 === 0) {
-        cursedMult = 3;
-        s.floatingTexts.push({ x: p.x, y: p.y - 30, text: "🎲 ×3 MALCHANCE!", life: 1, maxLife: 1.8, color: "#cc44ff", combo: true, fontSize: 13 });
+      if (s.runRelics.includes("cursed_luck") && s.cursedLuckHits % BALANCE.cursedLuck.hitInterval === 0) {
+        cursedMult = BALANCE.cursedLuck.multiplier;
+        s.floatingTexts.push({ x: p.x, y: p.y - 30, text: `🎲 ×${BALANCE.cursedLuck.multiplier} MALCHANCE!`, life: 1, maxLife: 1.8, color: "#cc44ff", combo: true, fontSize: 13 });
       }
 
       // Combo_hungry upgrade
@@ -207,17 +211,17 @@ export function processBallPhysics(
       }
       s.lastHitWasOrange = p.orange;
 
-      const comboMult = Math.max(1, Math.floor(s.combo / 3));
+      const comboMult = Math.max(1, Math.floor(s.combo / BALANCE.combo.interval));
       const totalMult = comboMult * s.scoreMultiplier * cursedMult * hungryMult;
-      const basePoints = p.orange ? 100 : p.green ? 50 : p.boss ? 0 : 10;
+      const basePoints = p.orange ? BALANCE.score.orangeBase : p.green ? BALANCE.score.greenBase : p.boss ? 0 : BALANCE.score.normalBase;
       const earned = Math.round(basePoints * totalMult);
       if (!p.boss) s.score += earned;
 
       const freeze = p.orange ? HIT_FREEZE_ORANGE : HIT_FREEZE_NORMAL;
       s.hitFreezeFrames = Math.max(s.hitFreezeFrames, freeze);
 
-      if (p.orange) { s.trauma = Math.min(1, s.trauma + 0.35); s.flashWhite = Math.max(s.flashWhite, 0.5); }
-      else { s.trauma = Math.min(1, s.trauma + 0.08); }
+      if (p.orange) { s.trauma = Math.min(1, s.trauma + BALANCE.trauma.orangePeg); s.flashWhite = Math.max(s.flashWhite, BALANCE.flash.orangePeg); }
+      else { s.trauma = Math.min(1, s.trauma + BALANCE.trauma.normalPeg); }
 
       if (p.bomb && !p.green) {
         triggerBomb(s, p, events);
@@ -225,7 +229,7 @@ export function processBallPhysics(
         spawnParticles(s, p.x, p.y, p.orange, p.orange ? 20 : p.green ? 14 : 8);
       }
 
-      const comboBonus = s.combo >= 3 && s.combo % 3 === 0;
+      const comboBonus = s.combo >= BALANCE.combo.interval && s.combo % BALANCE.combo.interval === 0;
       if (!p.boss && earned > 0) {
         const popFontSize = Math.min(18, 11 + Math.floor(totalMult * 1.5));
         const label = totalMult > 1 ? `+${earned} ×${Math.round(totalMult)}` : `+${earned}`;
@@ -260,7 +264,7 @@ export function processBallPhysics(
         const bonus = (mult - 1) * turnScore;
         s.balls += 1;
         s.bonusBucketFlash[i] = 1;
-        s.trauma = Math.min(1, s.trauma + 0.2);
+        s.trauma = Math.min(1, s.trauma + BALANCE.trauma.bonusBucketCatch);
         if (bonus > 0) {
           s.score += bonus;
           s.floatingTexts.push({ x: bx + BUCKET_W / 2, y: bucketTop - 14, text: `×${mult} BONUS +${bonus.toLocaleString()}`, life: 1, maxLife: 2.2, color: mult === 5 ? "#ffcc00" : "#cc44ff", combo: true, fontSize: 15 });
@@ -276,7 +280,7 @@ export function processBallPhysics(
     if (b.y + s.effectiveBallR >= bucketTop && b.x >= s.bucket && b.x <= s.bucket + BUCKET_W) {
       s.balls += 1;
       s.bucketFlash = 1;
-      s.trauma = Math.min(1, s.trauma + 0.15);
+      s.trauma = Math.min(1, s.trauma + BALANCE.trauma.bucketCatch);
       s.floatingTexts.push({ x: s.bucket + BUCKET_W / 2, y: bucketTop - 14, text: "FREE BALL!", life: 1, maxLife: 1.8, color: "#00ffcc", combo: true, fontSize: 14 });
       events.push({ kind: "sound", id: "victory" });
       b.active = false;
@@ -289,19 +293,19 @@ export function processBallPhysics(
     if (isMain && s.spookyActive) {
       s.spookyActive = false;
       b.x = Math.max(s.effectiveBallR, Math.min(W - s.effectiveBallR, b.x));
-      b.y = 58;
-      b.vy = -LAUNCH_SPEED * 0.65;
-      b.vx *= 0.5;
-      s.flashWhite = Math.max(s.flashWhite, 0.45);
+      b.y = BALANCE.spooky.yReset;
+      b.vy = -LAUNCH_SPEED * BALANCE.spooky.reboundSpeed;
+      b.vx *= BALANCE.spooky.vxDamp;
+      s.flashWhite = Math.max(s.flashWhite, BALANCE.flash.spookySave);
       s.floatingTexts.push({ x: b.x, y: 78, text: "👻 SPOOKY SAVE!", life: 1, maxLife: 2, color: "#cc88ff", combo: true, fontSize: 14 });
     } else if (isMain && s.phoenixAvailable) {
       s.phoenixAvailable = false;
       b.x = Math.max(s.effectiveBallR, Math.min(W - s.effectiveBallR, b.x));
-      b.y = 58;
-      b.vy = -LAUNCH_SPEED * 0.65;
-      b.vx *= 0.5;
-      s.flashWhite = Math.max(s.flashWhite, 0.6);
-      s.trauma = Math.min(1, s.trauma + 0.3);
+      b.y = BALANCE.phoenix.yReset;
+      b.vy = -LAUNCH_SPEED * BALANCE.phoenix.reboundSpeed;
+      b.vx *= BALANCE.phoenix.vxDamp;
+      s.flashWhite = Math.max(s.flashWhite, BALANCE.flash.phoenixSave);
+      s.trauma = Math.min(1, s.trauma + BALANCE.trauma.phoenixSave);
       s.floatingTexts.push({ x: b.x, y: 78, text: "🔥 PHÉNIX SAVE!", life: 1, maxLife: 2, color: "#ff8800", combo: true, fontSize: 14 });
     } else {
       if (isMain) s.ballsLostThisLevel++;

@@ -1,18 +1,12 @@
 "use client";
 
 import type { ClassId } from "../engine/roguelite";
-import { CLASSES, RELICS } from "../engine/roguelite";
+import { CLASSES, CLASS_COLORS, RELICS } from "../engine/roguelite";
 import { captionBtn } from "../styles";
 
 interface ClassPickerProps {
   onPick: (classId: ClassId) => void;
 }
-
-const rarityColor: Record<string, string> = {
-  canonnier: "#4488ff",
-  alchimiste: "#cc44ff",
-  sniper: "#44ffaa",
-};
 
 export function ClassPicker({ onPick }: ClassPickerProps) {
   const classes = Object.values(CLASSES);
@@ -114,7 +108,7 @@ export function ClassPicker({ onPick }: ClassPickerProps) {
                       style={{
                         fontSize: "var(--t-text-sm)",
                         fontWeight: "bold",
-                        color: rarityColor[cls.id] ?? "var(--t-text)",
+                        color: CLASS_COLORS[cls.id] ?? "var(--t-text)",
                         lineHeight: 1.2,
                       }}
                     >

@@ -1,5 +1,5 @@
 import { W, H, ZOOM_SCALE } from "../engine/constants";
-import { FACE, HI, DARK } from "./theme";
+import { FACE, HI, DARK, PEGGLE_THEME } from "./theme";
 import type { GameState } from "../engine/types";
 
 export function drawParticles(ctx: CanvasRenderingContext2D, s: GameState): void {
@@ -19,6 +19,7 @@ export function drawParticles(ctx: CanvasRenderingContext2D, s: GameState): void
 
 export function drawFloatingTexts(ctx: CanvasRenderingContext2D, s: GameState): void {
   for (const t of s.floatingTexts) {
+    if (t.y < -20 || t.y > H + 20) continue;
     const lifeRatio = Math.min(1, t.life * 2);
     const fontSize = t.fontSize ?? (t.combo ? 13 : 11);
     ctx.save();
@@ -64,7 +65,7 @@ export function drawScreenFlash(ctx: CanvasRenderingContext2D, s: GameState, inF
   if (s.flashWhite <= 0) return;
   ctx.save();
   ctx.globalAlpha = Math.max(0, s.flashWhite * 0.36);
-  ctx.fillStyle = inFever ? "#0000cc" : "#ffffff";
+  ctx.fillStyle = inFever ? PEGGLE_THEME.flash.fever : PEGGLE_THEME.flash.normal;
   ctx.fillRect(0, 0, W, H);
   ctx.restore();
 }

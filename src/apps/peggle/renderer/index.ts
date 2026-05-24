@@ -8,8 +8,8 @@ export function drawFrame(
   ctx: CanvasRenderingContext2D,
   s: GameState,
   aimAngle: number,
+  orangeLeft: number,
 ): void {
-  const orangeLeft = s.pegs.filter(p => p.orange && !p.hit).length;
   const inFever = orangeLeft <= s.effectiveFeverThreshold && orangeLeft > 0;
   const feverIntensity = inFever ? (Math.sin(s.feverPulse) * 0.5 + 0.5) : 0;
   const inSlowMo = s.slowMoFrames > 0;

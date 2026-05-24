@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useLayoutEffect, useRef, useCallback } from "react";
 import type { RefObject } from "react";
 import { useSoundContext } from "@/lib/contexts/sound-context";
 import { drawFrame } from "../renderer";
@@ -39,17 +39,21 @@ export function useGameLoop({
   onLevelWon,
   onIronWillUsed,
 }: UseGameLoopOptions) {
+  // eslint-disable-next-line react-hooks/refs -- stateRef is only initialized once at mount using the current runState; never read again during render
   const stateRef = useRef<GameState>(makeInitialState(1, runStateRef.current, false, 0));
   const animRef = useRef<number>(0);
   const orangeTotalRef = useRef(0);
 
-  // Stable refs for callbacks to avoid stale closures
+  // Stable refs for callbacks — mutated in useLayoutEffect to avoid "ref during render" lint errors
+  // while still keeping the ref always up-to-date before effects run.
   const onScoreSubmitRef = useRef(onScoreSubmit);
-  onScoreSubmitRef.current = onScoreSubmit;
   const onLevelWonRef = useRef(onLevelWon);
-  onLevelWonRef.current = onLevelWon;
   const onIronWillUsedRef = useRef(onIronWillUsed);
-  onIronWillUsedRef.current = onIronWillUsed;
+  useLayoutEffect(() => {
+    onScoreSubmitRef.current = onScoreSubmit;
+    onLevelWonRef.current = onLevelWon;
+    onIronWillUsedRef.current = onIronWillUsed;
+  });
 
   const { playPop, playBip, playVictory, playDelete } = useSoundContext();
 
@@ -79,13 +83,13 @@ export function useGameLoop({
     }
   }, [playPop, playBip, playVictory, playDelete, onBestScore]);
 
-  const syncUI = useCallback(() => {
+  const syncUI = useCallback((orangeLeft?: number) => {
     const s = stateRef.current;
-    const orangeLeft = s.pegs.filter(p => p.orange && !p.hit).length;
+    const ol = orangeLeft ?? s.pegs.filter(p => p.orange && !p.hit).length;
     onUiSync({
       balls: s.balls,
       score: s.score,
-      orangeLeft,
+      orangeLeft: ol,
       orangeTotal: orangeTotalRef.current,
       phase: s.phase,
       message: s.message,
@@ -226,12 +230,12 @@ export function useGameLoop({
       const s = stateRef.current;
       const ironWillUsed = runStateRef.current.ironWillUsed;
 
-      const { events, syncUI: shouldSync } = tick(s, ironWillUsed);
+      const { events, syncUI: shouldSync, orangeLeft } = tick(s, ironWillUsed);
 
       for (const ev of events) handleEvent(ev);
-      if (shouldSync) syncUI();
+      if (shouldSync) syncUI(orangeLeft);
 
-      drawFrame(ctx, stateRef.current, getAngle());
+      drawFrame(ctx, stateRef.current, getAngle(), orangeLeft);
       animRef.current = requestAnimationFrame(frame);
     }
 

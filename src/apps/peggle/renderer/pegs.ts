@@ -1,7 +1,8 @@
 import { PEG_R } from "../engine/constants";
-import { FACE, SHD, NAVY, BLUE_T } from "./theme";
+import { FACE, PEGGLE_THEME } from "./theme";
 import { raisedBevel } from "./helpers";
 import type { GameState, Peg, GreenPowerupId } from "../engine/types";
+import { getPegType } from "../engine/types";
 
 function greenPowerupSymbol(p?: GreenPowerupId): string {
   switch (p) {
@@ -114,15 +115,15 @@ function drawOrangePeg(ctx: CanvasRenderingContext2D, p: Peg, r: number, inFever
     tg = ctx.createRadialGradient(p.x - 2, p.y - 3, 1, p.x, p.y, r);
     tg.addColorStop(0, "#ffffff");
     tg.addColorStop(0.28, "#aaddff");
-    tg.addColorStop(0.65, "#0099ee");
+    tg.addColorStop(0.65, PEGGLE_THEME.peg.orangeFever);
     tg.addColorStop(1, "#003366");
-    ctx.shadowColor = "#00ccff";
+    ctx.shadowColor = PEGGLE_THEME.peg.orangeGlow;
     ctx.shadowBlur = 14 + feverIntensity * 12;
   } else {
     tg = ctx.createLinearGradient(p.x - r, p.y - r, p.x + r, p.y + r);
-    tg.addColorStop(0, NAVY);
-    tg.addColorStop(0.5, BLUE_T);
-    tg.addColorStop(1, NAVY);
+    tg.addColorStop(0, PEGGLE_THEME.peg.orangeBase);
+    tg.addColorStop(0.5, PEGGLE_THEME.peg.orangeMid);
+    tg.addColorStop(1, PEGGLE_THEME.peg.orangeBase);
     ctx.shadowColor = "rgba(0,0,180,0.55)";
     ctx.shadowBlur = 5;
   }
@@ -201,8 +202,7 @@ export function drawPegs(ctx: CanvasRenderingContext2D, s: GameState, inFever: b
 
     // Pop ring
     if (p.popping) {
-      const ringColor = p.boss ? "#ffd700" : p.orange ? BLUE_T : p.bomb ? "#ff6600" : p.warpId !== undefined ? "#cc88ff" : SHD;
-      ctx.strokeStyle = ringColor;
+      ctx.strokeStyle = PEGGLE_THEME.popRing[getPegType(p)];
       ctx.lineWidth = 1.5;
       ctx.globalAlpha = alpha * 0.7;
       const ringR = PEG_R + (1 - p.popAlpha) * 22;
