@@ -49,6 +49,7 @@ export function PeggleApp({ windowId: _windowId }: AppProps) {
   const [lastBossKilled, setLastBossKilled] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (ui.phase === "aim") setTip(pickRandom(PEGGLE_TIPS));
   }, [ui.phase]);
 

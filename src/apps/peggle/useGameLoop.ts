@@ -123,14 +123,18 @@ export function useGameLoop({
   onLevelWon,
   onIronWillUsed,
 }: UseGameLoopOptions) {
+  // eslint-disable-next-line react-hooks/refs
   const stateRef = useRef<GameState>(makeInitialState(1, runStateRef.current, false, 0));
   const animRef = useRef<number>(0);
   const orangeTotalRef = useRef(0);
   const onScoreSubmitRef = useRef(onScoreSubmit);
+  // eslint-disable-next-line react-hooks/refs
   onScoreSubmitRef.current = onScoreSubmit;
   const onLevelWonRef = useRef(onLevelWon);
+  // eslint-disable-next-line react-hooks/refs
   onLevelWonRef.current = onLevelWon;
   const onIronWillUsedRef = useRef(onIronWillUsed);
+  // eslint-disable-next-line react-hooks/refs
   onIronWillUsedRef.current = onIronWillUsed;
   const { playPop, playBip, playVictory, playDelete } = useSoundContext();
 

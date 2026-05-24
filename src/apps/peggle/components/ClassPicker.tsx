@@ -2,7 +2,7 @@
 
 import type { ClassId } from "../roguelite";
 import { CLASSES, RELICS } from "../roguelite";
-import { captionBtn, btnRaised, btnPrimary } from "../styles";
+import { captionBtn } from "../styles";
 
 interface ClassPickerProps {
   onPick: (classId: ClassId) => void;
@@ -192,7 +192,7 @@ export function ClassPicker({ onPick }: ClassPickerProps) {
                     lineHeight: 1.3,
                   }}
                 >
-                  "{cls.flavorText}"
+                  &ldquo;{cls.flavorText}&rdquo;
                 </div>
               </button>
             ))}

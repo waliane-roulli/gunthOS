@@ -104,7 +104,6 @@ export function MainMenu({ bestScore, displayName, onPlay, onLeaderboard }: Main
           <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 20 }}>
             <button
               onClick={onPlay}
-              // eslint-disable-next-line jsx-a11y/no-autofocus
               autoFocus
               style={{
                 padding: "11px 0",
