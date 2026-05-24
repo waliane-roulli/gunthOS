@@ -7,7 +7,7 @@ function getTime(): string {
 }
 
 export function useOsClock(): string {
-  const [time, setTime] = useState(getTime);
+  const [time, setTime] = useState<string | null>(null);
 
   useEffect(() => {
     setTime(getTime());
@@ -15,5 +15,5 @@ export function useOsClock(): string {
     return () => clearInterval(id);
   }, []);
 
-  return time;
+  return time ?? "";
 }
