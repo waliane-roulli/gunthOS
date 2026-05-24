@@ -2,6 +2,10 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   typedRoutes: true,
+  logging: {
+    fetches: { fullUrl: true },
+    incomingRequests: true,
+  },
   async headers() {
     return [
       {
