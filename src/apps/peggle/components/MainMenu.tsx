@@ -1,32 +1,13 @@
 "use client";
 
+import { captionBtn } from "../styles";
+
 interface MainMenuProps {
   bestScore: number;
   displayName: string | null;
   onPlay: () => void;
   onLeaderboard: () => void;
 }
-
-const captionBtn: React.CSSProperties = {
-  width: 18,
-  height: 16,
-  background: "var(--t-bg)",
-  borderWidth: 2,
-  borderStyle: "solid",
-  borderTopColor: "var(--t-border-light)",
-  borderLeftColor: "var(--t-border-light)",
-  borderBottomColor: "var(--t-border-dark)",
-  borderRightColor: "var(--t-border-dark)",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  fontSize: 9,
-  color: "var(--t-text)",
-  userSelect: "none",
-  cursor: "default",
-  lineHeight: 1,
-  flexShrink: 0,
-};
 
 export function MainMenu({ bestScore, displayName, onPlay, onLeaderboard }: MainMenuProps) {
   return (

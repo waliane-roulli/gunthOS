@@ -1,65 +1,23 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
+import type { RefObject, MouseEvent } from "react";
 import type { UiState } from "../types";
 import { W, H } from "../constants";
+import { captionBtn, btnRaised, btnPrimary } from "../styles";
 
 interface GameCanvasProps {
-  canvasRef: React.RefObject<HTMLCanvasElement | null>;
+  canvasRef: RefObject<HTMLCanvasElement | null>;
   ui: UiState;
   bestScore: number;
   user: { name?: string | null; email?: string | null; id?: string } | null;
-  onMouseMove: (e: React.MouseEvent<HTMLCanvasElement>) => void;
-  onClick: (e: React.MouseEvent<HTMLCanvasElement>) => void;
+  onMouseMove: (e: MouseEvent<HTMLCanvasElement>) => void;
+  onClick: (e: MouseEvent<HTMLCanvasElement>) => void;
   onReplay: () => void;
   onNextLevel: () => void;
   onLeaderboard: () => void;
   onMenu: () => void;
 }
-
-const captionBtn: React.CSSProperties = {
-  width: 18,
-  height: 16,
-  background: "var(--t-bg)",
-  borderWidth: 2,
-  borderStyle: "solid",
-  borderTopColor: "var(--t-border-light)",
-  borderLeftColor: "var(--t-border-light)",
-  borderBottomColor: "var(--t-border-dark)",
-  borderRightColor: "var(--t-border-dark)",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  fontSize: 9,
-  color: "var(--t-text)",
-  userSelect: "none",
-  cursor: "default",
-  lineHeight: 1,
-  flexShrink: 0,
-};
-
-const btnRaised: React.CSSProperties = {
-  padding: "5px 14px",
-  fontFamily: "var(--t-font-display)",
-  fontSize: "var(--t-text-sm)",
-  cursor: "pointer",
-  background: "var(--t-bg)",
-  color: "var(--t-text)",
-  borderWidth: 2,
-  borderStyle: "solid",
-  borderTopColor: "var(--t-border-light)",
-  borderLeftColor: "var(--t-border-light)",
-  borderBottomColor: "var(--t-border-dark)",
-  borderRightColor: "var(--t-border-dark)",
-  whiteSpace: "nowrap",
-  lineHeight: 1.4,
-};
-
-const btnPrimary: React.CSSProperties = {
-  ...btnRaised,
-  background: "linear-gradient(to bottom, var(--t-titlebar-from), var(--t-titlebar-to))",
-  color: "#fff",
-};
 
 export function GameCanvas({
   canvasRef,
@@ -90,7 +48,7 @@ export function GameCanvas({
 
   const isGameOver = ui.phase === "won" || ui.phase === "lost";
   const isWin = ui.phase === "won";
-  const isRecord = bestScore > 0 && ui.score >= bestScore;
+  const isRecord = ui.score > 0 && ui.score >= bestScore;
   const displayUser = user?.name ?? user?.email ?? null;
 
   return (
@@ -172,7 +130,7 @@ export function GameCanvas({
                   style={{
                     fontSize: "var(--t-text-lg)",
                     fontWeight: "bold",
-                    color: isWin ? "var(--t-success, #22c55e)" : "var(--t-error, #ef4444)",
+                    color: isWin ? "var(--t-success)" : "var(--t-error)",
                     marginBottom: 10,
                     lineHeight: 1.1,
                   }}

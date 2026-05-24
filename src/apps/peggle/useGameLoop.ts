@@ -83,6 +83,8 @@ export function useGameLoop({
   const stateRef = useRef<GameState>(makeInitialState(1));
   const animRef = useRef<number>(0);
   const orangeTotalRef = useRef(0);
+  const onScoreSubmitRef = useRef(onScoreSubmit);
+  onScoreSubmitRef.current = onScoreSubmit;
   const { playPop, playBip, playVictory, playDelete } = useSoundContext();
 
   const syncUI = useCallback(() => {
@@ -452,9 +454,7 @@ export function useGameLoop({
           }
 
           const comboBonus = s.combo >= 3 && s.combo % 3 === 0;
-          const totalMult2 = totalMult;
-          // Scale floating text by multiplier — bigger popup for bigger combos
-          const popFontSize = Math.min(18, 11 + Math.floor(totalMult2 * 1.5));
+          const popFontSize = Math.min(18, 11 + Math.floor(totalMult * 1.5));
           const label = totalMult > 1 ? `+${earned} ×${totalMult}` : `+${earned}`;
           s.floatingTexts.push({
             x: p.x + (Math.random() - 0.5) * 20,
@@ -483,7 +483,7 @@ export function useGameLoop({
       const isLastBall = s.balls === 0;
 
       if (isLastBall) {
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < BONUS_BUCKET_XS.length; i++) {
           const bx = BONUS_BUCKET_XS[i]!;
           if (b.y + BALL_R >= bucketTop && b.x >= bx && b.x <= bx + BUCKET_W) {
             const mult = s.bonusBucketMults[i] ?? 1;
@@ -656,7 +656,7 @@ export function useGameLoop({
           s.phase = "won";
           s.message = `NIVEAU ${s.level} TERMINÉ !`;
           playVictory();
-          onScoreSubmit(s.score, true);
+          onScoreSubmitRef.current(s.score, true);
         } else if (s.balls <= 0) {
           const saved = parseInt(localStorage.getItem("peggle98_best") ?? "0", 10);
           if (s.score > saved) {
@@ -666,7 +666,7 @@ export function useGameLoop({
           s.phase = "lost";
           s.message = "GAME OVER";
           playDelete();
-          onScoreSubmit(s.score, false);
+          onScoreSubmitRef.current(s.score, false);
         } else {
           s.phase = "aim";
         }
@@ -680,7 +680,7 @@ export function useGameLoop({
     animRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(animRef.current);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playBip, playPop, playVictory, playDelete, syncUI, onBestScore, onScoreSubmit]);
+  }, [playBip, playPop, playVictory, playDelete, syncUI, onBestScore]);
 
   return { stateRef, handleClick, resetGame, nextLevel, activateMultiball };
 }

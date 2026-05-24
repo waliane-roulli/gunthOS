@@ -105,7 +105,7 @@ export function PeggleApp({ windowId: _windowId }: AppProps) {
   }, [fetchLeaderboard]);
 
   const displayName = user ? (user.name || user.email || "Joueur") : null;
-  const userId = user ? (user as { id?: string }).id : undefined;
+  const userId = user?.id;
 
   return (
     <div
