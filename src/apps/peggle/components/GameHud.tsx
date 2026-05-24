@@ -149,14 +149,14 @@ export function GameHud({ ui, bestScore, displayName, onActivateMultiball, onMen
       {ui.bossLevel && (
         <>
           <Sep />
-          <HudStat label="BOSS" value="👑" accent minW={36} />
+          <HudStat label="BOSS" value="[!]" accent minW={36} />
         </>
       )}
       <Sep />
       <HudStat label="SCORE" value={ui.score.toLocaleString()} minW={80} />
       <Sep />
       <HudStat
-        label="🪟 FENÊTRES"
+        label="CIBLES"
         value={`${ui.orangeLeft}/${ui.orangeTotal}`}
         accent={!inFever}
         urgent={inFever}
@@ -219,7 +219,7 @@ export function GameHud({ ui, bestScore, displayName, onActivateMultiball, onMen
               letterSpacing: "0.04em",
             }}
           >
-            {ui.multiballPending ? "⚡ PRÊT !" : "⚡×3"}
+            {ui.multiballPending ? ">> PRÊT !" : ">>×3"}
           </button>
         )}
 

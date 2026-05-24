@@ -4,6 +4,7 @@ import "../peggle.css";
 import type { ClassId } from "../engine/roguelite";
 import { CLASSES, CLASS_COLORS, RELICS } from "../engine/roguelite";
 import { captionBtn, PG } from "../styles";
+import { PegIcon } from "./PegIcon";
 
 interface ClassPickerProps {
   onPick: (classId: ClassId) => void;
@@ -106,8 +107,8 @@ export function ClassPicker({ onPick }: ClassPickerProps) {
       <div className="pg-dialog" style={{ width: 520, flexShrink: 0, zIndex: 2 }}>
         {/* Titlebar */}
         <div className="pg-titlebar">
-          <span style={{ fontSize: 8, color: "#aaaaee", flex: 1, fontFamily: "var(--pg-font)", letterSpacing: "0.05em" }}>
-            🎮 PEGGLE 98 — CHOISISSEZ VOTRE CLASSE
+          <span style={{ fontSize: 8, color: "#aaaaee", flex: 1, fontFamily: "var(--pg-font)", letterSpacing: "0.05em", display: "flex", alignItems: "center", gap: 5 }}>
+            <PegIcon id="gamepad" size={10} /> PEGGLE 98 — CHOISISSEZ VOTRE CLASSE
           </span>
           {(["─", "□", "×"] as const).map((ch) => (
             <div key={ch} style={captionBtn}>{ch}</div>
@@ -169,9 +170,9 @@ export function ClassPicker({ onPick }: ClassPickerProps) {
                     e.currentTarget.style.filter = "";
                   }}
                 >
-                  {/* Emoji + nom */}
+                  {/* Icon + nom */}
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <span style={{ fontSize: 26, lineHeight: 1 }}>{cls.emoji}</span>
+                    <PegIcon id={cls.id} size={26} />
                     <div>
                       <div
                         style={{
@@ -248,9 +249,12 @@ export function ClassPicker({ onPick }: ClassPickerProps) {
                               borderWidth: 1,
                               borderStyle: "solid",
                               borderColor: r.color + "66",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 4,
                             }}
                           >
-                            {r.emoji} {r.name.toUpperCase()}
+                            <PegIcon id={rid} size={10} /> {r.name.toUpperCase()}
                           </span>
                         );
                       })}

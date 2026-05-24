@@ -42,12 +42,12 @@ export function triggerBomb(s: GameState, bombPeg: Peg, events: GameEvent[]): vo
   s.trauma = Math.min(1, s.trauma + 0.5);
   s.flashWhite = Math.max(s.flashWhite, 0.7);
 
-  const label = chainCount > 3 ? `💥 CHAIN ×${chainCount}!` : "💥 BOOM!";
+  const label = chainCount > 3 ? `!! CHAIN ×${chainCount}!` : "!! BOOM!";
   s.floatingTexts.push({ x: bombPeg.x, y: bombPeg.y - 20, text: label, life: 1, maxLife: 2.2, color: "#ff6600", combo: true, fontSize: 17 });
 
   if (s.runRelics.includes("scorpion") && bombsInChain > 0) {
     s.balls += bombsInChain;
-    s.floatingTexts.push({ x: bombPeg.x, y: bombPeg.y - 36, text: `🦂 +${bombsInChain}`, life: 1, maxLife: 1.8, color: "#ff6644", combo: true, fontSize: 13 });
+    s.floatingTexts.push({ x: bombPeg.x, y: bombPeg.y - 36, text: `+${bombsInChain} BILLES`, life: 1, maxLife: 1.8, color: "#ff6644", combo: true, fontSize: 13 });
   }
 
   const orangeRemaining = s.pegs.filter(pg => pg.orange && !pg.hit).length;

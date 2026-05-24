@@ -2,6 +2,7 @@
 
 import "../peggle.css";
 import { captionBtn, PG } from "../styles";
+import { PegIcon } from "./PegIcon";
 
 interface MainMenuProps {
   bestScore: number;
@@ -43,8 +44,8 @@ export function MainMenu({ bestScore, displayName, onPlay, onLeaderboard }: Main
       <div className="pg-dialog" style={{ width: 320, flexShrink: 0, zIndex: 2 }}>
         {/* Titlebar */}
         <div className="pg-titlebar">
-          <span style={{ fontSize: 9, color: "#aaaaee", flex: 1, fontFamily: "var(--pg-font)", letterSpacing: "0.05em" }}>
-            🎮 PEGGLE 98
+          <span style={{ fontSize: 9, color: "#aaaaee", flex: 1, fontFamily: "var(--pg-font)", letterSpacing: "0.05em", display: "flex", alignItems: "center", gap: 5 }}>
+            <PegIcon id="gamepad" size={10} /> PEGGLE 98
           </span>
           {(["─", "□", "×"] as const).map((ch) => (
             <div key={ch} style={captionBtn}>{ch}</div>
@@ -104,7 +105,7 @@ export function MainMenu({ bestScore, displayName, onPlay, onLeaderboard }: Main
                 animation: "pg-blink 2s step-end infinite",
               }}
             >
-              🪟 CASSEZ TOUTES LES FENÊTRES
+              [x] CASSEZ TOUTES LES CIBLES
             </div>
           </div>
 
@@ -139,7 +140,7 @@ export function MainMenu({ bestScore, displayName, onPlay, onLeaderboard }: Main
                 letterSpacing: "0.04em",
               }}
             >
-              🏆  CLASSEMENT
+              ★  CLASSEMENT
             </button>
           </div>
 

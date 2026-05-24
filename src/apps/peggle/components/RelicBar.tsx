@@ -2,6 +2,7 @@
 
 import type { RelicId } from "../engine/roguelite";
 import { RELICS } from "../engine/roguelite";
+import { PegIcon } from "./PegIcon";
 
 interface RelicBarProps {
   relics: RelicId[];
@@ -38,11 +39,10 @@ export function RelicBar({ relics, spookyActive, magnetFrames }: RelicBarProps) 
             borderWidth: 1,
             borderStyle: "solid",
             borderColor: "#cc88ff",
-            fontSize: 11,
             animation: "pulse 1s infinite",
           }}
         >
-          👻
+          <PegIcon id="spooky" size={14} />
         </div>
       )}
       {magnetFrames > 0 && (
@@ -58,10 +58,9 @@ export function RelicBar({ relics, spookyActive, magnetFrames }: RelicBarProps) 
             borderWidth: 1,
             borderStyle: "solid",
             borderColor: "#4488ff",
-            fontSize: 11,
           }}
         >
-          🧲
+          <PegIcon id="magnet" size={14} />
         </div>
       )}
 
@@ -83,12 +82,11 @@ export function RelicBar({ relics, spookyActive, magnetFrames }: RelicBarProps) 
               borderWidth: 1,
               borderStyle: "solid",
               borderColor: r.color + "66",
-              fontSize: 11,
               cursor: "help",
               flexShrink: 0,
             }}
           >
-            {r.emoji}
+            <PegIcon id={rid} size={14} />
           </div>
         );
       })}

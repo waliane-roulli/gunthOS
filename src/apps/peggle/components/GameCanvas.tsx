@@ -6,6 +6,7 @@ import type { UiState } from "../engine/types";
 import { W, H } from "../engine/constants";
 import { captionBtn, btnRaised, PG } from "../styles";
 import "../peggle.css";
+import { PegIcon } from "./PegIcon";
 
 interface GameCanvasProps {
   canvasRef: RefObject<HTMLCanvasElement | null>;
@@ -112,8 +113,8 @@ export function GameCanvas({
           >
             {/* Titlebar */}
             <div className="pg-titlebar">
-              <span style={{ fontSize: 8, color: "#aaaaee", flex: 1, letterSpacing: "0.05em" }}>
-                🎮 PEGGLE 98
+              <span style={{ fontSize: 8, color: "#aaaaee", flex: 1, letterSpacing: "0.05em", display: "flex", alignItems: "center", gap: 5 }}>
+                <PegIcon id="gamepad" size={10} /> PEGGLE 98
               </span>
               {(["─", "□", "×"] as const).map((ch) => (
                 <div key={ch} style={captionBtn}>{ch}</div>
@@ -122,19 +123,19 @@ export function GameCanvas({
 
             {/* Content */}
             <div style={{ padding: "22px 24px 16px" }}>
-              {/* Big emoji + titre */}
+              {/* Big icon + titre */}
               <div style={{ textAlign: "center", marginBottom: 16 }}>
                 <div
                   style={{
-                    fontSize: 48,
-                    lineHeight: 1,
+                    display: "flex",
+                    justifyContent: "center",
                     marginBottom: 12,
                     animation: isWon
                       ? "pg-pulse-orange 1.5s ease-in-out infinite"
                       : "pg-shake 0.5s ease-in-out 0.3s 2",
                   }}
                 >
-                  {isWon ? "🎉" : "💀"}
+                  <PegIcon id={isWon ? "victory" : "skull"} size={48} />
                 </div>
 
                 <div
@@ -233,7 +234,7 @@ export function GameCanvas({
                 </button>
                 {isLost && (
                   <button onClick={onLeaderboard} style={{ ...btnRaised, fontSize: 8, color: PG.gold }}>
-                    🏆 CLASSEMENT
+                    ★ CLASSEMENT
                   </button>
                 )}
                 <button onClick={onMenu} style={{ ...btnRaised, fontSize: 8, color: PG.textMuted }}>

@@ -70,7 +70,7 @@ export function processBallPhysics(
       if (s.ghostBallActive && b === s.ball) {
         s.ghostBallActive = false;
         p.hitCooldown = BALANCE.peg.ghostCooldown;
-        s.floatingTexts.push({ x: p.x, y: p.y - 12, text: "👻 FANTÔME", life: 1, maxLife: 1.2, color: "#cc88ff", combo: false, fontSize: 11 });
+        s.floatingTexts.push({ x: p.x, y: p.y - 12, text: ">> FANTÔME", life: 1, maxLife: 1.2, color: "#cc88ff", combo: false, fontSize: 11 });
         continue;
       }
 
@@ -91,7 +91,7 @@ export function processBallPhysics(
         s.hitFreezeFrames = Math.max(s.hitFreezeFrames, HIT_FREEZE_ORANGE);
         spawnParticles(s, p.x, p.y, true, 12);
         const hpLeft = p.armorHits + 1;
-        s.floatingTexts.push({ x: p.x, y: p.y - 18, text: `👑 ${hpLeft}/5`, life: 1, maxLife: 1.2, color: "#ffd700", combo: true, fontSize: 14 });
+        s.floatingTexts.push({ x: p.x, y: p.y - 18, text: `[BOSS] ${hpLeft}/5`, life: 1, maxLife: 1.2, color: "#ffd700", combo: true, fontSize: 14 });
         events.push({ kind: "sound", id: "bip" });
         continue;
       }
@@ -139,7 +139,7 @@ export function processBallPhysics(
         s.balls += BALANCE.score.bossBallBonus;
         s.trauma = Math.min(1, s.trauma + BALANCE.trauma.bossPeg);
         s.flashWhite = BALANCE.flash.bossPeg;
-        s.floatingTexts.push({ x: p.x, y: p.y - 30, text: `👑 BOSS VAINCU! +${BALANCE.score.bossKill}`, life: 1, maxLife: 3, color: "#ffd700", combo: true, fontSize: 15 });
+        s.floatingTexts.push({ x: p.x, y: p.y - 30, text: `!! BOSS VAINCU! +${BALANCE.score.bossKill}`, life: 1, maxLife: 3, color: "#ffd700", combo: true, fontSize: 15 });
         s.floatingTexts.push({ x: p.x, y: p.y - 48, text: `+${BALANCE.score.bossBallBonus} BALLES`, life: 1, maxLife: 2.5, color: "#00ffcc", combo: true, fontSize: 13 });
         spawnParticles(s, p.x, p.y, true, 60, true);
         events.push({ kind: "sound", id: "victory" });
@@ -155,20 +155,20 @@ export function processBallPhysics(
             const spread = BALANCE.multiball.spreadAngle;
             s.extraBalls.push({ x: b.x, y: b.y, vx: Math.cos(baseA - spread) * spd, vy: Math.sin(baseA - spread) * spd, active: true, trail: [], tint: "#ffdd88" });
             s.extraBalls.push({ x: b.x, y: b.y, vx: Math.cos(baseA + spread) * spd, vy: Math.sin(baseA + spread) * spd, active: true, trail: [], tint: "#88ffcc" });
-            s.floatingTexts.push({ x: p.x, y: p.y - 22, text: "⚡ MULTIBALL!", life: 1, maxLife: 2, color: "#ffcc44", combo: true, fontSize: 15 });
+            s.floatingTexts.push({ x: p.x, y: p.y - 22, text: ">> MULTIBALL!", life: 1, maxLife: 2, color: "#ffcc44", combo: true, fontSize: 15 });
             break;
           }
           case "spooky":
             s.spookyActive = true;
-            s.floatingTexts.push({ x: p.x, y: p.y - 22, text: "👻 SPOOKY BALL!", life: 1, maxLife: 2, color: "#cc88ff", combo: true, fontSize: 15 });
+            s.floatingTexts.push({ x: p.x, y: p.y - 22, text: ">> SPOOKY BALL!", life: 1, maxLife: 2, color: "#cc88ff", combo: true, fontSize: 15 });
             break;
           case "extraball":
             s.balls += 1;
-            s.floatingTexts.push({ x: p.x, y: p.y - 22, text: "🔮 +1 BALLE!", life: 1, maxLife: 2, color: "#00ffcc", combo: true, fontSize: 15 });
+            s.floatingTexts.push({ x: p.x, y: p.y - 22, text: "+1 BALLE!", life: 1, maxLife: 2, color: "#00ffcc", combo: true, fontSize: 15 });
             break;
           case "magnet":
             s.magnetFrames = BALANCE.magnet.duration;
-            s.floatingTexts.push({ x: p.x, y: p.y - 22, text: "🧲 AIMANT!", life: 1, maxLife: 2, color: "#4488ff", combo: true, fontSize: 15 });
+            s.floatingTexts.push({ x: p.x, y: p.y - 22, text: ">> AIMANT!", life: 1, maxLife: 2, color: "#4488ff", combo: true, fontSize: 15 });
             break;
           case "pyromaniac": {
             for (const np of s.pegs) {
@@ -179,7 +179,7 @@ export function processBallPhysics(
             }
             p.bomb = true;
             triggerBomb(s, p, events);
-            s.floatingTexts.push({ x: p.x, y: p.y - 22, text: "🔥 PYROMANE!", life: 1, maxLife: 2, color: "#ff6600", combo: true, fontSize: 15 });
+            s.floatingTexts.push({ x: p.x, y: p.y - 22, text: "!! PYROMANE!", life: 1, maxLife: 2, color: "#ff6600", combo: true, fontSize: 15 });
             break;
           }
           default:
@@ -201,7 +201,7 @@ export function processBallPhysics(
       let cursedMult = 1;
       if (s.runRelics.includes("cursed_luck") && s.cursedLuckHits % BALANCE.cursedLuck.hitInterval === 0) {
         cursedMult = BALANCE.cursedLuck.multiplier;
-        s.floatingTexts.push({ x: p.x, y: p.y - 30, text: `🎲 ×${BALANCE.cursedLuck.multiplier} MALCHANCE!`, life: 1, maxLife: 1.8, color: "#cc44ff", combo: true, fontSize: 13 });
+        s.floatingTexts.push({ x: p.x, y: p.y - 30, text: `?? ×${BALANCE.cursedLuck.multiplier} MALCHANCE!`, life: 1, maxLife: 1.8, color: "#cc44ff", combo: true, fontSize: 13 });
       }
 
       // Combo_hungry upgrade
@@ -297,7 +297,7 @@ export function processBallPhysics(
       b.vy = -LAUNCH_SPEED * BALANCE.spooky.reboundSpeed;
       b.vx *= BALANCE.spooky.vxDamp;
       s.flashWhite = Math.max(s.flashWhite, BALANCE.flash.spookySave);
-      s.floatingTexts.push({ x: b.x, y: 78, text: "👻 SPOOKY SAVE!", life: 1, maxLife: 2, color: "#cc88ff", combo: true, fontSize: 14 });
+      s.floatingTexts.push({ x: b.x, y: 78, text: ">> SPOOKY SAVE!", life: 1, maxLife: 2, color: "#cc88ff", combo: true, fontSize: 14 });
     } else if (isMain && s.phoenixAvailable) {
       s.phoenixAvailable = false;
       b.x = Math.max(s.effectiveBallR, Math.min(W - s.effectiveBallR, b.x));
@@ -306,7 +306,7 @@ export function processBallPhysics(
       b.vx *= BALANCE.phoenix.vxDamp;
       s.flashWhite = Math.max(s.flashWhite, BALANCE.flash.phoenixSave);
       s.trauma = Math.min(1, s.trauma + BALANCE.trauma.phoenixSave);
-      s.floatingTexts.push({ x: b.x, y: 78, text: "🔥 PHÉNIX SAVE!", life: 1, maxLife: 2, color: "#ff8800", combo: true, fontSize: 14 });
+      s.floatingTexts.push({ x: b.x, y: 78, text: "!! PHÉNIX SAVE!", life: 1, maxLife: 2, color: "#ff8800", combo: true, fontSize: 14 });
     } else {
       if (isMain) s.ballsLostThisLevel++;
       b.active = false;

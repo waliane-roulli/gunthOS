@@ -63,7 +63,7 @@ export function Leaderboard({ entries, loading, currentUserId, onRefresh, showLo
             flex: 1,
           }}
         >
-          🏆 Classement — Top 10
+          ★ Classement — Top 10
         </span>
 
         <button
@@ -161,7 +161,7 @@ export function Leaderboard({ entries, loading, currentUserId, onRefresh, showLo
           entries.map((entry, i) => {
             const name = entry.displayUsername || entry.username || entry.name;
             const isMe = currentUserId && entry.userId === currentUserId;
-            const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i + 1}.`;
+            const medal = i === 0 ? "#1" : i === 1 ? "#2" : i === 2 ? "#3" : `${i + 1}.`;
             return (
               <div
                 key={entry.userId}
@@ -194,7 +194,7 @@ export function Leaderboard({ entries, loading, currentUserId, onRefresh, showLo
                   {name}{isMe ? " (vous)" : ""}
                 </span>
                 <span style={{ fontSize: "var(--t-text-sm)", textAlign: "center" }}>
-                  {entry.won ? "🎉" : "💀"}
+                  {entry.won ? "WIN" : "RIP"}
                 </span>
                 <span
                   style={{

@@ -4,6 +4,7 @@ import "../peggle.css";
 import type { UpgradeId, RelicId } from "../engine/roguelite";
 import { UPGRADES, RELICS } from "../engine/roguelite";
 import { captionBtn, PG } from "../styles";
+import { PegIcon } from "./PegIcon";
 
 interface UpgradePickerProps {
   offers: UpgradeId[];
@@ -59,8 +60,8 @@ export function UpgradePicker({
       >
         {/* Titlebar */}
         <div className="pg-titlebar">
-          <span style={{ fontSize: 8, color: "#aaaaee", flex: 1, fontFamily: "var(--pg-font)", letterSpacing: "0.05em" }}>
-            🎉 NIVEAU {level} TERMINÉ — CHOISISSEZ UNE AMÉLIORATION
+          <span style={{ fontSize: 8, color: "#aaaaee", flex: 1, fontFamily: "var(--pg-font)", letterSpacing: "0.05em", display: "flex", alignItems: "center", gap: 5 }}>
+            <PegIcon id="victory" size={10} /> NIVEAU {level} TERMINÉ — CHOISISSEZ UNE AMÉLIORATION
           </span>
           {(["─", "□", "×"] as const).map((ch) => (
             <div key={ch} style={captionBtn}>{ch}</div>
@@ -98,9 +99,12 @@ export function UpgradePicker({
                   fontFamily: "var(--pg-font)",
                   textShadow: `0 0 8px ${PG.gold}88`,
                   boxShadow: `0 0 12px ${PG.gold}33`,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
                 }}
               >
-                👑 BOSS VAINCU
+                <PegIcon id="boss" size={10} /> BOSS VAINCU
               </div>
             )}
           </div>
@@ -159,9 +163,9 @@ export function UpgradePicker({
                     {rc.label}
                   </div>
 
-                  {/* Emoji + name */}
+                  {/* Icon + name */}
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontSize: 22, lineHeight: 1 }}>{u.emoji}</span>
+                    <PegIcon id={id} size={22} />
                     <div
                       style={{
                         fontSize: 9,
@@ -201,11 +205,13 @@ export function UpgradePicker({
                       fontSize: 6,
                       color: PG.textMuted,
                       letterSpacing: "0.08em",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 4,
                     }}
                   >
-                    {u.category === "ball" ? "⚽ BALLE"
-                      : u.category === "score" ? "📊 SCORE"
-                      : "🔧 UTILITAIRE"}
+                    <PegIcon id={u.category === "ball" ? "ball_cat" : u.category === "score" ? "score_cat" : "utility_cat"} size={8} />
+                    {u.category === "ball" ? "BALLE" : u.category === "score" ? "SCORE" : "UTILITAIRE"}
                   </div>
                 </button>
               );
@@ -244,9 +250,12 @@ export function UpgradePicker({
                         borderColor: r.color + "55",
                         cursor: "help",
                         fontFamily: "var(--pg-font)",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 4,
                       }}
                     >
-                      {r.emoji} {r.name.toUpperCase()}
+                      <PegIcon id={rid} size={10} /> {r.name.toUpperCase()}
                     </span>
                   );
                 })}

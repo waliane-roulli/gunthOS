@@ -153,7 +153,7 @@ export function useGameLoop({
       ];
       s.multiballPending = false;
       s.multiballUsed = true;
-      s.floatingTexts.push({ x: W / 2, y: LAUNCHER_Y + 40, text: "⚡ MULTIBALL!", life: 1, maxLife: 2, color: "#ffcc44", combo: true, fontSize: 16 });
+      s.floatingTexts.push({ x: W / 2, y: LAUNCHER_Y + 40, text: ">> MULTIBALL!", life: 1, maxLife: 2, color: "#ffcc44", combo: true, fontSize: 16 });
     } else {
       s.ball = { x: LAUNCHER_X, y: LAUNCHER_Y, vx: Math.cos(angle) * LAUNCH_SPEED, vy: Math.sin(angle) * LAUNCH_SPEED, active: true, trail: [] };
     }
