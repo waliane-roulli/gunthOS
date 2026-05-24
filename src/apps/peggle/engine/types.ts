@@ -9,11 +9,11 @@ export interface Peg {
   orange: boolean;
   green: boolean;
   bomb: boolean;
-  boss: boolean;         // boss peg (appears on every 3rd level)
-  armorHits: number;     // 0=none; 1=cracked (1 more hit); init 1 for armor, 4 for boss
+  boss: boolean;
+  armorHits: number;
   hitCooldown: number;
   warpId?: number;
-  greenPowerup?: GreenPowerupId; // power-up type for green pegs
+  greenPowerup?: GreenPowerupId;
   popping: boolean;
   popAlpha: number;
   scale: number;
@@ -92,12 +92,10 @@ export interface GameState {
   bonusBucketFlash: number[];
   bonusBucketMults: number[];
 
-  // ─── Roguelite state ──────────────────────────────────────────────────────
   runRelics: RelicId[];
   runUpgrades: UpgradeId[];
   runClassId: ClassId;
 
-  // Effective physics values (derived from class + upgrades)
   effectiveBallR: number;
   effectiveBombR: number;
   effectiveFeverThreshold: number;
@@ -105,16 +103,14 @@ export interface GameState {
   effectivePegBounce: number;
   effectiveBucketSpeed: number;
 
-  // Active power-up effects
-  spookyActive: boolean;   // green peg spooky was triggered
-  magnetFrames: number;    // frames remaining for magnet attraction
-  ghostBallActive: boolean;// ghost_ball upgrade: bypass first peg this shot
-  phoenixAvailable: boolean; // phoenix relic not yet used this level
-  lastHitWasOrange: boolean; // for combo_hungry upgrade tracking
-  cursedLuckHits: number;  // total pegs hit this shot (for cursed_luck relic)
-  ballsLostThisLevel: number; // for trophy relic
+  spookyActive: boolean;
+  magnetFrames: number;
+  ghostBallActive: boolean;
+  phoenixAvailable: boolean;
+  lastHitWasOrange: boolean;
+  cursedLuckHits: number;
+  ballsLostThisLevel: number;
 
-  // Boss tracking
   bossKilledThisLevel: boolean;
 }
 
@@ -130,7 +126,6 @@ export interface UiState {
   multiballReady: boolean;
   multiballPending: boolean;
   multiballUsed: boolean;
-  // Roguelite
   relics: RelicId[];
   spookyActive: boolean;
   magnetFrames: number;

@@ -2,8 +2,8 @@
 
 import { useRef, useEffect, useState } from "react";
 import type { RefObject, MouseEvent } from "react";
-import type { UiState } from "../types";
-import { W, H } from "../constants";
+import type { UiState } from "../engine/types";
+import { W, H } from "../engine/constants";
 import { captionBtn, btnRaised, btnPrimary } from "../styles";
 
 interface GameCanvasProps {

@@ -1,7 +1,7 @@
 "use client";
 
-import type { UpgradeId, RelicId } from "../roguelite";
-import { UPGRADES, RELICS } from "../roguelite";
+import type { UpgradeId, RelicId } from "../engine/roguelite";
+import { UPGRADES, RELICS } from "../engine/roguelite";
 import { captionBtn } from "../styles";
 
 interface UpgradePickerProps {

@@ -11,11 +11,11 @@ export interface GreenPowerup {
 }
 
 export const GREEN_POWERUPS: Record<GreenPowerupId, GreenPowerup> = {
-  multiball: { id: "multiball", name: "Multiball",    desc: "Spawne 2 balles supplémentaires",          color: "#ffcc44", emoji: "⚡" },
-  spooky:    { id: "spooky",    name: "Spooky Ball",  desc: "La balle revient si elle tombe dans le vide", color: "#cc88ff", emoji: "👻" },
-  extraball: { id: "extraball", name: "Balle Extra",  desc: "+1 balle dans la réserve",                 color: "#00ffcc", emoji: "🔮" },
-  pyromaniac:{ id: "pyromaniac",name: "Pyromane",     desc: "Les pegs voisins deviennent des bombes",   color: "#ff6600", emoji: "🔥" },
-  magnet:    { id: "magnet",    name: "Aimant",       desc: "Attire la balle vers les pegs orange (5s)",color: "#4488ff", emoji: "🧲" },
+  multiball:   { id: "multiball",   name: "Multiball",    desc: "Spawne 2 balles supplémentaires",            color: "#ffcc44", emoji: "⚡" },
+  spooky:      { id: "spooky",      name: "Spooky Ball",  desc: "La balle revient si elle tombe dans le vide", color: "#cc88ff", emoji: "👻" },
+  extraball:   { id: "extraball",   name: "Balle Extra",  desc: "+1 balle dans la réserve",                   color: "#00ffcc", emoji: "🔮" },
+  pyromaniac:  { id: "pyromaniac",  name: "Pyromane",     desc: "Les pegs voisins deviennent des bombes",      color: "#ff6600", emoji: "🔥" },
+  magnet:      { id: "magnet",      name: "Aimant",       desc: "Attire la balle vers les pegs orange (5s)",   color: "#4488ff", emoji: "🧲" },
 };
 
 // ─── Upgrades (between levels) ──────────────────────────────────────────────
@@ -35,18 +35,18 @@ export interface Upgrade {
 }
 
 export const UPGRADES: Record<UpgradeId, Upgrade> = {
-  heavy_ball:    { id: "heavy_ball",    name: "Balle Lourde",      desc: "+30% de rebond sur les pegs",                        emoji: "⚫", category: "ball",    rarity: "common" },
-  ghost_ball:    { id: "ghost_ball",    name: "Balle Fantôme",     desc: "Traverse le 1er peg sans rebondir",                  emoji: "👻", category: "ball",    rarity: "rare"   },
-  combo_hungry:  { id: "combo_hungry",  name: "Combo Affamé",      desc: "Pegs orange ×1.5 si 2 orange consécutifs",           emoji: "🔥", category: "score",   rarity: "common" },
-  contamination: { id: "contamination", name: "Contamination",     desc: "Voisins d'une bombe deviennent des bombes",           emoji: "☢️", category: "ball",    rarity: "rare"   },
-  extra_ball:    { id: "extra_ball",    name: "+1 Balle",          desc: "+1 balle au début de chaque niveau",                 emoji: "🔮", category: "utility", rarity: "common" },
-  recovery:      { id: "recovery",      name: "Récupération",      desc: "Finir un niveau avec >3 balles : +1 au stock",       emoji: "💊", category: "utility", rarity: "common" },
-  bigger_ball:   { id: "bigger_ball",   name: "Grosse Bille",      desc: "Rayon de la balle +30%",                             emoji: "🎱", category: "ball",    rarity: "rare"   },
-  turbo_bomb:    { id: "turbo_bomb",    name: "Turbo Bombe",       desc: "Rayon d'explosion des bombes ×1.5",                  emoji: "💥", category: "score",   rarity: "rare"   },
-  fever_forever: { id: "fever_forever", name: "Fièvre Éternelle",  desc: "Mode Fièvre dès 6 pegs orange restants",             emoji: "🌡️", category: "score",   rarity: "epic"   },
-  chain_master:  { id: "chain_master",  name: "Maître des Chaînes",desc: "+50pts par peg détruit dans une explosion",           emoji: "⛓️", category: "score",   rarity: "rare"   },
-  lucky_spin:    { id: "lucky_spin",    name: "Spin Chanceux",     desc: "Le bucket se déplace 40% plus vite",                 emoji: "🍀", category: "utility", rarity: "common" },
-  iron_will:     { id: "iron_will",     name: "Volonté de Fer",    desc: "1× par run : récupère 2 balles au lieu de Game Over",emoji: "🛡️", category: "utility", rarity: "epic"   },
+  heavy_ball:    { id: "heavy_ball",    name: "Balle Lourde",       desc: "+30% de rebond sur les pegs",                         emoji: "⚫", category: "ball",    rarity: "common" },
+  ghost_ball:    { id: "ghost_ball",    name: "Balle Fantôme",      desc: "Traverse le 1er peg sans rebondir",                   emoji: "👻", category: "ball",    rarity: "rare"   },
+  combo_hungry:  { id: "combo_hungry",  name: "Combo Affamé",       desc: "Pegs orange ×1.5 si 2 orange consécutifs",            emoji: "🔥", category: "score",   rarity: "common" },
+  contamination: { id: "contamination", name: "Contamination",      desc: "Voisins d'une bombe deviennent des bombes",            emoji: "☢️", category: "ball",    rarity: "rare"   },
+  extra_ball:    { id: "extra_ball",    name: "+1 Balle",           desc: "+1 balle au début de chaque niveau",                  emoji: "🔮", category: "utility", rarity: "common" },
+  recovery:      { id: "recovery",      name: "Récupération",       desc: "Finir un niveau avec >3 balles : +1 au stock",        emoji: "💊", category: "utility", rarity: "common" },
+  bigger_ball:   { id: "bigger_ball",   name: "Grosse Bille",       desc: "Rayon de la balle +30%",                              emoji: "🎱", category: "ball",    rarity: "rare"   },
+  turbo_bomb:    { id: "turbo_bomb",    name: "Turbo Bombe",        desc: "Rayon d'explosion des bombes ×1.5",                   emoji: "💥", category: "score",   rarity: "rare"   },
+  fever_forever: { id: "fever_forever", name: "Fièvre Éternelle",   desc: "Mode Fièvre dès 6 pegs orange restants",              emoji: "🌡️", category: "score",   rarity: "epic"   },
+  chain_master:  { id: "chain_master",  name: "Maître des Chaînes", desc: "+50pts par peg détruit dans une explosion",            emoji: "⛓️", category: "score",   rarity: "rare"   },
+  lucky_spin:    { id: "lucky_spin",    name: "Spin Chanceux",      desc: "Le bucket se déplace 40% plus vite",                  emoji: "🍀", category: "utility", rarity: "common" },
+  iron_will:     { id: "iron_will",     name: "Volonté de Fer",     desc: "1× par run : récupère 2 balles au lieu de Game Over", emoji: "🛡️", category: "utility", rarity: "epic"   },
 };
 
 // ─── Relics (passives, accumulate during run) ────────────────────────────────
@@ -62,12 +62,12 @@ export interface Relic {
 }
 
 export const RELICS: Record<RelicId, Relic> = {
-  boomerang:      { id: "boomerang",      name: "Boomerang",       desc: "La balle rebondit 40% plus fort sur les murs",           emoji: "🪃", color: "#ffaa44" },
-  scorpion:       { id: "scorpion",       name: "Scorpion",        desc: "Chaque bomb peg détruit donne +1 balle",                 emoji: "🦂", color: "#ff6644" },
-  blessed_cursor: { id: "blessed_cursor", name: "Curseur Béni",    desc: "Ligne de visée 60% plus longue",                        emoji: "✨", color: "#ffee88" },
-  trophy:         { id: "trophy",         name: "Trophée",         desc: "Finir un niveau sans perdre de balle : +2 balles bonus", emoji: "🏆", color: "#ffd700" },
-  phoenix:        { id: "phoenix",        name: "Phénix",          desc: "1× par niveau : la balle renaît si elle tombe",         emoji: "🔥", color: "#ff8800" },
-  cursed_luck:    { id: "cursed_luck",    name: "Chance Maudite",  desc: "Chaque 5e peg touché : multiplicateur ×3",              emoji: "🎲", color: "#cc44ff" },
+  boomerang:      { id: "boomerang",      name: "Boomerang",     desc: "La balle rebondit 40% plus fort sur les murs",            emoji: "🪃", color: "#ffaa44" },
+  scorpion:       { id: "scorpion",       name: "Scorpion",      desc: "Chaque bomb peg détruit donne +1 balle",                  emoji: "🦂", color: "#ff6644" },
+  blessed_cursor: { id: "blessed_cursor", name: "Curseur Béni",  desc: "Ligne de visée 60% plus longue",                         emoji: "✨", color: "#ffee88" },
+  trophy:         { id: "trophy",         name: "Trophée",       desc: "Finir un niveau sans perdre de balle : +2 balles bonus",  emoji: "🏆", color: "#ffd700" },
+  phoenix:        { id: "phoenix",        name: "Phénix",        desc: "1× par niveau : la balle renaît si elle tombe",          emoji: "🔥", color: "#ff8800" },
+  cursed_luck:    { id: "cursed_luck",    name: "Chance Maudite",desc: "Chaque 5e peg touché : multiplicateur ×3",               emoji: "🎲", color: "#cc44ff" },
 };
 
 // ─── Classes ─────────────────────────────────────────────────────────────────
@@ -149,12 +149,7 @@ export function makeInitialRunState(classId: ClassId): RunState {
     relics.push(...pool.slice(0, 2));
   }
 
-  return {
-    classId,
-    relics,
-    upgrades: [],
-    ironWillUsed: false,
-  };
+  return { classId, relics, upgrades: [], ironWillUsed: false };
 }
 
 // ─── Upgrade offer generation ────────────────────────────────────────────────
@@ -173,7 +168,6 @@ export function generateUpgradeOffer(existing: UpgradeId[], bossKilled: boolean)
   const result: UpgradeId[] = [];
   const seen = new Set<UpgradeId>();
 
-  // Boss killed → guarantee one epic if available
   if (bossKilled) {
     const epics = notOwned.filter(id => UPGRADES[id]!.rarity === "epic");
     if (epics.length > 0) {
@@ -189,7 +183,6 @@ export function generateUpgradeOffer(existing: UpgradeId[], bossKilled: boolean)
     if (!seen.has(id)) { result.push(id); seen.add(id); }
   }
 
-  // Fill from non-owned if not enough (avoids offering already-owned upgrades)
   if (result.length < 3) {
     for (const id of notOwned.sort(() => Math.random() - 0.5)) {
       if (result.length >= 3) break;

@@ -163,12 +163,10 @@ export function buildLevel(level: number, runState?: RunState): Peg[] {
     return true;
   });
 
-  // Remove peg near center if boss level (to make room)
   const result = isBoss
     ? filtered.filter(p => Math.hypot(p.x - cx, p.y - 260) > 40)
     : filtered;
 
-  // Boss peg in center for boss levels
   if (isBoss) {
     const bossPeg: Peg = {
       x: cx, y: 260,
@@ -191,7 +189,6 @@ export function buildLevel(level: number, runState?: RunState): Peg[] {
 
   const nonOrange = shuffled.filter(i => nonBoss[i] && !nonBoss[i]!.orange);
 
-  // Green pegs with power-ups
   const greenPowerupPool: GreenPowerupId[] = runState
     ? (CLASSES[runState.classId]?.greenPowerupPool ?? (["multiball", "spooky", "extraball", "magnet"] as GreenPowerupId[]))
     : (["multiball", "spooky", "extraball", "magnet"] as GreenPowerupId[]);
@@ -206,7 +203,6 @@ export function buildLevel(level: number, runState?: RunState): Peg[] {
 
   const noBombs = runState ? CLASSES[runState.classId]?.noBombs ?? false : false;
 
-  // Bomb pegs (level 3+, not if canonnier class)
   if (level >= 3 && !noBombs) {
     const bombCount = Math.min(3, 1 + Math.floor((level - 3) / 2));
     const bombCandidates = nonOrange.filter(i =>
@@ -218,7 +214,6 @@ export function buildLevel(level: number, runState?: RunState): Peg[] {
     }
   }
 
-  // Armor pegs (level 5+)
   if (level >= 5) {
     const armorCount = Math.min(5, 2 + Math.floor((level - 5) / 2));
     const armorCandidates = nonOrange.filter(i =>
@@ -230,7 +225,6 @@ export function buildLevel(level: number, runState?: RunState): Peg[] {
     }
   }
 
-  // Warp pairs (level 7+)
   if (level >= 7) {
     const pairCount = 1 + Math.floor((level - 7) / 3);
     const warpCandidates = nonOrange.filter(i =>

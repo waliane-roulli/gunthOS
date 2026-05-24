@@ -1,6 +1,6 @@
 "use client";
 
-import type { LeaderboardEntry } from "../types";
+import type { LeaderboardEntry } from "../engine/types";
 
 interface LeaderboardProps {
   entries: LeaderboardEntry[];

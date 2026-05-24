@@ -5,18 +5,18 @@ import type { AppProps } from "@/types";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { PEGGLE_TIPS } from "@/lib/gunth-jokes";
 import { pickRandom } from "@/lib/utils/random";
-import { useMusic } from "./useMusic";
-import { useGameLoop } from "./useGameLoop";
+import { useMusic } from "./hooks/useMusic";
+import { useGameLoop } from "./hooks/useGameLoop";
 import { GameHud } from "./components/GameHud";
 import { GameCanvas } from "./components/GameCanvas";
 import { Leaderboard } from "./components/Leaderboard";
 import { MainMenu } from "./components/MainMenu";
 import { ClassPicker } from "./components/ClassPicker";
 import { UpgradePicker } from "./components/UpgradePicker";
-import { W, H } from "./constants";
-import type { UiState, LeaderboardEntry, UpgradeId } from "./types";
-import type { RunState, ClassId } from "./roguelite";
-import { makeInitialRunState, generateUpgradeOffer } from "./roguelite";
+import { W, H } from "./engine/constants";
+import type { UiState, LeaderboardEntry, UpgradeId } from "./engine/types";
+import type { RunState, ClassId } from "./engine/roguelite";
+import { makeInitialRunState, generateUpgradeOffer } from "./engine/roguelite";
 
 type Screen = "menu" | "class-pick" | "game" | "leaderboard";
 

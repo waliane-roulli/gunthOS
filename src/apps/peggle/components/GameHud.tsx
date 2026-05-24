@@ -1,6 +1,6 @@
 "use client";
 
-import type { UiState } from "../types";
+import type { UiState } from "../engine/types";
 import { RelicBar } from "./RelicBar";
 
 interface GameHudProps {

@@ -1,7 +1,7 @@
 "use client";
 
-import type { ClassId } from "../roguelite";
-import { CLASSES, RELICS } from "../roguelite";
+import type { ClassId } from "../engine/roguelite";
+import { CLASSES, RELICS } from "../engine/roguelite";
 import { captionBtn } from "../styles";
 
 interface ClassPickerProps {

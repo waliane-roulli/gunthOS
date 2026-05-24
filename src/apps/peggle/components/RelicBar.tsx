@@ -1,7 +1,7 @@
 "use client";
 
-import type { RelicId } from "../roguelite";
-import { RELICS } from "../roguelite";
+import type { RelicId } from "../engine/roguelite";
+import { RELICS } from "../engine/roguelite";
 
 interface RelicBarProps {
   relics: RelicId[];
