@@ -11,21 +11,29 @@ import { GameHud } from "./components/GameHud";
 import { GameCanvas } from "./components/GameCanvas";
 import { Leaderboard } from "./components/Leaderboard";
 import { MainMenu } from "./components/MainMenu";
+import { ClassPicker } from "./components/ClassPicker";
+import { UpgradePicker } from "./components/UpgradePicker";
 import { W, H } from "./constants";
-import type { UiState, LeaderboardEntry } from "./types";
+import type { UiState, LeaderboardEntry, UpgradeId } from "./types";
+import type { RunState, ClassId } from "./roguelite";
+import { makeInitialRunState, generateUpgradeOffer } from "./roguelite";
 
-type Screen = "menu" | "game" | "leaderboard";
+type Screen = "menu" | "class-pick" | "game" | "leaderboard";
+
+const EMPTY_RUN: RunState = makeInitialRunState("canonnier");
 
 export function PeggleApp({ windowId: _windowId }: AppProps) {
   const { user } = useAuth();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const mouseRef = useRef({ x: W / 2, y: 0 });
+  const runStateRef = useRef<RunState>(EMPTY_RUN);
 
   const [screen, setScreen] = useState<Screen>("menu");
   const [ui, setUi] = useState<UiState>({
     balls: 10, score: 0, orangeLeft: 0, orangeTotal: 0,
     phase: "aim", message: "", combo: 0, level: 1,
     multiballReady: true, multiballPending: false, multiballUsed: false,
+    relics: [], spookyActive: false, magnetFrames: 0, bossLevel: false, stars: 0,
   });
   const [bestScore, setBestScore] = useState<number>(() => {
     if (typeof window === "undefined") return 0;
@@ -35,6 +43,10 @@ export function PeggleApp({ windowId: _windowId }: AppProps) {
   const [lbLoading, setLbLoading] = useState(false);
   const [scoreSubmitted, setScoreSubmitted] = useState(false);
   const [tip, setTip] = useState(() => pickRandom(PEGGLE_TIPS));
+
+  // Upgrade pick state
+  const [upgradeOffer, setUpgradeOffer] = useState<UpgradeId[] | null>(null);
+  const [lastBossKilled, setLastBossKilled] = useState(false);
 
   useEffect(() => {
     if (ui.phase === "aim") setTip(pickRandom(PEGGLE_TIPS));
@@ -62,6 +74,16 @@ export function PeggleApp({ windowId: _windowId }: AppProps) {
     } catch { /* silent */ }
   }, [user, scoreSubmitted]);
 
+  const handleLevelWon = useCallback((bossKilled: boolean) => {
+    const offer = generateUpgradeOffer(runStateRef.current.upgrades, bossKilled);
+    setLastBossKilled(bossKilled);
+    setUpgradeOffer(offer);
+  }, []);
+
+  const handleIronWillUsed = useCallback(() => {
+    runStateRef.current = { ...runStateRef.current, ironWillUsed: true };
+  }, []);
+
   useMusic();
 
   const handleUiSync = useCallback((uiState: UiState) => setUi(uiState), []);
@@ -70,18 +92,29 @@ export function PeggleApp({ windowId: _windowId }: AppProps) {
   const { handleClick, resetGame, nextLevel, activateMultiball } = useGameLoop({
     canvasRef,
     mouseRef,
+    runStateRef,
     onUiSync: handleUiSync,
     onOrangeTotalChange: handleOrangeTotalChange,
     onBestScore: setBestScore,
     onScoreSubmit: submitScore,
+    onLevelWon: handleLevelWon,
+    onIronWillUsed: handleIronWillUsed,
   });
 
-  const handleNextLevel = useCallback(() => {
+  const handleUpgradePick = useCallback((id: UpgradeId) => {
+    runStateRef.current = { ...runStateRef.current, upgrades: [...runStateRef.current.upgrades, id] };
+    setUpgradeOffer(null);
     setScoreSubmitted(false);
     nextLevel();
   }, [nextLevel]);
 
-  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+  const handleUpgradeSkip = useCallback(() => {
+    setUpgradeOffer(null);
+    setScoreSubmitted(false);
+    nextLevel();
+  }, [nextLevel]);
+
+  const handleMouseMove = useCallback((e: { clientX: number; clientY: number; currentTarget: { getBoundingClientRect(): DOMRect } }) => {
     const rect = e.currentTarget.getBoundingClientRect();
     mouseRef.current = {
       x: (e.clientX - rect.left) * (W / rect.width),
@@ -89,13 +122,20 @@ export function PeggleApp({ windowId: _windowId }: AppProps) {
     };
   }, []);
 
-  const handlePlay = useCallback(() => {
+  const handleClassPick = useCallback((classId: ClassId) => {
+    runStateRef.current = makeInitialRunState(classId);
     resetGame(false);
     setScoreSubmitted(false);
+    setUpgradeOffer(null);
     setScreen("game");
   }, [resetGame]);
 
+  const handlePlay = useCallback(() => {
+    setScreen("class-pick");
+  }, []);
+
   const handleGoToMenu = useCallback(() => {
+    setUpgradeOffer(null);
     setScreen("menu");
   }, []);
 
@@ -112,7 +152,6 @@ export function PeggleApp({ windowId: _windowId }: AppProps) {
       className="flex flex-col h-full select-none"
       style={{ background: "var(--t-bg)", fontFamily: "var(--t-font-display)" }}
     >
-      {/* Main menu */}
       {screen === "menu" && (
         <MainMenu
           bestScore={bestScore}
@@ -122,7 +161,10 @@ export function PeggleApp({ windowId: _windowId }: AppProps) {
         />
       )}
 
-      {/* Leaderboard screen */}
+      {screen === "class-pick" && (
+        <ClassPicker onPick={handleClassPick} />
+      )}
+
       {screen === "leaderboard" && (
         <Leaderboard
           entries={leaderboard}
@@ -150,18 +192,35 @@ export function PeggleApp({ windowId: _windowId }: AppProps) {
           onActivateMultiball={activateMultiball}
           onMenu={handleGoToMenu}
         />
-        <GameCanvas
-          canvasRef={canvasRef}
-          ui={ui}
-          bestScore={bestScore}
-          user={user}
-          onMouseMove={handleMouseMove}
-          onClick={handleClick}
-          onReplay={() => { resetGame(false); setScoreSubmitted(false); }}
-          onNextLevel={handleNextLevel}
-          onLeaderboard={handleGoToLeaderboard}
-          onMenu={handleGoToMenu}
-        />
+
+        {/* Canvas area — upgrade picker overlays here */}
+        <div style={{ position: "relative", flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+          <GameCanvas
+            canvasRef={canvasRef}
+            ui={ui}
+            bestScore={bestScore}
+            user={user}
+            upgradeOfferPending={!!upgradeOffer}
+            onMouseMove={handleMouseMove}
+            onClick={handleClick}
+            onReplay={() => { runStateRef.current = makeInitialRunState(runStateRef.current.classId); resetGame(false); setScoreSubmitted(false); setUpgradeOffer(null); }}
+            onLeaderboard={handleGoToLeaderboard}
+            onMenu={handleGoToMenu}
+          />
+
+          {/* Upgrade picker overlay — shown after each won level */}
+          {upgradeOffer && (
+            <UpgradePicker
+              offers={upgradeOffer}
+              relics={ui.relics}
+              level={ui.level}
+              score={ui.score}
+              bossKilled={lastBossKilled}
+              onPick={handleUpgradePick}
+              onSkip={handleUpgradeSkip}
+            />
+          )}
+        </div>
 
         {/* Win98 status bar */}
         <div
@@ -192,7 +251,9 @@ export function PeggleApp({ windowId: _windowId }: AppProps) {
               whiteSpace: "nowrap",
             }}
           >
-            {ui.phase === "aim" ? tip : ui.phase === "firing" ? "En vol..." : " "}
+            {upgradeOffer
+              ? "Choisissez une amélioration pour continuer le run..."
+              : ui.phase === "aim" ? tip : ui.phase === "firing" ? "En vol..." : " "}
           </div>
           <div
             style={{
@@ -210,15 +271,13 @@ export function PeggleApp({ windowId: _windowId }: AppProps) {
               textAlign: "center",
             }}
           >
-            {ui.phase === "aim"
-              ? "En attente"
-              : ui.phase === "firing"
-                ? "En vol"
-                : ui.phase === "won"
-                  ? "Victoire !"
-                  : ui.phase === "lost"
-                    ? "Game Over"
-                    : " "}
+            {upgradeOffer
+              ? "Upgrade !"
+              : ui.phase === "aim" ? "En attente"
+              : ui.phase === "firing" ? "En vol"
+              : ui.phase === "won" ? "Victoire !"
+              : ui.phase === "lost" ? "Game Over"
+              : " "}
           </div>
         </div>
       </div>

@@ -1,3 +1,7 @@
+import type { GreenPowerupId, RelicId, ClassId, UpgradeId } from "./roguelite";
+
+export type { GreenPowerupId, RelicId, ClassId, UpgradeId };
+
 export interface Peg {
   x: number;
   y: number;
@@ -5,9 +9,11 @@ export interface Peg {
   orange: boolean;
   green: boolean;
   bomb: boolean;
-  armorHits: number;   // 0=none; 1=cracked (1 more hit); init 1 for armor pegs
-  hitCooldown: number; // prevents re-collision same frame
-  warpId?: number;     // paired warp pegs share same warpId
+  boss: boolean;         // boss peg (appears on every 3rd level)
+  armorHits: number;     // 0=none; 1=cracked (1 more hit); init 1 for armor, 4 for boss
+  hitCooldown: number;
+  warpId?: number;
+  greenPowerup?: GreenPowerupId; // power-up type for green pegs
   popping: boolean;
   popAlpha: number;
   scale: number;
@@ -20,7 +26,7 @@ export interface Ball {
   vy: number;
   active: boolean;
   trail: { x: number; y: number; speed: number }[];
-  tint?: string; // multiball coloring
+  tint?: string;
 }
 
 export interface Particle {
@@ -42,21 +48,21 @@ export interface FloatingText {
   maxLife: number;
   color: string;
   combo: boolean;
-  fontSize?: number; // dramatic scaling
+  fontSize?: number;
 }
 
 export interface Star {
   x: number;
   y: number;
-  layer: 0 | 1 | 2; // 0=far dim, 1=mid, 2=near bright
+  layer: 0 | 1 | 2;
   size: number;
-  phase: number; // for twinkle offset
+  phase: number;
 }
 
 export interface GameState {
   pegs: Peg[];
   ball: Ball | null;
-  extraBalls: Ball[]; // multiball extra balls
+  extraBalls: Ball[];
   balls: number;
   score: number;
   phase: "aim" | "firing" | "lost" | "won";
@@ -67,17 +73,17 @@ export interface GameState {
   particles: Particle[];
   floatingTexts: FloatingText[];
   feverPulse: number;
-  animClock: number;  // always-incrementing animation clock
+  animClock: number;
   bucketFlash: number;
-  trauma: number;     // 0-1, drives screen shake intensity
+  trauma: number;
   shakeX: number;
   shakeY: number;
   scoreMultiplier: number;
   flashWhite: number;
   slowMoFrames: number;
-  zoomLevel: number;  // smooth zoom towards ball on last peg
+  zoomLevel: number;
   level: number;
-  hitFreezeFrames: number; // hitstop on peg collision
+  hitFreezeFrames: number;
   stars: Star[];
   multiballReady: boolean;
   multiballPending: boolean;
@@ -85,6 +91,31 @@ export interface GameState {
   turnScoreStart: number;
   bonusBucketFlash: number[];
   bonusBucketMults: number[];
+
+  // ─── Roguelite state ──────────────────────────────────────────────────────
+  runRelics: RelicId[];
+  runUpgrades: UpgradeId[];
+  runClassId: ClassId;
+
+  // Effective physics values (derived from class + upgrades)
+  effectiveBallR: number;
+  effectiveBombR: number;
+  effectiveFeverThreshold: number;
+  effectiveAimSteps: number;
+  effectivePegBounce: number;
+  effectiveBucketSpeed: number;
+
+  // Active power-up effects
+  spookyActive: boolean;   // green peg spooky was triggered
+  magnetFrames: number;    // frames remaining for magnet attraction
+  ghostBallActive: boolean;// ghost_ball upgrade: bypass first peg this shot
+  phoenixAvailable: boolean; // phoenix relic not yet used this level
+  lastHitWasOrange: boolean; // for combo_hungry upgrade tracking
+  cursedLuckHits: number;  // total pegs hit this shot (for cursed_luck relic)
+  ballsLostThisLevel: number; // for trophy relic
+
+  // Boss tracking
+  bossKilledThisLevel: boolean;
 }
 
 export interface UiState {
@@ -99,6 +130,12 @@ export interface UiState {
   multiballReady: boolean;
   multiballPending: boolean;
   multiballUsed: boolean;
+  // Roguelite
+  relics: RelicId[];
+  spookyActive: boolean;
+  magnetFrames: number;
+  bossLevel: boolean;
+  stars: number;
 }
 
 export interface LeaderboardEntry {

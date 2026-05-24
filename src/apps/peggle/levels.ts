@@ -1,18 +1,21 @@
 import { W, PEG_R } from "./constants";
-import type { Peg } from "./types";
+import type { Peg, GreenPowerupId } from "./types";
+import type { RunState } from "./roguelite";
+import { CLASSES, isBossLevel } from "./roguelite";
 
 function makePeg(x: number, y: number): Peg {
   return {
     x, y, hit: false, orange: false, green: false,
-    bomb: false, armorHits: 0, hitCooldown: 0,
+    bomb: false, boss: false, armorHits: 0, hitCooldown: 0,
     popping: false, popAlpha: 1, scale: 1,
   };
 }
 
-export function buildLevel(level: number): Peg[] {
+export function buildLevel(level: number, runState?: RunState): Peg[] {
   const pegs: Peg[] = [];
   const cx = W / 2;
   const layout = ((level - 1) % 8) + 1;
+  const isBoss = isBossLevel(level);
 
   if (layout === 1) {
     const ringR = 90;
@@ -160,61 +163,89 @@ export function buildLevel(level: number): Peg[] {
     return true;
   });
 
+  // Remove peg near center if boss level (to make room)
+  const result = isBoss
+    ? filtered.filter(p => Math.hypot(p.x - cx, p.y - 260) > 40)
+    : filtered;
+
+  // Boss peg in center for boss levels
+  if (isBoss) {
+    const bossPeg: Peg = {
+      x: cx, y: 260,
+      hit: false, orange: false, green: false, bomb: false, boss: true,
+      armorHits: 4, hitCooldown: 0,
+      popping: false, popAlpha: 1, scale: 1,
+    };
+    result.push(bossPeg);
+  }
+
   const orangePct = Math.min(0.42, 0.28 + (level - 1) * 0.04);
-  const orangeCount = Math.floor(filtered.length * orangePct);
-  const shuffled = [...Array(filtered.length).keys()].sort(() => Math.random() - 0.5);
+  const nonBoss = result.filter(p => !p.boss);
+  const orangeCount = Math.floor(nonBoss.length * orangePct);
+  const shuffled = [...Array(nonBoss.length).keys()].sort(() => Math.random() - 0.5);
 
   for (let i = 0; i < orangeCount; i++) {
     const idx = shuffled[i];
-    if (idx !== undefined && filtered[idx]) filtered[idx]!.orange = true;
+    if (idx !== undefined && nonBoss[idx]) nonBoss[idx]!.orange = true;
   }
 
-  const nonOrange = shuffled.filter(i => filtered[i] && !filtered[i]!.orange);
+  const nonOrange = shuffled.filter(i => nonBoss[i] && !nonBoss[i]!.orange);
+
+  // Green pegs with power-ups
+  const greenPowerupPool: GreenPowerupId[] = runState
+    ? (CLASSES[runState.classId]?.greenPowerupPool ?? (["multiball", "spooky", "extraball", "magnet"] as GreenPowerupId[]))
+    : (["multiball", "spooky", "extraball", "magnet"] as GreenPowerupId[]);
+
   for (let i = 0; i < 5; i++) {
     const idx = nonOrange[i];
-    if (idx !== undefined && filtered[idx]) filtered[idx]!.green = true;
+    if (idx !== undefined && nonBoss[idx]) {
+      nonBoss[idx]!.green = true;
+      nonBoss[idx]!.greenPowerup = greenPowerupPool[i % greenPowerupPool.length];
+    }
   }
 
-  // Bomb pegs (level 3+): replace a few blue pegs
-  if (level >= 3) {
+  const noBombs = runState ? CLASSES[runState.classId]?.noBombs ?? false : false;
+
+  // Bomb pegs (level 3+, not if canonnier class)
+  if (level >= 3 && !noBombs) {
     const bombCount = Math.min(3, 1 + Math.floor((level - 3) / 2));
     const bombCandidates = nonOrange.filter(i =>
-      filtered[i] && !filtered[i]!.orange && !filtered[i]!.green
+      nonBoss[i] && !nonBoss[i]!.orange && !nonBoss[i]!.green
     );
     for (let i = 0; i < Math.min(bombCount, bombCandidates.length); i++) {
       const idx = bombCandidates[i];
-      if (idx !== undefined && filtered[idx]) filtered[idx]!.bomb = true;
+      if (idx !== undefined && nonBoss[idx]) nonBoss[idx]!.bomb = true;
     }
   }
 
-  // Armor pegs (level 5+): replace a few blue pegs
+  // Armor pegs (level 5+)
   if (level >= 5) {
     const armorCount = Math.min(5, 2 + Math.floor((level - 5) / 2));
     const armorCandidates = nonOrange.filter(i =>
-      filtered[i] && !filtered[i]!.orange && !filtered[i]!.green && !filtered[i]!.bomb
+      nonBoss[i] && !nonBoss[i]!.orange && !nonBoss[i]!.green && !nonBoss[i]!.bomb
     );
     for (let i = 0; i < Math.min(armorCount, armorCandidates.length); i++) {
       const idx = armorCandidates[i];
-      if (idx !== undefined && filtered[idx]) filtered[idx]!.armorHits = 1;
+      if (idx !== undefined && nonBoss[idx]) nonBoss[idx]!.armorHits = 1;
     }
   }
 
-  // Warp pairs (level 7+): two pegs teleport ball between them
+  // Warp pairs (level 7+)
   if (level >= 7) {
     const pairCount = 1 + Math.floor((level - 7) / 3);
     const warpCandidates = nonOrange.filter(i =>
-      filtered[i] && !filtered[i]!.orange && !filtered[i]!.green
-      && !filtered[i]!.bomb && filtered[i]!.armorHits === 0
+      nonBoss[i] && !nonBoss[i]!.orange && !nonBoss[i]!.green
+      && !nonBoss[i]!.bomb && nonBoss[i]!.armorHits === 0
     );
     for (let pair = 0; pair < Math.min(pairCount, Math.floor(warpCandidates.length / 2)); pair++) {
       const a = warpCandidates[pair * 2];
       const b = warpCandidates[pair * 2 + 1];
-      if (a !== undefined && b !== undefined && filtered[a] && filtered[b]) {
-        filtered[a]!.warpId = pair + 1;
-        filtered[b]!.warpId = pair + 1;
+      if (a !== undefined && b !== undefined && nonBoss[a] && nonBoss[b]) {
+        nonBoss[a]!.warpId = pair + 1;
+        nonBoss[b]!.warpId = pair + 1;
       }
     }
   }
 
-  return filtered;
+  return result;
 }

@@ -11,10 +11,10 @@ interface GameCanvasProps {
   ui: UiState;
   bestScore: number;
   user: { name?: string | null; email?: string | null; id?: string } | null;
+  upgradeOfferPending: boolean;
   onMouseMove: (e: MouseEvent<HTMLCanvasElement>) => void;
   onClick: (e: MouseEvent<HTMLCanvasElement>) => void;
   onReplay: () => void;
-  onNextLevel: () => void;
   onLeaderboard: () => void;
   onMenu: () => void;
 }
@@ -24,10 +24,10 @@ export function GameCanvas({
   ui,
   bestScore,
   user,
+  upgradeOfferPending,
   onMouseMove,
   onClick,
   onReplay,
-  onNextLevel,
   onLeaderboard,
   onMenu,
 }: GameCanvasProps) {
@@ -46,8 +46,9 @@ export function GameCanvas({
     return () => ro.disconnect();
   }, []);
 
-  const isGameOver = ui.phase === "won" || ui.phase === "lost";
-  const isWin = ui.phase === "won";
+  const isLost = ui.phase === "lost";
+  const isWon = ui.phase === "won";
+  const isGameOver = isLost || isWon;
   const isRecord = ui.score > 0 && ui.score >= bestScore;
   const displayUser = user?.name ?? user?.email ?? null;
 
@@ -73,7 +74,7 @@ export function GameCanvas({
         onClick={onClick}
       />
 
-      {isGameOver && (
+      {isGameOver && !upgradeOfferPending && (
         <div
           className="absolute inset-0 flex items-center justify-center"
           style={{ background: "rgba(0,0,0,0.65)" }}
@@ -113,16 +114,9 @@ export function GameCanvas({
             </div>
 
             {/* Content */}
-            <div
-              style={{
-                display: "flex",
-                gap: 16,
-                alignItems: "flex-start",
-                padding: "20px 24px 16px",
-              }}
-            >
+            <div style={{ display: "flex", gap: 16, alignItems: "flex-start", padding: "20px 24px 16px" }}>
               <div style={{ fontSize: 40, lineHeight: 1, flexShrink: 0, paddingTop: 2 }}>
-                {isWin ? "🎉" : "💀"}
+                {isWon ? "🎉" : "💀"}
               </div>
 
               <div style={{ flex: 1 }}>
@@ -130,21 +124,15 @@ export function GameCanvas({
                   style={{
                     fontSize: "var(--t-text-lg)",
                     fontWeight: "bold",
-                    color: isWin ? "var(--t-success)" : "var(--t-error)",
+                    color: isWon ? "var(--t-success)" : "var(--t-error)",
                     marginBottom: 10,
                     lineHeight: 1.1,
                   }}
                 >
-                  {isWin ? "VICTOIRE !" : "GAME OVER"}
+                  {isWon ? "VICTOIRE !" : "GAME OVER"}
                 </div>
 
-                <div
-                  style={{
-                    fontSize: "var(--t-text-xs)",
-                    color: "var(--t-text-muted)",
-                    marginBottom: 4,
-                  }}
-                >
+                <div style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)", marginBottom: 4 }}>
                   SCORE FINAL
                 </div>
 
@@ -162,13 +150,7 @@ export function GameCanvas({
                     marginBottom: 8,
                   }}
                 >
-                  <span
-                    style={{
-                      fontSize: "var(--t-text-2xl)",
-                      fontWeight: "bold",
-                      color: "var(--t-text)",
-                    }}
-                  >
+                  <span style={{ fontSize: "var(--t-text-2xl)", fontWeight: "bold", color: "var(--t-text)" }}>
                     {ui.score.toLocaleString()}
                   </span>
                 </div>
@@ -187,7 +169,7 @@ export function GameCanvas({
               </div>
             </div>
 
-            {/* Button row */}
+            {/* Buttons */}
             <div
               style={{
                 display: "flex",
@@ -198,19 +180,16 @@ export function GameCanvas({
                 flexWrap: "wrap",
               }}
             >
-              {isWin && (
-                <button onClick={onNextLevel} style={btnPrimary}>
-                  Niveau suivant →
-                </button>
+              {isWon && (
+                <div style={{ ...btnPrimary, cursor: "default", opacity: 0.6, fontSize: "var(--t-text-xs)", display: "flex", alignItems: "center" }}>
+                  Choix d&apos;amélioration...
+                </div>
               )}
               <button onClick={onReplay} style={btnRaised}>
                 Rejouer
               </button>
-              {!isWin && (
-                <button
-                  onClick={onLeaderboard}
-                  style={{ ...btnRaised, color: "var(--t-accent)" }}
-                >
+              {isLost && (
+                <button onClick={onLeaderboard} style={{ ...btnRaised, color: "var(--t-accent)" }}>
                   🏆 Classement
                 </button>
               )}

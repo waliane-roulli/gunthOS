@@ -1,6 +1,7 @@
 "use client";
 
 import type { UiState } from "../types";
+import { RelicBar } from "./RelicBar";
 
 interface GameHudProps {
   ui: UiState;
@@ -113,7 +114,7 @@ export function GameHud({ ui, bestScore, displayName, onActivateMultiball, onMen
         overflow: "hidden",
       }}
     >
-      {/* Menu button — far left */}
+      {/* Menu button */}
       <button
         onClick={onMenu}
         title="Retour au menu principal"
@@ -139,6 +140,12 @@ export function GameHud({ ui, bestScore, displayName, onActivateMultiball, onMen
       </button>
 
       <HudStat label="NVX" value={ui.level} minW={40} />
+      {ui.bossLevel && (
+        <>
+          <Sep />
+          <HudStat label="BOSS" value="👑" accent minW={40} />
+        </>
+      )}
       <Sep />
       <HudStat label="SCORE" value={ui.score.toLocaleString()} minW={88} />
       <Sep />
@@ -149,12 +156,7 @@ export function GameHud({ ui, bestScore, displayName, onActivateMultiball, onMen
       {ui.combo >= 3 && (
         <>
           <Sep />
-          <HudStat
-            label="COMBO"
-            value={`×${Math.max(1, Math.floor(ui.combo / 3))}`}
-            accent
-            minW={56}
-          />
+          <HudStat label="COMBO" value={`×${Math.max(1, Math.floor(ui.combo / 3))}`} accent minW={56} />
         </>
       )}
 
@@ -167,7 +169,12 @@ export function GameHud({ ui, bestScore, displayName, onActivateMultiball, onMen
 
       <div style={{ flex: 1 }} />
 
-      {/* Right group: multiball + player name */}
+      {/* Active effects + relics */}
+      <RelicBar relics={ui.relics} spookyActive={ui.spookyActive} magnetFrames={ui.magnetFrames} />
+
+      <Sep />
+
+      {/* Right group: multiball + player */}
       <div style={{ display: "flex", alignItems: "center", gap: 6, paddingRight: 8 }}>
         {showMultiball && (
           <button
@@ -188,10 +195,8 @@ export function GameHud({ ui, bestScore, displayName, onActivateMultiball, onMen
               color: ui.multiballPending ? "#000" : ui.multiballReady ? "#fff" : "var(--t-text-muted)",
               borderWidth: 2,
               borderStyle: "solid",
-              borderTopColor:
-                mbClickable || ui.multiballPending ? "var(--t-border-light)" : "var(--t-border-dark)",
-              borderLeftColor:
-                mbClickable || ui.multiballPending ? "var(--t-border-light)" : "var(--t-border-dark)",
+              borderTopColor: mbClickable || ui.multiballPending ? "var(--t-border-light)" : "var(--t-border-dark)",
+              borderLeftColor: mbClickable || ui.multiballPending ? "var(--t-border-light)" : "var(--t-border-dark)",
               borderBottomColor: "var(--t-border-dark)",
               borderRightColor: "var(--t-border-dark)",
               opacity: ui.multiballUsed && !ui.multiballPending ? 0.5 : 1,

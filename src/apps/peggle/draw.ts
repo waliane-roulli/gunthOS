@@ -1,6 +1,17 @@
-import { W, H, PEG_R, BALL_R, BUCKET_W, BUCKET_H, FEVER_THRESHOLD, SLOW_MO_DURATION, ZOOM_SCALE, BONUS_BUCKET_XS } from "./constants";
+import { W, H, PEG_R, BALL_R, BUCKET_W, BUCKET_H, SLOW_MO_DURATION, ZOOM_SCALE, BONUS_BUCKET_XS } from "./constants";
 import { computeAimLine } from "./physics";
-import type { GameState, Ball, Peg } from "./types";
+import type { GameState, Ball, Peg, GreenPowerupId } from "./types";
+
+function greenPowerupSymbol(p?: GreenPowerupId): string {
+  switch (p) {
+    case "multiball":   return "×3";
+    case "spooky":      return "SP";
+    case "extraball":   return "+1";
+    case "pyromaniac":  return "FY";
+    case "magnet":      return "MG";
+    default:            return "✓";
+  }
+}
 
 // Win98 palette
 const FACE   = "#c0c0c0"; // button face gray
@@ -219,7 +230,7 @@ export function draw(
   launcherY: number,
 ) {
   const orangeLeft = s.pegs.filter(p => p.orange && !p.hit).length;
-  const inFever = orangeLeft <= FEVER_THRESHOLD && orangeLeft > 0;
+  const inFever = orangeLeft <= s.effectiveFeverThreshold && orangeLeft > 0;
   const feverIntensity = inFever ? (Math.sin(s.feverPulse) * 0.5 + 0.5) : 0;
   const inSlowMo = s.slowMoFrames > 0;
   const hasZoom = s.zoomLevel > 1.01 && s.ball?.active;
@@ -271,7 +282,7 @@ export function draw(
 
   // ── Aim line (marching-ants animated dashed trajectory) ─────────────────────
   if (s.phase === "aim") {
-    const pts = computeAimLine(launcherX, launcherY, aimAngle, s.pegs);
+    const pts = computeAimLine(launcherX, launcherY, aimAngle, s.pegs, s.effectiveBallR, s.effectiveAimSteps);
     if (pts.length > 1) {
       ctx.save();
       ctx.setLineDash([5, 5]);
@@ -346,6 +357,41 @@ export function draw(
       ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.fill();
       ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
       if (!p.hit) raisedBevel(ctx, p.x, p.y, r);
+
+    } else if (p.boss) {
+      // Boss peg: gold gradient + HP dots
+      const pulse = 0.5 + 0.5 * Math.sin(s.animClock * 3);
+      const bg = ctx.createRadialGradient(p.x - 2, p.y - 3, 1, p.x, p.y, r);
+      bg.addColorStop(0, "#ffffff");
+      bg.addColorStop(0.22, "#ffee88");
+      bg.addColorStop(0.6, "#cc8800");
+      bg.addColorStop(1, "#664400");
+      ctx.shadowColor = "#ffcc00";
+      ctx.shadowBlur = 8 + pulse * 8;
+      ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 1;
+      ctx.fillStyle = bg;
+      ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.fill();
+      ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
+      if (!p.hit) {
+        raisedBevel(ctx, p.x, p.y, r);
+        ctx.fillStyle = "#ffffcc";
+        ctx.font = `bold ${Math.round(r * 1.1)}px monospace`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("♛", p.x, p.y + 0.5);
+        ctx.textBaseline = "alphabetic";
+        // HP dots below peg
+        const hpTotal = 5;
+        const hpLeft = p.armorHits + 1;
+        const dotSpacing = 4.5;
+        const totalW = (hpTotal - 1) * dotSpacing;
+        for (let hi = 0; hi < hpTotal; hi++) {
+          const ddx = p.x - totalW / 2 + hi * dotSpacing;
+          const ddy = p.y + r + 5;
+          ctx.fillStyle = hi < hpLeft ? "#ffcc00" : "#332200";
+          ctx.beginPath(); ctx.arc(ddx, ddy, 2, 0, Math.PI * 2); ctx.fill();
+        }
+      }
 
     } else if (p.bomb) {
       // Bomb peg: Win98 "error" red button with "!" icon
@@ -442,15 +488,13 @@ export function draw(
       ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
       if (!p.hit) {
         raisedBevel(ctx, p.x, p.y, r);
-        // Checkmark
-        ctx.strokeStyle = "#ccffaa";
-        ctx.lineWidth = 1.5; ctx.lineCap = "round"; ctx.lineJoin = "round";
-        const cs = r * 0.4;
-        ctx.beginPath();
-        ctx.moveTo(p.x - cs, p.y);
-        ctx.lineTo(p.x - cs * 0.25, p.y + cs);
-        ctx.lineTo(p.x + cs, p.y - cs * 0.7);
-        ctx.stroke();
+        // Power-up symbol
+        ctx.fillStyle = "#ccffaa";
+        ctx.font = `bold 5px "MS Sans Serif", monospace`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(greenPowerupSymbol(p.greenPowerup), p.x, p.y + 0.5);
+        ctx.textBaseline = "alphabetic";
       }
 
     } else {
@@ -465,7 +509,7 @@ export function draw(
 
     // Pop ring (Win98 click ripple)
     if (p.popping) {
-      const ringColor = p.orange ? BLUE_T : p.bomb ? "#ff6600" : p.warpId !== undefined ? "#cc88ff" : SHD;
+      const ringColor = p.boss ? "#ffd700" : p.orange ? BLUE_T : p.bomb ? "#ff6600" : p.warpId !== undefined ? "#cc88ff" : SHD;
       ctx.strokeStyle = ringColor;
       ctx.lineWidth = 1.5;
       ctx.globalAlpha = alpha * 0.7;
