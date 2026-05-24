@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { linkedGunthPosts, linkedGunthReactions, linkedGunthComments, user } from "@/lib/db/schema";
-import { auth } from "@/lib/auth";
+import { getAuth } from "@/lib/auth";
 import { desc, eq, inArray, isNotNull, sql } from "drizzle-orm";
 import { headers } from "next/headers";
 import { BOT_SEED_POSTS, BOT_PERIODIC_POSTS } from "@/lib/bot-posts";
@@ -68,7 +68,7 @@ function maybeInjectBotPost() {
 // ── GET /api/linked-gunth/posts ────────────────────────────────────────────────
 
 export async function GET(req: NextRequest) {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getAuth().api.getSession({ headers: await headers() });
   const myId = session?.user?.id ?? null;
 
   seedBotsIfEmpty();
@@ -175,7 +175,7 @@ export async function GET(req: NextRequest) {
 // ── POST /api/linked-gunth/posts (user post) ───────────────────────────────────
 
 export async function POST(req: NextRequest) {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getAuth().api.getSession({ headers: await headers() });
   if (!session?.user) return unauthorized();
 
   const body = await req.json() as { content?: string };

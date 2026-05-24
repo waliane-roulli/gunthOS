@@ -2,14 +2,14 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { linkedGunthNotifications } from "@/lib/db/schema";
-import { auth } from "@/lib/auth";
+import { getAuth } from "@/lib/auth";
 import { and, eq, desc } from "drizzle-orm";
 import { headers } from "next/headers";
 import { unauthorized, badRequest } from "@/lib/api-utils";
 
 // GET /api/linked-gunth/notifications  — liste + unread count
 export async function GET() {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getAuth().api.getSession({ headers: await headers() });
   if (!session?.user) return NextResponse.json({ notifications: [], unread: 0 });
 
   const notifications = db()
@@ -26,7 +26,7 @@ export async function GET() {
 
 // PATCH /api/linked-gunth/notifications  { id? }  — marquer lu (id=null = tout marquer)
 export async function PATCH(req: NextRequest) {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getAuth().api.getSession({ headers: await headers() });
   if (!session?.user) return unauthorized();
 
   const body = await req.json() as { id?: number | null };
@@ -43,7 +43,7 @@ export async function PATCH(req: NextRequest) {
 
 // DELETE /api/linked-gunth/notifications  { id }
 export async function DELETE(req: NextRequest) {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getAuth().api.getSession({ headers: await headers() });
   if (!session?.user) return unauthorized();
 
   const body = await req.json() as { id?: number };

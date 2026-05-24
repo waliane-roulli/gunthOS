@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { peggleScores, user } from "@/lib/db/schema";
-import { auth } from "@/lib/auth";
+import { getAuth } from "@/lib/auth";
 import { desc, eq } from "drizzle-orm";
 import { headers } from "next/headers";
 
@@ -45,7 +45,7 @@ export async function GET() {
 // POST /api/peggle/scores — submit a score (auth required)
 export async function POST(req: NextRequest) {
   try {
-    const session = await auth.api.getSession({ headers: await headers() });
+    const session = await getAuth().api.getSession({ headers: await headers() });
     if (!session?.user) return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
 
     const body = await req.json() as { score: number; won: boolean };

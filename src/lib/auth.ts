@@ -4,7 +4,7 @@ import { username } from "better-auth/plugins";
 import { db } from "@/lib/db";
 import * as schema from "@/lib/db/schema";
 
-function createAuth() {
+function buildAuth() {
   return betterAuth({
     secret: process.env.BETTER_AUTH_SECRET,
     database: drizzleAdapter(db(), {
@@ -37,20 +37,14 @@ function createAuth() {
   });
 }
 
-// ReturnType<typeof createAuth> capture le type complet avec augmentations des plugins
-// (contrairement à ReturnType<typeof betterAuth> qui est le type de base sans plugins).
-type AuthInstance = ReturnType<typeof createAuth>;
+type AuthInstance = ReturnType<typeof buildAuth>;
 
 let _auth: AuthInstance | null = null;
 
-// Proxy transparent : db() n'est appelé qu'au premier accès runtime (pas à l'import).
-// Évite SQLITE_BUSY lors du `next build` où plusieurs workers chargent le module en parallèle.
-export const auth = new Proxy({} as AuthInstance, {
-  get(_target, prop: string | symbol) {
-    if (!_auth) _auth = createAuth();
-    return _auth[prop as keyof AuthInstance];
-  },
-});
+export function getAuth(): AuthInstance {
+  if (!_auth) _auth = buildAuth();
+  return _auth;
+}
 
-export type Session = typeof auth.$Infer.Session;
-export type User = typeof auth.$Infer.Session.user;
+export type Session = AuthInstance["$Infer"]["Session"];
+export type User = AuthInstance["$Infer"]["Session"]["user"];

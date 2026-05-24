@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 
-import { auth } from "@/lib/auth";
+import { getAuth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import {
   user, session,
@@ -13,7 +13,7 @@ import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 
 export async function GET() {
-  const sess = await auth.api.getSession({ headers: await headers() });
+  const sess = await getAuth().api.getSession({ headers: await headers() });
   if (!sess) return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
 
   const [caller] = await db().select({ role: user.role }).from(user).where(eq(user.id, sess.user.id));

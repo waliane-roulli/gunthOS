@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuth } from "@/lib/auth";
 import { subscribe, publishToAll, getListenerCount } from "@/lib/sse-bus";
 import { headers } from "next/headers";
 import { db } from "@/lib/db";
@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 export async function GET(req: NextRequest) {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getAuth().api.getSession({ headers: await headers() });
   if (!session?.user) {
     return new Response("Non authentifié", { status: 401 });
   }

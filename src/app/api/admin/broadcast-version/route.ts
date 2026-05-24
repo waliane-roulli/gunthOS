@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 
-import { auth } from "@/lib/auth";
+import { getAuth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { user, osVersions } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
@@ -10,7 +10,7 @@ import { broadcast } from "@/lib/sse-broadcaster";
 import type { ReloadPayload } from "@/lib/sse-broadcaster";
 
 export async function POST(req: Request) {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getAuth().api.getSession({ headers: await headers() });
   if (!session) return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
 
   const [caller] = await db().select({ role: user.role }).from(user).where(eq(user.id, session.user.id));

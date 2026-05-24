@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { linkedGunthProfileViews, user } from "@/lib/db/schema";
-import { auth } from "@/lib/auth";
+import { getAuth } from "@/lib/auth";
 import { eq, desc, and, gte } from "drizzle-orm";
 import { headers } from "next/headers";
 import { badRequest, notify } from "@/lib/api-utils";
@@ -10,7 +10,7 @@ import { BOT_VISITORS, BOT_VIEW_INTERVAL_MS, PROFILE_VIEW_DEDUP_MS } from "@/lib
 
 // GET /api/linked-gunth/profile-views?userId=X  — récupère les visiteurs récents
 export async function GET(req: NextRequest) {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getAuth().api.getSession({ headers: await headers() });
   const { searchParams } = new URL(req.url);
   const userId = searchParams.get("userId");
   if (!userId) return badRequest("userId requis");
@@ -71,7 +71,7 @@ export async function GET(req: NextRequest) {
 
 // POST /api/linked-gunth/profile-views  { profileUserId }  — enregistrer une visite (vrais users)
 export async function POST(req: NextRequest) {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getAuth().api.getSession({ headers: await headers() });
   if (!session?.user) return NextResponse.json({ ok: true });
 
   const body = await req.json() as { profileUserId?: string };

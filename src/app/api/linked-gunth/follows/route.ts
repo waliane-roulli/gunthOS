@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { linkedGunthFollows, user } from "@/lib/db/schema";
-import { auth } from "@/lib/auth";
+import { getAuth } from "@/lib/auth";
 import { and, eq, count, inArray, notInArray } from "drizzle-orm";
 import { headers } from "next/headers";
 import { unauthorized, notFound, badRequest, notify } from "@/lib/api-utils";
@@ -11,7 +11,7 @@ import { unauthorized, notFound, badRequest, notify } from "@/lib/api-utils";
 // GET /api/linked-gunth/follows?me=1       — liste des ids suivis
 // GET /api/linked-gunth/follows?network=1  — followers/following/suggestions avec infos user
 export async function GET(req: NextRequest) {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getAuth().api.getSession({ headers: await headers() });
   const myId = session?.user?.id ?? null;
 
   const { searchParams } = new URL(req.url);
@@ -101,7 +101,7 @@ export async function GET(req: NextRequest) {
 
 // POST /api/linked-gunth/follows  { followedId }  — toggle follow
 export async function POST(req: NextRequest) {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getAuth().api.getSession({ headers: await headers() });
   if (!session?.user) return unauthorized();
 
   const body = await req.json() as { followedId?: string };

@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { linkedGunthExperiences } from "@/lib/db/schema";
-import { auth } from "@/lib/auth";
+import { getAuth } from "@/lib/auth";
 import { eq, asc } from "drizzle-orm";
 import { headers } from "next/headers";
 import { unauthorized, notFound, badRequest } from "@/lib/api-utils";
@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
 
 // POST /api/linked-gunth/experiences  { title, company, startYear, endYear?, isCurrent?, description? }
 export async function POST(req: NextRequest) {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getAuth().api.getSession({ headers: await headers() });
   if (!session?.user) return unauthorized();
 
   const body = await req.json() as {
@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
 
 // DELETE /api/linked-gunth/experiences?id=X
 export async function DELETE(req: NextRequest) {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getAuth().api.getSession({ headers: await headers() });
   if (!session?.user) return unauthorized();
 
   const { searchParams } = new URL(req.url);

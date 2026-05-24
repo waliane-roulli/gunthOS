@@ -2,14 +2,14 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { messages, messageReads } from "@/lib/db/schema";
-import { auth } from "@/lib/auth";
+import { getAuth } from "@/lib/auth";
 import { and, eq, gt, sql } from "drizzle-orm";
 import { headers } from "next/headers";
 
 // GET /api/messages/unread
 // Counts unread messages per sender using server-side read receipts
 export async function GET() {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getAuth().api.getSession({ headers: await headers() });
   if (!session?.user) return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
 
   const myId = session.user.id;

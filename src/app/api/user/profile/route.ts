@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { auth } from "@/lib/auth";
+import { getAuth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { user } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
@@ -17,7 +17,7 @@ const profilePatchSchema = z.object({
 });
 
 async function getSession() {
-  return auth.api.getSession({ headers: await headers() });
+  return getAuth().api.getSession({ headers: await headers() });
 }
 
 // PATCH /api/user/profile — update own profile

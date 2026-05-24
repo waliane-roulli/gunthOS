@@ -2,14 +2,14 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { groupConversations, groupMembers, groupMessages, user } from "@/lib/db/schema";
-import { auth } from "@/lib/auth";
+import { getAuth } from "@/lib/auth";
 import { and, eq, gt, desc } from "drizzle-orm";
 import { headers } from "next/headers";
 import { publish } from "@/lib/sse-bus";
 
 // GET /api/groups/messages?groupId=<id>&since=<timestamp>
 export async function GET(req: NextRequest) {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getAuth().api.getSession({ headers: await headers() });
   if (!session?.user) return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
 
   const { searchParams } = new URL(req.url);
@@ -56,7 +56,7 @@ export async function GET(req: NextRequest) {
 
 // POST /api/groups/messages
 export async function POST(req: NextRequest) {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getAuth().api.getSession({ headers: await headers() });
   if (!session?.user) return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
 
   const body = await req.json();
