@@ -1,3 +1,1 @@
-ALTER TABLE `user` ADD COLUMN `online_status` text DEFAULT 'offline';
---> statement-breakpoint
-ALTER TABLE `user` ADD COLUMN `last_heartbeat` integer;
+-- no-op: columns online_status and last_heartbeat already added by 0007 table recreation
