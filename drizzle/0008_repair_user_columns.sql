@@ -1,1 +1,1 @@
--- no-op: columns online_status and last_heartbeat already added by 0007 table recreation
+SELECT 1;
