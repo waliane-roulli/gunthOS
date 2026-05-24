@@ -17,6 +17,8 @@ import { W, H } from "./engine/constants";
 import type { UiState, LeaderboardEntry, UpgradeId } from "./engine/types";
 import type { RunState, ClassId } from "./engine/roguelite";
 import { makeInitialRunState, generateUpgradeOffer } from "./engine/roguelite";
+import { DevPanel } from "./components/DevPanel";
+import type { DevConfig } from "./components/DevPanel";
 
 type Screen = "menu" | "class-pick" | "game" | "leaderboard";
 
@@ -24,9 +26,12 @@ const EMPTY_RUN: RunState = makeInitialRunState("canonnier");
 
 export function PeagleApp({ windowId: _windowId }: AppProps) {
   const { user } = useAuth();
+  const [isAdmin, setIsAdmin] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const mouseRef = useRef({ x: W / 2, y: 0 });
   const runStateRef = useRef<RunState>(EMPTY_RUN);
+  const devConfigRef = useRef<DevConfig | null>(null);
+  const [devSessionActive, setDevSessionActive] = useState(false);
 
   const [screen, setScreen] = useState<Screen>("menu");
   const [ui, setUi] = useState<UiState>({
@@ -47,6 +52,15 @@ export function PeagleApp({ windowId: _windowId }: AppProps) {
   // Upgrade pick state
   const [upgradeOffer, setUpgradeOffer] = useState<UpgradeId[] | null>(null);
   const [lastBossKilled, setLastBossKilled] = useState(false);
+  const [showDevPanelInGame, setShowDevPanelInGame] = useState(false);
+
+  useEffect(() => {
+    if (!user) { setIsAdmin(false); return; }
+    fetch("/api/admin/check")
+      .then(r => r.json())
+      .then((d: { isAdmin: boolean }) => setIsAdmin(d.isAdmin))
+      .catch(() => setIsAdmin(false));
+  }, [user]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -90,10 +104,11 @@ export function PeagleApp({ windowId: _windowId }: AppProps) {
   const handleUiSync = useCallback((uiState: UiState) => setUi(uiState), []);
   const handleOrangeTotalChange = useCallback((total: number) => setUi(u => ({ ...u, orangeTotal: total })), []);
 
-  const { handleClick, resetGame, nextLevel, activateMultiball } = useGameLoop({
+  const { handleClick, resetGame, nextLevel, activateMultiball, skipLevel } = useGameLoop({
     canvasRef,
     mouseRef,
     runStateRef,
+    devConfigRef,
     onUiSync: handleUiSync,
     onOrangeTotalChange: handleOrangeTotalChange,
     onBestScore: setBestScore,
@@ -126,6 +141,21 @@ export function PeagleApp({ windowId: _windowId }: AppProps) {
     resetGame(false);
     setScoreSubmitted(false);
     setUpgradeOffer(null);
+    setScreen("game");
+  }, [resetGame]);
+
+  const handleDevLaunch = useCallback((cfg: DevConfig) => {
+    devConfigRef.current = cfg;
+    const base = makeInitialRunState(cfg.classId);
+    runStateRef.current = {
+      ...base,
+      relics: cfg.relics.length > 0 ? cfg.relics : base.relics,
+      upgrades: cfg.upgrades,
+    };
+    resetGame(false, cfg.startLevel);
+    setScoreSubmitted(false);
+    setUpgradeOffer(null);
+    setDevSessionActive(true);
     setScreen("game");
   }, [resetGame]);
 
@@ -162,8 +192,10 @@ export function PeagleApp({ windowId: _windowId }: AppProps) {
         <MainMenu
           bestScore={bestScore}
           displayName={displayName}
+          isAdmin={isAdmin}
           onPlay={handlePlay}
           onLeaderboard={handleGoToLeaderboard}
+          onDevLaunch={handleDevLaunch}
         />
       )}
 
@@ -195,9 +227,34 @@ export function PeagleApp({ windowId: _windowId }: AppProps) {
           ui={ui}
           bestScore={bestScore}
           displayName={displayName}
+          isAdmin={isAdmin}
+          showDevTools={isAdmin && devSessionActive}
           onActivateMultiball={activateMultiball}
+          onSkipLevel={skipLevel}
+          onOpenDevPanel={() => setShowDevPanelInGame(true)}
           onMenu={handleGoToMenu}
         />
+
+        {/* DevPanel overlay in-game */}
+        {showDevPanelInGame && (
+          <DevPanel
+            onClose={() => setShowDevPanelInGame(false)}
+            onLaunch={(cfg) => {
+              devConfigRef.current = cfg;
+              const base = makeInitialRunState(cfg.classId);
+              runStateRef.current = {
+                ...base,
+                relics: cfg.relics.length > 0 ? cfg.relics : base.relics,
+                upgrades: cfg.upgrades,
+              };
+              resetGame(false, cfg.startLevel);
+              setScoreSubmitted(false);
+              setUpgradeOffer(null);
+              setDevSessionActive(true);
+              setShowDevPanelInGame(false);
+            }}
+          />
+        )}
 
         {/* Canvas area — upgrade picker overlays here */}
         <div style={{ position: "relative", flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>

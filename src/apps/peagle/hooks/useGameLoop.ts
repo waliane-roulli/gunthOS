@@ -11,11 +11,13 @@ import { W, H, LAUNCHER_X, LAUNCHER_Y, LAUNCH_SPEED, BONUS_BUCKET_MULTS } from "
 import type { GameState, UiState } from "../engine/types";
 import type { RunState } from "../engine/roguelite";
 import type { GameEvent } from "../engine/events";
+import type { DevConfig } from "../components/DevPanel";
 
 interface UseGameLoopOptions {
   canvasRef: RefObject<HTMLCanvasElement | null>;
   mouseRef: RefObject<{ x: number; y: number }>;
   runStateRef: RefObject<RunState>;
+  devConfigRef: RefObject<DevConfig | null>;
   onUiSync: (ui: UiState) => void;
   onOrangeTotalChange: (total: number) => void;
   onBestScore: (score: number) => void;
@@ -32,6 +34,7 @@ export function useGameLoop({
   canvasRef,
   mouseRef,
   runStateRef,
+  devConfigRef,
   onUiSync,
   onOrangeTotalChange,
   onBestScore,
@@ -106,20 +109,47 @@ export function useGameLoop({
     });
   }, [onUiSync]);
 
-  const resetGame = useCallback((keepLevel = false) => {
+  const resetGame = useCallback((keepLevel = false, overrideLevel?: number) => {
     const s = stateRef.current;
-    const nextLevel = keepLevel ? s.level : 1;
-    const newState = makeInitialState(nextLevel, runStateRef.current, keepLevel, s.score);
+    const targetLevel = overrideLevel ?? (keepLevel ? s.level : 1);
+    const newState = makeInitialState(targetLevel, runStateRef.current, keepLevel && !overrideLevel, s.score);
+
+    // Apply dev config overrides to the freshly built state
+    const dev = devConfigRef.current;
+    if (dev) {
+      if (dev.godMode) newState.balls = 9999;
+      if (dev.orangePct !== null) {
+        const pct = dev.orangePct / 100;
+        const nonBoss = newState.pegs.filter(p => !p.boss);
+        // reset all orange flags
+        for (const p of nonBoss) p.orange = false;
+        const count = Math.max(1, Math.round(nonBoss.length * pct));
+        const shuffled = [...nonBoss].sort(() => Math.random() - 0.5);
+        for (let i = 0; i < Math.min(count, shuffled.length); i++) shuffled[i]!.orange = true;
+      }
+      if (dev.forceGreenPower !== "none") {
+        for (const p of newState.pegs) {
+          if (p.green) p.greenPowerup = dev.forceGreenPower as Exclude<typeof dev.forceGreenPower, "none">;
+        }
+      }
+    }
+
     orangeTotalRef.current = newState.pegs.filter(p => p.orange).length;
     onOrangeTotalChange(orangeTotalRef.current);
     stateRef.current = newState;
     syncUI();
-  }, [syncUI, onOrangeTotalChange, runStateRef]);
+  }, [syncUI, onOrangeTotalChange, runStateRef, devConfigRef]);
 
   const nextLevel = useCallback(() => {
     stateRef.current.level += 1;
     resetGame(true);
   }, [resetGame]);
+
+  const skipLevel = useCallback(() => {
+    stateRef.current.level += 1;
+    resetGame(true);
+    syncUI();
+  }, [resetGame, syncUI]);
 
   const activateMultiball = useCallback(() => {
     const s = stateRef.current;
@@ -153,7 +183,7 @@ export function useGameLoop({
       ];
       s.multiballPending = false;
       s.multiballUsed = true;
-      s.floatingTexts.push({ x: W / 2, y: LAUNCHER_Y + 40, text: ">> MULTIBALL!", life: 1, maxLife: 2, color: "#ffcc44", combo: true, fontSize: 16 });
+      s.floatingTexts.push({ x: W / 2, y: LAUNCHER_Y + 40, text: ">> DOUBLE PONTE!", life: 1, maxLife: 2, color: "#ffcc44", combo: true, fontSize: 16 });
     } else {
       s.ball = { x: LAUNCHER_X, y: LAUNCHER_Y, vx: Math.cos(angle) * LAUNCH_SPEED, vy: Math.sin(angle) * LAUNCH_SPEED, active: true, trail: [] };
     }
@@ -230,12 +260,17 @@ export function useGameLoop({
       const s = stateRef.current;
       const ironWillUsed = runStateRef.current.ironWillUsed;
 
+      // God mode: refill balls every frame so they never hit 0
+      if (devConfigRef.current?.godMode && s.phase !== "won" && s.phase !== "lost") {
+        if (s.balls < 99) s.balls = 99;
+      }
+
       const { events, syncUI: shouldSync, orangeLeft } = tick(s, ironWillUsed);
 
       for (const ev of events) handleEvent(ev);
       if (shouldSync) syncUI(orangeLeft);
 
-      drawFrame(ctx, stateRef.current, getAngle(), orangeLeft);
+      drawFrame(ctx, stateRef.current, getAngle(), orangeLeft, devConfigRef.current?.showHitboxes ?? false);
       animRef.current = requestAnimationFrame(frame);
     }
 
@@ -244,5 +279,5 @@ export function useGameLoop({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [handleEvent, syncUI]);
 
-  return { stateRef, handleClick, resetGame, nextLevel, activateMultiball };
+  return { stateRef, handleClick, resetGame, nextLevel, activateMultiball, skipLevel };
 }

@@ -136,10 +136,10 @@ export function ClassPicker({ onPick }: ClassPickerProps) {
             }}
           >
             <span style={{ color: PG.cyan }}>Comment jouer :</span>{" "}
-            Visez et tirez la balle avec la souris.
-            Cassez toutes les <span style={{ color: PG.orange }}>cibles oranges</span> avant de manquer de balles.
+            Visez et lancez l'œuf avec la souris.
+            Cassez toutes les <span style={{ color: PG.orange }}>cibles oranges</span> avant de manquer d'œufs.
             Les <span style={{ color: "#44ff88" }}>cibles vertes</span> donnent des pouvoirs bonus.
-            Le panier en bas récupère une balle si vous l&apos;attrapez.
+            Le panier en bas récupère un œuf si vous l&apos;attrapez.
           </div>
 
           {/* Sous-titre clignotant */}
@@ -212,9 +212,9 @@ export function ClassPicker({ onPick }: ClassPickerProps) {
                         {cls.name.toUpperCase()}
                       </div>
                       <div style={{ fontSize: 6, color: PG.textMuted, marginTop: 3, letterSpacing: "0.05em" }}>
-                        {cls.id === "canonnier" ? "12 BALLES · FACILE"
-                          : cls.id === "alchimiste" ? "9 BALLES · CHAOS"
-                          : "10 BALLES · PRÉCISION"}
+                        {cls.id === "canonnier" ? "12 ŒUFS · FACILE"
+                          : cls.id === "alchimiste" ? "9 ŒUFS · CHAOS"
+                          : "10 ŒUFS · PRÉCISION"}
                       </div>
                     </div>
                   </div>

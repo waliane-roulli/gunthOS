@@ -1,4 +1,5 @@
 import type { GameState } from "../engine/types";
+import { PEG_R } from "../engine/constants";
 import { drawBackground } from "./background";
 import { drawWarpCables, drawPegs } from "./pegs";
 import { drawAimLine, drawLauncher, drawBuckets } from "./ui";
@@ -9,6 +10,7 @@ export function drawFrame(
   s: GameState,
   aimAngle: number,
   orangeLeft: number,
+  showHitboxes = false,
 ): void {
   const inFever = orangeLeft <= s.effectiveFeverThreshold && orangeLeft > 0;
   const feverIntensity = inFever ? 1 : 0;
@@ -48,4 +50,28 @@ export function drawFrame(
   drawBezel(ctx);
   drawScreenFlash(ctx, s, inFever);
   drawVignette(ctx, s);
+
+  if (showHitboxes) drawDebugHitboxes(ctx, s);
+}
+
+function drawDebugHitboxes(ctx: CanvasRenderingContext2D, s: GameState): void {
+  ctx.save();
+  ctx.strokeStyle = "rgba(255,255,0,0.5)";
+  ctx.lineWidth = 1;
+  for (const p of s.pegs) {
+    if (p.hit) continue;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, PEG_R, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+  const ballR = s.effectiveBallR;
+  const balls = s.ball ? [s.ball, ...s.extraBalls] : s.extraBalls;
+  ctx.strokeStyle = "rgba(0,255,255,0.7)";
+  for (const b of balls) {
+    if (!b.active) continue;
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, ballR, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+  ctx.restore();
 }

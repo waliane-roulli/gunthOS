@@ -28,7 +28,7 @@ export function RelicBar({ relics, spookyActive, magnetFrames }: RelicBarProps) 
       {/* Active temporary effects */}
       {spookyActive && (
         <div
-          title="Balle Fantôme active — si elle tombe, l'aigle la rattrape dans son bec. Il est pas content."
+          title="Œuf Fantôme actif — si elle tombe, l'aigle le rattrape dans son bec. Il est pas content."
           style={{
             width: 20,
             height: 20,

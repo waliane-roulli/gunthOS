@@ -1,6 +1,6 @@
 // ─── Green peg power-ups ────────────────────────────────────────────────────
 
-export type GreenPowerupId = "multiball" | "spooky" | "extraball" | "pyromaniac" | "magnet";
+export type GreenPowerupId = "multiball" | "spooky" | "extraball" | "magnet";
 
 export interface GreenPowerup {
   id: GreenPowerupId;
@@ -10,17 +10,16 @@ export interface GreenPowerup {
 }
 
 export const GREEN_POWERUPS: Record<GreenPowerupId, GreenPowerup> = {
-  multiball:   { id: "multiball",   name: "Ponte Surprise", desc: "L'aigle pond 2 œufs en plein vol. La physique est brisée. C'est voulu.",            color: "#ffcc44" },
-  spooky:      { id: "spooky",      name: "Balle Fantôme",  desc: "Si la balle tombe, l'aigle la rattrape dans son bec. Dignité zéro, résultat max.", color: "#cc88ff" },
-  extraball:   { id: "extraball",   name: "Œuf Bonus",      desc: "+1 balle. L'aigle refuse d'expliquer d'où elle vient.",                   color: "#00ffcc" },
-  pyromaniac:  { id: "pyromaniac",  name: "Plumes en Feu",  desc: "Les cibles voisines explosent. L'aigle adore ça. Trop.",      color: "#ff6600" },
-  magnet:      { id: "magnet",      name: "Serres Aimantées", desc: "Attire la balle vers les cibles orange (5s). L'aigle a mangé un aimant, ça arrive.",   color: "#4488ff" },
+  multiball:   { id: "multiball",   name: "Ponte Surprise",   desc: "L'aigle pond 2 œufs en plein vol. La physique est brisée. C'est voulu.",              color: "#ffcc44" },
+  spooky:      { id: "spooky",      name: "Œuf Fantôme",      desc: "Si l'œuf tombe, l'aigle le rattrape dans son bec. Dignité zéro, résultat max.",     color: "#cc88ff" },
+  extraball:   { id: "extraball",   name: "Œuf Bonus",        desc: "+1 œuf. L'aigle refuse d'expliquer d'où il vient.",                               color: "#00ffcc" },
+  magnet:      { id: "magnet",      name: "Serres Aimantées", desc: "Attire l'œuf vers les cibles orange (5s). L'aigle a mangé un aimant, ça arrive.",   color: "#4488ff" },
 };
 
 // ─── Upgrades (between levels) ──────────────────────────────────────────────
 
 export type UpgradeId =
-  | "heavy_ball" | "ghost_ball" | "combo_hungry" | "contamination"
+  | "heavy_ball" | "ghost_ball" | "combo_hungry"
   | "extra_ball" | "recovery" | "bigger_ball" | "turbo_bomb"
   | "fever_forever" | "chain_master" | "lucky_spin" | "iron_will";
 
@@ -33,18 +32,17 @@ export interface Upgrade {
 }
 
 export const UPGRADES: Record<UpgradeId, Upgrade> = {
-  heavy_ball:    { id: "heavy_ball",    name: "Œuf de Condor",       desc: "+30% de rebond. La balle pèse maintenant le poids des regrets d'un vautour.",  category: "ball",    rarity: "common" },
-  ghost_ball:    { id: "ghost_ball",    name: "Âme Volatile",        desc: "Traverse la 1ère cible sans rebondir. L'aigle était là, puis il ne l'était plus.",  category: "ball",    rarity: "rare"   },
-  combo_hungry:  { id: "combo_hungry",  name: "Appétit de Buse",     desc: "Cibles orange ×1.5 si 2 orange consécutifs. La buse a faim. Très faim.",   category: "score",   rarity: "common" },
-  contamination: { id: "contamination", name: "Grippe Aviaire",      desc: "Les voisins d'une bombe deviennent aussi des bombes. Épidémie non certifiée MSP.", category: "ball",    rarity: "rare"   },
-  extra_ball:    { id: "extra_ball",    name: "Clutch de Ponte",     desc: "+1 balle par niveau. L'aigle a pondu pendant la nuit, ne lui demandez pas comment.", category: "utility", rarity: "common" },
-  recovery:      { id: "recovery",      name: "Migration Prudente",  desc: "Finir un niveau avec >3 balles : +1 au stock. Les oiseaux économes survivent l'hiver.", category: "utility", rarity: "common" },
-  bigger_ball:   { id: "bigger_ball",   name: "Œuf XXL",             desc: "Rayon +30%. Résultat d'une expérience gouvernementale sur les autruches.",  category: "ball",    rarity: "rare"   },
-  turbo_bomb:    { id: "turbo_bomb",    name: "Plumage Explosif",    desc: "Rayon d'explosion ×1.5. L'aigle a des complexes, alors il compense.",  category: "score",   rarity: "rare"   },
-  fever_forever: { id: "fever_forever", name: "Migration en Feu",    desc: "Mode Fièvre dès 6 cibles restantes. L'aigle n'a jamais entendu parler de retraite.", category: "score",   rarity: "epic"   },
-  chain_master:  { id: "chain_master",  name: "Maître du Nid",       desc: "+50pts par cible détruite en chaîne. L'aigle a passé un master en démolition.", category: "score",   rarity: "rare"   },
-  lucky_spin:    { id: "lucky_spin",    name: "Nid Roulant",         desc: "Le panier se déplace 40% plus vite. Le nid est instable mais vivant.",  category: "utility", rarity: "common" },
-  iron_will:     { id: "iron_will",     name: "Serres d'Acier",      desc: "1× par run : récupère 2 balles au lieu de Game Over. L'aigle refuse la mort.",    category: "utility", rarity: "epic"   },
+  heavy_ball:    { id: "heavy_ball",    name: "Œuf de Condor",    desc: "+30% de rebond. L'œuf pèse maintenant le poids des regrets d'un vautour.",         category: "ball",    rarity: "common" },
+  ghost_ball:    { id: "ghost_ball",    name: "Âme Volatile",     desc: "Traverse la 1ère cible sans la compter ni la rebondir — mais elle explose quand même. L'aigle : présent mais flou.", category: "ball",    rarity: "rare"   },
+  combo_hungry:  { id: "combo_hungry",  name: "Appétit de Buse",  desc: "Orange touchée juste après une autre orange : ×1.5 les points. La buse enchaîne, elle s'énerve, ça paye.", category: "score",   rarity: "common" },
+  extra_ball:    { id: "extra_ball",    name: "Clutch de Ponte",  desc: "+1 œuf au démarrage de chaque niveau. L'aigle a pondu pendant la nuit, ne lui demandez pas comment.", category: "utility", rarity: "common" },
+  recovery:      { id: "recovery",      name: "Migration Prudente", desc: "Finir un niveau avec +3 œufs en stock : +1 œuf bonus. Les oiseaux économes survivent l'hiver.", category: "utility", rarity: "common" },
+  bigger_ball:   { id: "bigger_ball",   name: "Œuf XXL",          desc: "Rayon d'œuf +30%. Résultat d'une expérience gouvernementale sur les autruches.",    category: "ball",    rarity: "rare"   },
+  turbo_bomb:    { id: "turbo_bomb",    name: "Plumage Explosif", desc: "Rayon d'explosion ×1.5. L'aigle a des complexes, alors il compense.",                 category: "score",   rarity: "rare"   },
+  fever_forever: { id: "fever_forever", name: "Migration en Feu", desc: "Mode Fièvre déclenché dès 6 cibles orange restantes. L'aigle n'a jamais entendu parler de retraite.", category: "score",   rarity: "epic"   },
+  chain_master:  { id: "chain_master",  name: "Maître du Nid",    desc: "+200pts par cible détruite en chaîne de bombes. L'aigle a passé un master en démolition industrielle.", category: "score",   rarity: "rare"   },
+  lucky_spin:    { id: "lucky_spin",    name: "Grand Filet",      desc: "Panier +30% plus large. L'aigle a élargi son nid pour récupérer les œufs ratés. C'est du bon sens.", category: "utility", rarity: "common" },
+  iron_will:     { id: "iron_will",     name: "Serres d'Acier",   desc: "1× par run : récupère 2 œufs au lieu de Game Over. L'aigle refuse la mort.",         category: "utility", rarity: "epic"   },
 };
 
 // ─── Relics (passives, accumulate during run) ────────────────────────────────
@@ -59,11 +57,11 @@ export interface Relic {
 }
 
 export const RELICS: Record<RelicId, Relic> = {
-  boomerang:      { id: "boomerang",      name: "Aile Élastique",   desc: "La balle rebondit 40% plus fort sur les murs. L'aigle s'est entraîné au squash.", color: "#ffaa44" },
-  scorpion:       { id: "scorpion",       name: "Serres Venimeuses",desc: "Chaque bombe détruite donne +1 balle. Synergies with les scorpions inexpliquée.", color: "#ff6644" },
+  boomerang:      { id: "boomerang",      name: "Aile Élastique",   desc: "L'œuf rebondit 40% plus fort sur les murs. L'aigle s'est entraîné au squash.", color: "#ffaa44" },
+  scorpion:       { id: "scorpion",       name: "Serres Venimeuses",desc: "Chaque bombe détruite donne +1 œuf. Synergie avec les scorpions inexpliquée.", color: "#ff6644" },
   blessed_cursor: { id: "blessed_cursor", name: "Vision d'Aigle",   desc: "Ligne de visée 60% plus longue. C'est d'où vient l'expression. Maintenant vous savez.", color: "#ffee88" },
-  trophy:         { id: "trophy",         name: "Coupe du Nid",     desc: "Finir un niveau sans perdre de balle : +2 balles. L'aigle collectionne les trophées qu'il n'a pas gagnés.", color: "#ffd700" },
-  phoenix:        { id: "phoenix",        name: "Phénix Syndiqué",  desc: "1× par niveau : la balle renaît. Le phénix a un contrat de travail maintenant.", color: "#ff8800" },
+  trophy:         { id: "trophy",         name: "Coupe du Nid",     desc: "Finir un niveau sans perdre d'œuf : +2 œufs. L'aigle collectionne les trophées qu'il n'a pas gagnés.", color: "#ffd700" },
+  phoenix:        { id: "phoenix",        name: "Phénix Syndiqué",  desc: "1× par niveau : l'œuf renaît. Le phénix a un contrat de travail maintenant.", color: "#ff8800" },
   cursed_luck:    { id: "cursed_luck",    name: "Superstition Aviaire", desc: "Chaque 5e cible touchée : multiplicateur ×3. L'aigle évite les miroirs depuis 2003.", color: "#cc44ff" },
 };
 
@@ -94,7 +92,7 @@ export const CLASSES: Record<ClassId, PlayerClass> = {
   canonnier: {
     id: "canonnier",
     name: "Pélican",
-    desc: "+2 balles par niveau. Pas de bombes — trop dangereux pour le bec.",
+    desc: "+2 œufs par niveau. Pas de bombes — trop dangereux pour le bec.",
     startBalls: 12,
     startRelics: [],
     greenPowerupPool: ["multiball", "spooky", "extraball", "magnet"],
@@ -109,7 +107,7 @@ export const CLASSES: Record<ClassId, PlayerClass> = {
     desc: "2 reliques aléatoires au départ. Les corbeaux volent les trucs brillants.",
     startBalls: 9,
     startRelics: [],
-    greenPowerupPool: ["multiball", "spooky", "extraball", "pyromaniac", "magnet"],
+    greenPowerupPool: ["multiball", "spooky", "extraball", "magnet"],
     noBombs: false,
     ballRadiusMult: 1,
     aimStepsMult: 1,
@@ -118,7 +116,7 @@ export const CLASSES: Record<ClassId, PlayerClass> = {
   sniper: {
     id: "sniper",
     name: "Faucon",
-    desc: "Ligne de visée ×2. Petites balles (−30%). Vision à 4K comme dans les docs.",
+    desc: "Ligne de visée ×2. Petits œufs (−30%). Vision à 4K comme dans les docs.",
     startBalls: 10,
     startRelics: ["blessed_cursor"],
     greenPowerupPool: ["multiball", "extraball", "magnet", "spooky"],

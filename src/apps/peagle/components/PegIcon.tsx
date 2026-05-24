@@ -13,9 +13,9 @@ type PegIconId =
   // Classes
   | "canonnier" | "alchimiste" | "sniper"
   // Green powerups
-  | "multiball" | "spooky" | "extraball" | "pyromaniac" | "magnet"
+  | "multiball" | "spooky" | "extraball" | "magnet"
   // Upgrades
-  | "heavy_ball" | "ghost_ball" | "combo_hungry" | "contamination"
+  | "heavy_ball" | "ghost_ball" | "combo_hungry"
   | "extra_ball" | "recovery" | "bigger_ball" | "turbo_bomb"
   | "fever_forever" | "chain_master" | "lucky_spin" | "iron_will"
   // Relics
@@ -148,17 +148,6 @@ const ICONS: Record<PegIconId, IconDef> = {
     ],
     palette: { a: "#00ffcc", b: "#ffffff" },
   },
-  pyromaniac: {
-    // Flame
-    grid: [
-      "..a..",
-      ".aaa.",
-      "aabaa",
-      "aabaa",
-      ".aaa.",
-    ],
-    palette: { a: "#ff6600", b: "#ffcc00" },
-  },
   magnet: {
     // U-shape magnet
     grid: [
@@ -204,17 +193,6 @@ const ICONS: Record<PegIconId, IconDef> = {
       "a...a",
     ],
     palette: { a: "#ff6600", b: "#ffaa00" },
-  },
-  contamination: {
-    // Radiation-like star
-    grid: [
-      "a.a.a",
-      ".aaa.",
-      "aaaaa",
-      ".aaa.",
-      "a.a.a",
-    ],
-    palette: { a: "#44ff88" },
   },
   extra_ball: {
     // Ball with +

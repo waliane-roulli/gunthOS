@@ -9,7 +9,11 @@ interface GameHudProps {
   ui: UiState;
   bestScore: number;
   displayName: string | null;
+  isAdmin?: boolean;
+  showDevTools?: boolean;
   onActivateMultiball: () => void;
+  onSkipLevel?: () => void;
+  onOpenDevPanel?: () => void;
   onMenu: () => void;
 }
 
@@ -101,7 +105,7 @@ function HudStat({
   );
 }
 
-export function GameHud({ ui, bestScore, displayName, onActivateMultiball, onMenu }: GameHudProps) {
+export function GameHud({ ui, bestScore, displayName, isAdmin, showDevTools, onActivateMultiball, onSkipLevel, onOpenDevPanel, onMenu }: GameHudProps) {
   const showMultiball = !ui.multiballUsed || ui.multiballPending || ui.multiballReady;
   const mbClickable = ui.multiballReady && !ui.multiballPending && ui.phase === "aim";
   const inFever = ui.orangeLeft > 0 && ui.orangeLeft <= 3;
@@ -221,6 +225,62 @@ export function GameHud({ ui, bestScore, displayName, onActivateMultiball, onMen
           >
             {ui.multiballPending ? ">> PONTE !" : ">>×3 🥚"}
           </button>
+        )}
+
+        {isAdmin && (
+          <>
+            <Sep />
+            {showDevTools && (
+              <button
+                onClick={onSkipLevel}
+                title="[DEV] Skip au niveau suivant"
+                style={{
+                  height: 24,
+                  padding: "0 8px",
+                  fontSize: 7,
+                  fontFamily: "var(--pg-font)",
+                  cursor: "pointer",
+                  background: `linear-gradient(to bottom, #550099, #330066)`,
+                  color: "#cc88ff",
+                  borderWidth: 2,
+                  borderStyle: "solid",
+                  borderTopColor: "#aa44ff",
+                  borderLeftColor: "#aa44ff",
+                  borderBottomColor: "#220033",
+                  borderRightColor: "#220033",
+                  whiteSpace: "nowrap",
+                  lineHeight: 1,
+                  letterSpacing: "0.04em",
+                }}
+              >
+                ⏭ SKIP
+              </button>
+            )}
+            <button
+              onClick={onOpenDevPanel}
+              title="[DEV] Ouvrir les dev tools"
+              style={{
+                height: 24,
+                padding: "0 8px",
+                fontSize: 7,
+                fontFamily: "var(--pg-font)",
+                cursor: "pointer",
+                background: `linear-gradient(to bottom, #330055, #1a0033)`,
+                color: "#aa44ff",
+                borderWidth: 2,
+                borderStyle: "solid",
+                borderTopColor: "#884dcc",
+                borderLeftColor: "#884dcc",
+                borderBottomColor: "#110022",
+                borderRightColor: "#110022",
+                whiteSpace: "nowrap",
+                lineHeight: 1,
+                letterSpacing: "0.04em",
+              }}
+            >
+              ⚙
+            </button>
+          </>
         )}
 
         {displayName && (

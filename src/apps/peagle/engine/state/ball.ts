@@ -66,11 +66,18 @@ export function processBallPhysics(
       const result = circleCollide(b.x, b.y, b.vx, b.vy, s.effectiveBallR, p.x, p.y, PEG_R, s.effectivePegBounce);
       if (!result) continue;
 
-      // Ghost ball: pass through first peg this shot
+      // Ghost ball: pass through first peg this shot — ball doesn't bounce but peg still pops
       if (s.ghostBallActive && b === s.ball) {
         s.ghostBallActive = false;
-        p.hitCooldown = BALANCE.peg.ghostCooldown;
-        s.floatingTexts.push({ x: p.x, y: p.y - 12, text: ">> FANTÔME", life: 1, maxLife: 1.2, color: "#cc88ff", combo: false, fontSize: 11 });
+        p.hit = true; p.popping = true; p.popAlpha = BALANCE.peg.popStartAlpha; p.scale = BALANCE.peg.popStartScale;
+        s.combo += 1;
+        s.cursedLuckHits += 1;
+        const basePoints = p.orange ? BALANCE.score.orangeBase : p.green ? BALANCE.score.greenBase : BALANCE.score.normalBase;
+        s.score += Math.round(basePoints * s.scoreMultiplier);
+        if (p.bomb) triggerBomb(s, p, events);
+        spawnParticles(s, p.x, p.y, p.orange, p.orange ? 20 : 8);
+        s.floatingTexts.push({ x: p.x, y: p.y - 12, text: ">> PASSAGE FANTÔME!", life: 1, maxLife: 1.2, color: "#cc88ff", combo: false, fontSize: 11 });
+        events.push({ kind: "sound", id: p.orange ? "pop" : "bip" });
         continue;
       }
 
@@ -140,7 +147,7 @@ export function processBallPhysics(
         s.trauma = Math.min(1, s.trauma + BALANCE.trauma.bossPeg);
         s.flashWhite = BALANCE.flash.bossPeg;
         s.floatingTexts.push({ x: p.x, y: p.y - 30, text: `!! BOSS VAINCU! +${BALANCE.score.bossKill}`, life: 1, maxLife: 3, color: "#ffd700", combo: true, fontSize: 15 });
-        s.floatingTexts.push({ x: p.x, y: p.y - 48, text: `+${BALANCE.score.bossBallBonus} BALLES`, life: 1, maxLife: 2.5, color: "#00ffcc", combo: true, fontSize: 13 });
+        s.floatingTexts.push({ x: p.x, y: p.y - 48, text: `+${BALANCE.score.bossBallBonus} ŒUFS`, life: 1, maxLife: 2.5, color: "#00ffcc", combo: true, fontSize: 13 });
         spawnParticles(s, p.x, p.y, true, 60, true);
         events.push({ kind: "sound", id: "victory" });
       }
@@ -155,33 +162,21 @@ export function processBallPhysics(
             const spread = BALANCE.multiball.spreadAngle;
             s.extraBalls.push({ x: b.x, y: b.y, vx: Math.cos(baseA - spread) * spd, vy: Math.sin(baseA - spread) * spd, active: true, trail: [], tint: "#ffdd88" });
             s.extraBalls.push({ x: b.x, y: b.y, vx: Math.cos(baseA + spread) * spd, vy: Math.sin(baseA + spread) * spd, active: true, trail: [], tint: "#88ffcc" });
-            s.floatingTexts.push({ x: p.x, y: p.y - 22, text: ">> MULTIBALL!", life: 1, maxLife: 2, color: "#ffcc44", combo: true, fontSize: 15 });
+            s.floatingTexts.push({ x: p.x, y: p.y - 22, text: ">> DOUBLE PONTE!", life: 1, maxLife: 2, color: "#ffcc44", combo: true, fontSize: 15 });
             break;
           }
           case "spooky":
             s.spookyActive = true;
-            s.floatingTexts.push({ x: p.x, y: p.y - 22, text: ">> SPOOKY BALL!", life: 1, maxLife: 2, color: "#cc88ff", combo: true, fontSize: 15 });
+            s.floatingTexts.push({ x: p.x, y: p.y - 22, text: ">> ŒUF FANTÔME!", life: 1, maxLife: 2, color: "#cc88ff", combo: true, fontSize: 15 });
             break;
           case "extraball":
             s.balls += 1;
-            s.floatingTexts.push({ x: p.x, y: p.y - 22, text: "+1 BALLE!", life: 1, maxLife: 2, color: "#00ffcc", combo: true, fontSize: 15 });
+            s.floatingTexts.push({ x: p.x, y: p.y - 22, text: "+1 ŒUF!", life: 1, maxLife: 2, color: "#00ffcc", combo: true, fontSize: 15 });
             break;
           case "magnet":
             s.magnetFrames = BALANCE.magnet.duration;
             s.floatingTexts.push({ x: p.x, y: p.y - 22, text: ">> AIMANT!", life: 1, maxLife: 2, color: "#4488ff", combo: true, fontSize: 15 });
             break;
-          case "pyromaniac": {
-            for (const np of s.pegs) {
-              if (!np.hit && !np.orange && !np.bomb && !np.boss && np !== p) {
-                const d = Math.hypot(np.x - p.x, np.y - p.y);
-                if (d < s.effectiveBombR * 1.3) np.bomb = true;
-              }
-            }
-            p.bomb = true;
-            triggerBomb(s, p, events);
-            s.floatingTexts.push({ x: p.x, y: p.y - 22, text: "!! PYROMANE!", life: 1, maxLife: 2, color: "#ff6600", combo: true, fontSize: 15 });
-            break;
-          }
           default:
             s.scoreMultiplier = 2;
             s.floatingTexts.push({ x: p.x, y: p.y - 14, text: "×2 BONUS!", life: 1, maxLife: 1.6, color: "#44ff88", combo: true, fontSize: 14 });
@@ -269,7 +264,7 @@ export function processBallPhysics(
           s.score += bonus;
           s.floatingTexts.push({ x: bx + BUCKET_W / 2, y: bucketTop - 14, text: `×${mult} BONUS +${bonus.toLocaleString()}`, life: 1, maxLife: 2.2, color: mult === 5 ? "#ffcc00" : "#cc44ff", combo: true, fontSize: 15 });
         } else {
-          s.floatingTexts.push({ x: bx + BUCKET_W / 2, y: bucketTop - 14, text: mult > 1 ? `×${mult} FREE BALL!` : "FREE BALL!", life: 1, maxLife: 1.8, color: mult === 5 ? "#ffcc00" : mult === 3 ? "#cc44ff" : "#00ffcc", combo: mult > 1, fontSize: 14 });
+          s.floatingTexts.push({ x: bx + BUCKET_W / 2, y: bucketTop - 14, text: mult > 1 ? `×${mult} ŒUF RÉCUPÉRÉ!` : "ŒUF RÉCUPÉRÉ!", life: 1, maxLife: 1.8, color: mult === 5 ? "#ffcc00" : mult === 3 ? "#cc44ff" : "#00ffcc", combo: mult > 1, fontSize: 14 });
         }
         events.push({ kind: "sound", id: "victory" });
         b.active = false;
@@ -281,7 +276,7 @@ export function processBallPhysics(
       s.balls += 1;
       s.bucketFlash = 1;
       s.trauma = Math.min(1, s.trauma + BALANCE.trauma.bucketCatch);
-      s.floatingTexts.push({ x: s.bucket + BUCKET_W / 2, y: bucketTop - 14, text: "FREE BALL!", life: 1, maxLife: 1.8, color: "#00ffcc", combo: true, fontSize: 14 });
+      s.floatingTexts.push({ x: s.bucket + BUCKET_W / 2, y: bucketTop - 14, text: "ŒUF RÉCUPÉRÉ!", life: 1, maxLife: 1.8, color: "#00ffcc", combo: true, fontSize: 14 });
       events.push({ kind: "sound", id: "victory" });
       b.active = false;
     }
@@ -297,7 +292,7 @@ export function processBallPhysics(
       b.vy = -LAUNCH_SPEED * BALANCE.spooky.reboundSpeed;
       b.vx *= BALANCE.spooky.vxDamp;
       s.flashWhite = Math.max(s.flashWhite, BALANCE.flash.spookySave);
-      s.floatingTexts.push({ x: b.x, y: 78, text: ">> SPOOKY SAVE!", life: 1, maxLife: 2, color: "#cc88ff", combo: true, fontSize: 14 });
+      s.floatingTexts.push({ x: b.x, y: 78, text: ">> L'AIGLE A RATTRAPÉ L'ŒUF!", life: 1, maxLife: 2, color: "#cc88ff", combo: true, fontSize: 14 });
     } else if (isMain && s.phoenixAvailable) {
       s.phoenixAvailable = false;
       b.x = Math.max(s.effectiveBallR, Math.min(W - s.effectiveBallR, b.x));

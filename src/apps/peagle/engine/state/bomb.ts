@@ -1,4 +1,4 @@
-import { W, H, PEG_R, SLOW_MO_DURATION } from "../constants";
+import { W, H, SLOW_MO_DURATION } from "../constants";
 import type { GameState, Peg } from "../types";
 import type { GameEvent } from "../events";
 import { spawnParticles } from "./effects";
@@ -20,20 +20,12 @@ export function triggerBomb(s: GameState, bombPeg: Peg, events: GameEvent[]): vo
       if (d <= s.effectiveBombR) {
         p.hit = true; p.popping = true; p.popAlpha = 0.25; p.scale = 1.9;
         spawnParticles(s, p.x, p.y, p.orange, p.orange ? 18 : 10, true);
-        const chainBonus = s.runUpgrades.includes("chain_master") ? 50 : 0;
+        const chainBonus = s.runUpgrades.includes("chain_master") ? 200 : 0;
         const pts = (p.orange ? 150 : p.green ? 75 : 15) + chainBonus;
         s.score += pts * s.scoreMultiplier;
         chainCount++;
         if (p.bomb) { bombsInChain++; queue.push(p); }
 
-        if (s.runUpgrades.includes("contamination")) {
-          for (const neighbor of s.pegs) {
-            if (!neighbor.hit && !processed.has(neighbor) && !neighbor.bomb && !neighbor.orange && !neighbor.boss) {
-              const nd = Math.hypot(neighbor.x - p.x, neighbor.y - p.y);
-              if (nd < PEG_R * 6) { neighbor.bomb = true; queue.push(neighbor); }
-            }
-          }
-        }
       }
     }
   }
@@ -47,7 +39,7 @@ export function triggerBomb(s: GameState, bombPeg: Peg, events: GameEvent[]): vo
 
   if (s.runRelics.includes("scorpion") && bombsInChain > 0) {
     s.balls += bombsInChain;
-    s.floatingTexts.push({ x: bombPeg.x, y: bombPeg.y - 36, text: `+${bombsInChain} BILLES`, life: 1, maxLife: 1.8, color: "#ff6644", combo: true, fontSize: 13 });
+    s.floatingTexts.push({ x: bombPeg.x, y: bombPeg.y - 36, text: `+${bombsInChain} ŒUFS`, life: 1, maxLife: 1.8, color: "#ff6644", combo: true, fontSize: 13 });
   }
 
   const orangeRemaining = s.pegs.filter(pg => pg.orange && !pg.hit).length;

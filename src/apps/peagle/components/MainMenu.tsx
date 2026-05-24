@@ -1,19 +1,20 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import "../peagle.css";
 import { captionBtn, PG } from "../styles";
 import { PegIcon } from "./PegIcon";
 import { PeagleLogo } from "./PeagleLogo";
+import { DevPanel, type DevConfig } from "./DevPanel";
 
 const TIPS = [
   "ASTUCE : Les cibles orange sont les vraies cibles. Les bleues ? Décoration. Comme les plumes inutiles de l'autruche.",
-  "ASTUCE : Tirez dans la balle avec la souris. Oui, c'est tout. Non il n'y a pas d'autre mécanisme. Si.",
-  "ASTUCE : Le panier en bas rapporte des balles. L'aigle y a mis ses économies. Respectez le panier.",
+  "ASTUCE : Lancez l'œuf avec la souris. Oui, c'est tout. Non il n'y a pas d'autre mécanisme. Si.",
+  "ASTUCE : Le panier en bas rapporte des œufs. L'aigle y a mis ses économies. Respectez le panier.",
   "ASTUCE : Les cibles vertes donnent des pouvoirs. L'aigle les a mangées par erreur. Ça a quand même marché.",
   "ASTUCE : Si vous perdez, c'est la physique. Jamais vous. La physique est injuste et l'aigle le sait.",
   "ASTUCE : Le mode Fièvre s'active quand il reste peu de cibles oranges. L'aigle devient incontrôlable. Comme d'habitude.",
-  "ASTUCE : Vous lisez un jeu de billes déguisé en jeu d'aigles. Félicitations pour votre clairvoyance.",
+  "ASTUCE : Vous lancez des œufs d'aigle sur des cibles. C'est exactement aussi stupide que ça en a l'air.",
   "ASTUCE : Les bombes explosent et détruisent les voisins. Exactement comme dans la vraie vie, mais en moins lourd.",
   "ASTUCE : Le score monte quand vous touchez des trucs. C'est à peu près toute la philosophie du jeu.",
   "ASTUCE : Ce jeu a été inspecté par des ornithologues. Aucun n'a survécu pour confirmer.",
@@ -24,12 +25,15 @@ const TIPS = [
 interface MainMenuProps {
   bestScore: number;
   displayName: string | null;
+  isAdmin: boolean;
   onPlay: () => void;
   onLeaderboard: () => void;
+  onDevLaunch: (cfg: DevConfig) => void;
 }
 
-export function MainMenu({ bestScore, displayName, onPlay, onLeaderboard }: MainMenuProps) {
+export function MainMenu({ bestScore, displayName, isAdmin, onPlay, onLeaderboard, onDevLaunch }: MainMenuProps) {
   const tip = useMemo(() => TIPS[Math.floor(Math.random() * TIPS.length)]!, []);
+  const [showDev, setShowDev] = useState(false);
   return (
     <div
       className="peagle-root"
@@ -57,6 +61,14 @@ export function MainMenu({ bestScore, displayName, onPlay, onLeaderboard }: Main
           zIndex: 1,
         }}
       />
+
+      {/* DevPanel overlay */}
+      {showDev && (
+        <DevPanel
+          onClose={() => setShowDev(false)}
+          onLaunch={(cfg) => { setShowDev(false); onDevLaunch(cfg); }}
+        />
+      )}
 
       {/* Dialog centré */}
       <div className="pg-dialog" style={{ width: 320, flexShrink: 0, zIndex: 2 }}>
@@ -138,6 +150,25 @@ export function MainMenu({ bestScore, displayName, onPlay, onLeaderboard }: Main
             >
               ★  CLASSEMENT
             </button>
+
+            {isAdmin && (
+              <button
+                onClick={() => setShowDev(true)}
+                className="pg-btn"
+                style={{
+                  width: "100%",
+                  padding: "7px 0",
+                  fontSize: 7,
+                  textAlign: "center",
+                  letterSpacing: "0.04em",
+                  borderTopColor: "#cc44ff",
+                  borderLeftColor: "#cc44ff",
+                  color: "#cc44ff",
+                }}
+              >
+                ⚙  DEV TOOLS
+              </button>
+            )}
           </div>
 
           {/* Separator */}

@@ -56,7 +56,6 @@ function greenPowerupSymbol(p?: GreenPowerupId): string {
     case "multiball":  return "×3";
     case "spooky":     return "SP";
     case "extraball":  return "+1";
-    case "pyromaniac": return "FY";
     case "magnet":     return "MG";
     default:           return "✓";
   }
