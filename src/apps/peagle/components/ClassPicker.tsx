@@ -24,19 +24,19 @@ const CLASS_GLOW: Record<ClassId, string> = {
 
 const CLASS_STATS: Record<ClassId, { label: string; value: number; max: number }[]> = {
   canonnier:  [
-    { label: "BALLES",   value: 12, max: 12 },
-    { label: "VISÉE",    value: 5,  max: 10 },
-    { label: "BOMBE",    value: 0,  max: 10 },
+    { label: "ŒUFS",      value: 12, max: 12 },
+    { label: "PRÉCISION", value: 5,  max: 10 },
+    { label: "BOMBES",    value: 0,  max: 10 },
   ],
   alchimiste: [
-    { label: "BALLES",   value: 9,  max: 12 },
-    { label: "VISÉE",    value: 5,  max: 10 },
-    { label: "RELIQUES", value: 10, max: 10 },
+    { label: "ŒUFS",      value: 9,  max: 12 },
+    { label: "PRÉCISION", value: 5,  max: 10 },
+    { label: "MAGIE",     value: 10, max: 10 },
   ],
   sniper:     [
-    { label: "BALLES",   value: 10, max: 12 },
-    { label: "VISÉE",    value: 10, max: 10 },
-    { label: "TAILLE",   value: 3,  max: 10 },
+    { label: "ŒUFS",      value: 10, max: 12 },
+    { label: "PRÉCISION", value: 10, max: 10 },
+    { label: "TAILLE",    value: 3,  max: 10 },
   ],
 };
 
@@ -108,7 +108,7 @@ export function ClassPicker({ onPick }: ClassPickerProps) {
         {/* Titlebar */}
         <div className="pg-titlebar">
           <span style={{ fontSize: 8, color: "#aaaaee", flex: 1, fontFamily: "var(--pg-font)", letterSpacing: "0.05em", display: "flex", alignItems: "center", gap: 5 }}>
-            <PegIcon id="gamepad" size={10} /> PEAGLE 98 — CHOISISSEZ VOTRE CLASSE
+            <PegIcon id="gamepad" size={10} /> PEAGLE 98 — CHOISISSEZ VOTRE OISEAU
           </span>
           {(["─", "□", "×"] as const).map((ch) => (
             <div key={ch} style={captionBtn}>{ch}</div>
@@ -116,19 +116,45 @@ export function ClassPicker({ onPick }: ClassPickerProps) {
         </div>
 
         <div style={{ padding: "20px 18px 16px" }}>
+          {/* Rappel des règles */}
+          <div
+            style={{
+              fontSize: 7,
+              color: PG.textMuted,
+              textAlign: "center",
+              marginBottom: 10,
+              lineHeight: 1.6,
+              fontFamily: "var(--pg-font)",
+              padding: "6px 10px",
+              borderWidth: 1,
+              borderStyle: "solid",
+              borderTopColor: PG.sh,
+              borderLeftColor: PG.sh,
+              borderBottomColor: PG.hi,
+              borderRightColor: PG.hi,
+              background: "rgba(0,0,0,0.25)",
+            }}
+          >
+            <span style={{ color: PG.cyan }}>Comment jouer :</span>{" "}
+            Visez et tirez la balle avec la souris.
+            Cassez toutes les <span style={{ color: PG.orange }}>cibles oranges</span> avant de manquer de balles.
+            Les <span style={{ color: "#44ff88" }}>cibles vertes</span> donnent des pouvoirs bonus.
+            Le panier en bas récupère une balle si vous l&apos;attrapez.
+          </div>
+
           {/* Sous-titre clignotant */}
           <div
             style={{
               fontSize: 7,
               color: PG.cyan,
               textAlign: "center",
-              marginBottom: 18,
+              marginBottom: 14,
               letterSpacing: "0.15em",
               fontFamily: "var(--pg-font)",
               animation: "pg-blink 2.5s step-end infinite",
             }}
           >
-            ▼ SÉLECTIONNEZ VOTRE STYLE DE JEU ▼
+            ▼ CHOISISSEZ VOTRE OISEAU ▼
           </div>
 
           {/* Cards */}
@@ -186,9 +212,9 @@ export function ClassPicker({ onPick }: ClassPickerProps) {
                         {cls.name.toUpperCase()}
                       </div>
                       <div style={{ fontSize: 6, color: PG.textMuted, marginTop: 3, letterSpacing: "0.05em" }}>
-                        {cls.id === "canonnier" ? "12 BALLES DE DÉPART"
-                          : cls.id === "alchimiste" ? "9 BALLES DE DÉPART"
-                          : "10 BALLES DE DÉPART"}
+                        {cls.id === "canonnier" ? "12 BALLES · FACILE"
+                          : cls.id === "alchimiste" ? "9 BALLES · CHAOS"
+                          : "10 BALLES · PRÉCISION"}
                       </div>
                     </div>
                   </div>
@@ -286,7 +312,7 @@ export function ClassPicker({ onPick }: ClassPickerProps) {
           <div className="pg-sep" style={{ marginBottom: 12 }} />
 
           <div style={{ fontSize: 7, color: PG.textMuted, textAlign: "center", fontFamily: "var(--pg-font)" }}>
-            CLIQUEZ SUR UNE CLASSE POUR DÉMARRER LE RUN
+            CLIQUEZ SUR UN OISEAU POUR DÉMARRER · L&apos;AIGLE NE JUGERA PAS VOTRE CHOIX (mensonge)
           </div>
         </div>
       </div>

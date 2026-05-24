@@ -61,7 +61,7 @@ export function UpgradePicker({
         {/* Titlebar */}
         <div className="pg-titlebar">
           <span style={{ fontSize: 8, color: "#aaaaee", flex: 1, fontFamily: "var(--pg-font)", letterSpacing: "0.05em", display: "flex", alignItems: "center", gap: 5 }}>
-            <PegIcon id="victory" size={10} /> NIVEAU {level} TERMINÉ — CHOISISSEZ UNE AMÉLIORATION
+            <PegIcon id="victory" size={10} /> NID {level} PILLÉ — L&apos;AIGLE OFFRE UN BONUS
           </span>
           {(["─", "□", "×"] as const).map((ch) => (
             <div key={ch} style={captionBtn}>{ch}</div>
@@ -104,7 +104,7 @@ export function UpgradePicker({
                   gap: 6,
                 }}
               >
-                <PegIcon id="boss" size={10} /> BOSS VAINCU
+                <PegIcon id="boss" size={10} /> BOSS VAINCU · L&apos;AIGLE EST FIER (exceptionnellement)
               </div>
             )}
           </div>
@@ -211,7 +211,7 @@ export function UpgradePicker({
                     }}
                   >
                     <PegIcon id={u.category === "ball" ? "ball_cat" : u.category === "score" ? "score_cat" : "utility_cat"} size={8} />
-                    {u.category === "ball" ? "BALLE" : u.category === "score" ? "SCORE" : "UTILITAIRE"}
+                    {u.category === "ball" ? "PLUMAGE" : u.category === "score" ? "CHASSE" : "NIDIFICATION"}
                   </div>
                 </button>
               );
@@ -230,7 +230,7 @@ export function UpgradePicker({
                   fontFamily: "var(--pg-font)",
                 }}
               >
-                RELIQUES ACTIVES
+                TRÉSORS DU NIDIFUGE
               </div>
               <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
                 {relics.map(rid => {
@@ -268,10 +268,11 @@ export function UpgradePicker({
 
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div style={{ fontSize: 7, color: PG.textMuted, fontFamily: "var(--pg-font)" }}>
-              CLIQUEZ SUR UNE CARTE POUR L&apos;ACTIVER
+              CHOISISSEZ UNE AMÉLIORATION · L&apos;AIGLE A VOTÉ MAIS SON VOTE NE COMPTE PAS
             </div>
             <button
               onClick={onSkip}
+              title="L'aigle désapprouve. Mais il respecte votre droit à vous sabrer."
               style={{
                 padding: "5px 12px",
                 fontFamily: "var(--pg-font)",
@@ -291,7 +292,7 @@ export function UpgradePicker({
               onMouseEnter={e => e.currentTarget.style.color = PG.orange}
               onMouseLeave={e => e.currentTarget.style.color = PG.textMuted}
             >
-              PASSER →
+              PASSER (mauvaise idée) →
             </button>
           </div>
         </div>

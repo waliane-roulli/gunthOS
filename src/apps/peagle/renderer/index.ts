@@ -11,7 +11,7 @@ export function drawFrame(
   orangeLeft: number,
 ): void {
   const inFever = orangeLeft <= s.effectiveFeverThreshold && orangeLeft > 0;
-  const feverIntensity = inFever ? (Math.sin(s.feverPulse) * 0.5 + 0.5) : 0;
+  const feverIntensity = inFever ? 1 : 0;
   const inSlowMo = s.slowMoFrames > 0;
   const hasZoom = s.zoomLevel > 1.01 && s.ball?.active;
 
@@ -28,7 +28,7 @@ export function drawFrame(
     ctx.translate(s.shakeX, s.shakeY);
   }
 
-  drawBackground(ctx, s, feverIntensity, inSlowMo);
+  drawBackground(ctx, s, feverIntensity);
   drawAimLine(ctx, s, aimAngle);
   drawWarpCables(ctx, s);
   drawPegs(ctx, s, inFever, feverIntensity);

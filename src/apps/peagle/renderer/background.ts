@@ -1,4 +1,4 @@
-import { W, H, SLOW_MO_DURATION } from "../engine/constants";
+import { W, H } from "../engine/constants";
 import type { GameState } from "../engine/types";
 
 // ─── Forêt pixel art ──────────────────────────────────────────────────────────
@@ -117,7 +117,7 @@ const FEVER_STARS = [
   { x: 110, y: 120, s: 1 }, { x: 270, y: 110, s: 2 }, { x: 360, y: 130, s: 1 },
 ] as const;
 
-export function drawBackground(ctx: CanvasRenderingContext2D, s: GameState, feverIntensity: number, inSlowMo: boolean): void {
+export function drawBackground(ctx: CanvasRenderingContext2D, s: GameState, feverIntensity: number): void {
   const feverMode = feverIntensity > 0.3;
   const groundY = H - 80;
   const skyRows = 12;
@@ -133,13 +133,6 @@ export function drawBackground(ctx: CanvasRenderingContext2D, s: GameState, feve
       r = Math.round(topC[0]! + (botC[0]! - topC[0]!) * t);
       g = Math.round(topC[1]! + (botC[1]! - topC[1]!) * t);
       b = Math.round(topC[2]! + (botC[2]! - topC[2]!) * t);
-    } else if (inSlowMo) {
-      const pct = s.slowMoFrames / SLOW_MO_DURATION;
-      const topC = [26, 58, 110];
-      const botC = [42, 90, 58];
-      r = Math.round(topC[0]! + (botC[0]! - topC[0]!) * t - pct * 10);
-      g = Math.round(topC[1]! + (botC[1]! - topC[1]!) * t);
-      b = Math.round(topC[2]! + (botC[2]! - topC[2]!) * t - pct * 20);
     } else {
       const topC = [58, 110, 140];
       const botC = [106, 170, 68];

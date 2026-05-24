@@ -1,12 +1,30 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useMemo } from "react";
 import type { RefObject, MouseEvent } from "react";
 import type { UiState } from "../engine/types";
 import { W, H } from "../engine/constants";
 import { captionBtn, btnRaised, PG } from "../styles";
 import "../peagle.css";
 import { PegIcon } from "./PegIcon";
+
+const WIN_QUIPS = [
+  "L'aigle est satisfait. C'est rare. Profitez-en.",
+  "Toutes les cibles détruites ! L'aigle vous invite à son nid. Refusez.",
+  "Victoire ! Le phénix a pleuré. Personne ne s'en souvient mais c'est noté.",
+  "Parfait. L'aigle mentionne votre score à ses amis ornithologues.",
+  "Niveau bouclé. L'aigle vous remet une plume d'honneur fictive.",
+  "GG. L'aigle a filmé ça sur son iPhone. Il n'a pas d'iPhone.",
+];
+
+const LOSE_QUIPS = [
+  "Plus de balles. L'aigle hausse les épaules. Il n'a pas d'épaules.",
+  "Game Over. Les cibles orange survivent. Elles vont fêter ça.",
+  "L'aigle demande si vous avez lu les astuces du menu. Vous n'avez pas lu les astuces.",
+  "Défaite. Le Pélican est déçu. Le Faucon dit qu'il l'avait prévu.",
+  "Raté. La physique est responsable. Comme toujours. La physique ne s'excuse pas.",
+  "Pas de chance. Ou de talent. L'aigle ne tranche pas.",
+];
 
 interface GameCanvasProps {
   canvasRef: RefObject<HTMLCanvasElement | null>;
@@ -53,6 +71,13 @@ export function GameCanvas({
   const isGameOver = isLost || isWon;
   const isRecord = ui.score > 0 && ui.score >= bestScore;
   const displayUser = user?.name ?? user?.email ?? null;
+  const quip = useMemo(
+    () => isWon
+      ? WIN_QUIPS[Math.floor(Math.random() * WIN_QUIPS.length)]!
+      : LOSE_QUIPS[Math.floor(Math.random() * LOSE_QUIPS.length)]!,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [isGameOver],
+  );
 
   return (
     <div
@@ -180,6 +205,21 @@ export function GameCanvas({
                     ⭐ NOUVEAU RECORD !
                   </div>
                 )}
+              </div>
+
+              {/* Quip aigle */}
+              <div
+                style={{
+                  fontSize: 7,
+                  color: isWon ? PG.gold : PG.textMuted,
+                  textAlign: "center",
+                  marginBottom: 10,
+                  fontStyle: "italic",
+                  fontFamily: "var(--font-vt323), monospace",
+                  lineHeight: 1.4,
+                }}
+              >
+                &ldquo;{quip}&rdquo;
               </div>
 
               {/* User info */}

@@ -63,7 +63,7 @@ export function Leaderboard({ entries, loading, currentUserId, onRefresh, showLo
             flex: 1,
           }}
         >
-          ★ Classement — Top 10
+          🦅 Tableau des Grands Chasseurs — Top 10
         </span>
 
         <button
@@ -117,7 +117,7 @@ export function Leaderboard({ entries, loading, currentUserId, onRefresh, showLo
             top: 0,
           }}
         >
-          {["#", "JOUEUR", "FIN", "SCORE"].map((h, i) => (
+          {["#", "CHASSEUR", "VOL", "SCORE"].map((h, i) => (
             <span
               key={h}
               style={{
@@ -153,7 +153,7 @@ export function Leaderboard({ entries, loading, currentUserId, onRefresh, showLo
               fontSize: "var(--t-text-sm)",
             }}
           >
-            Aucun score enregistré. Soyez le premier !
+            Aucun aigle inscrit. Le ciel est vide. Soyez le premier prédateur.
           </div>
         )}
 
@@ -191,10 +191,10 @@ export function Leaderboard({ entries, loading, currentUserId, onRefresh, showLo
                     whiteSpace: "nowrap",
                   }}
                 >
-                  {name}{isMe ? " (vous)" : ""}
+                  {name}{isMe ? " (votre nid)" : ""}
                 </span>
                 <span style={{ fontSize: "var(--t-text-sm)", textAlign: "center" }}>
-                  {entry.won ? "WIN" : "RIP"}
+                  {entry.won ? "🦅" : "🪦"}
                 </span>
                 <span
                   style={{
@@ -228,7 +228,7 @@ export function Leaderboard({ entries, loading, currentUserId, onRefresh, showLo
             background: "var(--t-app-bg)",
           }}
         >
-          Connectez-vous pour apparaître dans le classement
+          Connectez-vous pour marquer votre territoire dans le classement des nids
         </div>
       )}
     </div>

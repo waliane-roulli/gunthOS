@@ -124,7 +124,7 @@ export function GameHud({ ui, bestScore, displayName, onActivateMultiball, onMen
       {/* Menu button */}
       <button
         onClick={onMenu}
-        title="Retour au menu principal"
+        title="Retour au nid principal. L'aigle ne vous retiendra pas."
         style={{
           height: "100%",
           padding: "0 12px",
@@ -145,37 +145,37 @@ export function GameHud({ ui, bestScore, displayName, onActivateMultiball, onMen
         ≡
       </button>
 
-      <HudStat label="NVX" value={ui.level} minW={36} />
+      <HudStat label="NID" value={ui.level} minW={36} />
       {ui.bossLevel && (
         <>
           <Sep />
-          <HudStat label="BOSS" value="[!]" accent minW={36} />
+          <HudStat label="AIGLE BOSS" value="[!]" accent minW={52} />
         </>
       )}
       <Sep />
       <HudStat label="SCORE" value={ui.score.toLocaleString()} minW={80} />
       <Sep />
       <HudStat
-        label="CIBLES"
+        label="PROIES"
         value={`${ui.orangeLeft}/${ui.orangeTotal}`}
         accent={!inFever}
         urgent={inFever}
         minW={76}
       />
       <Sep />
-      <HudStat label="BILLES" value={ui.balls} warn={lowBalls} minW={48} />
+      <HudStat label="ŒUFS" value={ui.balls} warn={lowBalls} minW={48} />
 
       {ui.combo >= 3 && (
         <>
           <Sep />
-          <HudStat label="COMBO" value={`×${Math.max(1, Math.floor(ui.combo / 3))}`} accent minW={48} />
+          <HudStat label="ENVOL" value={`×${Math.max(1, Math.floor(ui.combo / 3))}`} accent minW={48} />
         </>
       )}
 
       {bestScore > 0 && (
         <>
           <Sep />
-          <HudStat label="MEILLEUR" value={bestScore.toLocaleString()} muted minW={72} />
+          <HudStat label="RECORD NIDAL" value={bestScore.toLocaleString()} muted minW={90} />
         </>
       )}
 
@@ -192,7 +192,7 @@ export function GameHud({ ui, bestScore, displayName, onActivateMultiball, onMen
           <button
             onClick={onActivateMultiball}
             disabled={!mbClickable}
-            title="Tirer 3 balles simultanément — 1 fois par niveau"
+            title="Ponte triple — l'aigle pond 3 œufs d'un coup. Science inexpliquée."
             style={{
               height: 24,
               padding: "0 10px",
@@ -219,7 +219,7 @@ export function GameHud({ ui, bestScore, displayName, onActivateMultiball, onMen
               letterSpacing: "0.04em",
             }}
           >
-            {ui.multiballPending ? ">> PRÊT !" : ">>×3"}
+            {ui.multiballPending ? ">> PONTE !" : ">>×3 🥚"}
           </button>
         )}
 

@@ -1,9 +1,25 @@
 "use client";
 
+import { useMemo } from "react";
 import "../peagle.css";
 import { captionBtn, PG } from "../styles";
 import { PegIcon } from "./PegIcon";
 import { PeagleLogo } from "./PeagleLogo";
+
+const TIPS = [
+  "ASTUCE : Les cibles orange sont les vraies cibles. Les bleues ? Décoration. Comme les plumes inutiles de l'autruche.",
+  "ASTUCE : Tirez dans la balle avec la souris. Oui, c'est tout. Non il n'y a pas d'autre mécanisme. Si.",
+  "ASTUCE : Le panier en bas rapporte des balles. L'aigle y a mis ses économies. Respectez le panier.",
+  "ASTUCE : Les cibles vertes donnent des pouvoirs. L'aigle les a mangées par erreur. Ça a quand même marché.",
+  "ASTUCE : Si vous perdez, c'est la physique. Jamais vous. La physique est injuste et l'aigle le sait.",
+  "ASTUCE : Le mode Fièvre s'active quand il reste peu de cibles oranges. L'aigle devient incontrôlable. Comme d'habitude.",
+  "ASTUCE : Vous lisez un jeu de billes déguisé en jeu d'aigles. Félicitations pour votre clairvoyance.",
+  "ASTUCE : Les bombes explosent et détruisent les voisins. Exactement comme dans la vraie vie, mais en moins lourd.",
+  "ASTUCE : Le score monte quand vous touchez des trucs. C'est à peu près toute la philosophie du jeu.",
+  "ASTUCE : Ce jeu a été inspecté par des ornithologues. Aucun n'a survécu pour confirmer.",
+  "ASTUCE : Vous jouez à Peggle. Mais avec des aigles. La FDA n'a pas encore statué si c'est un médicament.",
+  "ASTUCE : Choisissez une classe avant de jouer. Le Faucon juge ceux qui choisissent le Pélican. Injustement.",
+];
 
 interface MainMenuProps {
   bestScore: number;
@@ -13,6 +29,7 @@ interface MainMenuProps {
 }
 
 export function MainMenu({ bestScore, displayName, onPlay, onLeaderboard }: MainMenuProps) {
+  const tip = useMemo(() => TIPS[Math.floor(Math.random() * TIPS.length)]!, []);
   return (
     <div
       className="peagle-root"
@@ -84,7 +101,7 @@ export function MainMenu({ bestScore, displayName, onPlay, onLeaderboard }: Main
                 animation: "pg-blink 2s step-end infinite",
               }}
             >
-              [x] CASSEZ TOUTES LES CIBLES
+              [x] CASSEZ TOUTES LES CIBLES ORANGES
             </div>
           </div>
 
@@ -125,6 +142,27 @@ export function MainMenu({ bestScore, displayName, onPlay, onLeaderboard }: Main
 
           {/* Separator */}
           <div className="pg-sep" style={{ marginBottom: 14 }} />
+
+          {/* Tip absurde */}
+          <div
+            style={{
+              fontSize: 7,
+              color: PG.textMuted,
+              fontFamily: "var(--pg-font)",
+              marginBottom: 12,
+              lineHeight: 1.5,
+              padding: "6px 8px",
+              borderWidth: 1,
+              borderStyle: "solid",
+              borderTopColor: PG.sh,
+              borderLeftColor: PG.sh,
+              borderBottomColor: PG.hi,
+              borderRightColor: PG.hi,
+              background: "rgba(0,0,0,0.3)",
+            }}
+          >
+            {tip}
+          </div>
 
           {/* Footer */}
           <div

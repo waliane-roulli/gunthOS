@@ -28,7 +28,7 @@ export function RelicBar({ relics, spookyActive, magnetFrames }: RelicBarProps) 
       {/* Active temporary effects */}
       {spookyActive && (
         <div
-          title="Spooky Ball actif — la balle reviendra si elle tombe"
+          title="Balle Fantôme active — si elle tombe, l'aigle la rattrape dans son bec. Il est pas content."
           style={{
             width: 20,
             height: 20,
@@ -47,7 +47,7 @@ export function RelicBar({ relics, spookyActive, magnetFrames }: RelicBarProps) 
       )}
       {magnetFrames > 0 && (
         <div
-          title={`Aimant actif — ${Math.ceil(magnetFrames / 60)}s restantes`}
+          title={`Serres Aimantées actives — ${Math.ceil(magnetFrames / 60)}s avant que l'aigle recrache l'aimant`}
           style={{
             width: 20,
             height: 20,
