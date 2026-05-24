@@ -54,16 +54,16 @@ export function PeagleApp({ windowId: _windowId }: AppProps) {
   const [lastBossKilled, setLastBossKilled] = useState(false);
   const [showDevPanelInGame, setShowDevPanelInGame] = useState(false);
 
+  const userId = user?.id;
   useEffect(() => {
-    if (!user) { setIsAdmin(false); return; }
+    if (!userId) { setIsAdmin(false); return; }
     fetch("/api/admin/check")
       .then(r => r.json())
       .then((d: { isAdmin: boolean }) => setIsAdmin(d.isAdmin))
       .catch(() => setIsAdmin(false));
-  }, [user]);
+  }, [userId]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (ui.phase === "aim") setTip(pickRandom(PEAGLE_TIPS));
   }, [ui.phase]);
 
@@ -181,7 +181,6 @@ export function PeagleApp({ windowId: _windowId }: AppProps) {
   }, [resetGame]);
 
   const displayName = user ? (user.name || user.email || "Joueur") : null;
-  const userId = user?.id;
 
   return (
     <div

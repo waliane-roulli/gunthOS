@@ -75,8 +75,9 @@ export function GameCanvas({
     () => isWon
       ? WIN_QUIPS[Math.floor(Math.random() * WIN_QUIPS.length)]!
       : LOSE_QUIPS[Math.floor(Math.random() * LOSE_QUIPS.length)]!,
+    // isGameOver triggers the memo on transition; isWon selects the quip pool
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isGameOver],
+    [isGameOver, isWon],
   );
 
   return (
