@@ -12,17 +12,17 @@ interface LeaderboardProps {
 
 export function Leaderboard({ entries, loading, currentUserId, onRefresh, showLoginHint }: LeaderboardProps) {
   return (
-    <div className="flex flex-col flex-1 overflow-hidden" style={{ padding: 12, gap: 8, display: "flex" }}>
+    <div className="flex flex-col flex-1 overflow-hidden" style={{ padding: "16px 20px", gap: 12 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <span style={{ fontSize: "var(--t-text-sm)", color: "var(--t-text)", fontFamily: "var(--t-font-display)" }}>
+        <span style={{ fontSize: "var(--t-text-md)", color: "var(--t-text)", fontFamily: "var(--t-font-display)", fontWeight: "bold" }}>
           🏆 Top 10 — Meilleurs scores
         </span>
         <button
           onClick={onRefresh}
           disabled={loading}
           style={{
-            padding: "3px 10px",
-            fontSize: "var(--t-text-xs)",
+            padding: "4px 14px",
+            fontSize: "var(--t-text-sm)",
             fontFamily: "var(--t-font-display)",
             cursor: "pointer",
             background: "var(--t-bg)",
@@ -35,7 +35,7 @@ export function Leaderboard({ entries, loading, currentUserId, onRefresh, showLo
             borderRightColor: "var(--t-border-dark)",
           }}
         >
-          {loading ? "..." : "↻"}
+          {loading ? "..." : "↻ Actualiser"}
         </button>
       </div>
 
@@ -52,13 +52,32 @@ export function Leaderboard({ entries, loading, currentUserId, onRefresh, showLo
           background: "var(--t-app-bg)",
         }}
       >
+        {/* Header row */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "44px 1fr 36px 80px",
+            gap: 8,
+            padding: "8px 16px",
+            borderBottom: "2px solid var(--t-border-dark)",
+            background: "var(--t-bg)",
+            position: "sticky",
+            top: 0,
+          }}
+        >
+          <span style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)", fontFamily: "var(--t-font-display)" }}>#</span>
+          <span style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)", fontFamily: "var(--t-font-display)" }}>JOUEUR</span>
+          <span style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)", fontFamily: "var(--t-font-display)", textAlign: "center" }}>FIN</span>
+          <span style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)", fontFamily: "var(--t-font-display)", textAlign: "right" }}>SCORE</span>
+        </div>
+
         {loading && (
-          <div style={{ padding: 24, textAlign: "center", color: "var(--t-text-muted)", fontSize: "var(--t-text-xs)" }}>
+          <div style={{ padding: 32, textAlign: "center", color: "var(--t-text-muted)", fontSize: "var(--t-text-sm)" }}>
             Chargement...
           </div>
         )}
         {!loading && entries.length === 0 && (
-          <div style={{ padding: 24, textAlign: "center", color: "var(--t-text-muted)", fontSize: "var(--t-text-xs)" }}>
+          <div style={{ padding: 32, textAlign: "center", color: "var(--t-text-muted)", fontSize: "var(--t-text-sm)" }}>
             Aucun score enregistré. Soyez le premier !
           </div>
         )}
@@ -70,30 +89,33 @@ export function Leaderboard({ entries, loading, currentUserId, onRefresh, showLo
             <div
               key={entry.userId}
               style={{
-                display: "flex",
+                display: "grid",
+                gridTemplateColumns: "44px 1fr 36px 80px",
+                gap: 8,
                 alignItems: "center",
-                gap: 10,
-                padding: "7px 12px",
+                padding: "10px 16px",
                 borderBottom: "1px solid var(--t-border-dark)",
-                background: isMe ? "var(--t-card-hover)" : "transparent",
+                background: isMe ? "var(--t-card-hover, rgba(255,255,255,0.06))" : i % 2 === 0 ? "transparent" : "rgba(0,0,0,0.04)",
                 fontFamily: "var(--t-font-display)",
               }}
             >
-              <span style={{ fontSize: "var(--t-text-sm)", minWidth: 28, textAlign: "center" }}>{medal}</span>
+              <span style={{ fontSize: "var(--t-text-sm)", textAlign: "center" }}>{medal}</span>
               <span
                 style={{
-                  flex: 1,
-                  fontSize: "var(--t-text-xs)",
+                  fontSize: "var(--t-text-sm)",
                   color: isMe ? "var(--t-accent)" : "var(--t-text)",
                   fontWeight: isMe ? "bold" : "normal",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
                 }}
               >
                 {name}{isMe ? " (vous)" : ""}
               </span>
-              <span style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)" }}>
+              <span style={{ fontSize: "var(--t-text-sm)", textAlign: "center" }}>
                 {entry.won ? "🎉" : "💀"}
               </span>
-              <span style={{ fontSize: "var(--t-text-sm)", fontWeight: "bold", color: "var(--t-text)", minWidth: 60, textAlign: "right" }}>
+              <span style={{ fontSize: "var(--t-text-sm)", fontWeight: "bold", color: "var(--t-text)", textAlign: "right" }}>
                 {entry.score.toLocaleString()}
               </span>
             </div>
@@ -104,8 +126,8 @@ export function Leaderboard({ entries, loading, currentUserId, onRefresh, showLo
       {showLoginHint && (
         <div
           style={{
-            padding: "6px 12px",
-            fontSize: "var(--t-text-xs)",
+            padding: "10px 16px",
+            fontSize: "var(--t-text-sm)",
             color: "var(--t-text-muted)",
             textAlign: "center",
             borderWidth: 2,

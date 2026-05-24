@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef, useEffect, useState } from "react";
 import type { UiState } from "../types";
 import { W, H } from "../constants";
 
@@ -26,6 +27,21 @@ export function GameCanvas({
   onNextLevel,
   onLeaderboard,
 }: GameCanvasProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [cssSize, setCssSize] = useState({ w: W, h: H });
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => {
+      const { width, height } = el.getBoundingClientRect();
+      const scale = Math.min(width / W, height / H);
+      setCssSize({ w: Math.floor(W * scale), h: Math.floor(H * scale) });
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   const btnBase: React.CSSProperties = {
     padding: "6px 18px",
     fontFamily: "var(--t-font-display)",
@@ -40,14 +56,18 @@ export function GameCanvas({
   };
 
   return (
-    <div className="relative flex-1 flex items-center justify-center overflow-hidden" style={{ background: "var(--t-app-bg)" }}>
+    <div
+      ref={containerRef}
+      className="relative flex-1 flex items-center justify-center overflow-hidden"
+      style={{ background: "var(--t-app-bg)" }}
+    >
       <canvas
         ref={canvasRef}
         width={W}
         height={H}
         style={{
-          maxWidth: "100%",
-          maxHeight: "100%",
+          width: cssSize.w,
+          height: cssSize.h,
           cursor: ui.phase === "aim" ? "crosshair" : "default",
           display: "block",
           imageRendering: "pixelated",

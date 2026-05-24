@@ -11,7 +11,7 @@ export const manifest: AppManifest = {
   description: "Lancez des billes, détruisez des pegs !",
   emoji: "🎯",
   version: "1.2.0",
-  defaultSize: { w: 520, h: 640 },
+  defaultSize: { w: 700, h: 820 },
   loadDuration: 1800,
   showInLauncher: true,
   component: PeggleApp,
