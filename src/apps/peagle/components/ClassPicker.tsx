@@ -3,23 +3,47 @@
 import "../peagle.css";
 import type { ClassId } from "../engine/roguelite";
 import { CLASSES, CLASS_COLORS, RELICS } from "../engine/roguelite";
-import { captionBtn, PG } from "../styles";
+import { captionBtn } from "../styles";
 import { PegIcon } from "./PegIcon";
+import { ForestBackground } from "./ForestBackground";
+
+// Nature sauvage palette — remplace le cyberpunk pour le choix de classe
+const NW = {
+  bg:        "#060e04",
+  surface:   "#0c1a08",
+  surface2:  "#122010",
+  border:    "#1e3a18",
+  hi:        "#3a6030",
+  sh:        "#020501",
+  gold:      "#88cc44",
+  goldLight: "#aaee66",
+  amber:     "#e07820",
+  forest:    "#1a3a14",
+  forestBr:  "#44aa44",
+  storm:     "#0e1a2a",
+  stormBr:   "#4488cc",
+  dusk:      "#2a1040",
+  duskBr:    "#9955cc",
+  text:      "#c8e8b0",
+  textMuted: "#4a7040",
+  titleFrom: "#0a1a06",
+  titleTo:   "#060e04",
+} as const;
 
 interface ClassPickerProps {
   onPick: (classId: ClassId) => void;
 }
 
 const CLASS_BG: Record<ClassId, string> = {
-  canonnier:  "linear-gradient(160deg, #0a1a3a 0%, #122244 100%)",
-  alchimiste: "linear-gradient(160deg, #1a0a2a 0%, #2a1040 100%)",
-  sniper:     "linear-gradient(160deg, #0a2a1a 0%, #103322 100%)",
+  canonnier:  "linear-gradient(160deg, #080e18 0%, #0e1828 60%, #060c12 100%)",
+  alchimiste: "linear-gradient(160deg, #0e0818 0%, #1a1030 60%, #0a0614 100%)",
+  sniper:     "linear-gradient(160deg, #061006 0%, #0e2010 60%, #040c04 100%)",
 };
 
 const CLASS_GLOW: Record<ClassId, string> = {
-  canonnier:  "rgba(68,136,255,0.25)",
-  alchimiste: "rgba(204,68,255,0.25)",
-  sniper:     "rgba(68,255,170,0.25)",
+  canonnier:  "rgba(68,136,204,0.3)",
+  alchimiste: "rgba(153,85,204,0.3)",
+  sniper:     "rgba(68,170,68,0.3)",
 };
 
 const CLASS_STATS: Record<ClassId, { label: string; value: number; max: number }[]> = {
@@ -44,20 +68,20 @@ function StatBar({ label, value, max, color }: { label: string; value: number; m
   const pct = Math.round((value / max) * 100);
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 7, color: PG.textMuted, fontFamily: "var(--pg-font)" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 7, color: NW.textMuted, fontFamily: "var(--pg-font)" }}>
         <span>{label}</span>
         <span style={{ color }}>{value}/{max}</span>
       </div>
       <div
         style={{
           height: 6,
-          background: PG.bg,
+          background: NW.bg,
           borderWidth: 1,
           borderStyle: "solid",
-          borderTopColor: PG.sh,
-          borderLeftColor: PG.sh,
-          borderBottomColor: PG.hi,
-          borderRightColor: PG.hi,
+          borderTopColor: NW.sh,
+          borderLeftColor: NW.sh,
+          borderBottomColor: NW.hi,
+          borderRightColor: NW.hi,
           overflow: "hidden",
         }}
       >
@@ -85,42 +109,79 @@ export function ClassPicker({ onPick }: ClassPickerProps) {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: PG.bg,
+        background: "#060e04",
         overflow: "hidden",
         userSelect: "none",
         position: "relative",
       }}
     >
-      {/* Starfield */}
-      <div className="pg-starfield" />
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          backgroundImage: "repeating-linear-gradient(0deg, rgba(0,0,0,0.18) 0px, rgba(0,0,0,0.18) 2px, transparent 2px, transparent 4px)",
-          pointerEvents: "none",
-          zIndex: 1,
-        }}
-      />
+      <ForestBackground />
 
       {/* Dialog */}
-      <div className="pg-dialog" style={{ width: 520, flexShrink: 0, zIndex: 2 }}>
-        {/* Titlebar */}
-        <div className="pg-titlebar">
-          <span style={{ fontSize: 8, color: "#aaaaee", flex: 1, fontFamily: "var(--pg-font)", letterSpacing: "0.05em", display: "flex", alignItems: "center", gap: 5 }}>
-            <PegIcon id="gamepad" size={10} /> PEAGLE 98 — CHOISISSEZ VOTRE OISEAU
+      <div
+        style={{
+          width: 540,
+          flexShrink: 0,
+          zIndex: 2,
+          background: NW.surface,
+          borderWidth: 3,
+          borderStyle: "solid",
+          borderTopColor: NW.hi,
+          borderLeftColor: NW.hi,
+          borderBottomColor: NW.sh,
+          borderRightColor: NW.sh,
+          boxShadow: `6px 6px 0 rgba(0,0,0,0.8), 0 0 60px rgba(200,134,10,0.1)`,
+        }}
+      >
+        {/* Titlebar — plumes d'or */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            background: `linear-gradient(to right, ${NW.titleFrom}, ${NW.titleTo})`,
+            padding: "5px 6px 5px 8px",
+            gap: 4,
+            borderBottom: `1px solid ${NW.gold}55`,
+          }}
+        >
+          <span style={{
+            fontSize: 8,
+            color: NW.goldLight,
+            flex: 1,
+            fontFamily: "var(--pg-font)",
+            letterSpacing: "0.05em",
+            display: "flex",
+            alignItems: "center",
+            gap: 5,
+            textShadow: `0 0 8px ${NW.gold}88`,
+          }}>
+            <PegIcon id="eagle" size={10} />
+            ✦ PEAGLE 98 — CHOISISSEZ VOTRE OISEAU ✦
           </span>
           {(["─", "□", "×"] as const).map((ch) => (
-            <div key={ch} style={captionBtn}>{ch}</div>
+            <div
+              key={ch}
+              style={{
+                ...captionBtn,
+                background: NW.surface2,
+                borderTopColor: NW.hi,
+                borderLeftColor: NW.hi,
+                borderBottomColor: NW.sh,
+                borderRightColor: NW.sh,
+                color: NW.textMuted,
+              }}
+            >
+              {ch}
+            </div>
           ))}
         </div>
 
-        <div style={{ padding: "20px 18px 16px" }}>
+        <div style={{ padding: "18px 16px 14px" }}>
           {/* Rappel des règles */}
           <div
             style={{
               fontSize: 7,
-              color: PG.textMuted,
+              color: NW.textMuted,
               textAlign: "center",
               marginBottom: 10,
               lineHeight: 1.6,
@@ -128,17 +189,17 @@ export function ClassPicker({ onPick }: ClassPickerProps) {
               padding: "6px 10px",
               borderWidth: 1,
               borderStyle: "solid",
-              borderTopColor: PG.sh,
-              borderLeftColor: PG.sh,
-              borderBottomColor: PG.hi,
-              borderRightColor: PG.hi,
-              background: "rgba(0,0,0,0.25)",
+              borderTopColor: NW.sh,
+              borderLeftColor: NW.sh,
+              borderBottomColor: NW.hi,
+              borderRightColor: NW.hi,
+              background: "rgba(0,0,0,0.3)",
             }}
           >
-            <span style={{ color: PG.cyan }}>Comment jouer :</span>{" "}
+            <span style={{ color: NW.gold }}>Comment jouer :</span>{" "}
             Visez et lancez l'œuf avec la souris.
-            Cassez toutes les <span style={{ color: PG.orange }}>cibles oranges</span> avant de manquer d'œufs.
-            Les <span style={{ color: "#44ff88" }}>cibles vertes</span> donnent des pouvoirs bonus.
+            Cassez toutes les <span style={{ color: NW.amber }}>cibles oranges</span> avant de manquer d'œufs.
+            Les <span style={{ color: NW.forestBr }}>cibles vertes</span> donnent des pouvoirs bonus.
             Le panier en bas récupère un œuf si vous l&apos;attrapez.
           </div>
 
@@ -146,21 +207,22 @@ export function ClassPicker({ onPick }: ClassPickerProps) {
           <div
             style={{
               fontSize: 7,
-              color: PG.cyan,
+              color: NW.goldLight,
               textAlign: "center",
               marginBottom: 14,
               letterSpacing: "0.15em",
               fontFamily: "var(--pg-font)",
               animation: "pg-blink 2.5s step-end infinite",
+              textShadow: `0 0 10px ${NW.gold}88`,
             }}
           >
-            ▼ CHOISISSEZ VOTRE OISEAU ▼
+            ✦ L&apos;AIGLE ATTEND VOTRE DÉCISION ✦
           </div>
 
           {/* Cards */}
-          <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
+          <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
             {classes.map((cls, i) => {
-              const color = CLASS_COLORS[cls.id] ?? PG.cyan;
+              const color = CLASS_COLORS[cls.id] ?? NW.gold;
               const stats = CLASS_STATS[cls.id] ?? [];
               return (
                 <button
@@ -173,32 +235,49 @@ export function ClassPicker({ onPick }: ClassPickerProps) {
                     fontSize: 7,
                     cursor: "pointer",
                     background: CLASS_BG[cls.id],
-                    color: PG.text,
+                    color: NW.text,
                     borderWidth: 2,
                     borderStyle: "solid",
-                    borderTopColor: PG.hi,
-                    borderLeftColor: PG.hi,
-                    borderBottomColor: PG.sh,
-                    borderRightColor: PG.sh,
+                    borderTopColor: NW.hi,
+                    borderLeftColor: NW.hi,
+                    borderBottomColor: NW.sh,
+                    borderRightColor: NW.sh,
                     textAlign: "left",
                     display: "flex",
                     flexDirection: "column",
                     gap: 10,
                     animation: `pg-card-in 0.3s ease-out ${i * 0.07}s both`,
-                    transition: "box-shadow 0.15s, filter 0.15s",
+                    transition: "box-shadow 0.15s, filter 0.15s, border-color 0.15s",
                   }}
                   onMouseEnter={e => {
-                    e.currentTarget.style.boxShadow = `0 0 20px ${CLASS_GLOW[cls.id] ?? "rgba(0,229,255,0.2)"}, inset 0 0 10px rgba(255,255,255,0.04)`;
-                    e.currentTarget.style.filter = "brightness(1.1)";
+                    e.currentTarget.style.boxShadow = `0 0 24px ${CLASS_GLOW[cls.id] ?? "rgba(200,134,10,0.25)"}, inset 0 0 12px rgba(255,255,255,0.03)`;
+                    e.currentTarget.style.filter = "brightness(1.12)";
+                    e.currentTarget.style.borderTopColor = NW.goldLight;
+                    e.currentTarget.style.borderLeftColor = NW.goldLight;
                   }}
                   onMouseLeave={e => {
                     e.currentTarget.style.boxShadow = "";
                     e.currentTarget.style.filter = "";
+                    e.currentTarget.style.borderTopColor = NW.hi;
+                    e.currentTarget.style.borderLeftColor = NW.hi;
                   }}
                 >
                   {/* Icon + nom */}
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <PegIcon id={cls.id} size={26} />
+                    <div
+                      style={{
+                        padding: 6,
+                        background: "rgba(0,0,0,0.35)",
+                        borderWidth: 1,
+                        borderStyle: "solid",
+                        borderTopColor: NW.sh,
+                        borderLeftColor: NW.sh,
+                        borderBottomColor: NW.hi,
+                        borderRightColor: NW.hi,
+                      }}
+                    >
+                      <PegIcon id={cls.id} size={26} />
+                    </div>
                     <div>
                       <div
                         style={{
@@ -206,12 +285,13 @@ export function ClassPicker({ onPick }: ClassPickerProps) {
                           fontWeight: "bold",
                           color,
                           lineHeight: 1.3,
-                          textShadow: `0 0 8px ${color}88`,
+                          textShadow: `0 0 10px ${color}88`,
+                          letterSpacing: "0.06em",
                         }}
                       >
                         {cls.name.toUpperCase()}
                       </div>
-                      <div style={{ fontSize: 6, color: PG.textMuted, marginTop: 3, letterSpacing: "0.05em" }}>
+                      <div style={{ fontSize: 6, color: NW.textMuted, marginTop: 3, letterSpacing: "0.05em" }}>
                         {cls.id === "canonnier" ? "12 ŒUFS · FACILE"
                           : cls.id === "alchimiste" ? "9 ŒUFS · CHAOS"
                           : "10 ŒUFS · PRÉCISION"}
@@ -230,16 +310,16 @@ export function ClassPicker({ onPick }: ClassPickerProps) {
                   <div
                     style={{
                       fontSize: 7,
-                      color: "#aaaacc",
+                      color: NW.text,
                       lineHeight: 1.6,
                       padding: "6px 8px",
-                      background: "rgba(0,0,0,0.4)",
+                      background: "rgba(0,0,0,0.45)",
                       borderWidth: 1,
                       borderStyle: "solid",
-                      borderTopColor: PG.sh,
-                      borderLeftColor: PG.sh,
-                      borderBottomColor: PG.hi,
-                      borderRightColor: PG.hi,
+                      borderTopColor: NW.sh,
+                      borderLeftColor: NW.sh,
+                      borderBottomColor: NW.hi,
+                      borderRightColor: NW.hi,
                     }}
                   >
                     {cls.desc}
@@ -250,10 +330,10 @@ export function ClassPicker({ onPick }: ClassPickerProps) {
                     <div
                       style={{
                         fontSize: 7,
-                        color: PG.purple,
+                        color: NW.duskBr,
                         padding: "4px 8px",
-                        border: `1px solid ${PG.purple}44`,
-                        background: `${PG.purple}11`,
+                        border: `1px solid ${NW.duskBr}44`,
+                        background: `${NW.duskBr}11`,
                         letterSpacing: "0.04em",
                       }}
                     >
@@ -286,7 +366,7 @@ export function ClassPicker({ onPick }: ClassPickerProps) {
                       })}
                     </div>
                   ) : (
-                    <div style={{ fontSize: 7, color: PG.textMuted }}>AUCUNE RELIQUE</div>
+                    <div style={{ fontSize: 7, color: NW.textMuted }}>AUCUNE RELIQUE</div>
                   )}
 
                   {/* Flavor */}
@@ -296,7 +376,7 @@ export function ClassPicker({ onPick }: ClassPickerProps) {
                       color: `${color}99`,
                       fontStyle: "italic",
                       lineHeight: 1.4,
-                      borderTop: `1px solid ${PG.border}`,
+                      borderTop: `1px solid ${NW.border}`,
                       paddingTop: 6,
                       fontFamily: "var(--font-vt323), monospace",
                     }}
@@ -308,10 +388,16 @@ export function ClassPicker({ onPick }: ClassPickerProps) {
             })}
           </div>
 
-          {/* Separator */}
-          <div className="pg-sep" style={{ marginBottom: 12 }} />
+          {/* Séparateur doré */}
+          <div
+            style={{
+              height: 1,
+              background: `linear-gradient(to right, transparent, ${NW.gold}44, transparent)`,
+              marginBottom: 10,
+            }}
+          />
 
-          <div style={{ fontSize: 7, color: PG.textMuted, textAlign: "center", fontFamily: "var(--pg-font)" }}>
+          <div style={{ fontSize: 7, color: NW.textMuted, textAlign: "center", fontFamily: "var(--pg-font)" }}>
             CLIQUEZ SUR UN OISEAU POUR DÉMARRER · L&apos;AIGLE NE JUGERA PAS VOTRE CHOIX (mensonge)
           </div>
         </div>

@@ -5,6 +5,19 @@ import type { UiState } from "../engine/types";
 import { RelicBar } from "./RelicBar";
 import { PG } from "../styles";
 
+// Overrides forêt — remplace les tokens cyberpunk pour le HUD
+const HUD = {
+  bg:        "#060e04",
+  surface:   "#0c1a08",
+  surface2:  "#122010",
+  sh:        "#020501",
+  hi:        "#2a4a22",
+  text:      "#c8e8b0",
+  textMuted: "#4a7040",
+  accent:    "#88cc44",   // vert-lime luciole (remplace cyan)
+  accentDim: "#446622",
+} as const;
+
 interface GameHudProps {
   ui: UiState;
   bestScore: number;
@@ -24,8 +37,8 @@ function Sep() {
         width: 3,
         alignSelf: "stretch",
         margin: "4px 1px",
-        borderLeft: `1px solid ${PG.sh}`,
-        borderRight: `1px solid ${PG.hi}`,
+        borderLeft: `1px solid ${HUD.sh}`,
+        borderRight: `1px solid ${HUD.hi}`,
         flexShrink: 0,
       }}
     />
@@ -65,7 +78,7 @@ function HudStat({
       <span
         style={{
           fontSize: 6,
-          color: urgent ? PG.orange : warn ? "#ffaa44" : PG.textMuted,
+          color: urgent ? PG.orange : warn ? "#ffaa44" : HUD.textMuted,
           lineHeight: 1,
           marginBottom: 3,
           whiteSpace: "nowrap",
@@ -85,17 +98,17 @@ function HudStat({
             : warn
               ? "#ff9900"
               : accent
-                ? PG.cyan
+                ? HUD.accent
                 : muted
-                  ? PG.textMuted
-                  : PG.text,
+                  ? HUD.textMuted
+                  : HUD.text,
           fontFamily: "var(--pg-font)",
           lineHeight: 1,
           whiteSpace: "nowrap",
           textShadow: urgent
             ? `0 0 8px ${PG.orange}`
             : accent
-              ? `0 0 6px ${PG.cyan}88`
+              ? `0 0 6px ${HUD.accent}88`
               : undefined,
         }}
       >
@@ -119,9 +132,9 @@ export function GameHud({ ui, bestScore, displayName, isAdmin, showDevTools, onA
         alignItems: "stretch",
         height: 38,
         flexShrink: 0,
-        borderBottom: `2px solid ${PG.sh}`,
-        borderTop: `1px solid ${PG.hi}`,
-        background: PG.surface,
+        borderBottom: `2px solid ${HUD.sh}`,
+        borderTop: `1px solid ${HUD.hi}`,
+        background: HUD.surface,
         overflow: "hidden",
       }}
     >
@@ -135,16 +148,16 @@ export function GameHud({ ui, bestScore, displayName, isAdmin, showDevTools, onA
           fontFamily: "var(--pg-font)",
           fontSize: 12,
           cursor: "pointer",
-          background: PG.surface2,
-          color: PG.textMuted,
+          background: HUD.surface2,
+          color: HUD.textMuted,
           border: "none",
-          borderRight: `2px solid ${PG.sh}`,
+          borderRight: `2px solid ${HUD.sh}`,
           flexShrink: 0,
           lineHeight: 1,
           transition: "color 0.1s, background 0.1s",
         }}
-        onMouseEnter={e => { e.currentTarget.style.color = PG.orange; e.currentTarget.style.background = PG.bg; }}
-        onMouseLeave={e => { e.currentTarget.style.color = PG.textMuted; e.currentTarget.style.background = PG.surface2; }}
+        onMouseEnter={e => { e.currentTarget.style.color = PG.orange; e.currentTarget.style.background = HUD.bg; }}
+        onMouseLeave={e => { e.currentTarget.style.color = HUD.textMuted; e.currentTarget.style.background = HUD.surface2; }}
       >
         ≡
       </button>
@@ -204,17 +217,17 @@ export function GameHud({ ui, bestScore, displayName, isAdmin, showDevTools, onA
               fontFamily: "var(--pg-font)",
               cursor: mbClickable ? "pointer" : "default",
               background: ui.multiballPending
-                ? `linear-gradient(to bottom, ${PG.gold}, #cc8800)`
+                ? `linear-gradient(to bottom, ${HUD.accent}, #558822)`
                 : ui.multiballReady
                   ? `linear-gradient(to bottom, ${PG.orange}, #cc4400)`
-                  : PG.bg,
-              color: ui.multiballPending ? "#000" : ui.multiballReady ? "#fff" : PG.textMuted,
+                  : HUD.bg,
+              color: ui.multiballPending ? "#000" : ui.multiballReady ? "#fff" : HUD.textMuted,
               borderWidth: 2,
               borderStyle: "solid",
-              borderTopColor: mbClickable || ui.multiballPending ? PG.hi : PG.sh,
-              borderLeftColor: mbClickable || ui.multiballPending ? PG.hi : PG.sh,
-              borderBottomColor: PG.sh,
-              borderRightColor: PG.sh,
+              borderTopColor: mbClickable || ui.multiballPending ? HUD.hi : HUD.sh,
+              borderLeftColor: mbClickable || ui.multiballPending ? HUD.hi : HUD.sh,
+              borderBottomColor: HUD.sh,
+              borderRightColor: HUD.sh,
               opacity: ui.multiballUsed && !ui.multiballPending ? 0.4 : 1,
               whiteSpace: "nowrap",
               lineHeight: 1,
@@ -289,7 +302,7 @@ export function GameHud({ ui, bestScore, displayName, isAdmin, showDevTools, onA
             <span
               style={{
                 fontSize: 7,
-                color: PG.cyanDim,
+                color: HUD.accentDim,
                 padding: "0 8px",
                 whiteSpace: "nowrap",
                 fontFamily: "var(--pg-font)",

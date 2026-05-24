@@ -239,6 +239,15 @@ export const guntherBoardReactions = sqliteTable("gunther_board_reactions", {
   uniqueIndex("gunther_board_reactions_unique_idx").on(t.ticketId, t.userId, t.emoji),
 ]);
 
+// Peagle 98 annonces / changelog
+export const peagleAnnouncements = sqliteTable("peagle_announcements", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  title: text("title").notNull(),
+  message: text("message").notNull(),
+  type: text("type", { enum: ["info", "update", "warning"] }).notNull().default("info"),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+});
+
 // Peagle 98 leaderboard
 export const peagleScores = sqliteTable("peagle_scores", {
   id: integer("id").primaryKey({ autoIncrement: true }),

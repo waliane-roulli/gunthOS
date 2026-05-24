@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { PG, captionBtn, btnRaised } from "../styles";
 import {
   CLASSES, UPGRADES, RELICS,
   type ClassId, type UpgradeId, type RelicId,
 } from "../engine/roguelite";
+import type { PeagleAnnouncement } from "./AnnouncementPopup";
 
 export interface DevConfig {
   startLevel: number;
@@ -140,8 +141,143 @@ const PRESET_RUNS: Array<{ label: string; cfg: Partial<DevConfig> }> = [
   },
 ];
 
+// ── Announcements tab ─────────────────────────────────────────────────────────
+
+const TYPE_OPTS = ["info", "update", "warning"] as const;
+const TYPE_LABELS: Record<string, string> = { info: "INFO", update: "MÀJOUR", warning: "ATTENTION" };
+const TYPE_COLORS: Record<string, string> = { info: "#44ccaa", update: PG.gold, warning: "#ee9922" };
+
+function AnnouncementsTab() {
+  const [announcements, setAnnouncements] = useState<PeagleAnnouncement[]>([]);
+  const [title, setTitle] = useState("");
+  const [message, setMessage] = useState("");
+  const [type, setType] = useState<"info" | "update" | "warning">("info");
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(() => {
+    fetch("/api/peagle/announcements")
+      .then(r => r.json())
+      .then((d: PeagleAnnouncement[]) => setAnnouncements(d))
+      .catch(() => setError("Erreur chargement"));
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  async function handleCreate() {
+    if (!title.trim() || !message.trim()) { setError("Titre et message requis"); return; }
+    setSending(true); setError(null);
+    try {
+      const res = await fetch("/api/peagle/announcements", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: title.trim(), message: message.trim(), type }),
+      });
+      if (!res.ok) { const d = await res.json() as { error?: string }; setError(d.error ?? "Erreur"); return; }
+      setTitle(""); setMessage(""); load();
+    } catch { setError("Erreur réseau"); }
+    finally { setSending(false); }
+  }
+
+  async function handleDelete(id: number) {
+    await fetch(`/api/peagle/announcements?id=${id}`, { method: "DELETE" });
+    load();
+  }
+
+  const inputStyle: React.CSSProperties = {
+    width: "100%",
+    background: PG.bg,
+    border: `1px solid ${PG.border}`,
+    color: PG.text,
+    fontFamily: "var(--font-press-start), monospace",
+    fontSize: 7,
+    padding: "5px 7px",
+    outline: "none",
+    boxSizing: "border-box",
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      {/* Create form */}
+      <div>
+        <span style={LABEL}>✦ NOUVELLE ANNONCE</span>
+        <div style={{ display: "flex", gap: 5, marginBottom: 7 }}>
+          {TYPE_OPTS.map(t => (
+            <Tag key={t} label={TYPE_LABELS[t]!} active={type === t} color={TYPE_COLORS[t]} onClick={() => setType(t)} />
+          ))}
+        </div>
+        <input
+          style={{ ...inputStyle, marginBottom: 6 }}
+          placeholder="TITRE..."
+          value={title}
+          onChange={e => setTitle(e.target.value)}
+        />
+        <textarea
+          style={{ ...inputStyle, height: 64, resize: "none", marginBottom: 8 }}
+          placeholder="MESSAGE..."
+          value={message}
+          onChange={e => setMessage(e.target.value)}
+        />
+        {error && <div style={{ fontSize: 7, color: PG.red, marginBottom: 6 }}>{error}</div>}
+        <button
+          style={{ ...btnRaised, fontSize: 7, borderTopColor: PG.gold, borderLeftColor: PG.gold, color: PG.gold }}
+          onClick={handleCreate}
+          disabled={sending}
+        >
+          {sending ? "ENVOI..." : "★ PUBLIER"}
+        </button>
+      </div>
+
+      <div style={SEP} />
+
+      {/* Existing list */}
+      <div>
+        <span style={LABEL}>▶ ANNONCES EXISTANTES ({announcements.length})</span>
+        {announcements.length === 0 && (
+          <div style={{ fontSize: 7, color: PG.textMuted }}>AUCUNE ANNONCE</div>
+        )}
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          {announcements.map(a => (
+            <div
+              key={a.id}
+              style={{
+                background: PG.bg,
+                border: `1px solid ${PG.border}`,
+                padding: "6px 8px",
+                display: "flex",
+                alignItems: "flex-start",
+                gap: 8,
+              }}
+            >
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 7, color: TYPE_COLORS[a.type] ?? PG.cyan, marginBottom: 3 }}>
+                  [{a.type.toUpperCase()}] {a.title}
+                </div>
+                <div style={{ fontSize: 6, color: PG.textMuted, lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
+                  {a.message.slice(0, 120)}{a.message.length > 120 ? "…" : ""}
+                </div>
+              </div>
+              <button
+                style={{ ...btnRaised, fontSize: 6, padding: "3px 7px", color: PG.red, flexShrink: 0 }}
+                onClick={() => handleDelete(a.id)}
+              >
+                ✕
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Main DevPanel ─────────────────────────────────────────────────────────────
+
+type DevTab = "game" | "annonces";
+
 export function DevPanel({ onClose, onLaunch }: DevPanelProps) {
   const [cfg, setCfg] = useState<DevConfig>({ ...DEFAULT_DEV_CONFIG });
+  const [activeTab, setActiveTab] = useState<DevTab>("game");
 
   function toggle<T>(arr: T[], item: T): T[] {
     return arr.includes(item) ? arr.filter(x => x !== item) : [...arr, item];
@@ -202,6 +338,28 @@ export function DevPanel({ onClose, onLaunch }: DevPanelProps) {
           ))}
         </div>
 
+        {/* Tabs */}
+        <div style={{ display: "flex", borderBottom: `1px solid ${PG.border}`, flexShrink: 0 }}>
+          {(["game", "annonces"] as DevTab[]).map(tab => (
+            <div
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              style={{
+                padding: "6px 14px",
+                fontSize: 7,
+                fontFamily: "var(--font-press-start), monospace",
+                cursor: "pointer",
+                letterSpacing: "0.06em",
+                color: activeTab === tab ? PG.purple : PG.textMuted,
+                borderBottom: activeTab === tab ? `2px solid ${PG.purple}` : "2px solid transparent",
+                userSelect: "none",
+              }}
+            >
+              {tab === "game" ? "⚙ JEU" : "★ ANNONCES"}
+            </div>
+          ))}
+        </div>
+
         {/* Scrollable body */}
         <div
           style={{
@@ -211,6 +369,8 @@ export function DevPanel({ onClose, onLaunch }: DevPanelProps) {
             fontFamily: "var(--font-press-start), monospace",
           }}
         >
+          {activeTab === "annonces" && <AnnouncementsTab />}
+          {activeTab === "game" && <>
           {/* Presets rapides */}
           <div style={SECTION}>
             <span style={LABEL}>⚡ PRESETS</span>
@@ -390,6 +550,7 @@ export function DevPanel({ onClose, onLaunch }: DevPanelProps) {
             </div>
           </div>
 
+          </>}
         </div>
 
         {/* Footer */}
