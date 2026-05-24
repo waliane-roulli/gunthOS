@@ -622,6 +622,21 @@ export function draw(
 
   ctx.restore(); // end camera transform
 
+  // ── Inner canvas bezel (Win98 sunken border, draws after game objects) ───────
+  ctx.save();
+  ctx.lineWidth = 1;
+  // Top + left edges: shadow (dark)
+  ctx.strokeStyle = "rgba(0,0,0,0.45)";
+  ctx.beginPath(); ctx.moveTo(0, H); ctx.lineTo(0, 0); ctx.lineTo(W, 0); ctx.stroke();
+  ctx.strokeStyle = "rgba(0,0,0,0.25)";
+  ctx.beginPath(); ctx.moveTo(1, H - 1); ctx.lineTo(1, 1); ctx.lineTo(W - 1, 1); ctx.stroke();
+  // Bottom + right edges: highlight (light)
+  ctx.strokeStyle = "rgba(255,255,255,0.22)";
+  ctx.beginPath(); ctx.moveTo(0, H); ctx.lineTo(W, H); ctx.moveTo(W, 0); ctx.lineTo(W, H); ctx.stroke();
+  ctx.strokeStyle = "rgba(255,255,255,0.12)";
+  ctx.beginPath(); ctx.moveTo(1, H - 1); ctx.lineTo(W - 1, H - 1); ctx.moveTo(W - 1, 1); ctx.lineTo(W - 1, H - 1); ctx.stroke();
+  ctx.restore();
+
   // ── Screen flash ─────────────────────────────────────────────────────────────
   if (s.flashWhite > 0) {
     ctx.save();

@@ -16,6 +16,31 @@ interface GameCanvasProps {
   onLeaderboard: () => void;
 }
 
+const btnRaised: React.CSSProperties = {
+  padding: "5px 16px",
+  fontFamily: "var(--t-font-display)",
+  fontSize: "var(--t-text-sm)",
+  cursor: "pointer",
+  background: "var(--t-bg)",
+  color: "var(--t-text)",
+  borderWidth: 2,
+  borderStyle: "solid",
+  borderTopColor: "var(--t-border-light)",
+  borderLeftColor: "var(--t-border-light)",
+  borderBottomColor: "var(--t-border-dark)",
+  borderRightColor: "var(--t-border-dark)",
+  whiteSpace: "nowrap",
+  lineHeight: 1.4,
+};
+
+const btnPrimary: React.CSSProperties = {
+  ...btnRaised,
+  background: "linear-gradient(to bottom, var(--t-titlebar-from), var(--t-titlebar-to))",
+  color: "#fff",
+  borderTopColor: "var(--t-border-light)",
+  borderLeftColor: "var(--t-border-light)",
+};
+
 export function GameCanvas({
   canvasRef,
   ui,
@@ -42,18 +67,10 @@ export function GameCanvas({
     return () => ro.disconnect();
   }, []);
 
-  const btnBase: React.CSSProperties = {
-    padding: "6px 18px",
-    fontFamily: "var(--t-font-display)",
-    fontSize: "var(--t-text-sm)",
-    cursor: "pointer",
-    borderWidth: 2,
-    borderStyle: "solid",
-    borderTopColor: "var(--t-border-light)",
-    borderLeftColor: "var(--t-border-light)",
-    borderBottomColor: "var(--t-border-dark)",
-    borderRightColor: "var(--t-border-dark)",
-  };
+  const isGameOver = ui.phase === "won" || ui.phase === "lost";
+  const isWin = ui.phase === "won";
+  const isRecord = bestScore > 0 && ui.score >= bestScore;
+  const displayUser = user?.name ?? user?.email ?? null;
 
   return (
     <div
@@ -77,81 +94,170 @@ export function GameCanvas({
         onClick={onClick}
       />
 
-      {(ui.phase === "won" || ui.phase === "lost") && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-4" style={{ background: "rgba(0,0,0,0.7)" }}>
+      {isGameOver && (
+        <div
+          className="absolute inset-0 flex items-center justify-center"
+          style={{ background: "rgba(0,0,0,0.65)" }}
+        >
+          {/* Win98 dialog */}
           <div
             style={{
               background: "var(--t-bg)",
-              borderWidth: 4,
+              borderWidth: 3,
               borderStyle: "solid",
               borderTopColor: "var(--t-border-light)",
               borderLeftColor: "var(--t-border-light)",
               borderBottomColor: "var(--t-border-dark)",
               borderRightColor: "var(--t-border-dark)",
-              padding: "24px 36px",
-              textAlign: "center",
-              minWidth: 240,
+              minWidth: 280,
+              maxWidth: 340,
+              boxShadow: "4px 4px 0 rgba(0,0,0,0.45)",
+              fontFamily: "var(--t-font-display)",
             }}
           >
+            {/* Titlebar */}
             <div
               style={{
-                fontSize: "var(--t-text-xl)",
-                fontWeight: "bold",
-                marginBottom: 8,
-                color: ui.phase === "won" ? "var(--t-success, #22c55e)" : "var(--t-error, #ef4444)",
-                fontFamily: "var(--t-font-display)",
+                display: "flex",
+                alignItems: "center",
+                background: "linear-gradient(to right, var(--t-titlebar-from), var(--t-titlebar-to))",
+                padding: "4px 6px 4px 8px",
+                gap: 4,
               }}
             >
-              {ui.phase === "won" ? "🎉 VICTOIRE !" : "💀 GAME OVER"}
-            </div>
-
-            <div style={{ marginBottom: 4 }}>
-              <div style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)" }}>SCORE FINAL</div>
-              <div style={{ fontSize: "var(--t-text-2xl)", fontWeight: "bold", color: "var(--t-text)", fontFamily: "var(--t-font-display)" }}>
-                {ui.score.toLocaleString()}
-              </div>
-              {bestScore > 0 && ui.score >= bestScore && (
-                <div style={{ fontSize: "var(--t-text-xs)", color: "#ffcc00", marginTop: 2 }}>
-                  ⭐ NOUVEAU RECORD !
-                </div>
-              )}
-            </div>
-
-            {!user && (
-              <div style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)", marginBottom: 12 }}>
-                Connectez-vous pour sauver votre score
-              </div>
-            )}
-            {user && (
-              <div style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)", marginBottom: 12 }}>
-                Score enregistré pour {user.name}
-              </div>
-            )}
-
-            <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
-              {ui.phase === "won" && (
-                <button
-                  onClick={onNextLevel}
+              <span style={{ fontSize: "var(--t-text-xs)", color: "#fff", flex: 1 }}>
+                🎮 Peggle 98
+              </span>
+              {(["─", "□", "×"] as const).map((ch) => (
+                <div
+                  key={ch}
                   style={{
-                    ...btnBase,
-                    background: "linear-gradient(to bottom, var(--t-titlebar-from), var(--t-titlebar-to))",
+                    width: 18,
+                    height: 16,
+                    background: "var(--t-bg)",
+                    borderWidth: 2,
+                    borderStyle: "solid",
+                    borderTopColor: "var(--t-border-light)",
+                    borderLeftColor: "var(--t-border-light)",
+                    borderBottomColor: "var(--t-border-dark)",
+                    borderRightColor: "var(--t-border-dark)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 9,
                     color: "var(--t-text)",
+                    userSelect: "none",
+                    cursor: "default",
+                    lineHeight: 1,
                   }}
                 >
+                  {ch}
+                </div>
+              ))}
+            </div>
+
+            {/* Content */}
+            <div
+              style={{
+                display: "flex",
+                gap: 16,
+                alignItems: "flex-start",
+                padding: "20px 24px 16px",
+              }}
+            >
+              {/* Icon */}
+              <div style={{ fontSize: 40, lineHeight: 1, flexShrink: 0, paddingTop: 2 }}>
+                {isWin ? "🎉" : "💀"}
+              </div>
+
+              <div style={{ flex: 1 }}>
+                {/* Phase title */}
+                <div
+                  style={{
+                    fontSize: "var(--t-text-lg)",
+                    fontWeight: "bold",
+                    color: isWin ? "var(--t-success, #22c55e)" : "var(--t-error, #ef4444)",
+                    marginBottom: 10,
+                    lineHeight: 1.1,
+                  }}
+                >
+                  {isWin ? "VICTOIRE !" : "GAME OVER"}
+                </div>
+
+                {/* Score label */}
+                <div
+                  style={{
+                    fontSize: "var(--t-text-xs)",
+                    color: "var(--t-text-muted)",
+                    marginBottom: 4,
+                  }}
+                >
+                  SCORE FINAL
+                </div>
+
+                {/* Score sunken box */}
+                <div
+                  style={{
+                    display: "inline-block",
+                    padding: "3px 14px",
+                    background: "var(--t-app-bg)",
+                    borderWidth: 2,
+                    borderStyle: "solid",
+                    borderTopColor: "var(--t-border-dark)",
+                    borderLeftColor: "var(--t-border-dark)",
+                    borderBottomColor: "var(--t-border-light)",
+                    borderRightColor: "var(--t-border-light)",
+                    marginBottom: 8,
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: "var(--t-text-2xl)",
+                      fontWeight: "bold",
+                      color: "var(--t-text)",
+                    }}
+                  >
+                    {ui.score.toLocaleString()}
+                  </span>
+                </div>
+
+                {isRecord && (
+                  <div style={{ fontSize: "var(--t-text-xs)", color: "#ffcc00", marginBottom: 4 }}>
+                    ⭐ NOUVEAU RECORD !
+                  </div>
+                )}
+
+                <div style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)" }}>
+                  {displayUser
+                    ? `Score enregistré pour ${displayUser}`
+                    : "Connectez-vous pour sauver votre score"}
+                </div>
+              </div>
+            </div>
+
+            {/* Button row */}
+            <div
+              style={{
+                display: "flex",
+                gap: 8,
+                justifyContent: "center",
+                padding: "10px 24px 14px",
+                borderTop: "1px solid var(--t-border-dark)",
+              }}
+            >
+              {isWin && (
+                <button onClick={onNextLevel} style={btnPrimary}>
                   Niveau suivant →
                 </button>
               )}
-              <button
-                onClick={onReplay}
-                style={{ ...btnBase, background: "var(--t-bg)", color: "var(--t-text)" }}
-              >
+              <button onClick={onReplay} style={btnRaised}>
                 Rejouer
               </button>
               <button
                 onClick={onLeaderboard}
-                style={{ ...btnBase, background: "var(--t-bg)", color: "var(--t-accent)" }}
+                style={{ ...btnRaised, color: "var(--t-accent)" }}
               >
-                🏆 Classement
+                🏆 Scores
               </button>
             </div>
           </div>

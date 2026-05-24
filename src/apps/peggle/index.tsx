@@ -153,20 +153,63 @@ export function PeggleApp({ windowId: _windowId }: AppProps) {
           onNextLevel={handleNextLevel}
           onLeaderboard={handleTabLeaderboard}
         />
+        {/* Win98 status bar */}
         <div
           style={{
-            textAlign: "center",
-            padding: "3px 0",
+            display: "flex",
+            gap: 3,
+            padding: "2px 4px",
             borderTop: "2px solid var(--t-border-dark)",
-            color: "var(--t-text-muted)",
-            fontSize: "var(--t-text-xs)",
+            background: "var(--t-bg)",
+            alignItems: "center",
+            flexShrink: 0,
           }}
         >
-          {ui.phase === "aim"
-            ? tip
-            : ui.phase === "firing"
-            ? "En vol..."
-            : ""}
+          <div
+            style={{
+              flex: 1,
+              padding: "1px 8px",
+              fontSize: "var(--t-text-xs)",
+              color: "var(--t-text-muted)",
+              borderWidth: 1,
+              borderStyle: "solid",
+              borderTopColor: "var(--t-border-dark)",
+              borderLeftColor: "var(--t-border-dark)",
+              borderBottomColor: "var(--t-border-light)",
+              borderRightColor: "var(--t-border-light)",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {ui.phase === "aim" ? tip : ui.phase === "firing" ? "En vol..." : " "}
+          </div>
+          <div
+            style={{
+              padding: "1px 8px",
+              fontSize: "var(--t-text-xs)",
+              color: "var(--t-text-muted)",
+              borderWidth: 1,
+              borderStyle: "solid",
+              borderTopColor: "var(--t-border-dark)",
+              borderLeftColor: "var(--t-border-dark)",
+              borderBottomColor: "var(--t-border-light)",
+              borderRightColor: "var(--t-border-light)",
+              whiteSpace: "nowrap",
+              minWidth: 72,
+              textAlign: "center",
+            }}
+          >
+            {ui.phase === "aim"
+              ? "En attente"
+              : ui.phase === "firing"
+                ? "En vol"
+                : ui.phase === "won"
+                  ? "Victoire !"
+                  : ui.phase === "lost"
+                    ? "Game Over"
+                    : " "}
+          </div>
         </div>
       </div>
 
