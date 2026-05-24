@@ -1,0 +1,256 @@
+/* ─── Peggle 98 — Pixel Art Moderne × Win98 ──────────────────────────────────
+   Palette locale, animations, keyframes.
+   Importé uniquement dans les composants Peggle — ne pollue pas le thème global.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.peggle-root {
+  --pg-bg:          #0d0d1a;   /* fond sombre, quasi-noir bleuté */
+  --pg-surface:     #12122a;   /* surfaces (dialog, card bg) */
+  --pg-surface-2:   #1a1a3a;   /* surfaces secondaires */
+  --pg-border:      #2a2a5a;   /* bordure subtile */
+
+  --pg-orange:      #ff6b35;   /* couleur principale jeu — orange vif */
+  --pg-orange-glow: #ff9f68;   /* version lumineuse pour glows */
+  --pg-cyan:        #00e5ff;   /* accent secondaire — cyan électrique */
+  --pg-cyan-dim:    #0099aa;   /* cyan atténué */
+  --pg-gold:        #ffd700;   /* victoire, records */
+  --pg-red:         #ff2244;   /* danger, game over */
+  --pg-green:       #39ff14;   /* succès, neon vert */
+  --pg-purple:      #cc44ff;   /* epic rarity */
+
+  /* Titlebars Win98 revisitées — dégradé navy→indigo foncé */
+  --pg-bar-from:    #000080;
+  --pg-bar-to:      #1a0050;
+
+  /* Bordures raised/sunken style Win98 sur fond sombre */
+  --pg-hi:          #4a4a7a;   /* bord lumineux (haut/gauche) */
+  --pg-sh:          #06060f;   /* bord sombre (bas/droite) */
+
+  /* Font */
+  --pg-font: var(--font-press-start), "Courier New", monospace;
+  --pg-font-ui: var(--font-vt323), monospace;
+
+  font-family: var(--pg-font);
+  color: #e0e0ff;
+  image-rendering: pixelated;
+}
+
+/* ─── Keyframes ─────────────────────────────────────────────────────────────── */
+
+@keyframes pg-pulse-orange {
+  0%, 100% { text-shadow: 0 0 8px var(--pg-orange), 0 0 20px var(--pg-orange); }
+  50%       { text-shadow: 0 0 20px var(--pg-orange-glow), 0 0 40px var(--pg-orange-glow), 0 0 60px #ff440088; }
+}
+
+@keyframes pg-pulse-cyan {
+  0%, 100% { box-shadow: 0 0 8px var(--pg-cyan), inset 0 0 8px rgba(0,229,255,0.1); }
+  50%       { box-shadow: 0 0 24px var(--pg-cyan), 0 0 40px rgba(0,229,255,0.3), inset 0 0 16px rgba(0,229,255,0.2); }
+}
+
+@keyframes pg-scan {
+  0%   { background-position: 0 0; }
+  100% { background-position: 0 4px; }
+}
+
+@keyframes pg-flicker {
+  0%, 100% { opacity: 1; }
+  92%       { opacity: 1; }
+  93%       { opacity: 0.85; }
+  94%       { opacity: 1; }
+  97%       { opacity: 0.9; }
+  98%       { opacity: 1; }
+}
+
+@keyframes pg-slide-up {
+  from { transform: translateY(20px) scale(0.92); opacity: 0; }
+  to   { transform: translateY(0)    scale(1);    opacity: 1; }
+}
+
+@keyframes pg-star-slide {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+@keyframes pg-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+@keyframes pg-shake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-3px); }
+  40%       { transform: translateX(3px); }
+  60%       { transform: translateX(-2px); }
+  80%       { transform: translateX(2px); }
+}
+
+@keyframes pg-record-flash {
+  0%, 100% { color: var(--pg-gold); text-shadow: 0 0 10px var(--pg-gold); }
+  50%       { color: #fff;          text-shadow: 0 0 20px var(--pg-gold), 0 0 40px #ffaa00; }
+}
+
+@keyframes pg-fever-hud {
+  0%, 100% { background: rgba(255,107,53,0.15); box-shadow: inset 0 0 12px rgba(255,107,53,0.2); }
+  50%       { background: rgba(255,107,53,0.30); box-shadow: inset 0 0 24px rgba(255,107,53,0.4); }
+}
+
+@keyframes pg-card-in {
+  from { transform: translateY(12px) scale(0.95); opacity: 0; }
+  to   { transform: translateY(0)    scale(1);    opacity: 1; }
+}
+
+/* ─── Background — étoiles filantes ─────────────────────────────────────────── */
+
+.pg-starfield {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.pg-starfield::before,
+.pg-starfield::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 200%;
+  height: 100%;
+  animation: pg-star-slide 18s linear infinite;
+  background-image:
+    radial-gradient(circle, rgba(0,229,255,0.7) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255,107,53,0.5) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255,255,255,0.4) 1px, transparent 1px),
+    radial-gradient(circle, rgba(204,68,255,0.5) 1px, transparent 1px);
+  background-size: 200px 60px, 350px 90px, 120px 40px, 280px 80px;
+}
+
+.pg-starfield::after {
+  animation-delay: -9s;
+  animation-duration: 26s;
+  opacity: 0.6;
+}
+
+/* ─── Win98 dialog rebadgée ─────────────────────────────────────────────────── */
+
+.pg-dialog {
+  background: var(--pg-surface);
+  border-width: 3px;
+  border-style: solid;
+  border-top-color: var(--pg-hi);
+  border-left-color: var(--pg-hi);
+  border-bottom-color: var(--pg-sh);
+  border-right-color: var(--pg-sh);
+  box-shadow: 6px 6px 0 rgba(0,0,0,0.8), 0 0 40px rgba(0,229,255,0.08);
+  animation: pg-slide-up 0.25s ease-out;
+}
+
+.pg-titlebar {
+  display: flex;
+  align-items: center;
+  background: linear-gradient(to right, var(--pg-bar-from), var(--pg-bar-to));
+  padding: 5px 6px 5px 8px;
+  gap: 4px;
+  border-bottom: 1px solid var(--pg-cyan-dim);
+}
+
+.pg-caption-btn {
+  width: 16px;
+  height: 14px;
+  background: var(--pg-surface-2);
+  border-width: 2px;
+  border-style: solid;
+  border-top-color: var(--pg-hi);
+  border-left-color: var(--pg-hi);
+  border-bottom-color: var(--pg-sh);
+  border-right-color: var(--pg-sh);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 7px;
+  color: #aaaacc;
+  cursor: default;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+/* ─── Boutons ────────────────────────────────────────────────────────────────── */
+
+.pg-btn {
+  font-family: var(--pg-font);
+  font-size: 8px;
+  cursor: pointer;
+  padding: 8px 16px;
+  color: #e0e0ff;
+  background: var(--pg-surface-2);
+  border-width: 2px;
+  border-style: solid;
+  border-top-color: var(--pg-hi);
+  border-left-color: var(--pg-hi);
+  border-bottom-color: var(--pg-sh);
+  border-right-color: var(--pg-sh);
+  letter-spacing: 0.05em;
+  line-height: 1.4;
+  transition: filter 0.1s;
+  white-space: nowrap;
+  image-rendering: pixelated;
+}
+
+.pg-btn:hover { filter: brightness(1.2); }
+.pg-btn:active {
+  border-top-color: var(--pg-sh);
+  border-left-color: var(--pg-sh);
+  border-bottom-color: var(--pg-hi);
+  border-right-color: var(--pg-hi);
+}
+
+.pg-btn-primary {
+  background: linear-gradient(to bottom, var(--pg-orange), #cc4400);
+  color: #fff;
+  border-top-color: var(--pg-orange-glow);
+  border-left-color: var(--pg-orange-glow);
+  border-bottom-color: #882200;
+  border-right-color: #882200;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.6);
+}
+
+.pg-btn-primary:hover { filter: brightness(1.15); }
+
+.pg-btn-ghost {
+  background: transparent;
+  border-color: var(--pg-border);
+  color: #8888aa;
+}
+
+.pg-btn-ghost:hover { border-color: var(--pg-cyan-dim); color: var(--pg-cyan); filter: none; }
+
+/* ─── Sunken box ─────────────────────────────────────────────────────────────── */
+
+.pg-sunken {
+  border-width: 2px;
+  border-style: solid;
+  border-top-color: var(--pg-sh);
+  border-left-color: var(--pg-sh);
+  border-bottom-color: var(--pg-hi);
+  border-right-color: var(--pg-hi);
+  background: var(--pg-bg);
+}
+
+/* ─── Separator ──────────────────────────────────────────────────────────────── */
+
+.pg-sep {
+  height: 0;
+  border-top: 1px solid var(--pg-sh);
+  border-bottom: 1px solid var(--pg-hi);
+}
+
+/* ─── Fever mode ─────────────────────────────────────────────────────────────── */
+
+.pg-fever {
+  animation: pg-fever-hud 0.8s ease-in-out infinite;
+}
+
+/* ─── Rarity borders ─────────────────────────────────────────────────────────── */
+
+.pg-rarity-common { border-color: #4a4a6a !important; }
+.pg-rarity-rare   { border-color: #4488ff !important; box-shadow: 0 0 8px rgba(68,136,255,0.3); }
+.pg-rarity-epic   { border-color: var(--pg-purple) !important; box-shadow: 0 0 12px rgba(204,68,255,0.4); }

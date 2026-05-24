@@ -1,59 +1,96 @@
 import { PEG_R } from "../engine/constants";
-import { FACE, PEGGLE_THEME } from "./theme";
-import { raisedBevel } from "./helpers";
+import { PEGGLE_THEME } from "./theme";
 import type { GameState, Peg, GreenPowerupId } from "../engine/types";
 import { getPegType } from "../engine/types";
 
+// Dessin pixel art d'un peg carré avec bevel 1px
+function pixelSquare(
+  ctx: CanvasRenderingContext2D,
+  cx: number, cy: number, r: number,
+  fill: string, hiColor: string, darkColor: string,
+  glowColor?: string, glowBlur?: number,
+): void {
+  const s = Math.round(r * 2);
+  const x = Math.round(cx - r);
+  const y = Math.round(cy - r);
+
+  if (glowColor && glowBlur) {
+    ctx.shadowColor = glowColor;
+    ctx.shadowBlur = glowBlur;
+  }
+
+  ctx.fillStyle = fill;
+  ctx.fillRect(x, y, s, s);
+
+  ctx.shadowBlur = 0;
+
+  // Bevel pixel art — 1px lignes
+  ctx.fillStyle = hiColor;
+  ctx.fillRect(x, y, s, 1);       // top
+  ctx.fillRect(x, y, 1, s);       // left
+  ctx.fillStyle = darkColor;
+  ctx.fillRect(x, y + s - 1, s, 1); // bottom
+  ctx.fillRect(x + s - 1, y, 1, s); // right
+
+  // Pixel highlight coin top-left
+  ctx.fillStyle = "rgba(255,255,255,0.7)";
+  ctx.fillRect(x + 1, y + 1, 2, 1);
+  ctx.fillRect(x + 1, y + 1, 1, 2);
+}
+
+// Dessin d'un pixel carré "hit" — plus sombre, pas de bevel
+function pixelSquareHit(
+  ctx: CanvasRenderingContext2D,
+  cx: number, cy: number, r: number,
+  fill: string,
+): void {
+  const s = Math.round(r * 2);
+  const x = Math.round(cx - r);
+  const y = Math.round(cy - r);
+  ctx.fillStyle = fill;
+  ctx.fillRect(x, y, s, s);
+}
+
 function greenPowerupSymbol(p?: GreenPowerupId): string {
   switch (p) {
-    case "multiball":   return "×3";
-    case "spooky":      return "SP";
-    case "extraball":   return "+1";
-    case "pyromaniac":  return "FY";
-    case "magnet":      return "MG";
-    default:            return "✓";
+    case "multiball":  return "×3";
+    case "spooky":     return "SP";
+    case "extraball":  return "+1";
+    case "pyromaniac": return "FY";
+    case "magnet":     return "MG";
+    default:           return "✓";
   }
 }
 
 function drawWarpPeg(ctx: CanvasRenderingContext2D, p: Peg, r: number, animClock: number): void {
   const wp = 0.6 + 0.4 * Math.sin(animClock * 4 + (p.warpId ?? 0) * 2);
-  const grad = ctx.createRadialGradient(p.x - 2, p.y - 3, 1, p.x, p.y, r);
-  grad.addColorStop(0, "#ffffff");
-  grad.addColorStop(0.3, "#dd88ff");
-  grad.addColorStop(0.75, "#8800dd");
-  grad.addColorStop(1, "#330055");
-  ctx.fillStyle = grad;
   if (!p.hit) {
-    ctx.shadowColor = "#cc44ff";
-    ctx.shadowBlur = 8 + wp * 6;
-    ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 1;
+    pixelSquare(ctx, p.x, p.y, r,
+      "#6600cc", PEGGLE_THEME.peg.warpHi, "#330066",
+      "#cc00ff", 10 + wp * 8,
+    );
+    // Inner pixel accent
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(Math.round(p.x - 1), Math.round(p.y - 1), 2, 2);
+  } else {
+    pixelSquareHit(ctx, p.x, p.y, r, "#220033");
   }
-  ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.fill();
-  ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
-  if (!p.hit) raisedBevel(ctx, p.x, p.y, r);
 }
 
 function drawBossPeg(ctx: CanvasRenderingContext2D, p: Peg, r: number, animClock: number): void {
   const pulse = 0.5 + 0.5 * Math.sin(animClock * 3);
-  const bg = ctx.createRadialGradient(p.x - 2, p.y - 3, 1, p.x, p.y, r);
-  bg.addColorStop(0, "#ffffff");
-  bg.addColorStop(0.22, "#ffee88");
-  bg.addColorStop(0.6, "#cc8800");
-  bg.addColorStop(1, "#664400");
-  ctx.shadowColor = "#ffcc00";
-  ctx.shadowBlur = 8 + pulse * 8;
-  ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 1;
-  ctx.fillStyle = bg;
-  ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.fill();
-  ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
   if (!p.hit) {
-    raisedBevel(ctx, p.x, p.y, r);
+    pixelSquare(ctx, p.x, p.y, r,
+      "#cc8800", PEGGLE_THEME.peg.bossHi, "#664400",
+      "#ffcc00", 10 + pulse * 10,
+    );
     ctx.fillStyle = "#ffffcc";
     ctx.font = `bold ${Math.round(r * 1.1)}px monospace`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText("♛", p.x, p.y + 0.5);
     ctx.textBaseline = "alphabetic";
+    // HP dots
     const hpTotal = 5;
     const hpLeft = p.armorHits + 1;
     const dotSpacing = 4.5;
@@ -62,126 +99,101 @@ function drawBossPeg(ctx: CanvasRenderingContext2D, p: Peg, r: number, animClock
       const ddx = p.x - totalW / 2 + hi * dotSpacing;
       const ddy = p.y + r + 5;
       ctx.fillStyle = hi < hpLeft ? "#ffcc00" : "#332200";
-      ctx.beginPath(); ctx.arc(ddx, ddy, 2, 0, Math.PI * 2); ctx.fill();
+      ctx.fillRect(Math.round(ddx - 1), Math.round(ddy - 1), 2, 2);
     }
+  } else {
+    pixelSquareHit(ctx, p.x, p.y, r, "#332200");
   }
 }
 
 function drawBombPeg(ctx: CanvasRenderingContext2D, p: Peg, r: number): void {
-  ctx.shadowColor = "rgba(180,0,0,0.4)";
-  ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 1; ctx.shadowBlur = 3;
-  ctx.fillStyle = "#cc2200";
-  ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.fill();
-  ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
   if (!p.hit) {
-    raisedBevel(ctx, p.x, p.y, r);
+    pixelSquare(ctx, p.x, p.y, r,
+      PEGGLE_THEME.peg.bomb, PEGGLE_THEME.peg.bombHi, "#880011",
+      "rgba(255,20,60,0.5)", 4,
+    );
     ctx.fillStyle = "#ffeeaa";
-    ctx.font = `bold ${Math.round(r * 1.15)}px monospace`;
+    ctx.font = `bold ${Math.round(r * 1.2)}px monospace`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText("!", p.x, p.y + 0.5);
     ctx.textBaseline = "alphabetic";
+  } else {
+    pixelSquareHit(ctx, p.x, p.y, r, "#440000");
   }
 }
 
 function drawArmorPeg(ctx: CanvasRenderingContext2D, p: Peg, r: number): void {
-  const sg = ctx.createRadialGradient(p.x - 2, p.y - 2, 1, p.x, p.y, r);
-  sg.addColorStop(0, "#dedee4");
-  sg.addColorStop(0.45, "#9898a0");
-  sg.addColorStop(0.85, "#585860");
-  sg.addColorStop(1, "#282830");
-  ctx.shadowColor = "rgba(0,0,0,0.4)";
-  ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 1; ctx.shadowBlur = 3;
-  ctx.fillStyle = sg;
-  ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.fill();
-  ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
   if (!p.hit) {
-    raisedBevel(ctx, p.x, p.y, r);
-    ctx.strokeStyle = "rgba(200,220,255,0.8)";
-    ctx.lineWidth = 1.2; ctx.lineCap = "round";
-    const sh = r * 0.45;
-    ctx.beginPath();
-    ctx.moveTo(p.x - sh * 0.3, p.y - sh);
-    ctx.lineTo(p.x + sh * 0.3, p.y);
-    ctx.lineTo(p.x - sh * 0.3, p.y);
-    ctx.lineTo(p.x + sh * 0.3, p.y + sh);
-    ctx.stroke();
+    pixelSquare(ctx, p.x, p.y, r,
+      "#888899", "#dddde8", "#333340",
+      "rgba(0,0,0,0.3)", 2,
+    );
+    // Lightning bolt pixel art
+    ctx.fillStyle = "rgba(200,220,255,0.9)";
+    const sh = Math.round(r * 0.45);
+    ctx.fillRect(Math.round(p.x - 1), Math.round(p.y - sh), 2, sh);
+    ctx.fillRect(Math.round(p.x - 2), Math.round(p.y), 3, 1);
+    ctx.fillRect(Math.round(p.x - 1), Math.round(p.y + 1), 2, sh);
+  } else {
+    pixelSquareHit(ctx, p.x, p.y, r, "#444455");
   }
 }
 
 function drawOrangePeg(ctx: CanvasRenderingContext2D, p: Peg, r: number, inFever: boolean, feverIntensity: number): void {
-  let tg: CanvasGradient;
-  if (inFever) {
-    tg = ctx.createRadialGradient(p.x - 2, p.y - 3, 1, p.x, p.y, r);
-    tg.addColorStop(0, "#ffffff");
-    tg.addColorStop(0.28, "#aaddff");
-    tg.addColorStop(0.65, PEGGLE_THEME.peg.orangeFever);
-    tg.addColorStop(1, "#003366");
-    ctx.shadowColor = PEGGLE_THEME.peg.orangeGlow;
-    ctx.shadowBlur = 14 + feverIntensity * 12;
-  } else {
-    tg = ctx.createLinearGradient(p.x - r, p.y - r, p.x + r, p.y + r);
-    tg.addColorStop(0, PEGGLE_THEME.peg.orangeBase);
-    tg.addColorStop(0.5, PEGGLE_THEME.peg.orangeMid);
-    tg.addColorStop(1, PEGGLE_THEME.peg.orangeBase);
-    ctx.shadowColor = "rgba(0,0,180,0.55)";
-    ctx.shadowBlur = 5;
-  }
-  ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 1;
-  ctx.fillStyle = tg;
-  ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.fill();
-  ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
   if (!p.hit) {
-    ctx.save();
-    ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.clip();
-    ctx.strokeStyle = inFever ? "rgba(200,240,255,0.9)" : "rgba(140,210,255,0.7)";
-    ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.arc(p.x, p.y, r - 1.2, Math.PI, 0, false); ctx.stroke();
-    ctx.strokeStyle = inFever ? "rgba(0,40,80,0.3)" : "rgba(0,0,40,0.4)";
-    ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.arc(p.x, p.y, r - 1.2, 0, Math.PI, false); ctx.stroke();
-    ctx.restore();
+    if (inFever) {
+      pixelSquare(ctx, p.x, p.y, r,
+        PEGGLE_THEME.peg.orangeFever, PEGGLE_THEME.peg.orangeGlow, "#880088",
+        PEGGLE_THEME.peg.orangeGlow, 14 + feverIntensity * 14,
+      );
+    } else {
+      pixelSquare(ctx, p.x, p.y, r,
+        PEGGLE_THEME.peg.orangeBase, PEGGLE_THEME.peg.orangeHi, "#882200",
+        "rgba(255,100,0,0.4)", 5,
+      );
+    }
+  } else {
+    pixelSquareHit(ctx, p.x, p.y, r, "#441100");
   }
 }
 
 function drawGreenPeg(ctx: CanvasRenderingContext2D, p: Peg, r: number): void {
-  const gg = ctx.createRadialGradient(p.x - 2, p.y - 2, 1, p.x, p.y, r);
-  gg.addColorStop(0, "#ddffc0");
-  gg.addColorStop(0.4, "#44aa22");
-  gg.addColorStop(0.85, "#226611");
-  gg.addColorStop(1, "#003300");
-  ctx.shadowColor = "rgba(0,180,0,0.35)";
-  ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 1; ctx.shadowBlur = 3;
-  ctx.fillStyle = gg;
-  ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.fill();
-  ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
   if (!p.hit) {
-    raisedBevel(ctx, p.x, p.y, r);
+    pixelSquare(ctx, p.x, p.y, r,
+      "#009922", PEGGLE_THEME.peg.greenHi, "#003311",
+      "rgba(0,255,68,0.35)", 4,
+    );
     ctx.fillStyle = "#ccffaa";
     ctx.font = `bold 5px "MS Sans Serif", monospace`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(greenPowerupSymbol(p.greenPowerup), p.x, p.y + 0.5);
     ctx.textBaseline = "alphabetic";
+  } else {
+    pixelSquareHit(ctx, p.x, p.y, r, "#002208");
   }
 }
 
 function drawNormalPeg(ctx: CanvasRenderingContext2D, p: Peg, r: number): void {
-  ctx.shadowColor = "rgba(0,0,0,0.28)";
-  ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 1; ctx.shadowBlur = 2;
-  ctx.fillStyle = FACE;
-  ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.fill();
-  ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
-  if (!p.hit) raisedBevel(ctx, p.x, p.y, r);
+  if (!p.hit) {
+    pixelSquare(ctx, p.x, p.y, r,
+      PEGGLE_THEME.peg.normal, PEGGLE_THEME.peg.normalHi, "#000d44",
+    );
+  } else {
+    pixelSquareHit(ctx, p.x, p.y, r, "#0a0a22");
+  }
 }
 
 export function drawPegs(ctx: CanvasRenderingContext2D, s: GameState, inFever: boolean, feverIntensity: number): void {
+  ctx.imageSmoothingEnabled = false;
+
   for (const p of s.pegs) {
     const alpha = p.popping ? p.popAlpha : 1;
     ctx.save();
     ctx.globalAlpha = alpha;
 
-    const pulseExtra = inFever && p.orange ? Math.sin(s.feverPulse * 2) * 1.8 : 0;
+    const pulseExtra = inFever && p.orange ? Math.sin(s.feverPulse * 2) * 1.5 : 0;
     const r = (PEG_R + pulseExtra) * p.scale;
 
     if (p.warpId !== undefined) {
@@ -200,13 +212,16 @@ export function drawPegs(ctx: CanvasRenderingContext2D, s: GameState, inFever: b
       drawNormalPeg(ctx, p, r);
     }
 
-    // Pop ring
+    // Pop ring — carré qui s'agrandit
     if (p.popping) {
+      const ringR = PEG_R + (1 - p.popAlpha) * 18;
+      const rs = Math.round(ringR * 2);
+      const rx = Math.round(p.x - ringR);
+      const ry = Math.round(p.y - ringR);
+      ctx.globalAlpha = alpha * 0.8;
       ctx.strokeStyle = PEGGLE_THEME.popRing[getPegType(p)];
-      ctx.lineWidth = 1.5;
-      ctx.globalAlpha = alpha * 0.7;
-      const ringR = PEG_R + (1 - p.popAlpha) * 22;
-      ctx.beginPath(); ctx.arc(p.x, p.y, ringR, 0, Math.PI * 2); ctx.stroke();
+      ctx.lineWidth = 1;
+      ctx.strokeRect(rx, ry, rs, rs);
     }
 
     ctx.restore();
@@ -227,9 +242,9 @@ export function drawWarpCables(ctx: CanvasRenderingContext2D, s: GameState): voi
       const [pa, pb] = pair as [typeof s.pegs[0], typeof s.pegs[0]];
       ctx.save();
       const pulse = 0.45 + 0.3 * Math.sin(s.animClock * 3);
-      ctx.strokeStyle = `rgba(160,80,255,${pulse})`;
-      ctx.lineWidth = 1.5;
-      ctx.setLineDash([3, 5]);
+      ctx.strokeStyle = `rgba(200,0,255,${pulse})`;
+      ctx.lineWidth = 1;
+      ctx.setLineDash([2, 4]);
       ctx.beginPath(); ctx.moveTo(pa.x, pa.y); ctx.lineTo(pb.x, pb.y); ctx.stroke();
       ctx.restore();
     }

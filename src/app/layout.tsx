@@ -127,8 +127,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fr" className={`${fredoka.variable} ${vt323.variable} ${pressStart.variable} ${orbitron.variable} ${exo2.variable} ${righteous.variable} ${nunito.variable} ${shareTechMono.variable} ${ubuntuMono.variable} ${audiowide.variable} ${rajdhani.variable} ${playfairDisplay.variable} ${lora.variable} ${bungee.variable} ${ibmPlexMono.variable}`}>
-      <body>
+    <html lang="fr">
+      <body className={`${fredoka.variable} ${vt323.variable} ${pressStart.variable} ${orbitron.variable} ${exo2.variable} ${righteous.variable} ${nunito.variable} ${shareTechMono.variable} ${ubuntuMono.variable} ${audiowide.variable} ${rajdhani.variable} ${playfairDisplay.variable} ${lora.variable} ${bungee.variable} ${ibmPlexMono.variable}`}>
         <AuthProvider>
           <SettingsProvider>
             <IconThemeProvider>

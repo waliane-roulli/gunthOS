@@ -3,68 +3,66 @@ import { FACE } from "./theme";
 import type { Ball } from "../engine/types";
 
 export function drawBall(ctx: CanvasRenderingContext2D, ball: Ball, inSlowMo: boolean): void {
-  const speed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
-  const speedNorm = Math.min(1, speed / 18);
   const angle = Math.atan2(ball.vy, ball.vx);
 
-  // Trail
+  // Trail pixel art
   for (let i = 0; i < ball.trail.length; i++) {
     const tp = ball.trail[i]; if (!tp) continue;
     const t = i / ball.trail.length;
+    const trailR = Math.round(Math.max(1, BALL_R * t * 0.7));
     ctx.save();
-    ctx.globalAlpha = t * t * 0.3;
-    ctx.fillStyle = ball.tint ?? (inSlowMo ? "#aaccff" : FACE);
-    ctx.beginPath();
-    ctx.arc(tp.x, tp.y, BALL_R * t * 0.75, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.globalAlpha = t * t * 0.35;
+    ctx.fillStyle = ball.tint ?? (inSlowMo ? "#88aaff" : "#555588");
+    ctx.fillRect(
+      Math.round(tp.x - trailR),
+      Math.round(tp.y - trailR),
+      trailR * 2, trailR * 2,
+    );
     ctx.restore();
   }
 
-  // Squash & stretch
-  const stretchFactor = 0.22 * speedNorm;
-  const rx = BALL_R * (1 + stretchFactor);
-  const ry = BALL_R * (1 - stretchFactor * 0.6);
+  const bx = Math.round(ball.x);
+  const by = Math.round(ball.y);
+  const br = BALL_R;
 
-  const hx = ball.x + Math.cos(angle + Math.PI) * 2.5;
-  const hy = ball.y + Math.sin(angle + Math.PI) * 2.5;
-
-  const grad = ctx.createRadialGradient(hx, hy, 0.5, ball.x, ball.y, BALL_R);
-
+  // Glow
+  ctx.save();
   if (inSlowMo) {
-    grad.addColorStop(0, "#ffffff");
-    grad.addColorStop(0.2, "#ccddff");
-    grad.addColorStop(0.55, "#4488cc");
-    grad.addColorStop(0.85, "#002266");
-    grad.addColorStop(1, "#000033");
+    ctx.shadowColor = "#88aaff";
+    ctx.shadowBlur = 8;
   } else if (ball.tint) {
-    grad.addColorStop(0, "#ffffff");
-    grad.addColorStop(0.3, ball.tint);
-    grad.addColorStop(0.7, ball.tint);
-    grad.addColorStop(1, "#222222");
+    ctx.shadowColor = ball.tint;
+    ctx.shadowBlur = 6;
   } else {
-    grad.addColorStop(0, "#ffffff");
-    grad.addColorStop(0.18, "#eeeeee");
-    grad.addColorStop(0.45, "#c0c0c0");
-    grad.addColorStop(0.75, "#888888");
-    grad.addColorStop(1, "#404040");
+    ctx.shadowColor = "rgba(255,255,255,0.4)";
+    ctx.shadowBlur = 4;
   }
 
-  ctx.save();
-  ctx.shadowColor = "rgba(0,0,0,0.45)";
-  ctx.shadowOffsetX = 2;
-  ctx.shadowOffsetY = 2;
-  ctx.shadowBlur = 5;
-  ctx.fillStyle = grad;
-  ctx.translate(ball.x, ball.y);
-  ctx.rotate(angle);
-  ctx.beginPath();
-  ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.restore();
+  // Corps principal pixel (carré arrondi — 3 rectangles superposés)
+  const fill = inSlowMo ? "#aaccff" : (ball.tint ?? "#e0e0ff");
+  ctx.fillStyle = fill;
+  ctx.fillRect(bx - br + 1, by - br, br * 2 - 2, br * 2);     // centre
+  ctx.fillRect(bx - br, by - br + 1, br * 2, br * 2 - 2);     // côtés
+  ctx.shadowBlur = 0;
 
-  // Specular highlight
-  ctx.fillStyle = "rgba(255,255,255,0.88)";
-  ctx.beginPath();
-  ctx.ellipse(hx, hy, 3.2, 2, angle - 0.3, 0, Math.PI * 2);
-  ctx.fill();
+  // Bevel pixel — top/left clairs, bottom/right sombres
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(bx - br + 1, by - br, br * 2 - 2, 1);  // top
+  ctx.fillRect(bx - br, by - br + 1, 1, br * 2 - 2);  // left
+  ctx.fillStyle = "rgba(0,0,0,0.55)";
+  ctx.fillRect(bx - br + 1, by + br - 1, br * 2 - 2, 1); // bottom
+  ctx.fillRect(bx + br - 1, by - br + 1, 1, br * 2 - 2); // right
+
+  // Pixel highlight coin
+  ctx.fillStyle = "rgba(255,255,255,0.9)";
+  ctx.fillRect(bx - br + 1, by - br + 1, 2, 1);
+  ctx.fillRect(bx - br + 1, by - br + 1, 1, 2);
+
+  // Direction dot
+  const ddx = Math.round(Math.cos(angle) * (br - 2));
+  const ddy = Math.round(Math.sin(angle) * (br - 2));
+  ctx.fillStyle = "rgba(0,0,0,0.5)";
+  ctx.fillRect(bx + ddx - 1, by + ddy - 1, 2, 2);
+
+  ctx.restore();
 }

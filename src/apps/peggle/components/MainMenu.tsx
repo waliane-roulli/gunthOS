@@ -1,6 +1,7 @@
 "use client";
 
-import { captionBtn } from "../styles";
+import "../peggle.css";
+import { captionBtn, PG } from "../styles";
 
 interface MainMenuProps {
   bestScore: number;
@@ -12,46 +13,38 @@ interface MainMenuProps {
 export function MainMenu({ bestScore, displayName, onPlay, onLeaderboard }: MainMenuProps) {
   return (
     <div
+      className="peggle-root"
       style={{
         flex: 1,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: "#008080",
-        backgroundImage: "radial-gradient(circle, rgba(0,0,0,0.15) 1px, transparent 1px)",
-        backgroundSize: "16px 16px",
+        background: PG.bg,
         overflow: "hidden",
         userSelect: "none",
-        fontFamily: "var(--t-font-display)",
+        position: "relative",
       }}
     >
-      {/* Win98 dialog */}
+      {/* Starfield animé */}
+      <div className="pg-starfield" />
+
+      {/* Scan lines overlay */}
       <div
         style={{
-          background: "var(--t-bg)",
-          borderWidth: 3,
-          borderStyle: "solid",
-          borderTopColor: "var(--t-border-light)",
-          borderLeftColor: "var(--t-border-light)",
-          borderBottomColor: "var(--t-border-dark)",
-          borderRightColor: "var(--t-border-dark)",
-          boxShadow: "4px 4px 0 rgba(0,0,0,0.45)",
-          width: 300,
-          flexShrink: 0,
+          position: "absolute",
+          inset: 0,
+          backgroundImage: "repeating-linear-gradient(0deg, rgba(0,0,0,0.18) 0px, rgba(0,0,0,0.18) 2px, transparent 2px, transparent 4px)",
+          pointerEvents: "none",
+          zIndex: 1,
         }}
-      >
+      />
+
+      {/* Dialog centré */}
+      <div className="pg-dialog" style={{ width: 320, flexShrink: 0, zIndex: 2 }}>
         {/* Titlebar */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            background: "linear-gradient(to right, var(--t-titlebar-from), var(--t-titlebar-to))",
-            padding: "4px 6px 4px 8px",
-            gap: 4,
-          }}
-        >
-          <span style={{ fontSize: "var(--t-text-xs)", color: "#fff", flex: 1 }}>
-            🎮 Peggle 98
+        <div className="pg-titlebar">
+          <span style={{ fontSize: 9, color: "#aaaaee", flex: 1, fontFamily: "var(--pg-font)", letterSpacing: "0.05em" }}>
+            🎮 PEGGLE 98
           </span>
           {(["─", "□", "×"] as const).map((ch) => (
             <div key={ch} style={captionBtn}>{ch}</div>
@@ -59,124 +52,124 @@ export function MainMenu({ bestScore, displayName, onPlay, onLeaderboard }: Main
         </div>
 
         {/* Body */}
-        <div style={{ padding: "28px 32px 22px" }}>
-          {/* Hero */}
-          <div style={{ textAlign: "center", marginBottom: 24 }}>
-            {/* Big retro title in a sunken box */}
+        <div style={{ padding: "28px 28px 20px" }}>
+
+          {/* Hero — titre avec glow */}
+          <div style={{ textAlign: "center", marginBottom: 28 }}>
             <div
               style={{
                 display: "inline-block",
-                padding: "10px 24px",
-                marginBottom: 10,
+                padding: "12px 20px",
+                marginBottom: 14,
+                background: PG.bg,
                 borderWidth: 2,
                 borderStyle: "solid",
-                borderTopColor: "var(--t-border-dark)",
-                borderLeftColor: "var(--t-border-dark)",
-                borderBottomColor: "var(--t-border-light)",
-                borderRightColor: "var(--t-border-light)",
-                background: "var(--t-app-bg)",
+                borderTopColor: PG.sh,
+                borderLeftColor: PG.sh,
+                borderBottomColor: PG.hi,
+                borderRightColor: PG.hi,
               }}
             >
               <div
                 style={{
-                  fontSize: "var(--t-text-3xl)",
-                  fontWeight: "bold",
-                  letterSpacing: "0.06em",
-                  lineHeight: 1,
-                  color: "var(--t-text)",
+                  fontSize: 18,
+                  lineHeight: 1.3,
+                  color: PG.orange,
+                  animation: "pg-pulse-orange 2.4s ease-in-out infinite",
+                  letterSpacing: "0.05em",
+                  fontFamily: "var(--pg-font)",
                 }}
               >
-                PEGGLE 98
+                PEGGLE
+              </div>
+              <div
+                style={{
+                  fontSize: 11,
+                  color: PG.cyan,
+                  letterSpacing: "0.3em",
+                  fontFamily: "var(--pg-font)",
+                  marginTop: 4,
+                }}
+              >
+                ■ 98 ■
               </div>
             </div>
+
             <div
               style={{
-                fontSize: "var(--t-text-xs)",
-                color: "var(--t-text-muted)",
-                letterSpacing: "0.06em",
+                fontSize: 8,
+                color: PG.textMuted,
+                letterSpacing: "0.12em",
+                fontFamily: "var(--pg-font)",
+                animation: "pg-blink 2s step-end infinite",
               }}
             >
-              🪟 Cassez toutes les fenêtres !
+              🪟 CASSEZ TOUTES LES FENÊTRES
             </div>
           </div>
 
-          {/* Buttons */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 20 }}>
+          {/* Separator */}
+          <div className="pg-sep" style={{ marginBottom: 20 }} />
+
+          {/* Boutons */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
             <button
               onClick={onPlay}
               autoFocus
+              className="pg-btn pg-btn-primary"
               style={{
-                padding: "11px 0",
-                fontFamily: "var(--t-font-display)",
-                fontSize: "var(--t-text-md)",
-                fontWeight: "bold",
-                cursor: "pointer",
-                background: "linear-gradient(to bottom, var(--t-titlebar-from), var(--t-titlebar-to))",
-                color: "#fff",
-                borderWidth: 2,
-                borderStyle: "solid",
-                borderTopColor: "var(--t-border-light)",
-                borderLeftColor: "var(--t-border-light)",
-                borderBottomColor: "var(--t-border-dark)",
-                borderRightColor: "var(--t-border-dark)",
                 width: "100%",
+                padding: "12px 0",
+                fontSize: 9,
+                textAlign: "center",
                 letterSpacing: "0.06em",
-                lineHeight: 1,
               }}
             >
               ▶  NOUVELLE PARTIE
             </button>
+
             <button
               onClick={onLeaderboard}
+              className="pg-btn"
               style={{
-                padding: "8px 0",
-                fontFamily: "var(--t-font-display)",
-                fontSize: "var(--t-text-sm)",
-                cursor: "pointer",
-                background: "var(--t-bg)",
-                color: "var(--t-text)",
-                borderWidth: 2,
-                borderStyle: "solid",
-                borderTopColor: "var(--t-border-light)",
-                borderLeftColor: "var(--t-border-light)",
-                borderBottomColor: "var(--t-border-dark)",
-                borderRightColor: "var(--t-border-dark)",
                 width: "100%",
-                lineHeight: 1,
+                padding: "9px 0",
+                fontSize: 8,
+                textAlign: "center",
+                letterSpacing: "0.04em",
               }}
             >
-              🏆  Classement
+              🏆  CLASSEMENT
             </button>
           </div>
 
           {/* Separator */}
-          <div
-            style={{
-              height: 0,
-              borderTop: "1px solid var(--t-border-dark)",
-              borderBottom: "1px solid var(--t-border-light)",
-              marginBottom: 12,
-            }}
-          />
+          <div className="pg-sep" style={{ marginBottom: 14 }} />
 
-          {/* Footer info */}
+          {/* Footer */}
           <div
             style={{
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
-              fontSize: "var(--t-text-xs)",
-              color: "var(--t-text-muted)",
+              fontSize: 7,
+              color: PG.textMuted,
+              fontFamily: "var(--pg-font)",
             }}
           >
             <span>
               {bestScore > 0 ? (
-                <>⭐ Meilleur : <strong style={{ color: "var(--t-text)" }}>{bestScore.toLocaleString()}</strong></>
+                <>
+                  ⭐{" "}
+                  <span style={{ color: PG.gold }}>{bestScore.toLocaleString()}</span>
+                </>
               ) : (
-                "Aucun score encore"
+                "-- PAS DE SCORE --"
               )}
             </span>
-            <span>{displayName ? `👤 ${displayName}` : "Non connecté"}</span>
+            <span style={{ color: displayName ? PG.cyan : PG.textMuted }}>
+              {displayName ? `▶ ${displayName}` : "NON CONNECTÉ"}
+            </span>
           </div>
         </div>
       </div>

@@ -11,154 +11,228 @@ function makePeg(x: number, y: number): Peg {
   };
 }
 
+// Grille pixel art — chaque '1' devient un peg
+function pixelGrid(
+  pixels: string[],
+  cellW: number, cellH: number,
+  originX: number, originY: number,
+): Peg[] {
+  const pegs: Peg[] = [];
+  for (let row = 0; row < pixels.length; row++) {
+    const line = pixels[row]!;
+    for (let col = 0; col < line.length; col++) {
+      if (line[col] === "1") {
+        pegs.push(makePeg(originX + col * cellW, originY + row * cellH));
+      }
+    }
+  }
+  return pegs;
+}
+
 export function buildLevel(level: number, runState?: RunState): Peg[] {
   const pegs: Peg[] = [];
   const cx = W / 2;
-  const layout = ((level - 1) % 8) + 1;
+  const layout = ((level - 1) % 10) + 1;
   const isBoss = isBossLevel(level);
 
   if (layout === 1) {
-    const ringR = 90;
-    const ringCount = 14;
-    for (let i = 0; i < ringCount; i++) {
-      const a = (i / ringCount) * Math.PI * 2;
-      pegs.push(makePeg(cx + Math.cos(a) * ringR, 200 + Math.sin(a) * ringR * 0.7));
-    }
-    const innerR = 44;
-    const innerCount = 7;
-    for (let i = 0; i < innerCount; i++) {
-      const a = (i / innerCount) * Math.PI * 2 + Math.PI / innerCount;
-      pegs.push(makePeg(cx + Math.cos(a) * innerR, 200 + Math.sin(a) * innerR * 0.7));
-    }
-    for (let i = 0; i < 5; i++) {
-      pegs.push(makePeg(60 + i * 34, 110 + i * 30));
-      pegs.push(makePeg(W - 60 - i * 34, 110 + i * 30));
-    }
-    const bottomPositions = [
-      [80, 390], [150, 420], [240, 400], [330, 420], [400, 390],
-      [120, 450], [200, 465], [280, 455], [360, 450],
+    // Cœur pixel art + grille dense autour
+    const heart = [
+      "0110011100",
+      "1111111110",
+      "1111111110",
+      "0111111100",
+      "0011111000",
+      "0001110000",
+      "0000100000",
     ];
-    for (const [bx, by] of bottomPositions) pegs.push(makePeg(bx!, by!));
-    const topCorners = [
-      [50, 130], [90, 115], [130, 130],
-      [W - 50, 130], [W - 90, 115], [W - 130, 130],
-    ];
-    for (const [tx, ty] of topCorners) pegs.push(makePeg(tx!, ty!));
-
-  } else if (layout === 2) {
-    for (let row = 0; row < 7; row++) {
-      const count = row + 2;
-      const startX = cx - (count - 1) * 28 / 2;
-      for (let col = 0; col < count; col++) {
-        pegs.push(makePeg(startX + col * 28, 100 + row * 38));
+    pegs.push(...pixelGrid(heart, 22, 22, cx - 110, 100));
+    // rangées horizontales denses en bas
+    for (let row = 0; row < 5; row++) {
+      const y = 350 + row * 24;
+      const offset = row % 2 === 0 ? 0 : 11;
+      for (let x = 28 + offset; x < W - 20; x += 22) {
+        pegs.push(makePeg(x, y));
       }
     }
-    for (let i = 0; i < 5; i++) {
-      pegs.push(makePeg(40, 140 + i * 60));
-      pegs.push(makePeg(W - 40, 140 + i * 60));
+
+  } else if (layout === 2) {
+    // Diamant pixel + colonnes latérales denses
+    const diamond = [
+      "000010000",
+      "000111000",
+      "001111100",
+      "011111110",
+      "111111111",
+      "011111110",
+      "001111100",
+      "000111000",
+      "000010000",
+    ];
+    pegs.push(...pixelGrid(diamond, 20, 20, cx - 90, 90));
+    // Colonnes gauche/droite
+    for (let y = 80; y < 490; y += 20) {
+      pegs.push(makePeg(22, y));
+      pegs.push(makePeg(W - 22, y));
     }
-    const archR = 120;
-    const archCount = 9;
-    for (let i = 0; i < archCount; i++) {
-      const a = Math.PI + (i / (archCount - 1)) * Math.PI;
-      pegs.push(makePeg(cx + Math.cos(a) * archR, 430 + Math.sin(a) * 60));
+    for (let y = 90; y < 490; y += 20) {
+      pegs.push(makePeg(42, y));
+      pegs.push(makePeg(W - 42, y));
     }
 
   } else if (layout === 3) {
-    for (let i = 0; i < 28; i++) {
-      const a = (i / 28) * Math.PI * 5;
-      const r = 20 + i * 4.5;
-      pegs.push(makePeg(cx + Math.cos(a) * r * 0.85, 240 + Math.sin(a) * r * 0.62));
-    }
-    const corners = [
-      [55, 95], [115, 80], [170, 100], [55, 155], [115, 140],
-      [W - 55, 95], [W - 115, 80], [W - 170, 100], [W - 55, 155], [W - 115, 140],
-      [80, 420], [160, 440], [240, 415], [320, 440], [400, 420],
+    // Étoile pixel art 8 branches
+    const star = [
+      "1000000010",
+      "0100000100",
+      "0010001000",
+      "0001010000",
+      "1111011111",
+      "0001010000",
+      "0010001000",
+      "0100000100",
+      "1000000010",
     ];
-    for (const [cx2, cy2] of corners) pegs.push(makePeg(cx2!, cy2!));
+    pegs.push(...pixelGrid(star, 22, 22, cx - 110, 90));
+    // Grille hexagonale en bas
+    for (let row = 0; row < 6; row++) {
+      const y = 310 + row * 22;
+      const offset = row % 2 === 0 ? 0 : 11;
+      for (let x = 24 + offset; x < W - 16; x += 22) {
+        pegs.push(makePeg(x, y));
+      }
+    }
 
   } else if (layout === 4) {
-    const armLen = 5;
-    const spacing = 36;
-    for (let i = -armLen; i <= armLen; i++) {
-      pegs.push(makePeg(cx + i * spacing, 260));
-      pegs.push(makePeg(cx, 260 + i * spacing * 0.65));
-    }
-    for (let row = 0; row < 6; row++) {
-      pegs.push(makePeg(55, 130 + row * 55));
-      pegs.push(makePeg(W - 55, 130 + row * 55));
-    }
-    for (let i = 0; i < 5; i++) {
-      pegs.push(makePeg(100 + i * 70, 90));
+    // Grille complète hexagonale très dense
+    for (let row = 0; row < 16; row++) {
+      const y = 80 + row * 27;
+      const offset = row % 2 === 0 ? 0 : 13;
+      for (let x = 24 + offset; x < W - 16; x += 26) {
+        pegs.push(makePeg(x, y));
+      }
     }
 
   } else if (layout === 5) {
-    const topArcR = 130;
-    const botArcR = 130;
-    for (let i = 0; i < 11; i++) {
-      const a = (i / 10) * Math.PI;
-      pegs.push(makePeg(cx + Math.cos(a) * topArcR, 160 + Math.sin(a) * 55));
+    // Zigzag dense + barres horizontales
+    for (let i = 0; i < 18; i++) {
+      const y = 75 + i * 26;
+      const x = i % 2 === 0
+        ? 40 + (i * 12) % (W - 100)
+        : W - 40 - (i * 12) % (W - 100);
+      // cluster autour du point de zigzag
+      for (let dx = -2; dx <= 2; dx++) {
+        pegs.push(makePeg(x + dx * 20, y));
+      }
     }
-    for (let i = 0; i < 11; i++) {
-      const a = Math.PI + (i / 10) * Math.PI;
-      pegs.push(makePeg(cx + Math.cos(a) * botArcR, 360 + Math.sin(a) * 55));
-    }
-    for (let i = 0; i < 7; i++) {
-      const a = (i / 7) * Math.PI * 2;
-      pegs.push(makePeg(cx + Math.cos(a) * 48, 260 + Math.sin(a) * 35));
-    }
-    for (let r = 0; r < 4; r++) {
-      pegs.push(makePeg(50, 180 + r * 50));
-      pegs.push(makePeg(W - 50, 180 + r * 50));
+    // Barre centrale
+    for (let x = 30; x < W - 20; x += 20) {
+      pegs.push(makePeg(x, 260));
     }
 
   } else if (layout === 6) {
-    for (let row = 0; row < 8; row++) {
-      const cols = 7;
-      const offsetX = row % 2 === 0 ? 0 : 30;
-      for (let col = 0; col < cols; col++) {
-        pegs.push(makePeg(70 + offsetX + col * 52, 95 + row * 50));
-      }
+    // Spirale dense
+    const turns = 3.2;
+    const totalPegs = 42;
+    for (let i = 0; i < totalPegs; i++) {
+      const t = i / totalPegs;
+      const a = t * Math.PI * 2 * turns;
+      const r = 14 + t * 175;
+      const px = cx + Math.cos(a) * r * 0.88;
+      const py = 280 + Math.sin(a) * r * 0.62;
+      pegs.push(makePeg(px, py));
     }
+    // Coins remplis
+    const corners = [
+      [30, 90], [55, 75], [80, 90], [30, 110], [55, 95],
+      [W-30, 90], [W-55, 75], [W-80, 90], [W-30, 110], [W-55, 95],
+      [30, 440], [55, 460], [80, 445], [W-30, 440], [W-55, 460], [W-80, 445],
+    ];
+    for (const [bx, by] of corners) pegs.push(makePeg(bx!, by!));
 
   } else if (layout === 7) {
-    const starR1 = 130;
-    const starR2 = 60;
-    const points = 6;
-    for (let i = 0; i < points * 2; i++) {
-      const a = (i / (points * 2)) * Math.PI * 2 - Math.PI / 2;
-      const r = i % 2 === 0 ? starR1 : starR2;
-      pegs.push(makePeg(cx + Math.cos(a) * r, 250 + Math.sin(a) * r * 0.8));
+    // Croix + cercles concentriques denses
+    // Barre horizontale
+    for (let x = 30; x < W - 20; x += 18) pegs.push(makePeg(x, 260));
+    // Barre verticale
+    for (let y = 75; y < 490; y += 18) pegs.push(makePeg(cx, y));
+    // Cercle extérieur
+    for (let i = 0; i < 28; i++) {
+      const a = (i / 28) * Math.PI * 2;
+      pegs.push(makePeg(cx + Math.cos(a) * 160, 270 + Math.sin(a) * 115));
     }
-    for (let i = 0; i < 18; i++) {
-      const a = (i / 18) * Math.PI * 2;
-      pegs.push(makePeg(cx + Math.cos(a) * 185, 250 + Math.sin(a) * 120));
+    // Cercle intérieur
+    for (let i = 0; i < 16; i++) {
+      const a = (i / 16) * Math.PI * 2 + Math.PI / 16;
+      pegs.push(makePeg(cx + Math.cos(a) * 85, 270 + Math.sin(a) * 62));
     }
-    [[cx - 80, 100], [cx, 90], [cx + 80, 100], [cx - 80, 410], [cx, 420], [cx + 80, 410]].forEach(([px, py]) =>
-      pegs.push(makePeg(px!, py!))
-    );
 
-  } else {
-    const rows = 6;
-    for (let r = 0; r < rows; r++) {
-      const y = 110 + r * 65;
-      const goLeft = r % 2 === 0;
-      const holeLeft = goLeft ? Math.floor(W * 0.55) : Math.floor(W * 0.2);
-      for (let x = 40; x < W - 40; x += 34) {
-        const distToHole = Math.abs(x - holeLeft);
-        if (distToHole > 38) pegs.push(makePeg(x, y));
+  } else if (layout === 8) {
+    // Vague sinusoïdale triple + colonne dense
+    for (let x = 22; x < W - 14; x += 16) {
+      const y1 = 140 + Math.sin(x * 0.028) * 55;
+      const y2 = 240 + Math.sin(x * 0.028 + Math.PI * 0.66) * 55;
+      const y3 = 340 + Math.sin(x * 0.028 + Math.PI * 1.33) * 55;
+      pegs.push(makePeg(x, y1));
+      pegs.push(makePeg(x, y2));
+      pegs.push(makePeg(x, y3));
+    }
+    // murs latéraux très denses
+    for (let y = 75; y < 490; y += 16) {
+      pegs.push(makePeg(22, y));
+      pegs.push(makePeg(W - 22, y));
+    }
+
+  } else if (layout === 9) {
+    // Grille en damier — cases creuses + pegs denses
+    const cellSize = 24;
+    for (let row = 0; row < 17; row++) {
+      for (let col = 0; col < 16; col++) {
+        if ((row + col) % 2 === 0) {
+          const x = 24 + col * cellSize;
+          const y = 76 + row * cellSize;
+          if (x < W - 12 && y < 490) pegs.push(makePeg(x, y));
+        }
       }
     }
-    for (let i = 0; i < 4; i++) {
-      pegs.push(makePeg(22, 130 + i * 80));
-      pegs.push(makePeg(W - 22, 130 + i * 80));
+
+  } else {
+    // layout 10 — "Labyrinthe" : couloirs avec murs de pegs
+    const walls = [
+      // Mur du haut
+      ...Array.from({ length: 18 }, (_, i) => [28 + i * 24, 80] as [number, number]),
+      // Mur intermédiaire gauche (avec gap au centre-droit)
+      ...Array.from({ length: 8 }, (_, i) => [28 + i * 24, 175] as [number, number]),
+      // Mur intermédiaire droit
+      ...Array.from({ length: 7 }, (_, i) => [260 + i * 24, 175] as [number, number]),
+      // Mur 3 gauche
+      ...Array.from({ length: 6 }, (_, i) => [124 + i * 24, 270] as [number, number]),
+      // Mur 3 droit
+      ...Array.from({ length: 7 }, (_, i) => [28 + i * 24, 270] as [number, number]),
+      // Mur 3 extrème droite
+      ...Array.from({ length: 5 }, (_, i) => [320 + i * 24, 270] as [number, number]),
+      // Mur 4
+      ...Array.from({ length: 8 }, (_, i) => [180 + i * 24, 365] as [number, number]),
+      // Mur bas
+      ...Array.from({ length: 18 }, (_, i) => [28 + i * 24, 455] as [number, number]),
+      // Colonnes verticales
+      ...[80, 200, 300, 400].flatMap(x =>
+        Array.from({ length: 4 }, (_, i) => [x, 100 + i * 24] as [number, number])
+      ),
+      ...[60, 160, 260, 360, 440].flatMap(x =>
+        Array.from({ length: 3 }, (_, i) => [x, 290 + i * 24] as [number, number])
+      ),
+    ];
+    for (const [wx, wy] of walls) {
+      if (wx > 10 && wx < W - 10) pegs.push(makePeg(wx, wy));
     }
   }
 
+  // Filtre les pegs trop proches entre eux (PEG_R*2.8 = safe distance)
   const filtered = pegs.filter((p, i) => {
     for (let j = 0; j < i; j++) {
       const d = Math.hypot(p.x - pegs[j]!.x, p.y - pegs[j]!.y);
-      if (d < PEG_R * 3) return false;
+      if (d < PEG_R * 2.8) return false;
     }
     return true;
   });
@@ -177,7 +251,7 @@ export function buildLevel(level: number, runState?: RunState): Peg[] {
     result.push(bossPeg);
   }
 
-  const orangePct = Math.min(0.42, 0.28 + (level - 1) * 0.04);
+  const orangePct = Math.min(0.40, 0.25 + (level - 1) * 0.03);
   const nonBoss = result.filter(p => !p.boss);
   const orangeCount = Math.floor(nonBoss.length * orangePct);
   const shuffled = [...Array(nonBoss.length).keys()].sort(() => Math.random() - 0.5);

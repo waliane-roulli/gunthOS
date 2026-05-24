@@ -1,42 +1,49 @@
-// Win98 palette — used for UI chrome
-export const FACE   = "#c0c0c0";
-export const HI     = "#ffffff";
-export const SHD    = "#808080";
-export const DARK   = "#404040";
-export const TEAL   = "#008080";
-export const NAVY   = "#000080";
-export const BLUE_T = "#1084d0";
+// ─── Peggle 98 — Pixel Art Coloré palette ─────────────────────────────────────
+// Couleurs canvas uniquement. La UI React utilise styles.ts / peggle.css.
 
-// Peggle canvas theme — single source of truth for all canvas colors.
-// Changing these propagates to pegs, particles, effects, and flash.
+export const FACE   = "#0a0a1e";
+export const HI     = "#5a5aaa";
+export const SHD    = "#04040c";
+export const DARK   = "#000006";
+export const TEAL   = "#080818";
+export const NAVY   = "#ff6b35";
+export const BLUE_T = "#ff9f68";
+
 export const PEGGLE_THEME = {
   peg: {
-    normal: FACE,
-    orangeBase: NAVY,
-    orangeMid: BLUE_T,
-    orangeFever: "#0099ee",
-    orangeGlow: "#00ccff",
-    green: "#44aa22",
-    bomb: "#cc2200",
-    warp: "#8800dd",
-    boss: "#cc8800",
+    normal:       "#2233aa",   // bleu cobalt pixel
+    normalHi:     "#4455ff",   // reflet peg normal
+    normalDark:   "#0011660",  // ombre peg normal
+    orangeBase:   "#ff5500",   // orange foncé
+    orangeMid:    "#ffaa00",   // orange chaud
+    orangeHi:     "#ffdd44",   // reflet orange
+    orangeFever:  "#ff00cc",   // fever — vire au rose électrique
+    orangeGlow:   "#ff88ee",   // glow fever rose
+    green:        "#00ff44",   // vert pixel néon
+    greenHi:      "#aaffcc",   // reflet vert
+    bomb:         "#ff1133",   // rouge vif
+    bombHi:       "#ff8899",   // reflet bombe
+    warp:         "#cc00ff",   // violet pur
+    warpHi:       "#ee88ff",   // reflet warp
+    boss:         "#ffcc00",   // doré
+    bossHi:       "#ffff88",   // reflet boss
   },
   popRing: {
-    normal: SHD,
-    orange: BLUE_T,
-    bomb: "#ff6600",
-    warp: "#cc88ff",
-    boss: "#ffd700",
-    green: "#44ff88",
-    armor: SHD,
+    normal: "#4455ff",
+    orange: "#ffaa00",
+    bomb:   "#ff1133",
+    warp:   "#cc00ff",
+    boss:   "#ffcc00",
+    green:  "#00ff44",
+    armor:  "#aaaacc",
   },
   particles: {
-    orange: ["#4488ff", "#88bbff", "#0044cc", "#ffffff", "#000080"] as readonly string[],
-    normal: ["#c0c0c0", "#e0e0e0", "#808080", "#ffffff", "#606060"] as readonly string[],
-    bomb:   ["#ff6600", "#ffcc00", "#ff2200", "#ffeeaa", "#ffffff"] as readonly string[],
+    orange: ["#ff5500", "#ffaa00", "#ffdd44", "#ffffff", "#ff2200"] as readonly string[],
+    normal: ["#2233aa", "#4455ff", "#0011aa", "#aaaaff", "#1122cc"] as readonly string[],
+    bomb:   ["#ff1133", "#ff8800", "#ffcc00", "#ffffff", "#cc0022"] as readonly string[],
   },
   flash: {
-    normal: "#ffffff",
-    fever: "#0000cc",
+    normal: "#4455ff",
+    fever:  "#ff00cc",
   },
 } as const;

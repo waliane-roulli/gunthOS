@@ -1,7 +1,9 @@
 "use client";
 
+import "../peggle.css";
 import type { UiState } from "../engine/types";
 import { RelicBar } from "./RelicBar";
+import { PG } from "../styles";
 
 interface GameHudProps {
   ui: UiState;
@@ -15,11 +17,11 @@ function Sep() {
   return (
     <div
       style={{
-        width: 4,
+        width: 3,
         alignSelf: "stretch",
-        margin: "5px 1px",
-        borderLeft: "1px solid var(--t-border-dark)",
-        borderRight: "1px solid var(--t-border-light)",
+        margin: "4px 1px",
+        borderLeft: `1px solid ${PG.sh}`,
+        borderRight: `1px solid ${PG.hi}`,
         flexShrink: 0,
       }}
     />
@@ -45,28 +47,26 @@ function HudStat({
 }) {
   return (
     <div
+      className={urgent ? "pg-fever" : undefined}
       style={{
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        padding: "0 10px",
+        padding: "0 8px",
         minWidth: minW,
         flexShrink: 0,
-        background: urgent
-          ? "rgba(180,0,0,0.18)"
-          : warn
-            ? "rgba(200,120,0,0.14)"
-            : undefined,
       }}
     >
       <span
         style={{
-          fontSize: "var(--t-text-xs)",
-          color: urgent ? "#ff7777" : warn ? "#ffaa44" : "var(--t-text-muted)",
+          fontSize: 6,
+          color: urgent ? PG.orange : warn ? "#ffaa44" : PG.textMuted,
           lineHeight: 1,
-          marginBottom: 2,
+          marginBottom: 3,
           whiteSpace: "nowrap",
+          fontFamily: "var(--pg-font)",
+          letterSpacing: "0.05em",
         }}
       >
         {label}
@@ -74,20 +74,25 @@ function HudStat({
       <span
         className={urgent ? "animate-pulse" : undefined}
         style={{
-          fontSize: "var(--t-text-sm)",
+          fontSize: 10,
           fontWeight: "bold",
           color: urgent
-            ? "#ff4444"
+            ? PG.orange
             : warn
               ? "#ff9900"
               : accent
-                ? "var(--t-accent)"
+                ? PG.cyan
                 : muted
-                  ? "var(--t-text-muted)"
-                  : "var(--t-text)",
-          fontFamily: "var(--t-font-display)",
+                  ? PG.textMuted
+                  : PG.text,
+          fontFamily: "var(--pg-font)",
           lineHeight: 1,
           whiteSpace: "nowrap",
+          textShadow: urgent
+            ? `0 0 8px ${PG.orange}`
+            : accent
+              ? `0 0 6px ${PG.cyan}88`
+              : undefined,
         }}
       >
         {value}
@@ -104,13 +109,15 @@ export function GameHud({ ui, bestScore, displayName, onActivateMultiball, onMen
 
   return (
     <div
+      className="peggle-root"
       style={{
         display: "flex",
         alignItems: "stretch",
-        height: 36,
+        height: 38,
         flexShrink: 0,
-        borderBottom: "2px solid var(--t-border-dark)",
-        background: "var(--t-bg)",
+        borderBottom: `2px solid ${PG.sh}`,
+        borderTop: `1px solid ${PG.hi}`,
+        background: PG.surface,
         overflow: "hidden",
       }}
     >
@@ -120,61 +127,66 @@ export function GameHud({ ui, bestScore, displayName, onActivateMultiball, onMen
         title="Retour au menu principal"
         style={{
           height: "100%",
-          padding: "0 10px",
-          fontFamily: "var(--t-font-display)",
-          fontSize: "var(--t-text-md)",
+          padding: "0 12px",
+          fontFamily: "var(--pg-font)",
+          fontSize: 12,
           cursor: "pointer",
-          background: "var(--t-bg)",
-          color: "var(--t-text-muted)",
-          borderTopWidth: 0,
-          borderLeftWidth: 0,
-          borderBottomWidth: 0,
-          borderRightWidth: 2,
-          borderRightStyle: "solid",
-          borderRightColor: "var(--t-border-dark)",
+          background: PG.surface2,
+          color: PG.textMuted,
+          border: "none",
+          borderRight: `2px solid ${PG.sh}`,
           flexShrink: 0,
           lineHeight: 1,
+          transition: "color 0.1s, background 0.1s",
         }}
+        onMouseEnter={e => { e.currentTarget.style.color = PG.orange; e.currentTarget.style.background = PG.bg; }}
+        onMouseLeave={e => { e.currentTarget.style.color = PG.textMuted; e.currentTarget.style.background = PG.surface2; }}
       >
         ≡
       </button>
 
-      <HudStat label="NVX" value={ui.level} minW={40} />
+      <HudStat label="NVX" value={ui.level} minW={36} />
       {ui.bossLevel && (
         <>
           <Sep />
-          <HudStat label="BOSS" value="👑" accent minW={40} />
+          <HudStat label="BOSS" value="👑" accent minW={36} />
         </>
       )}
       <Sep />
-      <HudStat label="SCORE" value={ui.score.toLocaleString()} minW={88} />
+      <HudStat label="SCORE" value={ui.score.toLocaleString()} minW={80} />
       <Sep />
-      <HudStat label="🪟 FENÊTRES" value={`${ui.orangeLeft} / ${ui.orangeTotal}`} accent={!inFever} urgent={inFever} minW={84} />
+      <HudStat
+        label="🪟 FENÊTRES"
+        value={`${ui.orangeLeft}/${ui.orangeTotal}`}
+        accent={!inFever}
+        urgent={inFever}
+        minW={76}
+      />
       <Sep />
-      <HudStat label="BILLES" value={ui.balls} warn={lowBalls} minW={52} />
+      <HudStat label="BILLES" value={ui.balls} warn={lowBalls} minW={48} />
 
       {ui.combo >= 3 && (
         <>
           <Sep />
-          <HudStat label="COMBO" value={`×${Math.max(1, Math.floor(ui.combo / 3))}`} accent minW={56} />
+          <HudStat label="COMBO" value={`×${Math.max(1, Math.floor(ui.combo / 3))}`} accent minW={48} />
         </>
       )}
 
       {bestScore > 0 && (
         <>
           <Sep />
-          <HudStat label="MEILLEUR" value={bestScore.toLocaleString()} muted minW={80} />
+          <HudStat label="MEILLEUR" value={bestScore.toLocaleString()} muted minW={72} />
         </>
       )}
 
       <div style={{ flex: 1 }} />
 
-      {/* Active effects + relics */}
+      {/* Relics */}
       <RelicBar relics={ui.relics} spookyActive={ui.spookyActive} magnetFrames={ui.magnetFrames} />
 
       <Sep />
 
-      {/* Right group: multiball + player */}
+      {/* Right group */}
       <div style={{ display: "flex", alignItems: "center", gap: 6, paddingRight: 8 }}>
         {showMultiball && (
           <button
@@ -182,26 +194,29 @@ export function GameHud({ ui, bestScore, displayName, onActivateMultiball, onMen
             disabled={!mbClickable}
             title="Tirer 3 balles simultanément — 1 fois par niveau"
             style={{
-              height: 22,
+              height: 24,
               padding: "0 10px",
-              fontSize: "var(--t-text-xs)",
-              fontFamily: "var(--t-font-display)",
+              fontSize: 7,
+              fontFamily: "var(--pg-font)",
               cursor: mbClickable ? "pointer" : "default",
               background: ui.multiballPending
-                ? "linear-gradient(to bottom, #ffcc44, #ff8800)"
+                ? `linear-gradient(to bottom, ${PG.gold}, #cc8800)`
                 : ui.multiballReady
-                  ? "linear-gradient(to bottom, var(--t-titlebar-from), var(--t-titlebar-to))"
-                  : "var(--t-app-bg)",
-              color: ui.multiballPending ? "#000" : ui.multiballReady ? "#fff" : "var(--t-text-muted)",
+                  ? `linear-gradient(to bottom, ${PG.orange}, #cc4400)`
+                  : PG.bg,
+              color: ui.multiballPending ? "#000" : ui.multiballReady ? "#fff" : PG.textMuted,
               borderWidth: 2,
               borderStyle: "solid",
-              borderTopColor: mbClickable || ui.multiballPending ? "var(--t-border-light)" : "var(--t-border-dark)",
-              borderLeftColor: mbClickable || ui.multiballPending ? "var(--t-border-light)" : "var(--t-border-dark)",
-              borderBottomColor: "var(--t-border-dark)",
-              borderRightColor: "var(--t-border-dark)",
-              opacity: ui.multiballUsed && !ui.multiballPending ? 0.5 : 1,
+              borderTopColor: mbClickable || ui.multiballPending ? PG.hi : PG.sh,
+              borderLeftColor: mbClickable || ui.multiballPending ? PG.hi : PG.sh,
+              borderBottomColor: PG.sh,
+              borderRightColor: PG.sh,
+              opacity: ui.multiballUsed && !ui.multiballPending ? 0.4 : 1,
               whiteSpace: "nowrap",
               lineHeight: 1,
+              textShadow: ui.multiballReady ? "0 1px 0 rgba(0,0,0,0.6)" : undefined,
+              boxShadow: ui.multiballReady ? `0 0 8px ${PG.orange}66` : undefined,
+              letterSpacing: "0.04em",
             }}
           >
             {ui.multiballPending ? "⚡ PRÊT !" : "⚡×3"}
@@ -213,10 +228,11 @@ export function GameHud({ ui, bestScore, displayName, onActivateMultiball, onMen
             <Sep />
             <span
               style={{
-                fontSize: "var(--t-text-xs)",
-                color: "var(--t-text-muted)",
+                fontSize: 7,
+                color: PG.cyanDim,
                 padding: "0 8px",
                 whiteSpace: "nowrap",
+                fontFamily: "var(--pg-font)",
               }}
             >
               {displayName}
