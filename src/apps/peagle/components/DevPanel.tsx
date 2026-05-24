@@ -158,7 +158,7 @@ function AnnouncementsTab() {
   const load = useCallback(() => {
     fetch("/api/peagle/announcements")
       .then(r => r.json())
-      .then((d: PeagleAnnouncement[]) => setAnnouncements(d))
+      .then((d: unknown) => setAnnouncements(Array.isArray(d) ? d as PeagleAnnouncement[] : []))
       .catch(() => setError("Erreur chargement"));
   }, []);
 
