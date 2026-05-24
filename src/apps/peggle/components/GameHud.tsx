@@ -7,6 +7,7 @@ interface GameHudProps {
   bestScore: number;
   displayName: string | null;
   onActivateMultiball: () => void;
+  onMenu: () => void;
 }
 
 function Sep() {
@@ -28,8 +29,8 @@ function HudStat({
   label,
   value,
   accent,
-  minW = 48,
   muted,
+  minW = 48,
 }: {
   label: string;
   value: string | number;
@@ -76,7 +77,7 @@ function HudStat({
   );
 }
 
-export function GameHud({ ui, bestScore, displayName, onActivateMultiball }: GameHudProps) {
+export function GameHud({ ui, bestScore, displayName, onActivateMultiball, onMenu }: GameHudProps) {
   const showMultiball = !ui.multiballUsed || ui.multiballPending || ui.multiballReady;
   const mbClickable = ui.multiballReady && !ui.multiballPending && ui.phase === "aim";
 
@@ -92,6 +93,31 @@ export function GameHud({ ui, bestScore, displayName, onActivateMultiball }: Gam
         overflow: "hidden",
       }}
     >
+      {/* Menu button — far left */}
+      <button
+        onClick={onMenu}
+        title="Retour au menu principal"
+        style={{
+          height: "100%",
+          padding: "0 10px",
+          fontFamily: "var(--t-font-display)",
+          fontSize: "var(--t-text-md)",
+          cursor: "pointer",
+          background: "var(--t-bg)",
+          color: "var(--t-text-muted)",
+          borderTopWidth: 0,
+          borderLeftWidth: 0,
+          borderBottomWidth: 0,
+          borderRightWidth: 2,
+          borderRightStyle: "solid",
+          borderRightColor: "var(--t-border-dark)",
+          flexShrink: 0,
+          lineHeight: 1,
+        }}
+      >
+        ≡
+      </button>
+
       <HudStat label="NVX" value={ui.level} minW={40} />
       <Sep />
       <HudStat label="SCORE" value={ui.score.toLocaleString()} minW={88} />

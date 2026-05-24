@@ -10,15 +10,18 @@ import { useGameLoop } from "./useGameLoop";
 import { GameHud } from "./components/GameHud";
 import { GameCanvas } from "./components/GameCanvas";
 import { Leaderboard } from "./components/Leaderboard";
+import { MainMenu } from "./components/MainMenu";
 import { W, H } from "./constants";
 import type { UiState, LeaderboardEntry } from "./types";
+
+type Screen = "menu" | "game" | "leaderboard";
 
 export function PeggleApp({ windowId: _windowId }: AppProps) {
   const { user } = useAuth();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const mouseRef = useRef({ x: W / 2, y: 0 });
 
-  const [tab, setTab] = useState<"game" | "leaderboard">("game");
+  const [screen, setScreen] = useState<Screen>("menu");
   const [ui, setUi] = useState<UiState>({
     balls: 10, score: 0, orangeLeft: 0, orangeTotal: 0,
     phase: "aim", message: "", combo: 0, level: 1,
@@ -86,61 +89,66 @@ export function PeggleApp({ windowId: _windowId }: AppProps) {
     };
   }, []);
 
-  const handleTabLeaderboard = useCallback(() => {
+  const handlePlay = useCallback(() => {
     resetGame(false);
-    setTab("leaderboard");
-    fetchLeaderboard();
-  }, [resetGame, fetchLeaderboard]);
+    setScoreSubmitted(false);
+    setScreen("game");
+  }, [resetGame]);
 
-  const handleSwitchTab = useCallback((t: "game" | "leaderboard") => {
-    setTab(t);
-    if (t === "leaderboard") fetchLeaderboard();
+  const handleGoToMenu = useCallback(() => {
+    setScreen("menu");
+  }, []);
+
+  const handleGoToLeaderboard = useCallback(() => {
+    setScreen("leaderboard");
+    fetchLeaderboard();
   }, [fetchLeaderboard]);
 
   const displayName = user ? (user.name || user.email || "Joueur") : null;
   const userId = user ? (user as { id?: string }).id : undefined;
 
   return (
-    <div className="flex flex-col h-full select-none" style={{ background: "var(--t-bg)", fontFamily: "var(--t-font-display)" }}>
+    <div
+      className="flex flex-col h-full select-none"
+      style={{ background: "var(--t-bg)", fontFamily: "var(--t-font-display)" }}
+    >
+      {/* Main menu */}
+      {screen === "menu" && (
+        <MainMenu
+          bestScore={bestScore}
+          displayName={displayName}
+          onPlay={handlePlay}
+          onLeaderboard={handleGoToLeaderboard}
+        />
+      )}
 
-      {/* Tab bar */}
-      <div className="flex border-b-2" style={{ borderColor: "var(--t-border-dark)", background: "var(--t-bg)" }}>
-        {(["game", "leaderboard"] as const).map((t) => (
-          <button
-            key={t}
-            onClick={() => handleSwitchTab(t)}
-            style={{
-              padding: "4px 14px",
-              fontSize: "var(--t-text-xs)",
-              fontFamily: "var(--t-font-display)",
-              cursor: "pointer",
-              background: tab === t
-                ? "linear-gradient(to bottom, var(--t-titlebar-from), var(--t-titlebar-to))"
-                : "var(--t-app-bg)",
-              color: tab === t ? "var(--t-text)" : "var(--t-text-muted)",
-              borderWidth: 2,
-              borderStyle: "solid",
-              borderTopColor: tab === t ? "var(--t-border-light)" : "var(--t-border-dark)",
-              borderLeftColor: tab === t ? "var(--t-border-light)" : "var(--t-border-dark)",
-              borderBottomColor: tab === t ? "var(--t-bg)" : "var(--t-border-dark)",
-              borderRightColor: "var(--t-border-dark)",
-              marginBottom: tab === t ? -2 : 0,
-              position: "relative",
-              zIndex: tab === t ? 1 : 0,
-            }}
-          >
-            {t === "game" ? "🎯 Jeu" : "🏆 Classement"}
-          </button>
-        ))}
-      </div>
+      {/* Leaderboard screen */}
+      {screen === "leaderboard" && (
+        <Leaderboard
+          entries={leaderboard}
+          loading={lbLoading}
+          currentUserId={userId}
+          onRefresh={fetchLeaderboard}
+          showLoginHint={!user}
+          onBack={handleGoToMenu}
+        />
+      )}
 
-      {/* Game tab */}
-      <div style={{ display: tab === "game" ? "flex" : "none", flexDirection: "column", flex: 1, overflow: "hidden" }}>
+      {/* Game screen — canvas stays mounted to keep the game loop alive */}
+      <div
+        style={{
+          display: screen === "game" ? "flex" : "none",
+          flexDirection: "column",
+          flex: 1,
+          overflow: "hidden",
+        }}
+      >
         <GameHud
           ui={ui}
           bestScore={bestScore}
           displayName={displayName}
           onActivateMultiball={activateMultiball}
+          onMenu={handleGoToMenu}
         />
         <GameCanvas
           canvasRef={canvasRef}
@@ -151,8 +159,10 @@ export function PeggleApp({ windowId: _windowId }: AppProps) {
           onClick={handleClick}
           onReplay={() => { resetGame(false); setScoreSubmitted(false); }}
           onNextLevel={handleNextLevel}
-          onLeaderboard={handleTabLeaderboard}
+          onLeaderboard={handleGoToLeaderboard}
+          onMenu={handleGoToMenu}
         />
+
         {/* Win98 status bar */}
         <div
           style={{
@@ -211,17 +221,6 @@ export function PeggleApp({ windowId: _windowId }: AppProps) {
                     : " "}
           </div>
         </div>
-      </div>
-
-      {/* Leaderboard tab */}
-      <div style={{ display: tab === "leaderboard" ? "flex" : "none", flex: 1, overflow: "hidden" }}>
-        <Leaderboard
-          entries={leaderboard}
-          loading={lbLoading}
-          currentUserId={userId}
-          onRefresh={fetchLeaderboard}
-          showLoginHint={!user}
-        />
       </div>
     </div>
   );

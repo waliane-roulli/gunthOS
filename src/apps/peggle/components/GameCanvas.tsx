@@ -14,10 +14,32 @@ interface GameCanvasProps {
   onReplay: () => void;
   onNextLevel: () => void;
   onLeaderboard: () => void;
+  onMenu: () => void;
 }
 
+const captionBtn: React.CSSProperties = {
+  width: 18,
+  height: 16,
+  background: "var(--t-bg)",
+  borderWidth: 2,
+  borderStyle: "solid",
+  borderTopColor: "var(--t-border-light)",
+  borderLeftColor: "var(--t-border-light)",
+  borderBottomColor: "var(--t-border-dark)",
+  borderRightColor: "var(--t-border-dark)",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  fontSize: 9,
+  color: "var(--t-text)",
+  userSelect: "none",
+  cursor: "default",
+  lineHeight: 1,
+  flexShrink: 0,
+};
+
 const btnRaised: React.CSSProperties = {
-  padding: "5px 16px",
+  padding: "5px 14px",
   fontFamily: "var(--t-font-display)",
   fontSize: "var(--t-text-sm)",
   cursor: "pointer",
@@ -37,8 +59,6 @@ const btnPrimary: React.CSSProperties = {
   ...btnRaised,
   background: "linear-gradient(to bottom, var(--t-titlebar-from), var(--t-titlebar-to))",
   color: "#fff",
-  borderTopColor: "var(--t-border-light)",
-  borderLeftColor: "var(--t-border-light)",
 };
 
 export function GameCanvas({
@@ -51,6 +71,7 @@ export function GameCanvas({
   onReplay,
   onNextLevel,
   onLeaderboard,
+  onMenu,
 }: GameCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [cssSize, setCssSize] = useState({ w: W, h: H });
@@ -129,30 +150,7 @@ export function GameCanvas({
                 🎮 Peggle 98
               </span>
               {(["─", "□", "×"] as const).map((ch) => (
-                <div
-                  key={ch}
-                  style={{
-                    width: 18,
-                    height: 16,
-                    background: "var(--t-bg)",
-                    borderWidth: 2,
-                    borderStyle: "solid",
-                    borderTopColor: "var(--t-border-light)",
-                    borderLeftColor: "var(--t-border-light)",
-                    borderBottomColor: "var(--t-border-dark)",
-                    borderRightColor: "var(--t-border-dark)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 9,
-                    color: "var(--t-text)",
-                    userSelect: "none",
-                    cursor: "default",
-                    lineHeight: 1,
-                  }}
-                >
-                  {ch}
-                </div>
+                <div key={ch} style={captionBtn}>{ch}</div>
               ))}
             </div>
 
@@ -165,13 +163,11 @@ export function GameCanvas({
                 padding: "20px 24px 16px",
               }}
             >
-              {/* Icon */}
               <div style={{ fontSize: 40, lineHeight: 1, flexShrink: 0, paddingTop: 2 }}>
                 {isWin ? "🎉" : "💀"}
               </div>
 
               <div style={{ flex: 1 }}>
-                {/* Phase title */}
                 <div
                   style={{
                     fontSize: "var(--t-text-lg)",
@@ -184,7 +180,6 @@ export function GameCanvas({
                   {isWin ? "VICTOIRE !" : "GAME OVER"}
                 </div>
 
-                {/* Score label */}
                 <div
                   style={{
                     fontSize: "var(--t-text-xs)",
@@ -195,7 +190,6 @@ export function GameCanvas({
                   SCORE FINAL
                 </div>
 
-                {/* Score sunken box */}
                 <div
                   style={{
                     display: "inline-block",
@@ -239,10 +233,11 @@ export function GameCanvas({
             <div
               style={{
                 display: "flex",
-                gap: 8,
+                gap: 6,
                 justifyContent: "center",
-                padding: "10px 24px 14px",
+                padding: "10px 20px 14px",
                 borderTop: "1px solid var(--t-border-dark)",
+                flexWrap: "wrap",
               }}
             >
               {isWin && (
@@ -253,11 +248,16 @@ export function GameCanvas({
               <button onClick={onReplay} style={btnRaised}>
                 Rejouer
               </button>
-              <button
-                onClick={onLeaderboard}
-                style={{ ...btnRaised, color: "var(--t-accent)" }}
-              >
-                🏆 Scores
+              {!isWin && (
+                <button
+                  onClick={onLeaderboard}
+                  style={{ ...btnRaised, color: "var(--t-accent)" }}
+                >
+                  🏆 Classement
+                </button>
+              )}
+              <button onClick={onMenu} style={{ ...btnRaised, color: "var(--t-text-muted)" }}>
+                ≡ Menu
               </button>
             </div>
           </div>
