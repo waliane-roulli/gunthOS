@@ -27,9 +27,9 @@ export function endOfTurn(s: GameState, ironWillUsed: boolean, events: GameEvent
       s.floatingTexts.push({ x: W / 2, y: H / 2, text: `+${ballBonus.toLocaleString()} BONUS BILLES !`, life: 1, maxLife: 3, color: "#00ffcc", combo: true, fontSize: 16 });
     }
 
-    const saved = parseInt(localStorage.getItem("peggle98_best") ?? "0", 10);
+    const saved = parseInt(localStorage.getItem("peagle98_best") ?? "0", 10);
     if (s.score > saved) {
-      localStorage.setItem("peggle98_best", String(s.score));
+      localStorage.setItem("peagle98_best", String(s.score));
       events.push({ kind: "best-score", score: s.score });
     }
 
@@ -47,9 +47,9 @@ export function endOfTurn(s: GameState, ironWillUsed: boolean, events: GameEvent
       s.phase = "aim";
       events.push({ kind: "iron-will" });
     } else {
-      const saved = parseInt(localStorage.getItem("peggle98_best") ?? "0", 10);
+      const saved = parseInt(localStorage.getItem("peagle98_best") ?? "0", 10);
       if (s.score > saved) {
-        localStorage.setItem("peggle98_best", String(s.score));
+        localStorage.setItem("peagle98_best", String(s.score));
         events.push({ kind: "best-score", score: s.score });
       }
       s.phase = "lost";

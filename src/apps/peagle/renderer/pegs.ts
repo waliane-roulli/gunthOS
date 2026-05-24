@@ -1,5 +1,5 @@
 import { PEG_R } from "../engine/constants";
-import { PEGGLE_THEME } from "./theme";
+import { PEAGLE_THEME } from "./theme";
 import type { GameState, Peg, GreenPowerupId } from "../engine/types";
 import { getPegType } from "../engine/types";
 
@@ -66,7 +66,7 @@ function drawWarpPeg(ctx: CanvasRenderingContext2D, p: Peg, r: number, animClock
   const wp = 0.6 + 0.4 * Math.sin(animClock * 4 + (p.warpId ?? 0) * 2);
   if (!p.hit) {
     pixelSquare(ctx, p.x, p.y, r,
-      "#6600cc", PEGGLE_THEME.peg.warpHi, "#330066",
+      "#6600cc", PEAGLE_THEME.peg.warpHi, "#330066",
       "#cc00ff", 10 + wp * 8,
     );
     // Inner pixel accent
@@ -81,7 +81,7 @@ function drawBossPeg(ctx: CanvasRenderingContext2D, p: Peg, r: number, animClock
   const pulse = 0.5 + 0.5 * Math.sin(animClock * 3);
   if (!p.hit) {
     pixelSquare(ctx, p.x, p.y, r,
-      "#cc8800", PEGGLE_THEME.peg.bossHi, "#664400",
+      "#cc8800", PEAGLE_THEME.peg.bossHi, "#664400",
       "#ffcc00", 10 + pulse * 10,
     );
     ctx.fillStyle = "#ffffcc";
@@ -109,7 +109,7 @@ function drawBossPeg(ctx: CanvasRenderingContext2D, p: Peg, r: number, animClock
 function drawBombPeg(ctx: CanvasRenderingContext2D, p: Peg, r: number): void {
   if (!p.hit) {
     pixelSquare(ctx, p.x, p.y, r,
-      PEGGLE_THEME.peg.bomb, PEGGLE_THEME.peg.bombHi, "#880011",
+      PEAGLE_THEME.peg.bomb, PEAGLE_THEME.peg.bombHi, "#880011",
       "rgba(255,20,60,0.5)", 4,
     );
     ctx.fillStyle = "#ffeeaa";
@@ -144,12 +144,12 @@ function drawOrangePeg(ctx: CanvasRenderingContext2D, p: Peg, r: number, inFever
   if (!p.hit) {
     if (inFever) {
       pixelSquare(ctx, p.x, p.y, r,
-        PEGGLE_THEME.peg.orangeFever, PEGGLE_THEME.peg.orangeGlow, "#880088",
-        PEGGLE_THEME.peg.orangeGlow, 14 + feverIntensity * 14,
+        PEAGLE_THEME.peg.orangeFever, PEAGLE_THEME.peg.orangeGlow, "#880088",
+        PEAGLE_THEME.peg.orangeGlow, 14 + feverIntensity * 14,
       );
     } else {
       pixelSquare(ctx, p.x, p.y, r,
-        PEGGLE_THEME.peg.orangeBase, PEGGLE_THEME.peg.orangeHi, "#882200",
+        PEAGLE_THEME.peg.orangeBase, PEAGLE_THEME.peg.orangeHi, "#882200",
         "rgba(255,100,0,0.4)", 5,
       );
     }
@@ -161,7 +161,7 @@ function drawOrangePeg(ctx: CanvasRenderingContext2D, p: Peg, r: number, inFever
 function drawGreenPeg(ctx: CanvasRenderingContext2D, p: Peg, r: number): void {
   if (!p.hit) {
     pixelSquare(ctx, p.x, p.y, r,
-      "#009922", PEGGLE_THEME.peg.greenHi, "#003311",
+      "#009922", PEAGLE_THEME.peg.greenHi, "#003311",
       "rgba(0,255,68,0.35)", 4,
     );
     ctx.fillStyle = "#ccffaa";
@@ -178,7 +178,7 @@ function drawGreenPeg(ctx: CanvasRenderingContext2D, p: Peg, r: number): void {
 function drawNormalPeg(ctx: CanvasRenderingContext2D, p: Peg, r: number): void {
   if (!p.hit) {
     pixelSquare(ctx, p.x, p.y, r,
-      PEGGLE_THEME.peg.normal, PEGGLE_THEME.peg.normalHi, "#000d44",
+      PEAGLE_THEME.peg.normal, PEAGLE_THEME.peg.normalHi, "#000d44",
     );
   } else {
     pixelSquareHit(ctx, p.x, p.y, r, "#0a0a22");
@@ -219,7 +219,7 @@ export function drawPegs(ctx: CanvasRenderingContext2D, s: GameState, inFever: b
       const rx = Math.round(p.x - ringR);
       const ry = Math.round(p.y - ringR);
       ctx.globalAlpha = alpha * 0.8;
-      ctx.strokeStyle = PEGGLE_THEME.popRing[getPegType(p)];
+      ctx.strokeStyle = PEAGLE_THEME.popRing[getPegType(p)];
       ctx.lineWidth = 1;
       ctx.strokeRect(rx, ry, rs, rs);
     }

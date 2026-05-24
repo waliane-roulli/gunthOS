@@ -1,12 +1,15 @@
 "use client";
 
-// Pixel art icons for Peggle 98 — pure CSS, no assets, no emoji.
+// Pixel art icons for Peagle 98 — pure CSS, no assets, no emoji.
 // Each icon is a 5×5 or 7×7 grid of colored cells.
 // Usage: <PegIcon id="canonnier" size={24} />
 
 import React from "react";
 
 type PegIconId =
+  // Peagle mascot
+  | "eagle"
+  | "eagle_large"
   // Classes
   | "canonnier" | "alchimiste" | "sniper"
   // Green powerups
@@ -28,6 +31,54 @@ interface IconDef {
 }
 
 const ICONS: Record<PegIconId, IconDef> = {
+  // ─── Peagle mascot ────────────────────────────────────────────────────────
+  eagle: {
+    // Cute pixel eagle — 9×9, white head, brown body, yellow beak+feet
+    grid: [
+      "...www...",
+      "..wbwbw..",
+      "..wywyw..",
+      "..www.y..",
+      ".wbbbbbb.",
+      "wwbbbbbww",
+      ".wbbbbbw.",
+      "...wbw...",
+      "...ywy...",
+    ],
+    palette: {
+      w: "#f5f0e8",
+      b: "#8b5e3c",
+      y: "#f5c542",
+    },
+  },
+
+  // ─── Large menu eagle (16×16) ─────────────────────────────────────────────
+  eagle_large: {
+    grid: [
+      "......wwww......",
+      "....wwwwwwww....",
+      "...wwbbwwbbww...",
+      "...wwbbwwbbww...",
+      "...wwwwwwyyww...",
+      "....wwwwwwww....",
+      "..bbwwwwwwwwbb..",
+      ".bbbbbwwwwbbbbb.",
+      "bbbbbbbbbbbbbbbb",
+      ".bbbbbbbbbbbbbbb",
+      "..bbbbbbbbbbbb..",
+      "....bbbbbbbb....",
+      "....wwbbbbww....",
+      "....wwwbbwww....",
+      ".....yywwyy.....",
+      ".....yy..yy.....",
+    ],
+    palette: {
+      w: "#f5f0e8",
+      b: "#8b5e3c",
+      y: "#f5c542",
+    },
+  },
+
   // ─── Classes ──────────────────────────────────────────────────────────────
   canonnier: {
     // Cannon barrel pointing right

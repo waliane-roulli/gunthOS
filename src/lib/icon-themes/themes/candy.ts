@@ -10,7 +10,7 @@ export const candyTheme: IconTheme = {
   style: "candy",
   icons: {
     ...lucideTheme.icons,
-    peggle:           { ...lucideTheme.icons["peggle"]!,          color: "#ff3d5a" },
+    peagle:           { ...lucideTheme.icons["peagle"]!,          color: "#ff3d5a" },
     "plouf-plouf":    { ...lucideTheme.icons["plouf-plouf"]!,     color: "#3da8ff" },
     profile:          { ...lucideTheme.icons["profile"]!,         color: "#c13dff" },
     directory:        { ...lucideTheme.icons["directory"]!,       color: "#3ddf78" },

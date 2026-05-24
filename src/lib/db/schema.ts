@@ -239,8 +239,8 @@ export const guntherBoardReactions = sqliteTable("gunther_board_reactions", {
   uniqueIndex("gunther_board_reactions_unique_idx").on(t.ticketId, t.userId, t.emoji),
 ]);
 
-// Peggle 98 leaderboard
-export const peggleScores = sqliteTable("peggle_scores", {
+// Peagle 98 leaderboard
+export const peagleScores = sqliteTable("peagle_scores", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
   score: integer("score").notNull(),

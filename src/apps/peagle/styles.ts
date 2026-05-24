@@ -1,8 +1,8 @@
 import type { CSSProperties } from "react";
 
-// ─── Peggle 98 design tokens ──────────────────────────────────────────────────
+// ─── Peagle 98 design tokens ──────────────────────────────────────────────────
 // Couleurs référencées ici pour le code inline qui ne peut pas utiliser CSS classes.
-// Pour tout le reste, utiliser les classes dans peggle.css.
+// Pour tout le reste, utiliser les classes dans peagle.css.
 
 export const PG = {
   bg:        "#0d0d1a",

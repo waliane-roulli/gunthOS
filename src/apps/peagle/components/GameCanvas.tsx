@@ -5,7 +5,7 @@ import type { RefObject, MouseEvent } from "react";
 import type { UiState } from "../engine/types";
 import { W, H } from "../engine/constants";
 import { captionBtn, btnRaised, PG } from "../styles";
-import "../peggle.css";
+import "../peagle.css";
 import { PegIcon } from "./PegIcon";
 
 interface GameCanvasProps {
@@ -57,7 +57,7 @@ export function GameCanvas({
   return (
     <div
       ref={containerRef}
-      className="peggle-root relative flex-1 flex items-center justify-center overflow-hidden"
+      className="peagle-root relative flex-1 flex items-center justify-center overflow-hidden"
       style={{ background: PG.bg }}
     >
       <canvas
@@ -114,7 +114,7 @@ export function GameCanvas({
             {/* Titlebar */}
             <div className="pg-titlebar">
               <span style={{ fontSize: 8, color: "#aaaaee", flex: 1, letterSpacing: "0.05em", display: "flex", alignItems: "center", gap: 5 }}>
-                <PegIcon id="gamepad" size={10} /> PEGGLE 98
+                <PegIcon id="gamepad" size={10} /> PEAGLE 98
               </span>
               {(["─", "□", "×"] as const).map((ch) => (
                 <div key={ch} style={captionBtn}>{ch}</div>

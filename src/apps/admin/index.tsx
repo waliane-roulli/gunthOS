@@ -54,7 +54,7 @@ const divider: React.CSSProperties = {
 
 // ─── nav sidebar ──────────────────────────────────────────────────────────────
 
-type Section = "live" | "users" | "database" | "notifications" | "broadcast" | "vocal" | "versions";
+type Section = "live" | "users" | "database" | "notifications" | "broadcast" | "vocal" | "versions" | "peagle";
 
 const NAV_ITEMS: { id: Section; label: string; icon: string }[] = [
   { id: "live",          label: "En direct",       icon: "🟢" },
@@ -64,6 +64,7 @@ const NAV_ITEMS: { id: Section; label: string; icon: string }[] = [
   { id: "broadcast",     label: "Broadcast",       icon: "📢" },
   { id: "vocal",         label: "Vocal TTS",       icon: "🔊" },
   { id: "versions",      label: "Versions",        icon: "📋" },
+  { id: "peagle",        label: "Peagle 98",       icon: "🎯" },
 ];
 
 function Sidebar({ active, onSelect }: { active: Section; onSelect: (s: Section) => void }) {
@@ -211,7 +212,7 @@ function LivePanel() {
     setLoading(true);
     fetch("/api/admin/stats")
       .then((r) => r.json())
-      .then((d) => { setData(d); setLoading(false); })
+      .then((d) => { setData(Array.isArray(d?.onlineUsers) ? d : null); setLoading(false); })
       .catch(() => setLoading(false));
   }
 
@@ -1527,6 +1528,168 @@ function VersionsPanel() {
   );
 }
 
+// ─── peagle panel ────────────────────────────────────────────────────────────
+
+type PeagleScoreRow = {
+  userId: string;
+  username: string | null;
+  score: number;
+  won: boolean;
+  createdAt: number;
+};
+
+function PeaglePanel() {
+  const notify = useNotify();
+  const [scores, setScores] = useState<PeagleScoreRow[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [confirmReset, setConfirmReset] = useState(false);
+  const [confirmUser, setConfirmUser] = useState<string | null>(null);
+
+  function load() {
+    setLoading(true);
+    fetch("/api/admin/peagle-scores")
+      .then((r) => r.json())
+      .then((d: { scores: PeagleScoreRow[]; total: number }) => {
+        setScores(d.scores ?? []);
+        setTotal(d.total ?? 0);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }
+
+  useEffect(load, []);
+
+  async function resetAll() {
+    setBusy(true);
+    const res = await fetch("/api/admin/peagle-scores", { method: "DELETE" });
+    const data = await res.json() as { ok?: boolean; error?: string };
+    setBusy(false);
+    setConfirmReset(false);
+    if (data.ok) {
+      setScores([]);
+      setTotal(0);
+      notify({ type: "success", title: "Scores Peagle réinitialisés" });
+    } else {
+      notify({ type: "error", title: "Erreur", message: data.error });
+    }
+  }
+
+  async function resetUser(userId: string) {
+    setBusy(true);
+    const res = await fetch("/api/admin/peagle-scores", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId }),
+    });
+    const data = await res.json() as { ok?: boolean; error?: string };
+    setBusy(false);
+    setConfirmUser(null);
+    if (data.ok) {
+      setScores((prev) => prev.filter((s) => s.userId !== userId));
+      setTotal((t) => Math.max(0, t - scores.filter((s) => s.userId === userId).length));
+      notify({ type: "success", title: "Scores supprimés pour cet utilisateur" });
+    } else {
+      notify({ type: "error", title: "Erreur", message: data.error });
+    }
+  }
+
+  const cell: React.CSSProperties = { padding: "6px 10px", verticalAlign: "middle" };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+      <SectionHeader
+        title="Peagle 98"
+        subtitle={loading ? "Chargement…" : `${total} score${total !== 1 ? "s" : ""} en base · top 20 affiché`}
+        actions={
+          <>
+            <button style={btn()} onClick={load} disabled={loading || busy}>↻ Rafraîchir</button>
+            {confirmReset ? (
+              <>
+                <span style={{ fontFamily: "var(--t-font-body)", fontSize: "var(--t-text-xs)", color: "var(--t-error)" }}>
+                  Tout supprimer ?
+                </span>
+                <button style={btn("danger")} disabled={busy} onClick={resetAll}>
+                  {busy ? "…" : "Confirmer"}
+                </button>
+                <button style={btn()} onClick={() => setConfirmReset(false)}>Annuler</button>
+              </>
+            ) : (
+              <button style={btn("danger")} onClick={() => setConfirmReset(true)} disabled={busy || total === 0}>
+                Reset tous les scores
+              </button>
+            )}
+          </>
+        }
+      />
+      <div style={{ flex: 1, overflow: "auto" }}>
+        {loading ? (
+          <div style={{ padding: 20, fontFamily: "var(--t-font-body)", fontSize: "var(--t-text-sm)", color: "var(--t-text-muted)" }}>
+            Chargement…
+          </div>
+        ) : scores.length === 0 ? (
+          <div style={{ padding: 20, fontFamily: "var(--t-font-body)", fontSize: "var(--t-text-sm)", color: "var(--t-text-muted)", textAlign: "center" }}>
+            Aucun score enregistré.
+          </div>
+        ) : (
+          <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "var(--t-font-body)", fontSize: "var(--t-text-sm)" }}>
+            <thead>
+              <tr style={{ ...divider, textAlign: "left", color: "var(--t-text-muted)", background: "var(--t-inset-from)" }}>
+                <th style={{ ...cell, width: 30 }}>#</th>
+                <th style={cell}>Joueur</th>
+                <th style={cell}>Score</th>
+                <th style={cell}>Victoire</th>
+                <th style={cell}>Date</th>
+                <th style={cell}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {scores.map((s, i) => (
+                <tr key={`${s.userId}-${s.createdAt}`} style={{ borderBottom: "1px solid var(--t-border-dark)", color: "var(--t-text)" }}>
+                  <td style={{ ...cell, color: "var(--t-text-muted)", fontSize: "var(--t-text-xs)" }}>{i + 1}</td>
+                  <td style={cell}>
+                    <span style={{ color: "var(--t-accent)" }}>{s.username ?? s.userId.slice(0, 8)}</span>
+                  </td>
+                  <td style={cell}>
+                    <span style={{ fontFamily: "var(--t-font-display)", color: "var(--t-accent)" }}>
+                      {s.score.toLocaleString("fr-FR")}
+                    </span>
+                  </td>
+                  <td style={cell}>
+                    {s.won
+                      ? <span style={{ color: "var(--t-success)" }}>✔ Gagné</span>
+                      : <span style={{ color: "var(--t-text-muted)" }}>—</span>
+                    }
+                  </td>
+                  <td style={{ ...cell, color: "var(--t-text-muted)", fontSize: "var(--t-text-xs)" }}>
+                    {new Date(s.createdAt).toLocaleDateString("fr-FR")}
+                  </td>
+                  <td style={cell}>
+                    {confirmUser === s.userId ? (
+                      <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+                        <span style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)" }}>Confirmer ?</span>
+                        <button style={btn("danger")} disabled={busy} onClick={() => resetUser(s.userId)}>
+                          {busy ? "…" : "Oui"}
+                        </button>
+                        <button style={btn()} onClick={() => setConfirmUser(null)}>Non</button>
+                      </div>
+                    ) : (
+                      <button style={btn("danger")} onClick={() => setConfirmUser(s.userId)} disabled={busy}>
+                        Supprimer
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── access denied ────────────────────────────────────────────────────────────
 
 function AccessDenied() {
@@ -1581,6 +1744,7 @@ export function DbAdmin({ windowId: _windowId }: AppProps) {
         {section === "broadcast"     && <BroadcastPanel />}
         {section === "vocal"         && <VocalPanel />}
         {section === "versions"      && <VersionsPanel />}
+        {section === "peagle"        && <PeaglePanel />}
       </div>
     </div>
   );

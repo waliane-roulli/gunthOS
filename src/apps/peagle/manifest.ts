@@ -1,19 +1,19 @@
 import { lazy, type ComponentType } from "react";
 import type { AppManifest, AppProps } from "@/types";
 
-const PeggleApp = lazy(
-  () => import("./index").then((m) => ({ default: m.PeggleApp }))
+const PeagleApp = lazy(
+  () => import("./index").then((m) => ({ default: m.PeagleApp }))
 ) as ComponentType<AppProps>;
 
 export const manifest: AppManifest = {
-  slug: "peggle",
-  name: "Peggle 98",
-  description: "Lancez des billes, détruisez des pegs !",
-  emoji: "🎯",
+  slug: "peagle",
+  name: "Peagle 98",
+  description: "Lancez des œufs, détruisez des pegs !",
+  emoji: "🦅",
   version: "1.2.0",
   defaultSize: { w: 700, h: 820 },
   loadDuration: 1800,
   showInLauncher: true,
-  component: PeggleApp,
-  audioChannels: ["peggle-music"],
+  component: PeagleApp,
+  audioChannels: ["peagle-music"],
 };

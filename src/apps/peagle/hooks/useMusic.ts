@@ -11,7 +11,7 @@ export function useMusic() {
 
   useEffect(() => {
     init();
-    const channel = getChannel("peggle-music");
+    const channel = getChannel("peagle-music");
     playerRef.current = new AudioPlayer(channel);
     playerRef.current.play("/sounds/radio-lofi.mp3", { loop: true });
     return () => { playerRef.current?.fadeOutAndStop(0.8); };

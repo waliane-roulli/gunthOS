@@ -1,5 +1,5 @@
-// ─── Peggle 98 — Pixel Art Coloré palette ─────────────────────────────────────
-// Couleurs canvas uniquement. La UI React utilise styles.ts / peggle.css.
+// ─── Peagle 98 — Pixel Art Coloré palette ─────────────────────────────────────
+// Couleurs canvas uniquement. La UI React utilise styles.ts / peagle.css.
 
 export const FACE   = "#0a0a1e";
 export const HI     = "#5a5aaa";
@@ -9,7 +9,7 @@ export const TEAL   = "#080818";
 export const NAVY   = "#ff6b35";
 export const BLUE_T = "#ff9f68";
 
-export const PEGGLE_THEME = {
+export const PEAGLE_THEME = {
   peg: {
     normal:       "#2233aa",   // bleu cobalt pixel
     normalHi:     "#4455ff",   // reflet peg normal

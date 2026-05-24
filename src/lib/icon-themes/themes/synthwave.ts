@@ -10,7 +10,7 @@ export const synthwaveTheme: IconTheme = {
   style: "synthwave",
   icons: {
     ...lucideTheme.icons,
-    peggle:           { ...lucideTheme.icons["peggle"]!,          color: "#ff2d78" },
+    peagle:           { ...lucideTheme.icons["peagle"]!,          color: "#ff2d78" },
     "plouf-plouf":    { ...lucideTheme.icons["plouf-plouf"]!,     color: "#00e5ff" },
     profile:          { ...lucideTheme.icons["profile"]!,         color: "#e040fb" },
     directory:        { ...lucideTheme.icons["directory"]!,       color: "#69ff47" },

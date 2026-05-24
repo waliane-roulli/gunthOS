@@ -119,7 +119,7 @@ export const GUNTH_REBOOT_MESSAGES = [
   "GunthOS redémarre…\n\nGilles a été notifié du redémarrage. Gilles ne sait pas pourquoi. Gilles est en congé paternité de toute façon.",
 ];
 
-export const PEGGLE_TIPS = [
+export const PEAGLE_TIPS = [
   "Cliquez pour tirer • votre précision est… caractéristique.",
   "Cliquez pour tirer • les pegs orange prient pour vous. Ça ne suffira pas.",
   "Cliquez pour tirer • l'IA a calculé votre score optimal. Elle ne le dira pas.",

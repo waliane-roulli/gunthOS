@@ -33,7 +33,7 @@ export const lucideTheme: IconTheme = {
   preview: "✨",
   style: "colored-bg",
   icons: {
-    peggle:          { icon: Target,          color: "#c0392b" },
+    peagle:          { icon: Target,          color: "#c0392b" },
     "plouf-plouf":   { icon: Droplets,        color: "#2980b9" },
     profile:         { icon: User,            color: "#8e44ad" },
     directory:       { icon: Users,           color: "#27ae60" },

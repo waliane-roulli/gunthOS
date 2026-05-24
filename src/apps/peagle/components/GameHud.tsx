@@ -1,6 +1,6 @@
 "use client";
 
-import "../peggle.css";
+import "../peagle.css";
 import type { UiState } from "../engine/types";
 import { RelicBar } from "./RelicBar";
 import { PG } from "../styles";
@@ -109,7 +109,7 @@ export function GameHud({ ui, bestScore, displayName, onActivateMultiball, onMen
 
   return (
     <div
-      className="peggle-root"
+      className="peagle-root"
       style={{
         display: "flex",
         alignItems: "stretch",

@@ -1,6 +1,6 @@
 "use client";
 
-import "../peggle.css";
+import "../peagle.css";
 import type { UpgradeId, RelicId } from "../engine/roguelite";
 import { UPGRADES, RELICS } from "../engine/roguelite";
 import { captionBtn, PG } from "../styles";
@@ -27,7 +27,7 @@ export function UpgradePicker({
 }: UpgradePickerProps) {
   return (
     <div
-      className="peggle-root"
+      className="peagle-root"
       style={{
         position: "absolute",
         inset: 0,

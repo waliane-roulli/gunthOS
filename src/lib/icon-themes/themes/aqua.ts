@@ -10,7 +10,7 @@ export const aquaTheme: IconTheme = {
   style: "aqua",
   icons: {
     ...lucideTheme.icons,
-    peggle:           { ...lucideTheme.icons["peggle"]!,          color: "#e53935" },
+    peagle:           { ...lucideTheme.icons["peagle"]!,          color: "#e53935" },
     "plouf-plouf":    { ...lucideTheme.icons["plouf-plouf"]!,     color: "#1e88e5" },
     profile:          { ...lucideTheme.icons["profile"]!,         color: "#8e24aa" },
     directory:        { ...lucideTheme.icons["directory"]!,       color: "#43a047" },

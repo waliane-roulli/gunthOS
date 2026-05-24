@@ -10,7 +10,7 @@ export const pastelTheme: IconTheme = {
   style: "pastel",
   icons: {
     ...lucideTheme.icons,
-    peggle:           { ...lucideTheme.icons["peggle"]!,          bgColor: "#ffd6d6" },
+    peagle:           { ...lucideTheme.icons["peagle"]!,          bgColor: "#ffd6d6" },
     "plouf-plouf":    { ...lucideTheme.icons["plouf-plouf"]!,     bgColor: "#cce5ff" },
     profile:          { ...lucideTheme.icons["profile"]!,         bgColor: "#ead6ff" },
     directory:        { ...lucideTheme.icons["directory"]!,       bgColor: "#ccf0dc" },

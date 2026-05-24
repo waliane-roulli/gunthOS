@@ -1,27 +1,27 @@
 export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { peggleScores, user } from "@/lib/db/schema";
+import { peagleScores, user } from "@/lib/db/schema";
 import { getAuth } from "@/lib/auth";
 import { desc, eq } from "drizzle-orm";
 import { headers } from "next/headers";
 
-// GET /api/peggle/scores — top 10 leaderboard (best score per user)
+// GET /api/peagle/scores — top 10 leaderboard (best score per user)
 export async function GET() {
   try {
     const rows = db()
       .select({
-        userId: peggleScores.userId,
+        userId: peagleScores.userId,
         username: user.username,
         displayUsername: user.displayUsername,
         name: user.name,
-        score: peggleScores.score,
-        won: peggleScores.won,
-        createdAt: peggleScores.createdAt,
+        score: peagleScores.score,
+        won: peagleScores.won,
+        createdAt: peagleScores.createdAt,
       })
-      .from(peggleScores)
-      .innerJoin(user, eq(peggleScores.userId, user.id))
-      .orderBy(desc(peggleScores.score))
+      .from(peagleScores)
+      .innerJoin(user, eq(peagleScores.userId, user.id))
+      .orderBy(desc(peagleScores.score))
       .limit(50)
       .all();
 
@@ -37,12 +37,12 @@ export async function GET() {
 
     return NextResponse.json(leaderboard);
   } catch (err) {
-    console.error("peggle GET scores error:", err);
+    console.error("peagle GET scores error:", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }
 
-// POST /api/peggle/scores — submit a score (auth required)
+// POST /api/peagle/scores — submit a score (auth required)
 export async function POST(req: NextRequest) {
   try {
     const session = await getAuth().api.getSession({ headers: await headers() });
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Score invalide" }, { status: 400 });
     }
 
-    db().insert(peggleScores).values({
+    db().insert(peagleScores).values({
       userId: session.user.id,
       score,
       won,
@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error("peggle POST scores error:", err);
+    console.error("peagle POST scores error:", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }

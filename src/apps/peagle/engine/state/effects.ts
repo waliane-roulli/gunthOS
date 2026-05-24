@@ -1,5 +1,5 @@
 import type { GameState, Particle } from "../types";
-import { PEGGLE_THEME } from "../../renderer/theme";
+import { PEAGLE_THEME } from "../../renderer/theme";
 import { BALANCE } from "../balance";
 
 export function spawnParticles(
@@ -11,10 +11,10 @@ export function spawnParticles(
   bomb = false,
 ): void {
   const colors = bomb
-    ? PEGGLE_THEME.particles.bomb
+    ? PEAGLE_THEME.particles.bomb
     : orange
-    ? PEGGLE_THEME.particles.orange
-    : PEGGLE_THEME.particles.normal;
+    ? PEAGLE_THEME.particles.orange
+    : PEAGLE_THEME.particles.normal;
 
   for (let i = 0; i < count; i++) {
     // Evict oldest particles to stay under the cap

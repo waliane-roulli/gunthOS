@@ -1,8 +1,9 @@
 "use client";
 
-import "../peggle.css";
+import "../peagle.css";
 import { captionBtn, PG } from "../styles";
 import { PegIcon } from "./PegIcon";
+import { PeagleLogo } from "./PeagleLogo";
 
 interface MainMenuProps {
   bestScore: number;
@@ -14,7 +15,7 @@ interface MainMenuProps {
 export function MainMenu({ bestScore, displayName, onPlay, onLeaderboard }: MainMenuProps) {
   return (
     <div
-      className="peggle-root"
+      className="peagle-root"
       style={{
         flex: 1,
         display: "flex",
@@ -45,7 +46,7 @@ export function MainMenu({ bestScore, displayName, onPlay, onLeaderboard }: Main
         {/* Titlebar */}
         <div className="pg-titlebar">
           <span style={{ fontSize: 9, color: "#aaaaee", flex: 1, fontFamily: "var(--pg-font)", letterSpacing: "0.05em", display: "flex", alignItems: "center", gap: 5 }}>
-            <PegIcon id="gamepad" size={10} /> PEGGLE 98
+            <PegIcon id="eagle" size={10} /> PEAGLE 98
           </span>
           {(["─", "□", "×"] as const).map((ch) => (
             <div key={ch} style={captionBtn}>{ch}</div>
@@ -55,13 +56,13 @@ export function MainMenu({ bestScore, displayName, onPlay, onLeaderboard }: Main
         {/* Body */}
         <div style={{ padding: "28px 28px 20px" }}>
 
-          {/* Hero — titre avec glow */}
-          <div style={{ textAlign: "center", marginBottom: 28 }}>
+          {/* Hero — logo pixel art eagle + titre */}
+          <div style={{ textAlign: "center", marginBottom: 24 }}>
             <div
               style={{
                 display: "inline-block",
-                padding: "12px 20px",
-                marginBottom: 14,
+                padding: "16px 20px 12px",
+                marginBottom: 12,
                 background: PG.bg,
                 borderWidth: 2,
                 borderStyle: "solid",
@@ -71,29 +72,7 @@ export function MainMenu({ bestScore, displayName, onPlay, onLeaderboard }: Main
                 borderRightColor: PG.hi,
               }}
             >
-              <div
-                style={{
-                  fontSize: 18,
-                  lineHeight: 1.3,
-                  color: PG.orange,
-                  animation: "pg-pulse-orange 2.4s ease-in-out infinite",
-                  letterSpacing: "0.05em",
-                  fontFamily: "var(--pg-font)",
-                }}
-              >
-                PEGGLE
-              </div>
-              <div
-                style={{
-                  fontSize: 11,
-                  color: PG.cyan,
-                  letterSpacing: "0.3em",
-                  fontFamily: "var(--pg-font)",
-                  marginTop: 4,
-                }}
-              >
-                ■ 98 ■
-              </div>
+              <PeagleLogo />
             </div>
 
             <div

@@ -1,6 +1,6 @@
 "use client";
 
-import "../peggle.css";
+import "../peagle.css";
 import type { ClassId } from "../engine/roguelite";
 import { CLASSES, CLASS_COLORS, RELICS } from "../engine/roguelite";
 import { captionBtn, PG } from "../styles";
@@ -79,7 +79,7 @@ export function ClassPicker({ onPick }: ClassPickerProps) {
 
   return (
     <div
-      className="peggle-root"
+      className="peagle-root"
       style={{
         flex: 1,
         display: "flex",
@@ -108,7 +108,7 @@ export function ClassPicker({ onPick }: ClassPickerProps) {
         {/* Titlebar */}
         <div className="pg-titlebar">
           <span style={{ fontSize: 8, color: "#aaaaee", flex: 1, fontFamily: "var(--pg-font)", letterSpacing: "0.05em", display: "flex", alignItems: "center", gap: 5 }}>
-            <PegIcon id="gamepad" size={10} /> PEGGLE 98 — CHOISISSEZ VOTRE CLASSE
+            <PegIcon id="gamepad" size={10} /> PEAGLE 98 — CHOISISSEZ VOTRE CLASSE
           </span>
           {(["─", "□", "×"] as const).map((ch) => (
             <div key={ch} style={captionBtn}>{ch}</div>

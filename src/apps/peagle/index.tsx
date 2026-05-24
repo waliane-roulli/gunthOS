@@ -3,7 +3,7 @@
 import { useRef, useCallback, useState, useEffect } from "react";
 import type { AppProps } from "@/types";
 import { useAuth } from "@/lib/contexts/auth-context";
-import { PEGGLE_TIPS } from "@/lib/gunth-jokes";
+import { PEAGLE_TIPS } from "@/lib/gunth-jokes";
 import { pickRandom } from "@/lib/utils/random";
 import { useMusic } from "./hooks/useMusic";
 import { useGameLoop } from "./hooks/useGameLoop";
@@ -22,7 +22,7 @@ type Screen = "menu" | "class-pick" | "game" | "leaderboard";
 
 const EMPTY_RUN: RunState = makeInitialRunState("canonnier");
 
-export function PeggleApp({ windowId: _windowId }: AppProps) {
+export function PeagleApp({ windowId: _windowId }: AppProps) {
   const { user } = useAuth();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const mouseRef = useRef({ x: W / 2, y: 0 });
@@ -37,12 +37,12 @@ export function PeggleApp({ windowId: _windowId }: AppProps) {
   });
   const [bestScore, setBestScore] = useState<number>(() => {
     if (typeof window === "undefined") return 0;
-    return parseInt(localStorage.getItem("peggle98_best") ?? "0", 10);
+    return parseInt(localStorage.getItem("peagle98_best") ?? "0", 10);
   });
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [lbLoading, setLbLoading] = useState(false);
   const [scoreSubmitted, setScoreSubmitted] = useState(false);
-  const [tip, setTip] = useState(() => pickRandom(PEGGLE_TIPS));
+  const [tip, setTip] = useState(() => pickRandom(PEAGLE_TIPS));
 
   // Upgrade pick state
   const [upgradeOffer, setUpgradeOffer] = useState<UpgradeId[] | null>(null);
@@ -50,13 +50,13 @@ export function PeggleApp({ windowId: _windowId }: AppProps) {
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (ui.phase === "aim") setTip(pickRandom(PEGGLE_TIPS));
+    if (ui.phase === "aim") setTip(pickRandom(PEAGLE_TIPS));
   }, [ui.phase]);
 
   const fetchLeaderboard = useCallback(async () => {
     setLbLoading(true);
     try {
-      const res = await fetch("/api/peggle/scores");
+      const res = await fetch("/api/peagle/scores");
       const data = await res.json() as LeaderboardEntry[];
       setLeaderboard(data);
     } catch { /* silent */ }
@@ -67,7 +67,7 @@ export function PeggleApp({ windowId: _windowId }: AppProps) {
     if (!user || scoreSubmitted) return;
     setScoreSubmitted(true);
     try {
-      await fetch("/api/peggle/scores", {
+      await fetch("/api/peagle/scores", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ score, won }),

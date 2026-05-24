@@ -1,9 +1,9 @@
-/* ─── Peggle 98 — Pixel Art Moderne × Win98 ──────────────────────────────────
+/* ─── Peagle 98 — Pixel Art Moderne × Win98 ──────────────────────────────────
    Palette locale, animations, keyframes.
-   Importé uniquement dans les composants Peggle — ne pollue pas le thème global.
+   Importé uniquement dans les composants Peagle — ne pollue pas le thème global.
    ──────────────────────────────────────────────────────────────────────────── */
 
-.peggle-root {
+.peagle-root {
   --pg-bg:          #0d0d1a;   /* fond sombre, quasi-noir bleuté */
   --pg-surface:     #12122a;   /* surfaces (dialog, card bg) */
   --pg-surface-2:   #1a1a3a;   /* surfaces secondaires */
@@ -97,6 +97,30 @@
 @keyframes pg-card-in {
   from { transform: translateY(12px) scale(0.95); opacity: 0; }
   to   { transform: translateY(0)    scale(1);    opacity: 1; }
+}
+
+@keyframes pg-eagle-hover {
+  0%, 100% { transform: translateY(0px) scale(1); }
+  40%       { transform: translateY(-7px) scale(1.04); }
+  70%       { transform: translateY(-4px) scale(1.01); }
+}
+
+@keyframes pg-logo-letter-bounce {
+  0%, 100% { transform: translateY(0) scale(1) rotate(0deg); }
+  35%       { transform: translateY(-6px) scale(1.15) rotate(-2deg); }
+  55%       { transform: translateY(-3px) scale(1.07) rotate(1deg); }
+  75%       { transform: translateY(-5px) scale(1.1) rotate(-1deg); }
+}
+
+@keyframes pg-badge98-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%       { transform: scale(1.1); opacity: 0.9; }
+}
+
+@keyframes pg-particle-float {
+  0%, 100% { transform: translateY(0) rotate(0deg) scale(1); opacity: 0.9; }
+  33%       { transform: translateY(-8px) rotate(20deg) scale(1.2); opacity: 1; }
+  66%       { transform: translateY(-4px) rotate(-10deg) scale(0.9); opacity: 0.7; }
 }
 
 /* ─── Background — étoiles filantes ─────────────────────────────────────────── */

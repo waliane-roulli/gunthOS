@@ -58,11 +58,12 @@ export function drawBall(ctx: CanvasRenderingContext2D, ball: Ball, inSlowMo: bo
   ctx.fillRect(bx - br + 1, by - br + 1, 2, 1);
   ctx.fillRect(bx - br + 1, by - br + 1, 1, 2);
 
-  // Direction dot
-  const ddx = Math.round(Math.cos(angle) * (br - 2));
-  const ddy = Math.round(Math.sin(angle) * (br - 2));
-  ctx.fillStyle = "rgba(0,0,0,0.5)";
-  ctx.fillRect(bx + ddx - 1, by + ddy - 1, 2, 2);
+  // Egg speckles — small pixel dots like a speckled egg
+  ctx.fillStyle = inSlowMo ? "rgba(60,100,220,0.55)" : "rgba(80,60,40,0.45)";
+  ctx.fillRect(bx - 1, by - br + 2, 2, 1);  // top speckle
+  ctx.fillRect(bx + br - 3, by - 1, 1, 2);  // right speckle
+  ctx.fillRect(bx - br + 2, by + 1, 1, 1);  // left speckle
+  ctx.fillRect(bx, by + br - 3, 2, 1);      // bottom speckle
 
   ctx.restore();
 }
