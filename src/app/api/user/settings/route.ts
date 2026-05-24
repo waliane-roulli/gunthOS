@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getAuth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { userSettings } from "@/lib/db/schema";
+import { user, userSettings } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
 
@@ -56,6 +56,9 @@ export async function POST(req: NextRequest) {
     if (!parsed.success) {
       return NextResponse.json({ error: "Données invalides" }, { status: 400 });
     }
+
+    const userRow = db().select({ id: user.id }).from(user).where(eq(user.id, session.user.id)).get();
+    if (!userRow) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
     const existing = db().select().from(userSettings).where(eq(userSettings.userId, session.user.id)).get();
 

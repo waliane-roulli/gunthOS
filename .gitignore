@@ -47,3 +47,6 @@ next-env.d.ts
 /data/*.db-wal
 
 # drizzle migrations are committed — run pnpm db:generate locally after schema changes
+
+# Sentry Config File
+.env.sentry-build-plugin
