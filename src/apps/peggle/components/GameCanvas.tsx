@@ -55,7 +55,7 @@ export function GameCanvas({
     <div
       ref={containerRef}
       className="relative flex-1 flex items-center justify-center overflow-hidden"
-      style={{ background: "var(--t-app-bg)" }}
+      style={{ background: "#003a3a" }}
     >
       <canvas
         ref={canvasRef}

@@ -30,12 +30,16 @@ function HudStat({
   value,
   accent,
   muted,
+  urgent,
+  warn,
   minW = 48,
 }: {
   label: string;
   value: string | number;
   accent?: boolean;
   muted?: boolean;
+  urgent?: boolean;
+  warn?: boolean;
   minW?: number;
 }) {
   return (
@@ -48,12 +52,17 @@ function HudStat({
         padding: "0 10px",
         minWidth: minW,
         flexShrink: 0,
+        background: urgent
+          ? "rgba(180,0,0,0.18)"
+          : warn
+            ? "rgba(200,120,0,0.14)"
+            : undefined,
       }}
     >
       <span
         style={{
           fontSize: "var(--t-text-xs)",
-          color: "var(--t-text-muted)",
+          color: urgent ? "#ff7777" : warn ? "#ffaa44" : "var(--t-text-muted)",
           lineHeight: 1,
           marginBottom: 2,
           whiteSpace: "nowrap",
@@ -62,10 +71,19 @@ function HudStat({
         {label}
       </span>
       <span
+        className={urgent ? "animate-pulse" : undefined}
         style={{
           fontSize: "var(--t-text-sm)",
           fontWeight: "bold",
-          color: accent ? "var(--t-accent)" : muted ? "var(--t-text-muted)" : "var(--t-text)",
+          color: urgent
+            ? "#ff4444"
+            : warn
+              ? "#ff9900"
+              : accent
+                ? "var(--t-accent)"
+                : muted
+                  ? "var(--t-text-muted)"
+                  : "var(--t-text)",
           fontFamily: "var(--t-font-display)",
           lineHeight: 1,
           whiteSpace: "nowrap",
@@ -80,6 +98,8 @@ function HudStat({
 export function GameHud({ ui, bestScore, displayName, onActivateMultiball, onMenu }: GameHudProps) {
   const showMultiball = !ui.multiballUsed || ui.multiballPending || ui.multiballReady;
   const mbClickable = ui.multiballReady && !ui.multiballPending && ui.phase === "aim";
+  const inFever = ui.orangeLeft > 0 && ui.orangeLeft <= 3;
+  const lowBalls = ui.balls <= 2 && ui.balls > 0;
 
   return (
     <div
@@ -122,9 +142,9 @@ export function GameHud({ ui, bestScore, displayName, onActivateMultiball, onMen
       <Sep />
       <HudStat label="SCORE" value={ui.score.toLocaleString()} minW={88} />
       <Sep />
-      <HudStat label="🪟 FENÊTRES" value={`${ui.orangeLeft} / ${ui.orangeTotal}`} accent minW={84} />
+      <HudStat label="🪟 FENÊTRES" value={`${ui.orangeLeft} / ${ui.orangeTotal}`} accent={!inFever} urgent={inFever} minW={84} />
       <Sep />
-      <HudStat label="BILLES" value={ui.balls} minW={52} />
+      <HudStat label="BILLES" value={ui.balls} warn={lowBalls} minW={52} />
 
       {ui.combo >= 3 && (
         <>

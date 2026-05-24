@@ -269,21 +269,33 @@ export function draw(
     ctx.fillRect(-10, sy, W + 20, 1);
   }
 
-  // ── Aim line (Win98 dotted selection marching-ants style) ────────────────────
+  // ── Aim line (marching-ants animated dashed trajectory) ─────────────────────
   if (s.phase === "aim") {
     const pts = computeAimLine(launcherX, launcherY, aimAngle, s.pegs);
-    ctx.save();
-    ctx.setLineDash([4, 4]);
-    ctx.lineWidth = 1;
-    for (let i = 1; i < pts.length; i++) {
-      const prev = pts[i - 1]; const cur = pts[i];
-      if (!prev || !cur) continue;
-      const t = i / pts.length;
-      const alpha = t < 0.5 ? 0.6 : 0.6 * (1 - (t - 0.5) / 0.5);
-      ctx.strokeStyle = `rgba(255,255,255,${alpha})`;
-      ctx.beginPath(); ctx.moveTo(prev.x, prev.y); ctx.lineTo(cur.x, cur.y); ctx.stroke();
+    if (pts.length > 1) {
+      ctx.save();
+      ctx.setLineDash([5, 5]);
+      // Animate offset so dashes march forward (0.03/frame × 33 ≈ 1px/frame)
+      ctx.lineDashOffset = -(s.animClock * 33);
+
+      // Soft outer glow
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = "rgba(255,255,255,0.18)";
+      ctx.beginPath();
+      ctx.moveTo(pts[0]!.x, pts[0]!.y);
+      for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i]!.x, pts[i]!.y);
+      ctx.stroke();
+
+      // Bright core line — visible from start to end, gentle fade
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = "rgba(255,255,255,0.68)";
+      ctx.beginPath();
+      ctx.moveTo(pts[0]!.x, pts[0]!.y);
+      for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i]!.x, pts[i]!.y);
+      ctx.stroke();
+
+      ctx.restore();
     }
-    ctx.restore();
   }
 
   // ── Warp peg connections (dashed cable/wire) ─────────────────────────────────
@@ -381,24 +393,36 @@ export function draw(
 
     } else if (p.orange) {
       // Orange peg: Win98 ACTIVE TITLEBAR — the "windows to close"
-      const tg = ctx.createLinearGradient(p.x - r, p.y - r, p.x + r, p.y + r);
-      tg.addColorStop(0, NAVY);
-      tg.addColorStop(0.5, BLUE_T);
-      tg.addColorStop(1, NAVY);
-      ctx.shadowColor = inFever ? "#6699ff" : "rgba(0,0,180,0.55)";
+      let tg: CanvasGradient;
+      if (inFever) {
+        // Fever: bright cyan-white radial for maximum contrast against navy bg
+        tg = ctx.createRadialGradient(p.x - 2, p.y - 3, 1, p.x, p.y, r);
+        tg.addColorStop(0, "#ffffff");
+        tg.addColorStop(0.28, "#aaddff");
+        tg.addColorStop(0.65, "#0099ee");
+        tg.addColorStop(1, "#003366");
+        ctx.shadowColor = "#00ccff";
+        ctx.shadowBlur = 14 + feverIntensity * 12;
+      } else {
+        tg = ctx.createLinearGradient(p.x - r, p.y - r, p.x + r, p.y + r);
+        tg.addColorStop(0, NAVY);
+        tg.addColorStop(0.5, BLUE_T);
+        tg.addColorStop(1, NAVY);
+        ctx.shadowColor = "rgba(0,0,180,0.55)";
+        ctx.shadowBlur = 5;
+      }
       ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 1;
-      ctx.shadowBlur = inFever ? 12 + feverIntensity * 10 : 5;
       ctx.fillStyle = tg;
       ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.fill();
       ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
       if (!p.hit) {
-        // Titlebar-style highlight (top arc is lighter blue)
+        // Titlebar-style highlight (top arc is lighter)
         ctx.save();
         ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.clip();
-        ctx.strokeStyle = "rgba(140,210,255,0.7)";
+        ctx.strokeStyle = inFever ? "rgba(200,240,255,0.9)" : "rgba(140,210,255,0.7)";
         ctx.lineWidth = 2;
         ctx.beginPath(); ctx.arc(p.x, p.y, r - 1.2, Math.PI, 0, false); ctx.stroke();
-        ctx.strokeStyle = "rgba(0,0,40,0.4)";
+        ctx.strokeStyle = inFever ? "rgba(0,40,80,0.3)" : "rgba(0,0,40,0.4)";
         ctx.lineWidth = 2;
         ctx.beginPath(); ctx.arc(p.x, p.y, r - 1.2, 0, Math.PI, false); ctx.stroke();
         ctx.restore();
