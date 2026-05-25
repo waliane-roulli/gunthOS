@@ -19,8 +19,8 @@ import { useDraggable } from "@/lib/hooks/use-draggable";
 import { useWinnerHistory } from "./use-winner-history";
 import { DEFAULT_OPTIONS, PRESETS } from "@/types/plouf-plouf";
 import type { CelebrationOptions, DrawMode, PresetName, CelebType } from "@/types/plouf-plouf";
-import { THEMES } from "@/lib/themes";
-import type { ThemeId } from "@/lib/themes";
+import { GAME_THEMES } from "./game-themes";
+import type { PloufThemeId } from "./game-themes";
 
 const VALID_TYPES: Set<string> = new Set([
   "confetti", "fireworks", "rain", "matrix", "hearts", "stars",
@@ -57,8 +57,8 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
     "ploufPloufDrawMode",
     "vertical"
   );
-  const [appThemeId, setAppThemeId] = useLocalStorage<ThemeId | null>(
-    "ploufPloufTheme",
+  const [appThemeId, setAppThemeId] = useLocalStorage<PloufThemeId | null>(
+    "ploufPloufGameTheme",
     null
   );
 
@@ -273,7 +273,7 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
     return () => document.removeEventListener("keydown", onKey);
   }, [showResult, optionsOpen, handlePlouf, handleRetry, handleClear, stopCelebration]);
 
-  const appTheme = appThemeId ? THEMES.find((t) => t.id === appThemeId) : null;
+  const appTheme = appThemeId ? GAME_THEMES.find((t) => t.id === appThemeId) : null;
   const appThemeStyle = appTheme ? appTheme.vars : {};
 
   const canDraw = games.length >= 2 && !drawing.isDrawing;

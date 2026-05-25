@@ -3,8 +3,8 @@
 import { PRESETS, PRESET_LABELS, TYPE_DEFAULTS } from "@/types/plouf-plouf";
 import type { CelebrationOptions, PresetName } from "@/types/plouf-plouf";
 import { useDraggable } from "@/lib/hooks/use-draggable";
-import { THEMES } from "@/lib/themes";
-import type { ThemeId } from "@/lib/themes";
+import { GAME_THEMES } from "./game-themes";
+import type { PloufThemeId } from "./game-themes";
 import { RetroTitlebarBtn } from "@/components/ui/retro-titlebar-btn";
 
 interface OptionsPanelProps {
@@ -12,8 +12,8 @@ interface OptionsPanelProps {
   options: CelebrationOptions;
   onChange: (o: CelebrationOptions) => void;
   onClose: () => void;
-  appThemeId: ThemeId | null;
-  onThemeChange: (id: ThemeId | null) => void;
+  appThemeId: PloufThemeId | null;
+  onThemeChange: (id: PloufThemeId | null) => void;
   appThemeStyle: Record<string, string>;
 }
 
@@ -294,15 +294,15 @@ export function OptionsPanel({
         </OptGroup>
 
         {/* Theme */}
-        <OptGroup title="🖥️ Theme (cette app uniquement)">
+        <OptGroup title="🎮 Theme jeu vidéo (cet app uniquement)">
           <div className="grid grid-cols-2 gap-[3px]">
-            {THEMES.map((t) => {
+            {GAME_THEMES.map((t) => {
               const isActive = appThemeId === t.id;
               return (
                 <button
                   key={t.id}
                   onClick={() => onThemeChange(isActive ? null : t.id)}
-                  className="border-[2px] px-1 py-[5px] text-sm font-bold cursor-pointer text-left transition-none"
+                  className="border-[2px] px-2 py-[6px] text-sm font-bold cursor-pointer text-center transition-none"
                   style={{
                     fontFamily: "var(--t-font-body)",
                     backgroundColor: isActive ? "var(--t-accent)" : "var(--t-bg)",
