@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { PegIcon } from "./PegIcon";
 import { CLASSES, CLASS_COLORS } from "../engine/roguelite";
+import type { DevConfig } from "./DevPanel";
+import { btnRaised } from "../styles";
 
 interface PegDef {
   id: string; name: string; description: string;
@@ -66,8 +68,12 @@ function CssDecor({ def }: { def: typeof DECOR_DEFS[number] }) {
   return null;
 }
 
-export function PeagleAssetsGrid() {
-  const [selectedClass, setSelectedClass] = useState<string | null>(null);
+interface PeagleAssetsGridProps {
+  cfg: DevConfig;
+  onLaunch: (cfg: DevConfig) => void;
+}
+
+export function PeagleAssetsGrid({ cfg, onLaunch }: PeagleAssetsGridProps) {
   const [selectedPeg,   setSelectedPeg]   = useState<string | null>(null);
   const [selectedDecor, setSelectedDecor] = useState<string | null>(null);
 
@@ -101,16 +107,36 @@ export function PeagleAssetsGrid() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 8 }}>
           {classArr.map((cls) => {
             const color = CLASS_COLORS[cls.id];
-            const isSelected = selectedClass === cls.id;
+            const isActive = cfg.classId === cls.id;
             return (
-              <div key={cls.id} onClick={() => setSelectedClass(isSelected ? null : cls.id)} style={cardStyle(isSelected, color)}>
-                <div style={{ height: 72, background: "#0a0a1e", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6 }}>
+              <div key={cls.id} style={cardStyle(isActive, color)}>
+                <div style={{ height: 72, background: "#0a0a1e", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, position: "relative" }}>
+                  {isActive && (
+                    <div style={{ position: "absolute", top: 4, right: 4, background: color, color: "#000", fontFamily: "var(--font-press-start), monospace", fontSize: 6, padding: "2px 5px", letterSpacing: "0.04em" }}>
+                      ACTIF
+                    </div>
+                  )}
                   <PegIcon id={cls.id as "canonnier" | "alchimiste" | "sniper"} size={28} />
                   <div style={{ fontFamily: "var(--font-press-start), monospace", fontSize: 7, color, letterSpacing: "0.08em" }}>{cls.name.toUpperCase()}</div>
                 </div>
                 <div style={{ padding: "6px 8px", display: "flex", flexDirection: "column", gap: 3 }}>
                   <div style={{ fontFamily: "var(--font-press-start), monospace", fontSize: 7, color: "#e0d0ff" }}>{cls.desc}</div>
-                  <div style={{ fontFamily: "var(--font-press-start), monospace", fontSize: 6, color: "#6655aa", fontStyle: "italic", lineHeight: 1.4 }}>&quot;{cls.flavorText}&quot;</div>
+                  <div style={{ fontFamily: "var(--font-press-start), monospace", fontSize: 6, color: "#6655aa", fontStyle: "italic", lineHeight: 1.4, marginBottom: 4 }}>&quot;{cls.flavorText}&quot;</div>
+                  <button
+                    style={{
+                      ...btnRaised,
+                      fontSize: 7,
+                      padding: "4px 0",
+                      width: "100%",
+                      background: isActive ? `linear-gradient(to bottom, ${color}cc, ${color}88)` : undefined,
+                      color: isActive ? "#000" : color,
+                      borderTopColor: color,
+                      borderLeftColor: color,
+                    }}
+                    onClick={() => onLaunch({ ...cfg, classId: cls.id })}
+                  >
+                    {isActive ? "▶ RELANCER" : "▶ JOUER"}
+                  </button>
                 </div>
               </div>
             );

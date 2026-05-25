@@ -371,7 +371,7 @@ export function DevPanel({ onClose, onLaunch }: DevPanelProps) {
           }}
         >
           {activeTab === "annonces" && <AnnouncementsTab />}
-          {activeTab === "showroom" && <PeagleAssetsGrid />}
+          {activeTab === "showroom" && <PeagleAssetsGrid cfg={cfg} onLaunch={onLaunch} />}
           {activeTab === "game" && <>
           {/* Presets rapides */}
           <div style={SECTION}>
