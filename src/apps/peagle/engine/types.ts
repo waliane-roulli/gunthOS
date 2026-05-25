@@ -143,6 +143,8 @@ export interface GameState {
   turnScoreStart: number;
   bonusBucketFlash: number[];
   bonusBucketMults: number[];
+  orangeLeft: number;
+  warpPairs: [Peg, Peg][];
 
   runRelics: RelicId[];
   runUpgrades: UpgradeId[];

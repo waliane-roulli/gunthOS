@@ -1,6 +1,8 @@
 import { W, H } from "../engine/constants";
 import type { GameState } from "../engine/types";
 
+type Ctx2D = CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
+
 // ─── Forêt pixel art ──────────────────────────────────────────────────────────
 
 const TREE_LAYERS = [
@@ -38,7 +40,7 @@ const FIREFLY_POS = [
 ] as const;
 
 function drawPixelTree(
-  ctx: CanvasRenderingContext2D,
+  ctx: Ctx2D,
   baseX: number, baseY: number,
   trunkW: number, trunkH: number,
   crownW: number, crownH: number,
@@ -82,7 +84,7 @@ function drawPixelTree(
   }
 }
 
-function drawGround(ctx: CanvasRenderingContext2D, feverMode: boolean): void {
+function drawGround(ctx: Ctx2D, feverMode: boolean): void {
   const groundY = H - 80;
 
   // Sol principal
@@ -117,57 +119,91 @@ const FEVER_STARS = [
   { x: 110, y: 120, s: 1 }, { x: 270, y: 110, s: 2 }, { x: 360, y: 130, s: 1 },
 ] as const;
 
-export function drawBackground(ctx: CanvasRenderingContext2D, s: GameState, feverIntensity: number): void {
-  const feverMode = feverIntensity > 0.3;
+// ─── Static background cache ─────────────────────────────────────────────────
+// Trees, sky gradient, ground, and scanlines never change mid-frame.
+// We render them once into an OffscreenCanvas and blit it each frame.
+
+let _staticBgCache: OffscreenCanvas | null = null;
+let _staticBgFeverMode: boolean | null = null;
+
+function buildStaticBg(feverMode: boolean): OffscreenCanvas {
+  const canvas = new OffscreenCanvas(W, H);
+  const ctx = canvas.getContext("2d")!;
   const groundY = H - 80;
   const skyRows = 12;
 
-  // ── Ciel dégradé ────────────────────────────────────────────────────────────
+  // Sky gradient
   for (let row = 0; row < skyRows; row++) {
     const t = row / skyRows;
     let r: number, g: number, b: number;
     if (feverMode) {
-      // Nuit magique — noir profond vers bleu-violet sombre
-      const topC = [8, 4, 28];
-      const botC = [18, 10, 52];
+      const topC = [8, 4, 28]; const botC = [18, 10, 52];
       r = Math.round(topC[0]! + (botC[0]! - topC[0]!) * t);
       g = Math.round(topC[1]! + (botC[1]! - topC[1]!) * t);
       b = Math.round(topC[2]! + (botC[2]! - topC[2]!) * t);
     } else {
-      const topC = [58, 110, 140];
-      const botC = [106, 170, 68];
+      const topC = [58, 110, 140]; const botC = [106, 170, 68];
       r = Math.round(topC[0]! + (botC[0]! - topC[0]!) * t);
       g = Math.round(topC[1]! + (botC[1]! - topC[1]!) * t);
       b = Math.round(topC[2]! + (botC[2]! - topC[2]!) * t);
     }
     const rowH = Math.ceil(groundY / skyRows);
     ctx.fillStyle = `rgb(${r},${g},${b})`;
-    ctx.fillRect(-10, row * rowH, W + 20, rowH + 1);
+    ctx.fillRect(0, row * rowH, W, rowH + 1);
   }
 
-  // ── Pleine lune (fever) ou soleil (normal) ───────────────────────────────────
+  // Trees (3 depth layers)
+  for (const layer of [0, 1, 2] as const) {
+    for (const tree of TREE_LAYERS) {
+      if (tree.layer !== layer) continue;
+      const leafColor = feverMode
+        ? (layer === 2 ? "#080820" : layer === 1 ? "#0c0c30" : "#101040")
+        : tree.cl;
+      const trunkColor = feverMode ? "#050510" : tree.ct;
+      const alpha = layer === 0 ? 0.55 : layer === 1 ? 0.78 : 1.0;
+      ctx.globalAlpha = alpha;
+      drawPixelTree(ctx, tree.x, groundY, tree.tw, tree.th, tree.cw, tree.ch, leafColor, trunkColor);
+    }
+  }
+  ctx.globalAlpha = 1;
+
+  drawGround(ctx, feverMode);
+
+  // Scanlines (static — baked once)
+  ctx.fillStyle = "rgba(0,0,0,0.04)";
+  for (let sy = 0; sy < H; sy += 2) {
+    ctx.fillRect(0, sy, W, 1);
+  }
+
+  return canvas;
+}
+
+function getStaticBg(feverMode: boolean): OffscreenCanvas {
+  if (_staticBgCache === null || _staticBgFeverMode !== feverMode) {
+    _staticBgCache = buildStaticBg(feverMode);
+    _staticBgFeverMode = feverMode;
+  }
+  return _staticBgCache;
+}
+
+// ─── Dynamic background elements (animated every frame) ──────────────────────
+
+function drawCelestialBody(ctx: CanvasRenderingContext2D, s: GameState, feverMode: boolean): void {
   if (feverMode) {
-    // Pleine lune dorée — pulsante
     const pulse = 0.88 + 0.12 * Math.sin(s.animClock * 1.2);
-    // Halo extérieur diffus
     ctx.fillStyle = `rgba(180,150,255,${0.12 * pulse})`;
     ctx.fillRect(W - 66, 10, 44, 44);
-    // Halo intermédiaire
     ctx.fillStyle = `rgba(210,190,255,${0.22 * pulse})`;
     ctx.fillRect(W - 60, 14, 32, 32);
-    // Corps de la lune
     ctx.fillStyle = `rgba(240,230,180,${0.95 * pulse})`;
     ctx.fillRect(W - 54, 18, 20, 20);
-    // Reflet top-left
     ctx.fillStyle = "rgba(255,255,220,0.7)";
     ctx.fillRect(W - 52, 20, 6, 3);
     ctx.fillRect(W - 52, 20, 3, 6);
-    // Cratères pixel
     ctx.fillStyle = "rgba(180,160,100,0.4)";
     ctx.fillRect(W - 46, 26, 3, 3);
     ctx.fillRect(W - 40, 30, 2, 2);
   } else {
-    // Soleil pixel art
     const pulse = 0.9 + 0.1 * Math.sin(s.animClock * 0.5);
     ctx.fillStyle = `rgba(255,230,100,${0.9 * pulse})`;
     ctx.fillRect(W - 50, 20, 16, 16);
@@ -179,46 +215,26 @@ export function drawBackground(ctx: CanvasRenderingContext2D, s: GameState, feve
     ctx.fillRect(W - 58, 27, 6, 2);
     ctx.fillRect(W - 28, 27, 6, 2);
   }
+}
 
-  // ── Étoiles scintillantes (fever uniquement) ─────────────────────────────────
-  if (feverMode) {
-    for (let i = 0; i < FEVER_STARS.length; i++) {
-      const st = FEVER_STARS[i]!;
-      const twinkle = 0.5 + 0.5 * Math.abs(Math.sin(i * 1.3 + s.animClock * (0.6 + (i % 4) * 0.2)));
-      const sz = st.s;
-      // Étoile en croix pixel
-      ctx.globalAlpha = twinkle * 0.85;
-      ctx.fillStyle = i % 3 === 0 ? "#ccaaff" : i % 3 === 1 ? "#ffffff" : "#aaccff";
-      ctx.fillRect(st.x, st.y, sz, sz);
-      if (sz > 1) {
-        ctx.fillRect(st.x - sz, st.y + sz / 2 | 0, sz * 3, 1);
-        ctx.fillRect(st.x + sz / 2 | 0, st.y - sz, 1, sz * 3);
-      }
-      ctx.globalAlpha = 1;
+function drawFeverStars(ctx: CanvasRenderingContext2D, s: GameState): void {
+  for (let i = 0; i < FEVER_STARS.length; i++) {
+    const st = FEVER_STARS[i]!;
+    const twinkle = 0.5 + 0.5 * Math.abs(Math.sin(i * 1.3 + s.animClock * (0.6 + (i % 4) * 0.2)));
+    const sz = st.s;
+    ctx.globalAlpha = twinkle * 0.85;
+    ctx.fillStyle = i % 3 === 0 ? "#ccaaff" : i % 3 === 1 ? "#ffffff" : "#aaccff";
+    ctx.fillRect(st.x, st.y, sz, sz);
+    if (sz > 1) {
+      ctx.fillRect(st.x - sz, st.y + sz / 2 | 0, sz * 3, 1);
+      ctx.fillRect(st.x + sz / 2 | 0, st.y - sz, 1, sz * 3);
     }
   }
+  ctx.globalAlpha = 1;
+}
 
-  // ── Arbres ───────────────────────────────────────────────────────────────────
-  for (const layer of [0, 1, 2] as const) {
-    for (const tree of TREE_LAYERS) {
-      if (tree.layer !== layer) continue;
-      // En fever/nuit les arbres deviennent des silhouettes sombres bleutées
-      const leafColor = feverMode
-        ? (layer === 2 ? "#080820" : layer === 1 ? "#0c0c30" : "#101040")
-        : tree.cl;
-      const trunkColor = feverMode ? "#050510" : tree.ct;
-      const alpha = layer === 0 ? 0.55 : layer === 1 ? 0.78 : 1.0;
-      ctx.save();
-      ctx.globalAlpha = alpha;
-      drawPixelTree(ctx, tree.x, groundY, tree.tw, tree.th, tree.cw, tree.ch, leafColor, trunkColor);
-      ctx.restore();
-    }
-  }
-
-  // ── Sol herbeux ───────────────────────────────────────────────────────────────
-  drawGround(ctx, feverMode);
-
-  // ── Lucioles (normal jaune-vert) ou lucioles magiques violettes (fever) ──────
+function drawFireflies(ctx: CanvasRenderingContext2D, s: GameState, feverMode: boolean): void {
+  const groundY = H - 80;
   for (let i = 0; i < FIREFLY_POS.length; i++) {
     const ff = FIREFLY_POS[i]!;
     if (ff.y > groundY - 20) continue;
@@ -226,18 +242,15 @@ export function drawBackground(ctx: CanvasRenderingContext2D, s: GameState, feve
     const twinkle = 0.4 + 0.6 * Math.abs(Math.sin(phase));
 
     if (feverMode) {
-      // Lucioles violettes frénétiques — bougent plus vite
       const wobbleX = ff.x + Math.round(Math.sin(s.animClock * 2.5 + i * 0.8) * 18);
       const wobbleY = ff.y + Math.round(Math.cos(s.animClock * 1.8 + i * 1.1) * 12);
       ctx.globalAlpha = twinkle * 0.8;
       ctx.fillStyle = i % 2 === 0 ? "#cc66ff" : "#8844ff";
       ctx.fillRect(Math.round(wobbleX), Math.round(wobbleY), 3, 3);
-      // Halo violet
       ctx.globalAlpha = twinkle * 0.25;
       ctx.fillStyle = "#aa44ff";
       ctx.fillRect(Math.round(wobbleX - 3), Math.round(wobbleY - 3), 9, 9);
     } else {
-      // Luciole normale — jaune-vert
       ctx.globalAlpha = twinkle * 0.55;
       ctx.fillStyle = "#ccff44";
       ctx.fillRect(Math.round(ff.x), Math.round(ff.y), 2, 2);
@@ -245,12 +258,18 @@ export function drawBackground(ctx: CanvasRenderingContext2D, s: GameState, feve
       ctx.fillStyle = "#aaffaa";
       ctx.fillRect(Math.round(ff.x - 2), Math.round(ff.y - 2), 6, 6);
     }
-    ctx.globalAlpha = 1;
   }
+  ctx.globalAlpha = 1;
+}
 
-  // ── Scanlines très légères ────────────────────────────────────────────────────
-  ctx.fillStyle = "rgba(0,0,0,0.04)";
-  for (let sy = 0; sy < H; sy += 2) {
-    ctx.fillRect(-10, sy, W + 20, 1);
-  }
+export function drawBackground(ctx: CanvasRenderingContext2D, s: GameState, feverIntensity: number): void {
+  const feverMode = feverIntensity > 0.3;
+
+  // Blit cached static layer (sky + trees + ground + scanlines) — single drawImage call
+  ctx.drawImage(getStaticBg(feverMode), 0, 0);
+
+  // Animated elements drawn on top each frame
+  drawCelestialBody(ctx, s, feverMode);
+  if (feverMode) drawFeverStars(ctx, s);
+  drawFireflies(ctx, s, feverMode);
 }

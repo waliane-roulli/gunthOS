@@ -4,7 +4,7 @@ import {
 } from "../constants";
 import { CLASSES } from "../roguelite";
 import { buildLevel } from "../levels";
-import type { GameState, Star } from "../types";
+import type { GameState, Peg, Star } from "../types";
 import type { RunState } from "../roguelite";
 
 function makeStars(): Star[] {
@@ -36,6 +36,21 @@ export function makeInitialState(
   const effectiveBucketSpeed = 1.4 * (upgrades.includes("lucky_spin") ? 1.4 : 1);
 
   const { pegs, decors } = buildLevel(level, runState);
+
+  const orangeLeft = pegs.filter(p => p.orange).length;
+
+  const warpPairs: [Peg, Peg][] = [];
+  const warpMap = new Map<number, Peg>();
+  for (const peg of pegs) {
+    if (peg.warpId !== undefined) {
+      const existing = warpMap.get(peg.warpId);
+      if (existing) {
+        warpPairs.push([existing, peg]);
+      } else {
+        warpMap.set(peg.warpId, peg);
+      }
+    }
+  }
 
   return {
     pegs,
@@ -89,5 +104,7 @@ export function makeInitialState(
     cursedLuckHits: 0,
     ballsLostThisLevel: 0,
     bossKilledThisLevel: false,
+    orangeLeft,
+    warpPairs,
   };
 }

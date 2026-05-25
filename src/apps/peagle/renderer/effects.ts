@@ -3,8 +3,10 @@ import { FACE, HI, DARK, PEAGLE_THEME } from "./theme";
 import type { GameState } from "../engine/types";
 
 export function drawParticles(ctx: CanvasRenderingContext2D, s: GameState): void {
-  for (const p of s.particles) {
-    ctx.save();
+  const count = s.particles.length;
+  if (count === 0) return;
+  for (let i = 0; i < count; i++) {
+    const p = s.particles[i]!;
     ctx.globalAlpha = Math.max(0, p.life);
     ctx.fillStyle = p.color;
     const psz = p.size * Math.max(0, p.life);
@@ -13,8 +15,8 @@ export function drawParticles(ctx: CanvasRenderingContext2D, s: GameState): void
     } else {
       ctx.beginPath(); ctx.arc(p.x, p.y, psz, 0, Math.PI * 2); ctx.fill();
     }
-    ctx.restore();
   }
+  ctx.globalAlpha = 1;
 }
 
 export function drawFloatingTexts(ctx: CanvasRenderingContext2D, s: GameState): void {

@@ -188,64 +188,65 @@ export function drawPegs(ctx: CanvasRenderingContext2D, s: GameState, inFever: b
   ctx.imageSmoothingEnabled = false;
 
   for (const p of s.pegs) {
-    const alpha = p.popping ? p.popAlpha : 1;
-    ctx.save();
-    ctx.globalAlpha = alpha;
-
-    const pulseExtra = inFever && p.orange ? Math.sin(s.feverPulse * 2) * 1.5 : 0;
+    const pulseExtra = inFever && p.orange && !p.hit ? Math.sin(s.feverPulse * 2) * 1.5 : 0;
     const r = (PEG_R + pulseExtra) * p.scale;
 
-    if (p.warpId !== undefined) {
-      drawWarpPeg(ctx, p, r, s.animClock);
-    } else if (p.boss) {
-      drawBossPeg(ctx, p, r, s.animClock);
-    } else if (p.bomb) {
-      drawBombPeg(ctx, p, r);
-    } else if (p.armorHits > 0) {
-      drawArmorPeg(ctx, p, r);
-    } else if (p.orange) {
-      drawOrangePeg(ctx, p, r, inFever, feverIntensity);
-    } else if (p.green) {
-      drawGreenPeg(ctx, p, r);
+    if (!p.popping) {
+      // Fast path: alpha=1, no save/restore needed
+      if (p.warpId !== undefined) {
+        drawWarpPeg(ctx, p, r, s.animClock);
+      } else if (p.boss) {
+        drawBossPeg(ctx, p, r, s.animClock);
+      } else if (p.bomb) {
+        drawBombPeg(ctx, p, r);
+      } else if (p.armorHits > 0) {
+        drawArmorPeg(ctx, p, r);
+      } else if (p.orange) {
+        drawOrangePeg(ctx, p, r, inFever, feverIntensity);
+      } else if (p.green) {
+        drawGreenPeg(ctx, p, r);
+      } else {
+        drawNormalPeg(ctx, p, r);
+      }
     } else {
-      drawNormalPeg(ctx, p, r);
-    }
-
-    // Pop ring — carré qui s'agrandit
-    if (p.popping) {
+      // Slow path: fade-out animation — set globalAlpha directly, reset after
+      ctx.globalAlpha = p.popAlpha;
+      if (p.warpId !== undefined) {
+        drawWarpPeg(ctx, p, r, s.animClock);
+      } else if (p.boss) {
+        drawBossPeg(ctx, p, r, s.animClock);
+      } else if (p.bomb) {
+        drawBombPeg(ctx, p, r);
+      } else if (p.armorHits > 0) {
+        drawArmorPeg(ctx, p, r);
+      } else if (p.orange) {
+        drawOrangePeg(ctx, p, r, inFever, feverIntensity);
+      } else if (p.green) {
+        drawGreenPeg(ctx, p, r);
+      } else {
+        drawNormalPeg(ctx, p, r);
+      }
+      // Pop ring — square that expands outward
       const ringR = PEG_R + (1 - p.popAlpha) * 18;
       const rs = Math.round(ringR * 2);
-      const rx = Math.round(p.x - ringR);
-      const ry = Math.round(p.y - ringR);
-      ctx.globalAlpha = alpha * 0.8;
+      ctx.globalAlpha = p.popAlpha * 0.8;
       ctx.strokeStyle = PEAGLE_THEME.popRing[getPegType(p)];
       ctx.lineWidth = 1;
-      ctx.strokeRect(rx, ry, rs, rs);
+      ctx.strokeRect(Math.round(p.x - ringR), Math.round(p.y - ringR), rs, rs);
+      ctx.globalAlpha = 1;
     }
-
-    ctx.restore();
   }
 }
 
 export function drawWarpCables(ctx: CanvasRenderingContext2D, s: GameState): void {
-  const warpMap = new Map<number, typeof s.pegs>();
-  for (const p of s.pegs) {
-    if (p.warpId !== undefined && !p.hit) {
-      const arr = warpMap.get(p.warpId) ?? [];
-      arr.push(p);
-      warpMap.set(p.warpId, arr);
-    }
+  if (s.warpPairs.length === 0) return;
+  const pulse = 0.45 + 0.3 * Math.sin(s.animClock * 3);
+  ctx.strokeStyle = `rgba(200,0,255,${pulse})`;
+  ctx.lineWidth = 1;
+  ctx.setLineDash([2, 4]);
+  for (const [pa, pb] of s.warpPairs) {
+    if (pa.hit || pb.hit) continue;
+    ctx.beginPath(); ctx.moveTo(pa.x, pa.y); ctx.lineTo(pb.x, pb.y); ctx.stroke();
   }
-  for (const [, pair] of warpMap) {
-    if (pair.length === 2) {
-      const [pa, pb] = pair as [typeof s.pegs[0], typeof s.pegs[0]];
-      ctx.save();
-      const pulse = 0.45 + 0.3 * Math.sin(s.animClock * 3);
-      ctx.strokeStyle = `rgba(200,0,255,${pulse})`;
-      ctx.lineWidth = 1;
-      ctx.setLineDash([2, 4]);
-      ctx.beginPath(); ctx.moveTo(pa.x, pa.y); ctx.lineTo(pb.x, pb.y); ctx.stroke();
-      ctx.restore();
-    }
-  }
+  ctx.setLineDash([]);
 }

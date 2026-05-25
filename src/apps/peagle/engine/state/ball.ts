@@ -70,6 +70,7 @@ export function processBallPhysics(
       if (s.ghostBallActive && b === s.ball) {
         s.ghostBallActive = false;
         p.hit = true; p.popping = true; p.popAlpha = BALANCE.peg.popStartAlpha; p.scale = BALANCE.peg.popStartScale;
+        if (p.orange) s.orangeLeft = Math.max(0, s.orangeLeft - 1);
         s.combo += 1;
         s.cursedLuckHits += 1;
         const basePoints = p.orange ? BALANCE.score.orangeBase : p.green ? BALANCE.score.greenBase : BALANCE.score.normalBase;
@@ -128,6 +129,7 @@ export function processBallPhysics(
           s.floatingTexts.push({ x: partner.x, y: partner.y - 14, text: "✦ WARP!", life: 1, maxLife: 1.2, color: "#cc88ff", combo: true, fontSize: 13 });
           partner.hitCooldown = BALANCE.peg.warpCooldown;
         }
+        if (p.orange) s.orangeLeft = Math.max(0, s.orangeLeft - 1);
         p.hit = true; p.popping = true; p.popAlpha = BALANCE.peg.popStartAlpha; p.scale = BALANCE.peg.popStartScale;
         s.score += BALANCE.score.warpBase * s.scoreMultiplier;
         events.push({ kind: "sound", id: "pop" });
@@ -136,6 +138,7 @@ export function processBallPhysics(
 
       // Normal peg pop
       p.hit = true; p.popping = true; p.popAlpha = BALANCE.peg.popStartAlpha; p.scale = BALANCE.peg.popStartScale;
+      if (p.orange) s.orangeLeft = Math.max(0, s.orangeLeft - 1);
       s.combo += 1;
       s.cursedLuckHits += 1;
 
@@ -184,8 +187,7 @@ export function processBallPhysics(
       }
 
       if (p.orange) {
-        const orangeRemaining = s.pegs.filter(pg => pg.orange && !pg.hit).length;
-        if (orangeRemaining === 0) {
+        if (s.orangeLeft === 0) {
           s.slowMoFrames = SLOW_MO_DURATION;
           s.flashWhite = 1.0;
           s.floatingTexts.push({ x: W / 2, y: H / 2 - 30, text: "DERNIÈRE FENÊTRE !", life: 1, maxLife: 2.5, color: "#88ccff", combo: true, fontSize: 16 });

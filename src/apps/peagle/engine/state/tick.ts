@@ -22,8 +22,7 @@ export function tick(s: GameState, ironWillUsed: boolean): TickResult {
   if (s.hitFreezeFrames > 0) {
     s.hitFreezeFrames--;
     updatePegAnimations(s);
-    const frozenOrangeLeft = s.pegs.filter(p => p.orange && !p.hit).length;
-    return { events, syncUI: false, orangeLeft: frozenOrangeLeft };
+    return { events, syncUI: false, orangeLeft: s.orangeLeft };
   }
 
   const inSlowMo = s.slowMoFrames > 0;
@@ -37,8 +36,8 @@ export function tick(s: GameState, ironWillUsed: boolean): TickResult {
   updateBucket(s, timeScale);
   if (s.magnetFrames > 0) s.magnetFrames--;
 
-  // Fever pulse — computed once per tick and returned to avoid re-filtering in renderer/UI
-  const orangeLeft = s.pegs.filter(p => p.orange && !p.hit).length;
+  // Fever pulse — use pre-tracked count instead of re-filtering
+  const orangeLeft = s.orangeLeft;
   const inFever = orangeLeft <= s.effectiveFeverThreshold && orangeLeft > 0;
   if (inFever) s.feverPulse = (s.feverPulse + 0.08) % (Math.PI * 2);
   else s.feverPulse = 0;

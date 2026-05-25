@@ -5,20 +5,23 @@ import type { Ball } from "../engine/types";
 export function drawBall(ctx: CanvasRenderingContext2D, ball: Ball, inSlowMo: boolean): void {
   const angle = Math.atan2(ball.vy, ball.vx);
 
-  // Trail pixel art
-  for (let i = 0; i < ball.trail.length; i++) {
-    const tp = ball.trail[i]; if (!tp) continue;
-    const t = i / ball.trail.length;
-    const trailR = Math.round(Math.max(1, BALL_R * t * 0.7));
-    ctx.save();
-    ctx.globalAlpha = t * t * 0.35;
-    ctx.fillStyle = ball.tint ?? (inSlowMo ? "#88aaff" : "#555588");
-    ctx.fillRect(
-      Math.round(tp.x - trailR),
-      Math.round(tp.y - trailR),
-      trailR * 2, trailR * 2,
-    );
-    ctx.restore();
+  // Trail pixel art — batch without save/restore per point
+  const trailLen = ball.trail.length;
+  if (trailLen > 0) {
+    const trailColor = ball.tint ?? (inSlowMo ? "#88aaff" : "#555588");
+    for (let i = 0; i < trailLen; i++) {
+      const tp = ball.trail[i]; if (!tp) continue;
+      const t = i / trailLen;
+      const trailR = Math.round(Math.max(1, BALL_R * t * 0.7));
+      ctx.globalAlpha = t * t * 0.35;
+      ctx.fillStyle = trailColor;
+      ctx.fillRect(
+        Math.round(tp.x - trailR),
+        Math.round(tp.y - trailR),
+        trailR * 2, trailR * 2,
+      );
+    }
+    ctx.globalAlpha = 1;
   }
 
   const bx = Math.round(ball.x);

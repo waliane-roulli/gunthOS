@@ -19,6 +19,7 @@ export function triggerBomb(s: GameState, bombPeg: Peg, events: GameEvent[]): vo
       const d = Math.hypot(p.x - bPeg.x, p.y - bPeg.y);
       if (d <= s.effectiveBombR) {
         p.hit = true; p.popping = true; p.popAlpha = 0.25; p.scale = 1.9;
+        if (p.orange) s.orangeLeft = Math.max(0, s.orangeLeft - 1);
         spawnParticles(s, p.x, p.y, p.orange, p.orange ? 18 : 10, true);
         const chainBonus = s.runUpgrades.includes("chain_master") ? 200 : 0;
         const pts = (p.orange ? 150 : p.green ? 75 : 15) + chainBonus;
@@ -42,8 +43,7 @@ export function triggerBomb(s: GameState, bombPeg: Peg, events: GameEvent[]): vo
     s.floatingTexts.push({ x: bombPeg.x, y: bombPeg.y - 36, text: `+${bombsInChain} ŒUFS`, life: 1, maxLife: 1.8, color: "#ff6644", combo: true, fontSize: 13 });
   }
 
-  const orangeRemaining = s.pegs.filter(pg => pg.orange && !pg.hit).length;
-  if (orangeRemaining === 0 && s.slowMoFrames === 0) {
+  if (s.orangeLeft === 0 && s.slowMoFrames === 0) {
     s.slowMoFrames = SLOW_MO_DURATION;
     s.flashWhite = 1.0;
     s.floatingTexts.push({ x: W / 2, y: H / 2 - 30, text: "DERNIÈRE FENÊTRE !", life: 1, maxLife: 2.5, color: "#88ccff", combo: true, fontSize: 16 });
