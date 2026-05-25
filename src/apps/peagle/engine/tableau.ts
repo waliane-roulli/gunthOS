@@ -131,7 +131,7 @@ export function mkBumper(x: number, y: number, r = 12, color = "#ff5500"): Decor
 export function mkPlank(
   x: number, y: number,
   len: number, angle: number,
-  color = "#7755bb",
+  color = "#cc44ff",
 ): DecorPlank {
   return { kind: "plank", x, y, len, thickness: 5, angle, flashFrames: 0, color };
 }
@@ -143,7 +143,7 @@ export function mkPlank(
 export function mkArc(
   x: number, y: number, r: number,
   startAngle: number, endAngle: number,
-  color = "#3399ff",
+  color = "#cc44ff",
 ): DecorArc {
   return { kind: "arc", x, y, r, startAngle, endAngle, thickness: 8, flashFrames: 0, color };
 }
@@ -152,7 +152,7 @@ export function mkArc(
 export function mkSpike(
   x: number, y: number,
   size: number, angle: number,
-  color = "#ffcc22",
+  color = "#cc44ff",
 ): DecorSpike {
   return { kind: "spike", x, y, size, angle, flashFrames: 0, color };
 }

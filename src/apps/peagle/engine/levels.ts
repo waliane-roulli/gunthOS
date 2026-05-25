@@ -38,9 +38,9 @@ function layout1(cx: number): TableauResult {
       ...tHexGrid(24, 298, 17, 5, 26),
     ]),
     decors: [
-      mkBumper(cx - 50, 420, 13, "#ffcc00"),
-      mkBumper(cx + 50, 420, 13, "#ffcc00"),
-      mkBumper(cx, 460, 15, "#ff5500"),
+      mkBumper(cx - 50, 420, 13, "#cc44ff"),
+      mkBumper(cx + 50, 420, 13, "#cc44ff"),
+      mkBumper(cx, 460, 15, "#ff44ff"),
     ],
   };
 }
@@ -63,9 +63,9 @@ function layout2(cx: number): TableauResult {
       ...tHexGrid(28, 290, 15, 6, 28),
     ]),
     decors: [
-      mkBumper(70, 365, 14, "#ff2200"),
-      mkBumper(410, 365, 14, "#ff2200"),
-      mkBumper(cx, 455, 13, "#ff8800"),
+      mkBumper(70, 365, 14, "#cc44ff"),
+      mkBumper(410, 365, 14, "#cc44ff"),
+      mkBumper(cx, 455, 13, "#ff44ff"),
       mkPlank(cx - 90, 262, 48, Math.PI / 4),
       mkPlank(cx + 90, 262, 48, -Math.PI / 4),
     ],
@@ -80,10 +80,10 @@ function layout3(cx: number): TableauResult {
   return {
     pegs: dedup([...pacBody, ...dots, ...field]),
     decors: [
-      mkBumper(385, 155, 11, "#ff4488"),
-      mkBumper(420, 135, 9, "#4488ff"),
-      mkBumper(355, 160, 10, "#ff4488"),
-      mkArc(cx, 490, 95, Math.PI, 0, "#3399ff"),
+      mkBumper(385, 155, 11, "#cc44ff"),
+      mkBumper(420, 135, 9, "#ff44ff"),
+      mkBumper(355, 160, 10, "#cc44ff"),
+      mkArc(cx, 490, 95, Math.PI, 0, "#cc44ff"),
     ],
   };
 }
@@ -105,8 +105,8 @@ function layout4(cx: number): TableauResult {
   return {
     pegs: dedup(pegs),
     decors: [
-      mkBumper(cx, 200, 11, "#00ffaa"),
-      mkBumper(cx, 370, 11, "#00ffaa"),
+      mkBumper(cx, 200, 11, "#cc44ff"),
+      mkBumper(cx, 370, 11, "#cc44ff"),
       mkPlank(cx - 130, 110, 30, 0.4),
       mkPlank(cx + 130, 110, 30, -0.4),
     ],
@@ -132,9 +132,9 @@ function layout5(cx: number): TableauResult {
   return {
     pegs: dedup(pegs),
     decors: [
-      mkBumper(78, 265, 15, "#ff8800"),
-      mkBumper(402, 265, 15, "#3388ff"),
-      mkBumper(cx, 340, 15, "#ff2255"),
+      mkBumper(78, 265, 15, "#ff44ff"),
+      mkBumper(402, 265, 15, "#cc44ff"),
+      mkBumper(cx, 340, 15, "#ff44ff"),
       mkSpike(cx - 40, 382, 18, Math.PI / 2),
       mkSpike(cx + 40, 382, 18, Math.PI / 2),
     ],
@@ -152,10 +152,10 @@ function layout6(cx: number): TableauResult {
       ...tLine(cx, 100, cx, 460, 22),
     ]),
     decors: [
-      mkBumper(cx - 80, 210, 14, "#ff66cc"),
-      mkBumper(cx + 80, 210, 14, "#ff66cc"),
-      mkBumper(cx - 70, 360, 11, "#ff88ee"),
-      mkBumper(cx + 70, 360, 11, "#ff88ee"),
+      mkBumper(cx - 80, 210, 14, "#cc44ff"),
+      mkBumper(cx + 80, 210, 14, "#cc44ff"),
+      mkBumper(cx - 70, 360, 11, "#ff44ff"),
+      mkBumper(cx + 70, 360, 11, "#ff44ff"),
     ],
   };
 }
@@ -178,8 +178,8 @@ function layout7(cx: number): TableauResult {
   return {
     pegs: dedup(pegs),
     decors: [
-      mkArc(cx, 75, 205, Math.PI, 0, "#44aaff"),
-      mkBumper(cx, 460, 17, "#ff5500"),
+      mkArc(cx, 75, 205, Math.PI, 0, "#cc44ff"),
+      mkBumper(cx, 460, 17, "#ff44ff"),
       mkPlank(cx - 65, 390, 42, 0.62),
       mkPlank(cx + 65, 390, 42, -0.62),
     ],
@@ -208,9 +208,9 @@ function layout8(cx: number): TableauResult {
     decors: [
       mkSpike(72, 230, 18, 0),
       mkSpike(408, 230, 18, Math.PI),
-      mkBumper(cx + 148, 168, 11, "#ffcc22"),
-      mkBumper(cx - 100, 302, 11, "#ffcc22"),
-      mkArc(cx, 495, 80, Math.PI, 0, "#ffaa44"),
+      mkBumper(cx + 148, 168, 11, "#cc44ff"),
+      mkBumper(cx - 100, 302, 11, "#cc44ff"),
+      mkArc(cx, 495, 80, Math.PI, 0, "#cc44ff"),
     ],
   };
 }
@@ -230,11 +230,11 @@ function layout9(cx: number): TableauResult {
   return {
     pegs: dedup(pegs),
     decors: [
-      mkBumper(cx, cy, 16, "#ff4400"),
-      mkBumper(cx - 82, cy - 62, 10, "#ffcc00"),
-      mkBumper(cx + 82, cy - 62, 10, "#ffcc00"),
-      mkBumper(cx - 82, cy + 62, 10, "#ffcc00"),
-      mkBumper(cx + 82, cy + 62, 10, "#ffcc00"),
+      mkBumper(cx, cy, 16, "#cc44ff"),
+      mkBumper(cx - 82, cy - 62, 10, "#cc44ff"),
+      mkBumper(cx + 82, cy - 62, 10, "#cc44ff"),
+      mkBumper(cx - 82, cy + 62, 10, "#cc44ff"),
+      mkBumper(cx + 82, cy + 62, 10, "#cc44ff"),
     ],
   };
 }
@@ -249,19 +249,19 @@ function layout10(cx: number): TableauResult {
       ...tCircle(cx, 355, 42, 7),
     ]),
     decors: [
-      mkBumper(75,  128, 15, "#ff2200"),
-      mkBumper(405, 128, 15, "#ff2200"),
-      mkBumper(55,  280, 13, "#ff8800"),
-      mkBumper(425, 280, 13, "#ff8800"),
-      mkBumper(cx - 105, 205, 12, "#ffcc00"),
-      mkBumper(cx + 105, 205, 12, "#ffcc00"),
-      mkBumper(78,  425, 14, "#44ff88"),
-      mkBumper(402, 425, 14, "#44ff88"),
-      mkBumper(cx - 58, 375, 12, "#44ff88"),
-      mkBumper(cx + 58, 375, 12, "#44ff88"),
-      mkBumper(cx, 460, 16, "#ff2255"),
-      mkArc(cx, 515, 150, Math.PI * 1.1, Math.PI * 1.9, "#3399ff"),
-      mkArc(cx, 95, 105, 0.1, Math.PI - 0.1, "#ff5500"),
+      mkBumper(75,  128, 15, "#cc44ff"),
+      mkBumper(405, 128, 15, "#cc44ff"),
+      mkBumper(55,  280, 13, "#ff44ff"),
+      mkBumper(425, 280, 13, "#ff44ff"),
+      mkBumper(cx - 105, 205, 12, "#cc44ff"),
+      mkBumper(cx + 105, 205, 12, "#cc44ff"),
+      mkBumper(78,  425, 14, "#cc44ff"),
+      mkBumper(402, 425, 14, "#cc44ff"),
+      mkBumper(cx - 58, 375, 12, "#cc44ff"),
+      mkBumper(cx + 58, 375, 12, "#cc44ff"),
+      mkBumper(cx, 460, 16, "#ff44ff"),
+      mkArc(cx, 515, 150, Math.PI * 1.1, Math.PI * 1.9, "#cc44ff"),
+      mkArc(cx, 95, 105, 0.1, Math.PI - 0.1, "#cc44ff"),
       mkPlank(cx - 82, 292, 62, Math.PI / 4),
       mkPlank(cx + 82, 292, 62, -Math.PI / 4),
     ],
@@ -286,10 +286,10 @@ function layout11(cx: number): TableauResult {
       ...tHexGrid(26, 300, 16, 5, 28),
     ]),
     decors: [
-      mkBumper(cx - 72, 378, 13, "#aa00ff"),
-      mkBumper(cx + 72, 378, 13, "#aa00ff"),
-      mkBumper(cx, 455, 15, "#660099"),
-      mkArc(cx, 88, 105, 0.2, Math.PI - 0.2, "#aa00ff"),
+      mkBumper(cx - 72, 378, 13, "#cc44ff"),
+      mkBumper(cx + 72, 378, 13, "#cc44ff"),
+      mkBumper(cx, 455, 15, "#9933cc"),
+      mkArc(cx, 88, 105, 0.2, Math.PI - 0.2, "#cc44ff"),
     ],
   };
 }
@@ -313,9 +313,9 @@ function layout12(cx: number): TableauResult {
       ...tHexGrid(28, 310, 15, 5, 28),
     ]),
     decors: [
-      mkBumper(cx - 90, 355, 12, "#ff4444"),
-      mkBumper(cx + 90, 355, 12, "#ff4444"),
-      mkBumper(cx, 460, 15, "#cc0000"),
+      mkBumper(cx - 90, 355, 12, "#cc44ff"),
+      mkBumper(cx + 90, 355, 12, "#cc44ff"),
+      mkBumper(cx, 460, 15, "#ff44ff"),
       mkSpike(50, 160, 16, 0),
       mkSpike(430, 160, 16, Math.PI),
     ],
@@ -334,11 +334,11 @@ function layout13(cx: number): TableauResult {
       ...tLine(cx + 78, 390, cx + 58, 340, 18),
     ]),
     decors: [
-      mkBumper(cx - 90, 148, 10, "#3388ff"),
-      mkBumper(cx + 90, 148, 10, "#3388ff"),
-      mkBumper(cx, 390, 12, "#1155cc"),
-      mkBumper(cx - 58, 340, 9, "#66aaff"),
-      mkBumper(cx + 58, 340, 9, "#66aaff"),
+      mkBumper(cx - 90, 148, 10, "#cc44ff"),
+      mkBumper(cx + 90, 148, 10, "#cc44ff"),
+      mkBumper(cx, 390, 12, "#9933cc"),
+      mkBumper(cx - 58, 340, 9, "#ff44ff"),
+      mkBumper(cx + 58, 340, 9, "#ff44ff"),
     ],
   };
 }
@@ -361,10 +361,10 @@ function layout14(cx: number): TableauResult {
   return {
     pegs: dedup(pegs),
     decors: [
-      mkBumper(cx, 285, 10, "#44aaff"),
+      mkBumper(cx, 285, 10, "#cc44ff"),
       mkPlank(cx - 42, 285, 52, Math.PI / 5),
       mkPlank(cx + 42, 285, 52, -Math.PI / 5),
-      mkArc(cx, 70, 120, Math.PI * 1.1, Math.PI * 1.9, "#44aaff"),
+      mkArc(cx, 70, 120, Math.PI * 1.1, Math.PI * 1.9, "#cc44ff"),
     ],
   };
 }
@@ -379,7 +379,7 @@ function layout15(cx: number): TableauResult {
       ...tCircle(cx, 275, 36, 7),
     ]),
     decors: [
-      mkBumper(cx, 275, 14, "#ff0000"),
+      mkBumper(cx, 275, 14, "#cc44ff"),
       mkSpike(50, 130, 16, Math.PI * 0.25),
       mkSpike(430, 130, 16, Math.PI * 0.75),
       mkSpike(50, 420, 16, -Math.PI * 0.25),
@@ -399,10 +399,10 @@ function layout16(cx: number): TableauResult {
       ...tCircle(cx, 350, 28, 6),
     ]),
     decors: [
-      mkBumper(cx - 65, 280, 11, "#dddddd"),
-      mkBumper(cx + 65, 280, 11, "#888888"),
-      mkBumper(cx, 280, 9, "#ff8800"),
-      mkArc(cx, 280, 145, Math.PI, Math.PI * 2, "#3399ff"),
+      mkBumper(cx - 65, 280, 11, "#cc44ff"),
+      mkBumper(cx + 65, 280, 11, "#9933cc"),
+      mkBumper(cx, 280, 9, "#ff44ff"),
+      mkArc(cx, 280, 145, Math.PI, Math.PI * 2, "#cc44ff"),
     ],
   };
 }
@@ -424,8 +424,8 @@ function layout17(cx: number): TableauResult {
   return {
     pegs: dedup(pegs),
     decors: [
-      ...segments.map(([sx, sy]) => mkBumper(sx, sy, 11, "#44cc44")),
-      mkBumper(155, 78, 12, "#66ff44"),
+      ...segments.map(([sx, sy]) => mkBumper(sx, sy, 11, "#cc44ff")),
+      mkBumper(155, 78, 12, "#ff44ff"),
     ],
   };
 }
@@ -449,9 +449,9 @@ function layout18(cx: number): TableauResult {
       ...tHexGrid(28, 310, 15, 5, 28),
     ]),
     decors: [
-      mkBumper(cx - 60, 360, 13, "#ffff00"),
-      mkBumper(cx + 60, 360, 13, "#ffff00"),
-      mkBumper(cx, 435, 15, "#ffcc00"),
+      mkBumper(cx - 60, 360, 13, "#cc44ff"),
+      mkBumper(cx + 60, 360, 13, "#cc44ff"),
+      mkBumper(cx, 435, 15, "#cc44ff"),
       mkPlank(cx - 20, 265, 40, Math.PI / 4),
     ],
   };
@@ -470,10 +470,10 @@ function layout19(cx: number): TableauResult {
   return {
     pegs: dedup(pegs),
     decors: [
-      mkBumper(cx - 100, 400, 12, "#ff4444"),
-      mkBumper(cx, 318, 12, "#44ff44"),
-      mkBumper(cx + 100, 400, 12, "#4444ff"),
-      mkArc(cx, 490, 210, Math.PI, Math.PI * 2, "#ff8800"),
+      mkBumper(cx - 100, 400, 12, "#cc44ff"),
+      mkBumper(cx, 318, 12, "#cc44ff"),
+      mkBumper(cx + 100, 400, 12, "#ff44ff"),
+      mkArc(cx, 490, 210, Math.PI, Math.PI * 2, "#cc44ff"),
     ],
   };
 }
@@ -502,9 +502,9 @@ function layout20(cx: number): TableauResult {
   return {
     pegs: dedup(pegs),
     decors: [
-      mkBumper(cx, 270, 16, "#ffcc00"),
-      mkBumper(cx - 100, 195, 10, "#4499ff"),
-      mkBumper(cx + 100, 345, 10, "#4499ff"),
+      mkBumper(cx, 270, 16, "#cc44ff"),
+      mkBumper(cx - 100, 195, 10, "#ff44ff"),
+      mkBumper(cx + 100, 345, 10, "#ff44ff"),
       mkPlank(cx - 58, 175, 36, Math.PI / 6),
       mkPlank(cx + 58, 365, 36, Math.PI / 6),
     ],
@@ -522,7 +522,37 @@ export function buildLevel(level: number, runState?: RunState): { pegs: Peg[]; d
   const { pegs: rawPegs, decors } = (builders[layout - 1] ?? layout1)(cx);
 
   // Deduplicate pegs that are too close
-  const filtered = dedup(rawPegs, PEG_R * 2.8);
+  const deduped = dedup(rawPegs, PEG_R * 2.8);
+
+  // Remove pegs that overlap non-poppable decors
+  const filtered = deduped.filter(p => {
+    for (const d of decors) {
+      if (d.kind === "bumper" && Math.hypot(p.x - d.x, p.y - d.y) < d.r + PEG_R + 4) return false;
+      if (d.kind === "spike" && Math.hypot(p.x - d.x, p.y - d.y) < d.size * 0.8 + PEG_R) return false;
+      if (d.kind === "plank") {
+        // project peg onto plank axis, check distance to segment
+        const cos = Math.cos(d.angle), sin = Math.sin(d.angle);
+        const dx = p.x - d.x, dy = p.y - d.y;
+        const along = dx * cos + dy * sin;
+        const perp = Math.abs(-dx * sin + dy * cos);
+        if (Math.abs(along) <= d.len + PEG_R && perp < d.thickness + PEG_R + 3) return false;
+      }
+      if (d.kind === "arc") {
+        // distance from peg to arc curve
+        const dist = Math.hypot(p.x - d.x, p.y - d.y);
+        if (Math.abs(dist - d.r) < d.thickness + PEG_R + 3) {
+          // check angle is within arc span
+          const a = Math.atan2(p.y - d.y, p.x - d.x);
+          const start = d.startAngle % (Math.PI * 2);
+          const end = d.endAngle % (Math.PI * 2);
+          const norm = ((a - start) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+          const span = ((end - start) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+          if (norm <= span) return false;
+        }
+      }
+    }
+    return true;
+  });
 
   // Clear boss area + add boss peg
   const result = isBoss
