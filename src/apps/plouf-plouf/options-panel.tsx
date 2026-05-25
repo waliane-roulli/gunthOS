@@ -15,6 +15,8 @@ interface OptionsPanelProps {
   appThemeId: PloufThemeId | null;
   onThemeChange: (id: PloufThemeId | null) => void;
   appThemeStyle: Record<string, string>;
+  disabledPresets: PresetName[];
+  onTogglePreset: (name: PresetName) => void;
 }
 
 export function OptionsPanel({
@@ -25,6 +27,8 @@ export function OptionsPanel({
   appThemeId,
   onThemeChange,
   appThemeStyle,
+  disabledPresets,
+  onTogglePreset,
 }: OptionsPanelProps) {
   const update = (patch: Partial<CelebrationOptions>) =>
     onChange({ ...options, ...patch, preset: "custom" });
@@ -89,23 +93,38 @@ export function OptionsPanel({
           <div className="grid grid-cols-3 gap-[3px]">
             {(Object.keys(PRESETS) as PresetName[]).map((name) => {
               const isActive = options.preset === name;
+              const isDisabled = disabledPresets.includes(name);
               return (
-                <button
+                <div
                   key={name}
-                  onClick={() => onChange({ ...PRESETS[name], randomPreset: false })}
-                  className="border-[2px] px-1 py-[5px] text-sm font-bold cursor-pointer text-center transition-none"
+                  className="border-[2px] flex items-stretch transition-none overflow-hidden"
                   style={{
-                    fontFamily: "var(--t-font-body)",
-                    backgroundColor: isActive ? "var(--t-accent)" : "var(--t-bg)",
-                    color: isActive ? "var(--t-titlebar-text)" : "var(--t-text)",
                     borderTopColor: isActive ? "var(--t-border-dark)" : "var(--t-border-light)",
                     borderLeftColor: isActive ? "var(--t-border-dark)" : "var(--t-border-light)",
                     borderBottomColor: isActive ? "var(--t-border-light)" : "var(--t-border-dark)",
                     borderRightColor: isActive ? "var(--t-border-light)" : "var(--t-border-dark)",
+                    opacity: isDisabled ? 0.5 : 1,
                   }}
                 >
-                  {PRESET_LABELS[name]}
-                </button>
+                  <input
+                    type="checkbox"
+                    checked={!isDisabled}
+                    onChange={() => onTogglePreset(name)}
+                    className="w-[14px] h-[14px] cursor-pointer accent-[color:var(--t-accent)] shrink-0 m-1"
+                    title={isDisabled ? `Activer ${PRESET_LABELS[name]}` : `Désactiver ${PRESET_LABELS[name]}`}
+                  />
+                  <button
+                    onClick={() => onChange({ ...PRESETS[name], randomPreset: false })}
+                    className="flex-1 px-1 py-[5px] text-sm font-bold cursor-pointer text-center transition-none min-w-0"
+                    style={{
+                      fontFamily: "var(--t-font-body)",
+                      backgroundColor: isActive ? "var(--t-accent)" : "var(--t-bg)",
+                      color: isActive ? "var(--t-titlebar-text)" : isDisabled ? "var(--t-text-muted)" : "var(--t-text)",
+                    }}
+                  >
+                    {PRESET_LABELS[name]}
+                  </button>
+                </div>
               );
             })}
           </div>

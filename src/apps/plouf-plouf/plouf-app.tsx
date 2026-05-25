@@ -41,7 +41,7 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
   const [inputValue, setInputValue] = useState("");
   const [optionsOpen, setOptionsOpen] = useState(false);
   const [sfxMuted, setSfxMuted] = useState(false);
-  const [musicMuted, setMusicMuted] = useState(false);
+  const [musicMuted, setMusicMuted] = useLocalStorage("ploufPloufMusicMuted", false);
   const [rawOptions, setRawOptions] = useLocalStorage<CelebrationOptions>(
     "ploufPloufOptions",
     DEFAULT_OPTIONS
@@ -60,6 +60,10 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
   const [appThemeId, setAppThemeId] = useLocalStorage<PloufThemeId | null>(
     "ploufPloufGameTheme",
     null
+  );
+  const [disabledPresets, setDisabledPresets] = useLocalStorage<PresetName[]>(
+    "ploufPloufDisabledPresets",
+    []
   );
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -172,14 +176,16 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
     winnerHistory.addWinner(name);
     const ceOpts = options.randomPreset
       ? (() => {
-          const names = Object.keys(PRESETS) as PresetName[];
-          const randomName = names[Math.floor(Math.random() * names.length)]!;
+          const allNames = Object.keys(PRESETS) as PresetName[];
+          const enabled = allNames.filter((n) => !disabledPresets.includes(n));
+          const pool = enabled.length > 0 ? enabled : allNames;
+          const randomName = pool[Math.floor(Math.random() * pool.length)]!;
           return { ...PRESETS[randomName], randomPreset: true };
         })()
       : options;
     setActiveOpts(ceOpts);
     triggerCelebration(name, ceOpts);
-  }, [drawing, games, sound, stopCelebration, triggerCelebration, options]);
+  }, [drawing, games, sound, stopCelebration, triggerCelebration, options, disabledPresets]);
 
   const handleRetry = useCallback(async () => {
     if (drawing.isDrawing || games.length < 2) return;
@@ -847,6 +853,12 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
         appThemeId={appThemeId}
         onThemeChange={setAppThemeId}
         appThemeStyle={appThemeStyle}
+        disabledPresets={disabledPresets}
+        onTogglePreset={(name) => {
+          setDisabledPresets((prev) =>
+            prev.includes(name) ? prev.filter((n) => n !== name) : [...prev, name]
+          );
+        }}
       />
     </>
   );
