@@ -76,7 +76,7 @@ function drawWarpPeg(ctx: CanvasRenderingContext2D, p: Peg, r: number, animClock
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(Math.round(p.x - 1), Math.round(p.y - 1), 2, 2);
   } else {
-    pixelSquareHit(ctx, p.x, p.y, r, t.warpDark);
+    pixelSquareHit(ctx, p.x, p.y, r, t.warpHit);
   }
 }
 
@@ -116,7 +116,7 @@ function drawBombPeg(ctx: CanvasRenderingContext2D, p: Peg, r: number, t: PegThe
     ctx.fillText("!", p.x, p.y + 0.5);
     ctx.textBaseline = "alphabetic";
   } else {
-    pixelSquareHit(ctx, p.x, p.y, r, t.bombDark);
+    pixelSquareHit(ctx, p.x, p.y, r, t.bombHit);
   }
 }
 
