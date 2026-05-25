@@ -203,7 +203,7 @@ export function GameCanvas({
                       animation: "pg-record-flash 1s ease-in-out infinite",
                     }}
                   >
-                    ⭐ NOUVEAU RECORD !
+                    <PegIcon id="star" size={10} style={{ display: "inline-grid", verticalAlign: "middle", marginRight: 4 }} /> NOUVEAU RECORD !
                   </div>
                 )}
               </div>

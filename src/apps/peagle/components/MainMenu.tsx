@@ -314,7 +314,7 @@ export function MainMenu({ bestScore, displayName, isAdmin, onPlay, onLeaderboar
             <span>
               {bestScore > 0 ? (
                 <>
-                  ⭐{" "}
+                  <PegIcon id="star" size={12} style={{ display: "inline-grid", verticalAlign: "middle", marginRight: 4 }} />
                   <span style={{ color: NW.gold }}>{bestScore.toLocaleString()}</span>
                 </>
               ) : (

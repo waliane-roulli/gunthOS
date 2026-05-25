@@ -1,6 +1,7 @@
 "use client";
 
 import type { LeaderboardEntry } from "../engine/types";
+import { PegIcon } from "./PegIcon";
 
 interface LeaderboardProps {
   entries: LeaderboardEntry[];
@@ -63,7 +64,7 @@ export function Leaderboard({ entries, loading, currentUserId, onRefresh, showLo
             flex: 1,
           }}
         >
-          🦅 Tableau des Grands Chasseurs — Top 10
+          <PegIcon id="eagle" size={14} style={{ display: "inline-grid", verticalAlign: "middle", marginRight: 5 }} /> Tableau des Grands Chasseurs — Top 10
         </span>
 
         <button
@@ -194,7 +195,7 @@ export function Leaderboard({ entries, loading, currentUserId, onRefresh, showLo
                   {name}{isMe ? " (votre nid)" : ""}
                 </span>
                 <span style={{ fontSize: "var(--t-text-sm)", textAlign: "center" }}>
-                  {entry.won ? "🦅" : "🪦"}
+                  <PegIcon id={entry.won ? "eagle" : "skull"} size={14} style={{ display: "inline-grid", verticalAlign: "middle" }} />
                 </span>
                 <span
                   style={{

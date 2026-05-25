@@ -21,7 +21,9 @@ type PegIconId =
   // Relics
   | "boomerang" | "scorpion" | "blessed_cursor" | "trophy" | "phoenix" | "cursed_luck"
   // UI
-  | "gamepad" | "victory" | "skull" | "boss" | "ball_cat" | "score_cat" | "utility_cat";
+  | "gamepad" | "victory" | "skull" | "boss" | "ball_cat" | "score_cat" | "utility_cat"
+  // Score
+  | "star";
 
 // Pixel grid: each char maps to a color key. "." = transparent.
 // Colors are resolved per-icon via the `palette` map.
@@ -428,6 +430,19 @@ const ICONS: Record<PegIconId, IconDef> = {
       ".aaa.",
     ],
     palette: { a: "#44ffaa", b: "#ffffff" },
+  },
+  star: {
+    // 7×7 diamond starburst
+    grid: [
+      "...g...",
+      "..ggg..",
+      ".ggggg.",
+      "ggggggg",
+      ".ggggg.",
+      "..ggg..",
+      "...g...",
+    ],
+    palette: { g: "#ffd700" },
   },
 };
 
