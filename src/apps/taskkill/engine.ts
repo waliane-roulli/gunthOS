@@ -111,7 +111,6 @@ const HITSTOP_DURATION = 0.04;
 const PARTICLE_GRAVITY = 160;
 const POWERUP_DROP_RATE = 0.28;
 const POWERUP_SPEED = -60;
-const MAX_POWER_LEVEL = 4;
 const RAGE_KILL_THRESHOLD = 5;
 const RAGE_DURATION = 4.0;
 const RAGE_KILL_WINDOW = 3.0;
@@ -371,6 +370,7 @@ export class TaskkillEngine {
     invTimer: 0,
     fireTimer: 0,
     powerLevel: 0,
+    maxPowerUnlocked: 2, // 0-2 par défaut, 4 après avoir tué un Clippy
     reverseShootTimer: 0,
   };
 
@@ -555,6 +555,7 @@ export class TaskkillEngine {
     this.player.invTimer = 0;
     this.player.fireTimer = 0;
     this.player.powerLevel = 0;
+    this.player.maxPowerUnlocked = 2;
     this.player.reverseShootTimer = 0;
   }
 
@@ -876,6 +877,9 @@ export class TaskkillEngine {
     if (this.input.isDown("ArrowUp") || this.input.isDown("z") || this.input.isDown("Z") || this.input.isDown("w") || this.input.isDown("W")) dy = -1;
     if (this.input.isDown("ArrowDown") || this.input.isDown("s") || this.input.isDown("S")) dy = 1;
 
+    // Wave 3 (zone hackée) → commandes inversées
+    if (this.wave === 3) { dx = -dx; dy = -dy; }
+
     if (dx !== 0 && dy !== 0) { dx *= 0.707; dy *= 0.707; }
 
     this.player.x += dx * PLAYER_SPEED * dt;
@@ -1118,6 +1122,11 @@ export class TaskkillEngine {
           }
 
           if (enemy.hp <= 0) {
+            // Tuer une notif → 1s d'invisibilité
+            if (enemy.enemyType === "notif") {
+              this.player.invTimer = 1.0;
+              this.spawnBanner("👻 INVISIBLE 1s !", this.player.x + this.player.w / 2, this.player.y - 10, "#0ff", 14, -50);
+            }
             this.onEnemyKilled(enemy);
             this.enemies.release(enemy);
           }
@@ -1206,6 +1215,13 @@ export class TaskkillEngine {
       }
     }
 
+    // Tuer un Clippy → débloque le tir x5
+    if (enemy.enemyType === "clippy" && this.player.maxPowerUnlocked < 4) {
+      this.player.maxPowerUnlocked = 4;
+      this.spawnBanner("🔓 TIR x5 DÉBLOQUÉ !", cx, cy, "#ff0", 18, -50);
+      this.queueNotif("📎 CLIPPY ÉLIMINÉ ! Power maximum débloqué — TIR x5 ! 🔓");
+    }
+
     // Power-up drop
     if (Math.random() < POWERUP_DROP_RATE) {
       this.spawnPowerUp(cx, cy);
@@ -1233,7 +1249,7 @@ export class TaskkillEngine {
   }
 
   private collectPowerUp(pu: PowerUpData): void {
-    if (this.player.powerLevel < MAX_POWER_LEVEL) {
+    if (this.player.powerLevel < this.player.maxPowerUnlocked) {
       this.player.powerLevel++;
       this.audio.powerUp();
       this.spawnParticles(pu.x, pu.y, 12, ["⬆", "🔥", "⚡", "💪"], "#ff0", 120, 0.6);
@@ -1852,14 +1868,16 @@ export class TaskkillEngine {
       const pwY = hbY + hbH + 14;
       ctx.fillStyle = "#ff0";
       ctx.font = "bold 10px monospace";
-      const pwLabel = `🖕 POWER x${this.player.powerLevel + 1}`;
+      const capped = this.player.maxPowerUnlocked < 4;
+      const pwLabel = `🖕 POWER x${this.player.powerLevel + 1}${capped ? " 🔒" : ""}`;
       ctx.fillText(pwLabel, hbX, pwY);
       // Power bar
       const pwW = 80, pwH = 5;
       ctx.fillStyle = "#222";
       ctx.fillRect(hbX, pwY + 4, pwW, pwH);
-      ctx.fillStyle = "#ff0";
-      ctx.fillRect(hbX, pwY + 4, pwW * (this.player.powerLevel / MAX_POWER_LEVEL), pwH);
+      const barRatio = this.player.maxPowerUnlocked > 0 ? this.player.powerLevel / this.player.maxPowerUnlocked : 0;
+      ctx.fillStyle = capped ? "#fa0" : "#ff0";
+      ctx.fillRect(hbX, pwY + 4, pwW * barRatio, pwH);
     }
 
     // Rage indicator
