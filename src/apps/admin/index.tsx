@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import type { AppProps, OsRelease } from "@/types";
 import { useNotify } from "@/lib/contexts/notification-context";
 import type { NotificationType } from "@/lib/contexts/notification-context";
+import { useSettings } from "@/lib/contexts/settings-context";
+import { WALLPAPERS, DEFAULT_WALLPAPER_ID } from "@/lib/wallpapers";
 
 // ─── shared primitives ────────────────────────────────────────────────────────
 
@@ -54,7 +56,7 @@ const divider: React.CSSProperties = {
 
 // ─── nav sidebar ──────────────────────────────────────────────────────────────
 
-type Section = "live" | "users" | "database" | "notifications" | "broadcast" | "vocal" | "versions" | "peagle";
+type Section = "live" | "users" | "database" | "notifications" | "broadcast" | "vocal" | "versions" | "peagle" | "showroom";
 
 const NAV_ITEMS: { id: Section; label: string; icon: string }[] = [
   { id: "live",          label: "En direct",       icon: "🟢" },
@@ -65,6 +67,7 @@ const NAV_ITEMS: { id: Section; label: string; icon: string }[] = [
   { id: "vocal",         label: "Vocal TTS",       icon: "🔊" },
   { id: "versions",      label: "Versions",        icon: "📋" },
   { id: "peagle",        label: "Peagle 98",       icon: "🎯" },
+  { id: "showroom",      label: "Showroom",        icon: "🎨" },
 ];
 
 function Sidebar({ active, onSelect }: { active: Section; onSelect: (s: Section) => void }) {
@@ -1690,6 +1693,174 @@ function PeaglePanel() {
   );
 }
 
+// ─── showroom panel ───────────────────────────────────────────────────────────
+
+type ShowroomCategory = "wallpapers";
+
+const SHOWROOM_TABS: { id: ShowroomCategory; label: string; icon: string }[] = [
+  { id: "wallpapers", label: "Fonds d'écran", icon: "🖼️" },
+];
+
+function ShowroomPanel() {
+  const { settings, setWallpaperId } = useSettings();
+  const [category, setCategory] = useState<ShowroomCategory>("wallpapers");
+  const currentId = settings.wallpaperId ?? DEFAULT_WALLPAPER_ID;
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" }}>
+      <SectionHeader
+        title="Showroom"
+        subtitle="Prévisualisez et choisissez vos assets"
+      />
+
+      {/* Category tabs */}
+      <div style={{
+        display: "flex",
+        gap: 2,
+        padding: "6px 12px 0",
+        borderBottom: "2px solid var(--t-border-dark)",
+        background: "var(--t-bg)",
+        flexShrink: 0,
+      }}>
+        {SHOWROOM_TABS.map((tab) => {
+          const isActive = tab.id === category;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setCategory(tab.id)}
+              style={{
+                padding: "4px 12px",
+                border: "2px solid",
+                borderBottomColor: isActive ? "var(--t-bg)" : "var(--t-border-dark)",
+                borderTopColor: isActive ? "var(--t-border-light)" : "var(--t-border-dark)",
+                borderLeftColor: isActive ? "var(--t-border-light)" : "var(--t-border-dark)",
+                borderRightColor: isActive ? "var(--t-border-dark)" : "var(--t-border-dark)",
+                background: isActive ? "var(--t-bg)" : "var(--t-app-bg)",
+                fontFamily: "var(--t-font-body)",
+                fontSize: "var(--t-text-xs)",
+                color: "var(--t-text)",
+                cursor: "pointer",
+                marginBottom: isActive ? -2 : 0,
+                position: "relative",
+                zIndex: isActive ? 1 : 0,
+              }}
+            >
+              {tab.icon} {tab.label}
+            </button>
+          );
+        })}
+      </div>
+
+      <div style={{ flex: 1, overflow: "auto", padding: 12 }}>
+        {category === "wallpapers" && (
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
+            gap: 10,
+          }}>
+            {WALLPAPERS.map((wp) => {
+              const isActive = wp.id === currentId;
+              return (
+                <div
+                  key={wp.id}
+                  style={{
+                    border: "2px solid",
+                    borderTopColor: isActive ? "var(--t-accent)" : "var(--t-border-dark)",
+                    borderLeftColor: isActive ? "var(--t-accent)" : "var(--t-border-dark)",
+                    borderBottomColor: isActive ? "var(--t-accent)" : "var(--t-border-light)",
+                    borderRightColor: isActive ? "var(--t-accent)" : "var(--t-border-light)",
+                    background: "var(--t-bg)",
+                    overflow: "hidden",
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
+                >
+                  {/* Thumbnail */}
+                  <div style={{
+                    height: 90,
+                    position: "relative",
+                    overflow: "hidden",
+                    flexShrink: 0,
+                    ...wp.style,
+                  }}>
+                    {isActive && (
+                      <div style={{
+                        position: "absolute",
+                        top: 4,
+                        right: 4,
+                        background: "var(--t-accent)",
+                        color: "#fff",
+                        fontFamily: "var(--t-font-display)",
+                        fontSize: "var(--t-text-xs)",
+                        padding: "1px 5px",
+                      }}>
+                        ACTIF
+                      </div>
+                    )}
+                    {wp.animated && (
+                      <div style={{
+                        position: "absolute",
+                        top: 4,
+                        left: 4,
+                        background: "rgba(0,0,0,0.55)",
+                        color: "#fff",
+                        fontFamily: "var(--t-font-display)",
+                        fontSize: "var(--t-text-xs)",
+                        padding: "1px 5px",
+                      }}>
+                        ▶ ANIMÉ
+                      </div>
+                    )}
+                    <div style={{
+                      position: "absolute",
+                      bottom: 4,
+                      left: 6,
+                      fontSize: "1.6rem",
+                      lineHeight: 1,
+                      filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.8))",
+                    }}>
+                      {wp.emoji}
+                    </div>
+                  </div>
+                  {/* Info */}
+                  <div style={{ padding: "6px 8px", display: "flex", flexDirection: "column", gap: 4, flex: 1 }}>
+                    <div style={{
+                      fontFamily: "var(--t-font-display)",
+                      fontSize: "var(--t-text-xs)",
+                      color: "var(--t-text)",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}>
+                      {wp.name}
+                    </div>
+                    <div style={{
+                      fontFamily: "var(--t-font-body)",
+                      fontSize: "var(--t-text-xs)",
+                      color: "var(--t-text-muted)",
+                      lineHeight: 1.3,
+                      flex: 1,
+                    }}>
+                      {wp.description}
+                    </div>
+                    <button
+                      style={isActive ? btn("accent") : btn()}
+                      disabled={isActive}
+                      onClick={() => setWallpaperId(wp.id)}
+                    >
+                      {isActive ? "✔ Actif" : "Appliquer"}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── access denied ────────────────────────────────────────────────────────────
 
 function AccessDenied() {
@@ -1745,6 +1916,7 @@ export function DbAdmin({ windowId: _windowId }: AppProps) {
         {section === "vocal"         && <VocalPanel />}
         {section === "versions"      && <VersionsPanel />}
         {section === "peagle"        && <PeaglePanel />}
+        {section === "showroom"      && <ShowroomPanel />}
       </div>
     </div>
   );
