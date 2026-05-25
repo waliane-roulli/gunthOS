@@ -1,6 +1,7 @@
 import { W, H, BUCKET_W, BUCKET_H, LAUNCHER_X, LAUNCHER_Y, BONUS_BUCKET_XS } from "../engine/constants";
 import { computeAimLine } from "../engine/physics";
-import { FACE, HI, SHD, DARK, NAVY } from "./theme";
+import { FACE, HI, SHD, DARK } from "./theme";
+const NAVY = "#ff6b35"; // warm orange for launcher pixel art
 import { win98Button, raisedBevel } from "./helpers";
 import type { GameState } from "../engine/types";
 

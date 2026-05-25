@@ -1,5 +1,6 @@
 import { W, H, MAX_SHAKE } from "../engine/constants";
 import type { GameState } from "../engine/types";
+import type { GameTheme, BgTheme } from "../engine/game-theme";
 
 type Ctx2D = CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
 
@@ -126,10 +127,12 @@ const FEVER_STARS = [
 // Trees, sky gradient, ground, and scanlines never change mid-frame.
 // We render them once into an OffscreenCanvas and blit it each frame.
 
+// Cache key encodes both fever state and theme id so any change triggers a rebuild.
 let _staticBgCache: OffscreenCanvas | null = null;
-let _staticBgFeverMode: boolean | null = null;
+let _staticBgKey: string | null = null;
 
-function buildStaticBg(feverMode: boolean): OffscreenCanvas {
+function buildStaticBg(feverMode: boolean, bg: BgTheme, themeId: string): OffscreenCanvas {
+  void themeId; // used only for cache key, not needed here
   // Canvas is larger than the game area by BG_PAD on each side so the
   // background fully covers the canvas during screen shake (max MAX_SHAKE px).
   const CW = W + BG_PAD * 2;
@@ -144,54 +147,53 @@ function buildStaticBg(feverMode: boolean): OffscreenCanvas {
   const groundY = H - 80;
   const skyRows = 12;
 
+  const topC = feverMode ? bg.skyTopFever : bg.skyTop;
+  const botC = feverMode ? bg.skyBotFever : bg.skyBot;
+
   // Sky gradient — extend beyond game bounds to fill padding zones
   for (let row = 0; row < skyRows; row++) {
     const t = row / skyRows;
-    let r: number, g: number, b: number;
-    if (feverMode) {
-      const topC = [8, 4, 28]; const botC = [18, 10, 52];
-      r = Math.round(topC[0]! + (botC[0]! - topC[0]!) * t);
-      g = Math.round(topC[1]! + (botC[1]! - topC[1]!) * t);
-      b = Math.round(topC[2]! + (botC[2]! - topC[2]!) * t);
-    } else {
-      const topC = [58, 110, 140]; const botC = [106, 170, 68];
-      r = Math.round(topC[0]! + (botC[0]! - topC[0]!) * t);
-      g = Math.round(topC[1]! + (botC[1]! - topC[1]!) * t);
-      b = Math.round(topC[2]! + (botC[2]! - topC[2]!) * t);
-    }
+    const r = Math.round(topC[0] + (botC[0] - topC[0]) * t);
+    const g = Math.round(topC[1] + (botC[1] - topC[1]) * t);
+    const b = Math.round(topC[2] + (botC[2] - topC[2]) * t);
     const rowH = Math.ceil(groundY / skyRows);
     ctx.fillStyle = `rgb(${r},${g},${b})`;
     ctx.fillRect(-BG_PAD, row * rowH, CW, rowH + 1);
   }
 
-  // Trees (3 depth layers) — drawn at their normal game positions
-  for (const layer of [0, 1, 2] as const) {
-    for (const tree of TREE_LAYERS) {
-      if (tree.layer !== layer) continue;
-      const leafColor = feverMode
-        ? (layer === 2 ? "#080820" : layer === 1 ? "#0c0c30" : "#101040")
-        : tree.cl;
-      const trunkColor = feverMode ? "#050510" : tree.ct;
-      const alpha = layer === 0 ? 0.55 : layer === 1 ? 0.78 : 1.0;
-      ctx.globalAlpha = alpha;
-      drawPixelTree(ctx, tree.x, groundY, tree.tw, tree.th, tree.cw, tree.ch, leafColor, trunkColor);
+  // Trees (3 depth layers) — only for themes that include them
+  if (bg.hasTrees) {
+    for (const layer of [0, 1, 2] as const) {
+      for (const tree of TREE_LAYERS) {
+        if (tree.layer !== layer) continue;
+        const leafColor = feverMode
+          ? (layer === 2 ? "#080820" : layer === 1 ? "#0c0c30" : "#101040")
+          : tree.cl;
+        const trunkColor = feverMode ? "#050510" : tree.ct;
+        const alpha = layer === 0 ? 0.55 : layer === 1 ? 0.78 : 1.0;
+        ctx.globalAlpha = alpha;
+        drawPixelTree(ctx, tree.x, groundY, tree.tw, tree.th, tree.cw, tree.ch, leafColor, trunkColor);
+      }
     }
+    ctx.globalAlpha = 1;
   }
-  ctx.globalAlpha = 1;
 
   // Ground — extend to fill padding zones
-  ctx.fillStyle = feverMode ? "#0a0a28" : "#3a8c28";
+  ctx.fillStyle = feverMode ? bg.groundColorFever : bg.groundColor;
   ctx.fillRect(-BG_PAD, groundY, CW, CH);
-  ctx.fillStyle = feverMode ? "#1a1a4a" : "#4eb038";
+  // Grass blades (pixelated tufts along the horizon)
+  const bladeColor = feverMode ? bg.subGroundColorFever : bg.subGroundColor;
+  ctx.fillStyle = bladeColor;
   for (let gx = -BG_PAD; gx < W + BG_PAD; gx += 4) {
     const h = 2 + (Math.round(gx * 7 + gx * 3) % 5);
     ctx.fillRect(gx, groundY - h, 2, h);
   }
-  ctx.fillStyle = feverMode ? "#050514" : "#1e6016";
+  ctx.fillStyle = feverMode ? bg.subGroundColorFever : bg.subGroundColor;
   ctx.fillRect(-BG_PAD, groundY + 10, CW, CH);
-  ctx.fillStyle = feverMode ? "rgba(100,80,200,0.06)" : "rgba(180,240,160,0.07)";
+  // Ground mist
+  ctx.fillStyle = feverMode ? bg.mistColorFever : bg.mistColor;
   ctx.fillRect(-BG_PAD, groundY - 8, CW, 16);
-  ctx.fillStyle = feverMode ? "rgba(80,60,180,0.04)" : "rgba(180,240,160,0.04)";
+  ctx.fillStyle = feverMode ? bg.mistColorFever : bg.mistColor;
   ctx.fillRect(-BG_PAD, groundY - 16, CW, 12);
 
   // Scanlines (static — baked once, cover full padded area)
@@ -203,10 +205,11 @@ function buildStaticBg(feverMode: boolean): OffscreenCanvas {
   return canvas;
 }
 
-function getStaticBg(feverMode: boolean): OffscreenCanvas {
-  if (_staticBgCache === null || _staticBgFeverMode !== feverMode) {
-    _staticBgCache = buildStaticBg(feverMode);
-    _staticBgFeverMode = feverMode;
+function getStaticBg(feverMode: boolean, theme: GameTheme): OffscreenCanvas {
+  const key = `${feverMode ? 1 : 0}:${theme.id}`;
+  if (_staticBgCache === null || _staticBgKey !== key) {
+    _staticBgCache = buildStaticBg(feverMode, theme.bg, theme.id);
+    _staticBgKey = key;
   }
   return _staticBgCache;
 }
@@ -287,15 +290,15 @@ function drawFireflies(ctx: CanvasRenderingContext2D, s: GameState, feverMode: b
   ctx.globalAlpha = 1;
 }
 
-export function drawBackground(ctx: CanvasRenderingContext2D, s: GameState, feverIntensity: number): void {
+export function drawBackground(ctx: CanvasRenderingContext2D, s: GameState, feverIntensity: number, theme: GameTheme): void {
   const feverMode = feverIntensity > 0.3;
 
   // Blit cached static layer — draw at -BG_PAD so the padded canvas aligns
   // correctly and covers shake-induced offsets up to MAX_SHAKE px in any direction.
-  ctx.drawImage(getStaticBg(feverMode), -BG_PAD, -BG_PAD);
+  ctx.drawImage(getStaticBg(feverMode, theme), -BG_PAD, -BG_PAD);
 
   // Animated elements drawn on top each frame (at normal game coordinates)
   drawCelestialBody(ctx, s, feverMode);
   if (feverMode) drawFeverStars(ctx, s);
-  drawFireflies(ctx, s, feverMode);
+  if (theme.bg.hasFireflies) drawFireflies(ctx, s, feverMode);
 }

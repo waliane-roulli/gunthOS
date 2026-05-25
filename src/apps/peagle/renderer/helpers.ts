@@ -1,4 +1,5 @@
-import { FACE, HI, SHD, DARK, NAVY } from "./theme";
+import { FACE, HI, SHD, DARK } from "./theme";
+const NAVY = "#ff6b35"; // warm orange for nest pixel art
 
 export function raisedBevel(ctx: CanvasRenderingContext2D, x: number, y: number, r: number): void {
   ctx.save();

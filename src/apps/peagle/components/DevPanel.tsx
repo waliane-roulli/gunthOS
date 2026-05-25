@@ -14,10 +14,11 @@ export interface DevConfig {
   classId: ClassId;
   upgrades: UpgradeId[];
   relics: RelicId[];
-  godMode: boolean;       // balles infinies
-  showHitboxes: boolean;  // overlay debug hitboxes canvas
+  godMode: boolean;
+  showHitboxes: boolean;
   forceGreenPower: "none" | "multiball" | "spooky" | "extraball" | "magnet";
-  orangePct: number | null; // null = normal, sinon override 0-100%
+  orangePct: number | null;
+  gameThemeId: string;
 }
 
 export const DEFAULT_DEV_CONFIG: DevConfig = {
@@ -29,11 +30,14 @@ export const DEFAULT_DEV_CONFIG: DevConfig = {
   showHitboxes: false,
   forceGreenPower: "none",
   orangePct: null,
+  gameThemeId: "foret",
 };
 
 interface DevPanelProps {
   onClose: () => void;
   onLaunch: (cfg: DevConfig) => void;
+  /** Apply a theme to the running game without restarting. */
+  onApplyTheme: (themeId: string) => void;
 }
 
 const SECTION: React.CSSProperties = {
@@ -276,9 +280,14 @@ function AnnouncementsTab() {
 
 type DevTab = "game" | "annonces" | "showroom";
 
-export function DevPanel({ onClose, onLaunch }: DevPanelProps) {
+export function DevPanel({ onClose, onLaunch, onApplyTheme }: DevPanelProps) {
   const [cfg, setCfg] = useState<DevConfig>({ ...DEFAULT_DEV_CONFIG });
   const [activeTab, setActiveTab] = useState<DevTab>("game");
+
+  function handleApplyTheme(themeId: string) {
+    setCfg(prev => ({ ...prev, gameThemeId: themeId }));
+    onApplyTheme(themeId);
+  }
 
   function toggle<T>(arr: T[], item: T): T[] {
     return arr.includes(item) ? arr.filter(x => x !== item) : [...arr, item];
@@ -371,7 +380,7 @@ export function DevPanel({ onClose, onLaunch }: DevPanelProps) {
           }}
         >
           {activeTab === "annonces" && <AnnouncementsTab />}
-          {activeTab === "showroom" && <PeagleAssetsGrid cfg={cfg} onLaunch={onLaunch} />}
+          {activeTab === "showroom" && <PeagleAssetsGrid cfg={cfg} onLaunch={onLaunch} onApplyTheme={handleApplyTheme} />}
           {activeTab === "game" && <>
           {/* Presets rapides */}
           <div style={SECTION}>

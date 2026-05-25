@@ -17,7 +17,7 @@ import { W, H } from "./engine/constants";
 import type { UiState, LeaderboardEntry, UpgradeId } from "./engine/types";
 import type { RunState, ClassId } from "./engine/roguelite";
 import { makeInitialRunState, generateUpgradeOffer } from "./engine/roguelite";
-import { DevPanel } from "./components/DevPanel";
+import { DevPanel, DEFAULT_DEV_CONFIG } from "./components/DevPanel";
 import type { DevConfig } from "./components/DevPanel";
 import { SidePanel } from "./components/SidePanel";
 type Screen = "menu" | "class-pick" | "game" | "leaderboard";
@@ -175,6 +175,14 @@ export function PeagleApp({ windowId: _windowId }: AppProps) {
     fetchLeaderboard();
   }, [fetchLeaderboard]);
 
+  const handleApplyTheme = useCallback((themeId: string) => {
+    if (devConfigRef.current) {
+      devConfigRef.current = { ...devConfigRef.current, gameThemeId: themeId };
+    } else {
+      devConfigRef.current = { ...DEFAULT_DEV_CONFIG, gameThemeId: themeId };
+    }
+  }, []);
+
   const handleReplay = useCallback(() => {
     runStateRef.current = makeInitialRunState(runStateRef.current.classId);
     resetGame(false);
@@ -241,6 +249,7 @@ export function PeagleApp({ windowId: _windowId }: AppProps) {
         {showDevPanelInGame && (
           <DevPanel
             onClose={() => setShowDevPanelInGame(false)}
+            onApplyTheme={handleApplyTheme}
             onLaunch={(cfg) => {
               devConfigRef.current = cfg;
               const base = makeInitialRunState(cfg.classId);

@@ -1,4 +1,5 @@
 import type { GameState } from "../engine/types";
+import type { GameTheme } from "../engine/game-theme";
 import { PEG_R } from "../engine/constants";
 import { drawBackground } from "./background";
 import { drawWarpCables, drawPegs } from "./pegs";
@@ -6,13 +7,20 @@ import { drawDecors, drawDecorHitboxes } from "./decor";
 import { drawAimLine, drawLauncher, drawBuckets } from "./ui";
 import { drawBall } from "./ball";
 import { drawParticles, drawFloatingTexts, drawScreenFlash, drawVignette, drawBezel } from "./effects";
+
+export interface RenderOpts {
+  theme:        GameTheme;
+  showHitboxes?: boolean;
+}
+
 export function drawFrame(
   ctx: CanvasRenderingContext2D,
   s: GameState,
   aimAngle: number,
   orangeLeft: number,
-  showHitboxes = false,
+  opts: RenderOpts,
 ): void {
+  const { theme, showHitboxes = false } = opts;
   const inFever = orangeLeft <= s.effectiveFeverThreshold && orangeLeft > 0;
   const feverIntensity = inFever ? 1 : 0;
   const inSlowMo = s.slowMoFrames > 0;
@@ -31,11 +39,11 @@ export function drawFrame(
     ctx.translate(s.shakeX, s.shakeY);
   }
 
-  drawBackground(ctx, s, feverIntensity);
+  drawBackground(ctx, s, feverIntensity, theme);
   drawDecors(ctx, s);
   drawAimLine(ctx, s, aimAngle);
-  drawWarpCables(ctx, s);
-  drawPegs(ctx, s, inFever, feverIntensity);
+  drawWarpCables(ctx, s, theme);
+  drawPegs(ctx, s, inFever, feverIntensity, theme);
   drawParticles(ctx, s);
 
   if (s.ball?.active) drawBall(ctx, s.ball, inSlowMo);
@@ -50,7 +58,7 @@ export function drawFrame(
   ctx.restore(); // end camera transform
 
   drawBezel(ctx);
-  drawScreenFlash(ctx, s, inFever);
+  drawScreenFlash(ctx, s, inFever, theme);
   drawVignette(ctx, s);
 
   if (showHitboxes) { drawDebugHitboxes(ctx, s); drawDecorHitboxes(ctx, s); }

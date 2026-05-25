@@ -1,6 +1,12 @@
 import type { GameState, Particle } from "../types";
-import { PEAGLE_THEME } from "../../renderer/theme";
 import { BALANCE } from "../balance";
+
+// Default particle color pools — renderer-independent, baked into each particle at spawn.
+const PARTICLE_COLORS = {
+  orange: ["#ff5500", "#ffaa00", "#ffdd44", "#ffffff", "#ff2200"] as const,
+  normal: ["#2233aa", "#4455ff", "#0011aa", "#aaaaff", "#1122cc"] as const,
+  bomb:   ["#ff1133", "#ff8800", "#ffcc00", "#ffffff", "#cc0022"] as const,
+} as const;
 
 export function spawnParticles(
   s: GameState,
@@ -11,10 +17,10 @@ export function spawnParticles(
   bomb = false,
 ): void {
   const colors = bomb
-    ? PEAGLE_THEME.particles.bomb
+    ? PARTICLE_COLORS.bomb
     : orange
-    ? PEAGLE_THEME.particles.orange
-    : PEAGLE_THEME.particles.normal;
+    ? PARTICLE_COLORS.orange
+    : PARTICLE_COLORS.normal;
 
   for (let i = 0; i < count; i++) {
     // Evict oldest particles to stay under the cap

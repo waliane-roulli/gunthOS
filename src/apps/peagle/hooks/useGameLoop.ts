@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useRef, useCallback } from "react";
 import type { RefObject } from "react";
 import { useSoundContext } from "@/lib/contexts/sound-context";
 import { drawFrame } from "../renderer";
+import { resolveTheme } from "../engine/game-theme";
 import { tick } from "../engine/state/tick";
 import { makeInitialState } from "../engine/state/init";
 import { isBossLevel } from "../engine/roguelite";
@@ -270,7 +271,10 @@ export function useGameLoop({
       for (const ev of events) handleEvent(ev);
       if (shouldSync) syncUI(orangeLeft);
 
-      drawFrame(ctx, stateRef.current, getAngle(), orangeLeft, devConfigRef.current?.showHitboxes ?? false);
+      drawFrame(ctx, stateRef.current, getAngle(), orangeLeft, {
+        showHitboxes: devConfigRef.current?.showHitboxes ?? false,
+        theme: resolveTheme(devConfigRef.current?.gameThemeId),
+      });
       animRef.current = requestAnimationFrame(frame);
     }
 

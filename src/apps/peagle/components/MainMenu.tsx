@@ -75,6 +75,7 @@ export function MainMenu({ bestScore, displayName, isAdmin, onPlay, onLeaderboar
         <DevPanel
           onClose={() => setShowDev(false)}
           onLaunch={(cfg) => { setShowDev(false); onDevLaunch(cfg); }}
+          onApplyTheme={() => {}}
         />
       )}
 

@@ -1,6 +1,7 @@
 import { W, H, ZOOM_SCALE } from "../engine/constants";
-import { FACE, HI, DARK, PEAGLE_THEME } from "./theme";
+import { FACE, HI, DARK } from "./theme";
 import type { GameState } from "../engine/types";
+import type { GameTheme } from "../engine/game-theme";
 
 export function drawParticles(ctx: CanvasRenderingContext2D, s: GameState): void {
   const count = s.particles.length;
@@ -63,11 +64,11 @@ export function drawFloatingTexts(ctx: CanvasRenderingContext2D, s: GameState): 
   }
 }
 
-export function drawScreenFlash(ctx: CanvasRenderingContext2D, s: GameState, inFever: boolean): void {
+export function drawScreenFlash(ctx: CanvasRenderingContext2D, s: GameState, inFever: boolean, theme: GameTheme): void {
   if (s.flashWhite <= 0) return;
   ctx.save();
   ctx.globalAlpha = Math.max(0, s.flashWhite * 0.36);
-  ctx.fillStyle = inFever ? PEAGLE_THEME.flash.fever : PEAGLE_THEME.flash.normal;
+  ctx.fillStyle = inFever ? theme.flash.fever : theme.flash.normal;
   ctx.fillRect(0, 0, W, H);
   ctx.restore();
 }

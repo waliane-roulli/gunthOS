@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { PegIcon } from "./PegIcon";
 import { CLASSES, CLASS_COLORS } from "../engine/roguelite";
+import { GAME_THEMES } from "../engine/game-theme";
 import type { DevConfig } from "./DevPanel";
-import { btnRaised } from "../styles";
+import { btnRaised, PG } from "../styles";
 
 interface PegDef {
   id: string; name: string; description: string;
@@ -71,9 +72,10 @@ function CssDecor({ def }: { def: typeof DECOR_DEFS[number] }) {
 interface PeagleAssetsGridProps {
   cfg: DevConfig;
   onLaunch: (cfg: DevConfig) => void;
+  onApplyTheme: (themeId: string) => void;
 }
 
-export function PeagleAssetsGrid({ cfg, onLaunch }: PeagleAssetsGridProps) {
+export function PeagleAssetsGrid({ cfg, onLaunch, onApplyTheme }: PeagleAssetsGridProps) {
   const [selectedPeg,   setSelectedPeg]   = useState<string | null>(null);
   const [selectedDecor, setSelectedDecor] = useState<string | null>(null);
 
@@ -101,6 +103,61 @@ export function PeagleAssetsGrid({ cfg, onLaunch }: PeagleAssetsGridProps) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+
+      {/* Themes visuels */}
+      <div>
+        {subHeader("THÈMES VISUELS", GAME_THEMES.length)}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8 }}>
+          {GAME_THEMES.map(theme => {
+            const isActive = cfg.gameThemeId === theme.id;
+            return (
+              <div key={theme.id} style={cardStyle(isActive, theme.preview.accent)}>
+                {/* Gradient thumbnail with peg color swatches */}
+                <div style={{
+                  height: 56, background: theme.preview.gradient,
+                  position: "relative", display: "flex",
+                  alignItems: "flex-end", padding: "0 8px 7px",
+                  gap: 4,
+                }}>
+                  {isActive && (
+                    <div style={{
+                      position: "absolute", top: 4, right: 4,
+                      background: theme.preview.accent, color: "#000",
+                      fontFamily: "var(--font-press-start), monospace",
+                      fontSize: 6, padding: "2px 5px",
+                    }}>ACTIF</div>
+                  )}
+                  {/* Mini peg swatches */}
+                  {([theme.peg.normal, theme.peg.orange, theme.peg.green, theme.peg.warp] as const).map((color, i) => (
+                    <div key={i} style={{
+                      width: 9, height: 9, background: color,
+                      boxShadow: `0 0 4px ${color}`,
+                    }} />
+                  ))}
+                </div>
+                <div style={{ padding: "5px 8px", display: "flex", flexDirection: "column", gap: 3 }}>
+                  <div style={{ fontFamily: "var(--font-press-start), monospace", fontSize: 7, color: "#e0d0ff" }}>{theme.name}</div>
+                  <div style={{ fontFamily: "var(--font-press-start), monospace", fontSize: 6, color: PG.textMuted, lineHeight: 1.4 }}>{theme.description}</div>
+                  <button
+                    style={{
+                      ...btnRaised, fontSize: 6, padding: "3px 0", width: "100%", marginTop: 2,
+                      background: isActive ? `linear-gradient(to bottom, ${theme.preview.accent}cc, ${theme.preview.accent}88)` : undefined,
+                      color: isActive ? "#000" : theme.preview.accent,
+                      borderTopColor: theme.preview.accent,
+                      borderLeftColor: theme.preview.accent,
+                    }}
+                    disabled={isActive}
+                    onClick={() => onApplyTheme(theme.id)}
+                  >
+                    {isActive ? "✔ ACTIF" : "▶ APPLIQUER"}
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Classes */}
       <div>
         {subHeader("CLASSES (LANCEUR)", classArr.length)}
