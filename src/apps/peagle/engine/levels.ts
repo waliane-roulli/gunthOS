@@ -268,14 +268,257 @@ function layout10(cx: number): TableauResult {
   };
 }
 
+function layout11(cx: number): TableauResult {
+  // 💀 Tête de mort pixel art + terrain hanté
+  const skull = [
+    "001111100",
+    "011111110",
+    "111011101",
+    "111111111",
+    "011111110",
+    "001111100",
+    "001010100",
+    "001111100",
+  ];
+  return {
+    pegs: dedup([
+      ...tPixelArt(skull, 24, 22, cx - 96, 88),
+      ...tHexGrid(26, 300, 16, 5, 28),
+    ]),
+    decors: [
+      mkBumper(cx - 72, 378, 13, "#aa00ff"),
+      mkBumper(cx + 72, 378, 13, "#aa00ff"),
+      mkBumper(cx, 455, 15, "#660099"),
+      mkArc(cx, 88, 105, 0.2, Math.PI - 0.2, "#aa00ff"),
+    ],
+  };
+}
+
+function layout12(cx: number): TableauResult {
+  // 🍄 Champignon Mario pixel art + terrain
+  const shroom = [
+    "001111100",
+    "011111110",
+    "110101011",
+    "111111111",
+    "011111110",
+    "001111100",
+    "000111000",
+    "001111100",
+    "000111000",
+  ];
+  return {
+    pegs: dedup([
+      ...tPixelArt(shroom, 24, 22, cx - 96, 85),
+      ...tHexGrid(28, 310, 15, 5, 28),
+    ]),
+    decors: [
+      mkBumper(cx - 90, 355, 12, "#ff4444"),
+      mkBumper(cx + 90, 355, 12, "#ff4444"),
+      mkBumper(cx, 460, 15, "#cc0000"),
+      mkSpike(50, 160, 16, 0),
+      mkSpike(430, 160, 16, Math.PI),
+    ],
+  };
+}
+
+function layout13(cx: number): TableauResult {
+  // ⚓ Ancre — anneau + mât + traverse + courbe du bas + flukes
+  return {
+    pegs: dedup([
+      ...tCircle(cx, 128, 28, 10),
+      ...tLine(cx, 100, cx, 415, 22),
+      ...tLine(cx - 90, 148, cx + 90, 148, 22),
+      ...tArc(cx, 390, 78, Math.PI, Math.PI * 2, 13),
+      ...tLine(cx - 78, 390, cx - 58, 340, 18),
+      ...tLine(cx + 78, 390, cx + 58, 340, 18),
+    ]),
+    decors: [
+      mkBumper(cx - 90, 148, 10, "#3388ff"),
+      mkBumper(cx + 90, 148, 10, "#3388ff"),
+      mkBumper(cx, 390, 12, "#1155cc"),
+      mkBumper(cx - 58, 340, 9, "#66aaff"),
+      mkBumper(cx + 58, 340, 9, "#66aaff"),
+    ],
+  };
+}
+
+function layout14(cx: number): TableauResult {
+  // ⏳ Sablier — large en haut et en bas, étroit au centre
+  const pegs: Peg[] = [];
+  const mk = (x: number, y: number): Peg => ({
+    x, y, hit: false, orange: false, green: false, bomb: false, boss: false,
+    armorHits: 0, hitCooldown: 0, popping: false, popAlpha: 1, scale: 1,
+  });
+  for (let row = 0; row < 20; row++) {
+    const y = 75 + row * 21;
+    const d = Math.abs(row - 9.5);
+    const halfWidth = Math.max(20, Math.round(20 + d * 18));
+    for (let x = cx - halfWidth; x <= cx + halfWidth; x += 22) {
+      pegs.push(mk(Math.round(x), y));
+    }
+  }
+  return {
+    pegs: dedup(pegs),
+    decors: [
+      mkBumper(cx, 285, 10, "#44aaff"),
+      mkPlank(cx - 42, 285, 52, Math.PI / 5),
+      mkPlank(cx + 42, 285, 52, -Math.PI / 5),
+      mkArc(cx, 70, 120, Math.PI * 1.1, Math.PI * 1.9, "#44aaff"),
+    ],
+  };
+}
+
+function layout15(cx: number): TableauResult {
+  // 🎯 Cible — 4 cercles concentriques + bullseye
+  return {
+    pegs: dedup([
+      ...tCircle(cx, 275, 160, 26),
+      ...tCircle(cx, 275, 115, 20),
+      ...tCircle(cx, 275, 72, 13),
+      ...tCircle(cx, 275, 36, 7),
+    ]),
+    decors: [
+      mkBumper(cx, 275, 14, "#ff0000"),
+      mkSpike(50, 130, 16, Math.PI * 0.25),
+      mkSpike(430, 130, 16, Math.PI * 0.75),
+      mkSpike(50, 420, 16, -Math.PI * 0.25),
+      mkSpike(430, 420, 16, -Math.PI * 0.75),
+    ],
+  };
+}
+
+function layout16(cx: number): TableauResult {
+  // ☯ Yin-Yang — cercle extérieur + diviseur en S + deux petits cercles
+  return {
+    pegs: dedup([
+      ...tCircle(cx, 280, 140, 22),
+      ...tArc(cx, 210, 70, -Math.PI / 2, Math.PI / 2, 10),
+      ...tArc(cx, 350, 70, Math.PI / 2, Math.PI * 1.5, 10),
+      ...tCircle(cx, 210, 28, 6),
+      ...tCircle(cx, 350, 28, 6),
+    ]),
+    decors: [
+      mkBumper(cx - 65, 280, 11, "#dddddd"),
+      mkBumper(cx + 65, 280, 11, "#888888"),
+      mkBumper(cx, 280, 9, "#ff8800"),
+      mkArc(cx, 280, 145, Math.PI, Math.PI * 2, "#3399ff"),
+    ],
+  };
+}
+
+function layout17(cx: number): TableauResult {
+  // 🐛 Chenille — chaîne de cercles serpentant + tête
+  const segments: [number, number][] = [
+    [155, 130], [315, 185], [155, 255], [315, 325], [155, 395], [315, 460],
+  ];
+  const pegs: Peg[] = [
+    ...tCircle(155, 78, 35, 9),
+    ...segments.flatMap(([sx, sy]) => tCircle(sx, sy, 42, 10)),
+  ];
+  for (let i = 0; i < segments.length - 1; i++) {
+    const [sx, sy] = segments[i]!;
+    const [ex, ey] = segments[i + 1]!;
+    pegs.push(...tLine(sx, sy, ex, ey, 26));
+  }
+  return {
+    pegs: dedup(pegs),
+    decors: [
+      ...segments.map(([sx, sy]) => mkBumper(sx, sy, 11, "#44cc44")),
+      mkBumper(155, 78, 12, "#66ff44"),
+    ],
+  };
+}
+
+function layout18(cx: number): TableauResult {
+  // ⚡ Éclair pixel art + terrain électrisé
+  const bolt = [
+    "011110000",
+    "011110000",
+    "001111000",
+    "001111000",
+    "000011110",
+    "000011110",
+    "000001111",
+    "000001111",
+    "000000110",
+  ];
+  return {
+    pegs: dedup([
+      ...tPixelArt(bolt, 22, 24, cx - 88, 80),
+      ...tHexGrid(28, 310, 15, 5, 28),
+    ]),
+    decors: [
+      mkBumper(cx - 60, 360, 13, "#ffff00"),
+      mkBumper(cx + 60, 360, 13, "#ffff00"),
+      mkBumper(cx, 435, 15, "#ffcc00"),
+      mkPlank(cx - 20, 265, 40, Math.PI / 4),
+    ],
+  };
+}
+
+function layout19(cx: number): TableauResult {
+  // 🌈 Arc-en-ciel — 7 arcs de rayon décroissant depuis la base
+  const radii = [190, 162, 135, 108, 82, 58, 38];
+  const counts = [26, 22, 18, 14, 11, 8, 6];
+  const pegs: Peg[] = [
+    ...tHexGrid(28, 82, 15, 3, 30),
+  ];
+  for (let i = 0; i < radii.length; i++) {
+    pegs.push(...tArc(cx, 490, radii[i]!, Math.PI, Math.PI * 2, counts[i]!));
+  }
+  return {
+    pegs: dedup(pegs),
+    decors: [
+      mkBumper(cx - 100, 400, 12, "#ff4444"),
+      mkBumper(cx, 318, 12, "#44ff44"),
+      mkBumper(cx + 100, 400, 12, "#4444ff"),
+      mkArc(cx, 490, 210, Math.PI, Math.PI * 2, "#ff8800"),
+    ],
+  };
+}
+
+function layout20(cx: number): TableauResult {
+  // 🌌 Galaxie — deux bras spiralés + champ d'étoiles
+  const pegs: Peg[] = [];
+  const mk = (x: number, y: number): Peg => ({
+    x, y, hit: false, orange: false, green: false, bomb: false, boss: false,
+    armorHits: 0, hitCooldown: 0, popping: false, popAlpha: 1, scale: 1,
+  });
+  for (let i = 0; i < 28; i++) {
+    const t = i / 28;
+    const a = t * Math.PI * 2 * 2;
+    const r = 12 + t * 162;
+    pegs.push(mk(cx + Math.cos(a) * r * 0.9, 270 + Math.sin(a) * r * 0.64));
+    pegs.push(mk(cx + Math.cos(a + Math.PI) * r * 0.9, 270 + Math.sin(a + Math.PI) * r * 0.64));
+  }
+  const stars: [number, number][] = [
+    [55, 92], [415, 88], [32, 235], [448, 280], [68, 420], [412, 432],
+    [158, 78], [338, 82], [28, 158], [450, 168], [85, 475], [395, 470],
+  ];
+  for (const [sx, sy] of stars) {
+    pegs.push(mk(sx, sy));
+  }
+  return {
+    pegs: dedup(pegs),
+    decors: [
+      mkBumper(cx, 270, 16, "#ffcc00"),
+      mkBumper(cx - 100, 195, 10, "#4499ff"),
+      mkBumper(cx + 100, 345, 10, "#4499ff"),
+      mkPlank(cx - 58, 175, 36, Math.PI / 6),
+      mkPlank(cx + 58, 365, 36, Math.PI / 6),
+    ],
+  };
+}
+
 // ─── Main builder ──────────────────────────────────────────────────────────────
 
 export function buildLevel(level: number, runState?: RunState): { pegs: Peg[]; decors: Decor[] } {
   const cx = W / 2;
-  const layout = ((level - 1) % 10) + 1;
+  const layout = ((level - 1) % 20) + 1;
   const isBoss = isBossLevel(level);
 
-  const builders = [layout1, layout2, layout3, layout4, layout5, layout6, layout7, layout8, layout9, layout10];
+  const builders = [layout1, layout2, layout3, layout4, layout5, layout6, layout7, layout8, layout9, layout10, layout11, layout12, layout13, layout14, layout15, layout16, layout17, layout18, layout19, layout20];
   const { pegs: rawPegs, decors } = (builders[layout - 1] ?? layout1)(cx);
 
   // Deduplicate pegs that are too close
