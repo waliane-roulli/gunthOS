@@ -100,7 +100,7 @@ function Sidebar({ active, onSelect }: { active: Section; onSelect: (s: Section)
       }}>
         ADMIN PANEL
       </div>
-      <nav style={{ flex: 1 }}>
+      <nav style={{ flex: 1, overflowY: "auto" }}>
         {NAV_ITEMS.map((item) => {
           const isActive = item.id === active;
           return (
