@@ -92,10 +92,10 @@ const ENEMY_DEFS: Record<
   { hp: number; speed: number; score: number; canShoot: boolean; emoji: string; w: number; h: number; fireRate: number }
 > = {
   plouf:     { hp: 3,  speed: 100, score: 100, canShoot: false, emoji: "🐟",  w: 32, h: 24, fireRate: 0 },
-  notif:     { hp: 3,  speed: 145, score: 125, canShoot: false, emoji: "🔔",  w: 28, h: 28, fireRate: 0 },
+  notif:     { hp: 3,  speed: 145, score: 125, canShoot: true,  emoji: "🔔",  w: 28, h: 28, fireRate: 2.2 },
   popup:     { hp: 6,  speed: 55,  score: 200, canShoot: false, emoji: "💬",  w: 48, h: 40, fireRate: 0 },
   radio:     { hp: 6,  speed: 65,  score: 250, canShoot: true,  emoji: "📡",  w: 34, h: 34, fireRate: 2.0 },
-  solitaire: { hp: 3,  speed: 135, score: 175, canShoot: false, emoji: "🃏",  w: 28, h: 36, fireRate: 0 },
+  solitaire: { hp: 3,  speed: 135, score: 175, canShoot: true,  emoji: "🃏",  w: 28, h: 36, fireRate: 2.5 },
   clippy:    { hp: 12, speed: 50,  score: 500, canShoot: true,  emoji: "📎",  w: 56, h: 56, fireRate: 1.3 },
   trash:     { hp: 9,  speed: 45,  score: 225, canShoot: false, emoji: "🗑️", w: 40, h: 40, fireRate: 0 },
   bsod:      { hp: 15, speed: 35,  score: 400, canShoot: false, emoji: "💀",  w: 56, h: 44, fireRate: 0 },
@@ -122,17 +122,17 @@ const BOSS_CHARS = ["CRASH", "DUMP", "FATAL", "0x0F", "HALT", "☠", "💀", "BS
 
 
 const WAVE_CONFIG = [
-  { name: "🐟 Plouf Plouf a crashé — les poissons s'échappent !", types: { plouf: 10 } },
-  { name: "🔔 GunthMessenger™ — spam de notifications", types: { plouf: 4, notif: 7 } },
-  { name: "💬 Internet Explorer 6 — invasion de pop-ups", types: { notif: 3, popup: 5 } },
-  { name: "📡 GunthRadio™ — ondes parasites + Solitaire buggé", types: { radio: 4, popup: 3, solitaire: 4 } },
-  { name: "🗑️ Corbeille pleine — fichiers corrompus + BSOD", types: { trash: 4, clippy: 3, bsod: 2 } },
+  { name: "🐟 Plouf Plouf a crashé — les poissons s'échappent !", types: { plouf: 20 } },
+  { name: "🔔 GunthMessenger™ — spam de notifications", types: { plouf: 8, notif: 14 } },
+  { name: "🟢 Matrix — le système se fait hacker", types: { notif: 6, popup: 4, solitaire: 6 } },
+  { name: "📡 GunthRadio™ — ondes parasites + Solitaire buggé", types: { radio: 8, popup: 6, solitaire: 8 } },
+  { name: "🗑️ Corbeille pleine — fichiers corrompus + BSOD", types: { trash: 8, clippy: 3, bsod: 4 } },
   { name: "💀 MISE À JOUR CRITIQUE — Windows Update.exe", types: {}, boss: true },
 ];
 
 const GUNTHOS_NOTIFS = [
   "Vous venez de détruire System32. Bravo. J'espère que vous êtes fier.",
-  "Astuce : Les pop-ups 'Vous avez gagné un iPhone' ont 300 PV. Bonne chance.",
+  "Astuce : Les pop-ups 'Vous êtes le 1 000 000ème visiteur' ont 300 PV. Bonne chance.",
   "Mémoire RAM insuffisante pour votre ego. Réduction de la cadence de tir.",
   "DLL manquante : self_control.dll — le tir continu est activé par défaut.",
   "Le Gestionnaire des Tâches observe vos performances. Il n'est pas impressionné.",
@@ -165,7 +165,16 @@ const ENEMY_BANNERS: Partial<Record<EnemyType, string[]>> = {
   radio:     ["📡 SIGNAL PERDU !", "RADIO OFF !", "FRÉQUENCE COUPÉE !", "MUTE FORCÉ !"],
   solitaire: ["🃏 CARTE PERDUE !", "MAUVAIS JEU !", "FULL HOUSE... DE MERDE !", "BATU À PLAT !"],
   clippy:    ["📎 CLIPPY OUT !", "T'ES MOCHE !", "ASSISTANT VIRÉ !", "AIDE REFUSÉE !", "CLIPPY DÉSINSTALLÉ !"],
-  trash:     ["🗑️ CORBEILLE VIDÉE !", "FICHIER SUPPRIMÉ !", "DÉCHET ÉLIMINÉ !"],
+  trash:     [
+    "🗑️ bukake_facials_vol3.avi",
+    "🗑️ selfie_nu_artistique.jpg",
+    "🗑️ Kazaa_crack_virus.exe",
+    "🗑️ voisine_piscine_zoom.jpg",
+    "🗑️ milf_hunter_ep47.avi",
+    "🗑️ celine_dion_remix.mp3",
+    "🗑️ backup_mdp_SECRET.txt",
+    "🗑️ recherches_a_effacer.txt",
+  ],
   bsod:      ["💀 BSOD FIXED !", "REDÉMARRAGE...", "CRASH RÉSOLU !", "PAS DE CHANCE !"],
 };
 
@@ -605,6 +614,17 @@ export class TaskkillEngine {
     b.spreadIndex = 0;
   }
 
+  // Tir ennemi générique (utilisé par notif, radio, solitaire, clippy)
+  private enemyShoot(e: EnemyData, dt: number): void {
+    if (!e.canShoot) return;
+    e.fireTimer -= dt;
+    if (e.fireTimer <= 0 && e.x < this.W && e.x > 0) {
+      e.fireTimer = e.fireRate;
+      const angle = Math.atan2(this.player.y - e.y, this.player.x - e.x);
+      this.spawnEnemyBullet(e.x, e.y + e.h / 2, Math.cos(angle) * ENEMY_BULLET_SPEED, Math.sin(angle) * ENEMY_BULLET_SPEED);
+    }
+  }
+
   // ---- Power-ups ----
   private spawnPowerUp(x: number, y: number): void {
     const p = this.powerUps.acquire();
@@ -940,35 +960,23 @@ export class TaskkillEngine {
         case "plouf": e.y = e.baseY + Math.sin(e.phaseTimer * 3) * 35; break;
         case "notif":
           if (e.phaseTimer > 0.5) { e.phaseTimer = 0; e.vy = rnd(-100, 100); }
+          this.enemyShoot(e, dt);
           break;
         case "popup": break;
         case "radio": {
           const dy = this.player.y - e.y;
           e.vy = Math.sign(dy) * Math.min(Math.abs(dy) * 1.2, 80);
-          if (e.canShoot) {
-            e.fireTimer -= dt;
-            if (e.fireTimer <= 0 && e.x < this.W && e.x > 0) {
-              e.fireTimer = e.fireRate;
-              const angle = Math.atan2(this.player.y - e.y, this.player.x - e.x);
-              this.spawnEnemyBullet(e.x, e.y + e.h / 2, Math.cos(angle) * ENEMY_BULLET_SPEED, Math.sin(angle) * ENEMY_BULLET_SPEED);
-            }
-          }
+          this.enemyShoot(e, dt);
           break;
         }
         case "solitaire":
           if (e.phaseTimer > 0.35) { e.phaseTimer = 0; e.vy = rnd(-130, 130); }
+          this.enemyShoot(e, dt);
           break;
         case "clippy": {
           const dy = this.player.y - e.y;
           e.vy = Math.sign(dy) * Math.min(Math.abs(dy) * 1.5, 100);
-          if (e.canShoot) {
-            e.fireTimer -= dt;
-            if (e.fireTimer <= 0 && e.x < this.W && e.x > 0) {
-              e.fireTimer = e.fireRate;
-              const angle = Math.atan2(this.player.y - e.y, this.player.x - e.x);
-              this.spawnEnemyBullet(e.x, e.y + e.h / 2, Math.cos(angle) * ENEMY_BULLET_SPEED, Math.sin(angle) * ENEMY_BULLET_SPEED);
-            }
-          }
+          this.enemyShoot(e, dt);
           break;
         }
         case "trash": e.y = e.baseY + Math.sin(e.phaseTimer * 1.5) * 15; break;
@@ -1102,6 +1110,13 @@ export class TaskkillEngine {
           this.addShake(2);
           this.addHitstop();
 
+          // Clippy touché → tir inversé 5s (demi-boss)
+          if (enemy.enemyType === "clippy" && enemy.hp > 0) {
+            this.player.reverseShootTimer = 5.0;
+            this.spawnBanner("⬅ TIR INVERTI 5s ! PASSE DERRIÈRE !", this.player.x + this.player.w / 2, this.player.y - 15, "#f0f", 15, -50);
+            this.queueNotif("📎 CLIPPY TOUCHÉ ! Tir inversé 5s — passe derrière lui !");
+          }
+
           if (enemy.hp <= 0) {
             this.onEnemyKilled(enemy);
             this.enemies.release(enemy);
@@ -1124,7 +1139,6 @@ export class TaskkillEngine {
           this.addShake(3);
           this.addHitstop();
           this.triggerGlitch(0.5);
-          this.spawnBanner(pick(["🖕", "CHEH !", "DÉGAGE !"]), bullet.x, bullet.y, "#f0f", 16, -40);
 
           if (this.boss.hp <= 0) {
             this.score += 5000;
@@ -1184,17 +1198,12 @@ export class TaskkillEngine {
     this.audio.enemyDeath();
     this.triggerGlitch(0.6);
 
-    // Banner spécifique au type d'ennemi
-    const banners = ENEMY_BANNERS[enemy.enemyType];
-    if (banners) {
-      this.spawnBanner(pick(banners), cx, cy, pick(["#f44", "#ff0", "#0ff", "#f0f"]), rnd(14, 22), rnd(-80, -30));
-    }
-
-    // Clippy kill → reverse shooting debuff 3s
-    if (enemy.enemyType === "clippy") {
-      this.player.reverseShootTimer = 3.0;
-      this.spawnBanner("⬅ TIR INVERTI 3s !", this.player.x + this.player.w / 2, this.player.y - 15, "#f0f", 16, -50);
-      this.queueNotif("📎 CLIPPY TUÉ ! Tir inversé pendant 3 secondes... Merde.");
+    // Banner spécifique au type d'ennemi (50% des kills)
+    if (Math.random() < 0.5) {
+      const banners = ENEMY_BANNERS[enemy.enemyType];
+      if (banners) {
+        this.spawnBanner(pick(banners), cx, cy, pick(["#f44", "#ff0", "#0ff", "#f0f"]), rnd(14, 22), rnd(-80, -30));
+      }
     }
 
     // Power-up drop
@@ -1216,7 +1225,6 @@ export class TaskkillEngine {
     this.addShake(8);
     this.triggerGlitch(2);
     this.queueNotif("😈 RAGE MODE ACTIVÉ — VA TE FAIRE VOIR !!! 🖕🖕🖕");
-    this.spawnBanner("😈 RAGE MODE 😈", this.W / 2, this.H / 2, "#f80", 26, 0);
     this.rageKills = [];
     // Screen flash color
     this.addFlash(0.4);
@@ -1229,13 +1237,11 @@ export class TaskkillEngine {
       this.player.powerLevel++;
       this.audio.powerUp();
       this.spawnParticles(pu.x, pu.y, 12, ["⬆", "🔥", "⚡", "💪"], "#ff0", 120, 0.6);
-      this.spawnBanner(`POWER ${this.player.powerLevel + 1}x !`, pu.x, pu.y, "#ff0", 20, -70);
       this.queueNotif(`💾 POWER UP ! Niveau ${this.player.powerLevel + 1} — ${this.player.powerLevel >= 3 ? "DÉGÉNTÉ !" : "Ça commence..."}`);
     } else {
       // Already max power — bonus points
       this.score += 500;
       this.spawnParticles(pu.x, pu.y, 8, ["💰", "💎"], "#ff0", 100, 0.5);
-      this.spawnBanner("MAX POWER ! +500", pu.x, pu.y, "#ff0", 16, -50);
     }
   }
 
@@ -1254,7 +1260,6 @@ export class TaskkillEngine {
     this.addHitstop(0.06);
     this.triggerGlitch(1.5);
     this.audio.playerHit();
-    this.spawnBanner(pick(["MERDE !", "AÏE !", "PUTAIN !", "SECTEUR CORROMPU", "SEGFAULT", "💀"]), this.player.x + this.player.w / 2, this.player.y - 5, "#f44", 18, -50);
     this.queueNotif(pick(["Aïe.","Secteur endommagé.","Segment corrompu.","Buffer overflow.","🖕 Windows vous a touché."]));
 
     if (this.player.health <= 0) {
@@ -1398,7 +1403,7 @@ export class TaskkillEngine {
     // Décorations spécifiques au thème
     if (wave === 1) this.renderBgPlouf(ctx, now);
     else if (wave === 2) this.renderBgMessenger(ctx, now);
-    else if (wave === 3) this.renderBgIE6(ctx, now);
+    else if (wave === 3) this.renderBgMatrix(ctx, now);
     else if (wave === 4) this.renderBgRadio(ctx, now);
     else if (wave === 5) this.renderBgCorbeille(ctx, now);
     else if (wave === 6) this.renderBgUpdate(ctx, now);
@@ -1455,28 +1460,32 @@ export class TaskkillEngine {
     }
   }
 
-  private renderBgIE6(ctx: CanvasRenderingContext2D, now: number): void {
-    // Lignes horizontales pointillées style navigateur
-    ctx.strokeStyle = "rgba(180,200,255,0.08)";
-    ctx.lineWidth = 1;
-    for (let i = 0; i < 5; i++) {
-      const y = 50 + i * 85 + Math.sin(now * 0.5 + i) * 10;
-      ctx.beginPath();
-      for (let x = 0; x < this.W; x += 16) {
-        ctx.moveTo(x, y);
-        ctx.lineTo(x + 8, y);
+  private renderBgMatrix(ctx: CanvasRenderingContext2D, now: number): void {
+    // Matrix digital rain
+    const chars = "ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃ0123456789ABCDEF";
+    const colW = 16;
+    const cols = Math.floor(this.W / colW);
+    ctx.font = "11px monospace";
+    for (let col = 0; col < cols; col++) {
+      const x = col * colW;
+      const speed = 35 + (col % 7) * 12;
+      const headY = ((now * speed + col * 97) % (this.H + 140)) - 70;
+      // Traînée
+      for (let t = 0; t < 10; t++) {
+        const ty = headY - t * 16;
+        if (ty < 0 || ty > this.H) continue;
+        const alpha = 0.12 - t * 0.011;
+        if (alpha <= 0) continue;
+        ctx.fillStyle = `rgba(80,255,80,${alpha})`;
+        const ci = Math.floor((col * 17 + t * 3 + now * 10) % chars.length);
+        ctx.fillText(chars[ci] ?? "0", x, ty);
       }
-      ctx.stroke();
-    }
-    // Fenêtres popup fantômes
-    ctx.strokeStyle = "rgba(200,200,255,0.06)";
-    for (let i = 0; i < 4; i++) {
-      const wx = ((i * 170 + 60) + now * 10) % (this.W + 80) - 40;
-      const wy = 30 + i * 95 + Math.cos(now * 0.7 + i) * 20;
-      ctx.strokeRect(wx, wy, 70, 45);
-      // Titlebar
-      ctx.fillStyle = "rgba(100,120,200,0.06)";
-      ctx.fillRect(wx, wy, 70, 10);
+      // Tête brillante
+      if (headY > 0 && headY < this.H) {
+        ctx.fillStyle = "rgba(180,255,180,0.45)";
+        const ci = Math.floor((col * 17 + now * 10) % chars.length);
+        ctx.fillText(chars[ci] ?? "0", x, headY);
+      }
     }
   }
 
