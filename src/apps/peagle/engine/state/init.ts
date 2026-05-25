@@ -35,8 +35,11 @@ export function makeInitialState(
   const effectivePegBounce = 0.55 * (upgrades.includes("heavy_ball") ? 1.3 : 1);
   const effectiveBucketSpeed = 1.4 * (upgrades.includes("lucky_spin") ? 1.4 : 1);
 
+  const { pegs, decors } = buildLevel(level, runState);
+
   return {
-    pegs: buildLevel(level, runState),
+    pegs,
+    decors,
     ball: null,
     extraBalls: [],
     balls: baseBalls,

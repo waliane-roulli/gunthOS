@@ -6,7 +6,7 @@ import {
 import { BALANCE } from "../balance";
 import type { GameState, Ball } from "../types";
 import type { GameEvent } from "../events";
-import { circleCollide } from "../physics";
+import { circleCollide, capsuleCollide, arcCollide, spikeCollide, closestOnSeg } from "../physics";
 import { spawnParticles } from "./effects";
 import { triggerBomb } from "./bomb";
 
@@ -243,6 +243,67 @@ export function processBallPhysics(
       }
 
       events.push({ kind: "sound", id: p.orange || p.boss ? "pop" : "bip" });
+    }
+
+    // Decor collisions (bumpers, planks, arcs, spikes) — inside substep loop
+    for (const d of s.decors) {
+      if (d.kind === "bumper") {
+        const dx = b.x - d.x, dy = b.y - d.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const rc = circleCollide(b.x, b.y, b.vx, b.vy, s.effectiveBallR, d.x, d.y, d.r, 0.9);
+        if (rc && dist > 0.001) {
+          b.vx = rc.vx + (dx / dist) * 1.5;
+          b.vy = rc.vy + (dy / dist) * 1.5;
+          const overlap = s.effectiveBallR + d.r - dist + 0.5;
+          b.x += (dx / dist) * overlap;
+          b.y += (dy / dist) * overlap;
+          d.flashFrames = 14;
+          if (step === 0) events.push({ kind: "sound", id: "bip" });
+        }
+      } else if (d.kind === "plank") {
+        const ax = d.x + Math.cos(d.angle) * d.len;
+        const ay = d.y + Math.sin(d.angle) * d.len;
+        const ex = d.x - Math.cos(d.angle) * d.len;
+        const ey = d.y - Math.sin(d.angle) * d.len;
+        const rc = capsuleCollide(b.x, b.y, b.vx, b.vy, s.effectiveBallR, ax, ay, ex, ey, d.thickness, 0.72);
+        if (rc) {
+          b.vx = rc.vx; b.vy = rc.vy;
+          const cp = closestOnSeg(ax, ay, ex, ey, b.x, b.y);
+          const ddx = b.x - cp.x, ddy = b.y - cp.y;
+          const ddd = Math.sqrt(ddx * ddx + ddy * ddy);
+          if (ddd > 0.001) {
+            const ov = s.effectiveBallR + d.thickness - ddd + 0.5;
+            b.x += (ddx / ddd) * ov; b.y += (ddy / ddd) * ov;
+          }
+          d.flashFrames = 10;
+          if (step === 0) events.push({ kind: "sound", id: "bip" });
+        }
+      } else if (d.kind === "arc") {
+        const rc = arcCollide(b.x, b.y, b.vx, b.vy, s.effectiveBallR, d.x, d.y, d.r, d.startAngle, d.endAngle, d.thickness, 0.72);
+        if (rc) {
+          b.vx = rc.vx; b.vy = rc.vy;
+          const dx = b.x - d.x, dy = b.y - d.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist > 0.001) {
+            const signed = dist - d.r;
+            const minReq = s.effectiveBallR + d.thickness / 2;
+            if (Math.abs(signed) < minReq) {
+              const ov = minReq - Math.abs(signed) + 0.5;
+              const sn = signed >= 0 ? 1 : -1;
+              b.x += (dx / dist) * sn * ov; b.y += (dy / dist) * sn * ov;
+            }
+          }
+          d.flashFrames = 10;
+          if (step === 0) events.push({ kind: "sound", id: "bip" });
+        }
+      } else if (d.kind === "spike") {
+        const rc = spikeCollide(b.x, b.y, b.vx, b.vy, s.effectiveBallR, d.x, d.y, d.size, d.angle, 0.72);
+        if (rc) {
+          b.vx = rc.vx; b.vy = rc.vy;
+          d.flashFrames = 10;
+          if (step === 0) events.push({ kind: "sound", id: "bip" });
+        }
+      }
     }
   }
 
