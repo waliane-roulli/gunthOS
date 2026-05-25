@@ -18,9 +18,6 @@ export function drawFrame(
   const inSlowMo = s.slowMoFrames > 0;
   const hasZoom = s.zoomLevel > 1.01 && s.ball?.active;
 
-  // Draw static background outside camera transform — avoids border bleed during screen shake
-  drawBackground(ctx, s, feverIntensity);
-
   ctx.save();
 
   // Camera: zoom follows ball during slow-mo, otherwise just screen shake
@@ -34,6 +31,7 @@ export function drawFrame(
     ctx.translate(s.shakeX, s.shakeY);
   }
 
+  drawBackground(ctx, s, feverIntensity);
   drawDecors(ctx, s);
   drawAimLine(ctx, s, aimAngle);
   drawWarpCables(ctx, s);

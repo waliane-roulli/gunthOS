@@ -1,7 +1,10 @@
-import { W, H } from "../engine/constants";
+import { W, H, MAX_SHAKE } from "../engine/constants";
 import type { GameState } from "../engine/types";
 
 type Ctx2D = CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
+
+// Extra canvas padding so the background covers edges during screen shake
+const BG_PAD = MAX_SHAKE + 2;
 
 // ─── Forêt pixel art ──────────────────────────────────────────────────────────
 
@@ -127,12 +130,21 @@ let _staticBgCache: OffscreenCanvas | null = null;
 let _staticBgFeverMode: boolean | null = null;
 
 function buildStaticBg(feverMode: boolean): OffscreenCanvas {
-  const canvas = new OffscreenCanvas(W, H);
+  // Canvas is larger than the game area by BG_PAD on each side so the
+  // background fully covers the canvas during screen shake (max MAX_SHAKE px).
+  const CW = W + BG_PAD * 2;
+  const CH = H + BG_PAD * 2;
+  const canvas = new OffscreenCanvas(CW, CH);
   const ctx = canvas.getContext("2d")!;
+
+  // Translate so all drawing uses game coordinates — canvas offset is handled
+  // in drawBackground by blitting at (-BG_PAD, -BG_PAD).
+  ctx.translate(BG_PAD, BG_PAD);
+
   const groundY = H - 80;
   const skyRows = 12;
 
-  // Sky gradient
+  // Sky gradient — extend beyond game bounds to fill padding zones
   for (let row = 0; row < skyRows; row++) {
     const t = row / skyRows;
     let r: number, g: number, b: number;
@@ -149,10 +161,10 @@ function buildStaticBg(feverMode: boolean): OffscreenCanvas {
     }
     const rowH = Math.ceil(groundY / skyRows);
     ctx.fillStyle = `rgb(${r},${g},${b})`;
-    ctx.fillRect(0, row * rowH, W, rowH + 1);
+    ctx.fillRect(-BG_PAD, row * rowH, CW, rowH + 1);
   }
 
-  // Trees (3 depth layers)
+  // Trees (3 depth layers) — drawn at their normal game positions
   for (const layer of [0, 1, 2] as const) {
     for (const tree of TREE_LAYERS) {
       if (tree.layer !== layer) continue;
@@ -167,12 +179,25 @@ function buildStaticBg(feverMode: boolean): OffscreenCanvas {
   }
   ctx.globalAlpha = 1;
 
-  drawGround(ctx, feverMode);
+  // Ground — extend to fill padding zones
+  ctx.fillStyle = feverMode ? "#0a0a28" : "#3a8c28";
+  ctx.fillRect(-BG_PAD, groundY, CW, CH);
+  ctx.fillStyle = feverMode ? "#1a1a4a" : "#4eb038";
+  for (let gx = -BG_PAD; gx < W + BG_PAD; gx += 4) {
+    const h = 2 + (Math.round(gx * 7 + gx * 3) % 5);
+    ctx.fillRect(gx, groundY - h, 2, h);
+  }
+  ctx.fillStyle = feverMode ? "#050514" : "#1e6016";
+  ctx.fillRect(-BG_PAD, groundY + 10, CW, CH);
+  ctx.fillStyle = feverMode ? "rgba(100,80,200,0.06)" : "rgba(180,240,160,0.07)";
+  ctx.fillRect(-BG_PAD, groundY - 8, CW, 16);
+  ctx.fillStyle = feverMode ? "rgba(80,60,180,0.04)" : "rgba(180,240,160,0.04)";
+  ctx.fillRect(-BG_PAD, groundY - 16, CW, 12);
 
-  // Scanlines (static — baked once)
+  // Scanlines (static — baked once, cover full padded area)
   ctx.fillStyle = "rgba(0,0,0,0.04)";
-  for (let sy = 0; sy < H; sy += 2) {
-    ctx.fillRect(0, sy, W, 1);
+  for (let sy = -BG_PAD; sy < H + BG_PAD; sy += 2) {
+    ctx.fillRect(-BG_PAD, sy, CW, 1);
   }
 
   return canvas;
@@ -265,10 +290,11 @@ function drawFireflies(ctx: CanvasRenderingContext2D, s: GameState, feverMode: b
 export function drawBackground(ctx: CanvasRenderingContext2D, s: GameState, feverIntensity: number): void {
   const feverMode = feverIntensity > 0.3;
 
-  // Blit cached static layer (sky + trees + ground + scanlines) — single drawImage call
-  ctx.drawImage(getStaticBg(feverMode), 0, 0);
+  // Blit cached static layer — draw at -BG_PAD so the padded canvas aligns
+  // correctly and covers shake-induced offsets up to MAX_SHAKE px in any direction.
+  ctx.drawImage(getStaticBg(feverMode), -BG_PAD, -BG_PAD);
 
-  // Animated elements drawn on top each frame
+  // Animated elements drawn on top each frame (at normal game coordinates)
   drawCelestialBody(ctx, s, feverMode);
   if (feverMode) drawFeverStars(ctx, s);
   drawFireflies(ctx, s, feverMode);

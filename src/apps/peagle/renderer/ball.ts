@@ -3,8 +3,6 @@ import { FACE } from "./theme";
 import type { Ball } from "../engine/types";
 
 export function drawBall(ctx: CanvasRenderingContext2D, ball: Ball, inSlowMo: boolean): void {
-  const angle = Math.atan2(ball.vy, ball.vx);
-
   // Trail pixel art — batch without save/restore per point
   const trailLen = ball.trail.length;
   if (trailLen > 0) {
