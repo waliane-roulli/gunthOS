@@ -47,11 +47,10 @@ interface MainMenuProps {
   isAdmin: boolean;
   onPlay: () => void;
   onLeaderboard: () => void;
-  onShowroom: () => void;
   onDevLaunch: (cfg: DevConfig) => void;
 }
 
-export function MainMenu({ bestScore, displayName, isAdmin, onPlay, onLeaderboard, onShowroom, onDevLaunch }: MainMenuProps) {
+export function MainMenu({ bestScore, displayName, isAdmin, onPlay, onLeaderboard, onDevLaunch }: MainMenuProps) {
   const [tip] = useState(() => TIPS[Math.floor(Math.random() * TIPS.length)]!);
   const [showDev, setShowDev] = useState(false);
   const { announcements, popupAnnouncement, showChangelog, dismiss, openChangelog, setShowChangelog } = useAnnouncements();
@@ -243,29 +242,6 @@ export function MainMenu({ bestScore, displayName, isAdmin, onPlay, onLeaderboar
               }}
             >
               ★  CLASSEMENT
-            </button>
-
-            <button
-              onClick={onShowroom}
-              style={{
-                width: "100%",
-                padding: "9px 0",
-                fontFamily: "var(--pg-font)",
-                fontSize: 8,
-                textAlign: "center",
-                letterSpacing: "0.04em",
-                cursor: "pointer",
-                background: NW.surface2,
-                color: NW.text,
-                borderWidth: 2,
-                borderStyle: "solid",
-                borderTopColor: NW.hi,
-                borderLeftColor: NW.hi,
-                borderBottomColor: NW.sh,
-                borderRightColor: NW.sh,
-              }}
-            >
-              🎨  SHOWROOM
             </button>
 
             {isAdmin && (

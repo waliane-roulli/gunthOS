@@ -20,9 +20,7 @@ import { makeInitialRunState, generateUpgradeOffer } from "./engine/roguelite";
 import { DevPanel } from "./components/DevPanel";
 import type { DevConfig } from "./components/DevPanel";
 import { SidePanel } from "./components/SidePanel";
-import { Showroom } from "./components/Showroom";
-
-type Screen = "menu" | "class-pick" | "game" | "leaderboard" | "showroom";
+type Screen = "menu" | "class-pick" | "game" | "leaderboard";
 
 const EMPTY_RUN: RunState = makeInitialRunState("canonnier");
 
@@ -177,8 +175,6 @@ export function PeagleApp({ windowId: _windowId }: AppProps) {
     fetchLeaderboard();
   }, [fetchLeaderboard]);
 
-  const handleGoToShowroom = useCallback(() => setScreen("showroom"), []);
-
   const handleReplay = useCallback(() => {
     runStateRef.current = makeInitialRunState(runStateRef.current.classId);
     resetGame(false);
@@ -193,8 +189,6 @@ export function PeagleApp({ windowId: _windowId }: AppProps) {
       className="flex flex-col h-full select-none"
       style={{ background: "var(--t-bg)", fontFamily: "var(--t-font-display)" }}
     >
-      {screen === "showroom" && <Showroom onBack={handleGoToMenu} />}
-
       {screen === "menu" && (
         <MainMenu
           bestScore={bestScore}
@@ -202,7 +196,6 @@ export function PeagleApp({ windowId: _windowId }: AppProps) {
           isAdmin={isAdmin}
           onPlay={handlePlay}
           onLeaderboard={handleGoToLeaderboard}
-          onShowroom={handleGoToShowroom}
           onDevLaunch={handleDevLaunch}
         />
       )}

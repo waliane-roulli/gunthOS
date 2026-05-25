@@ -7,6 +7,7 @@ import {
   type ClassId, type UpgradeId, type RelicId,
 } from "../engine/roguelite";
 import type { PeagleAnnouncement } from "./AnnouncementPopup";
+import { PeagleAssetsGrid } from "./Showroom";
 
 export interface DevConfig {
   startLevel: number;
@@ -273,7 +274,7 @@ function AnnouncementsTab() {
 
 // ── Main DevPanel ─────────────────────────────────────────────────────────────
 
-type DevTab = "game" | "annonces";
+type DevTab = "game" | "annonces" | "showroom";
 
 export function DevPanel({ onClose, onLaunch }: DevPanelProps) {
   const [cfg, setCfg] = useState<DevConfig>({ ...DEFAULT_DEV_CONFIG });
@@ -340,7 +341,7 @@ export function DevPanel({ onClose, onLaunch }: DevPanelProps) {
 
         {/* Tabs */}
         <div style={{ display: "flex", borderBottom: `1px solid ${PG.border}`, flexShrink: 0 }}>
-          {(["game", "annonces"] as DevTab[]).map(tab => (
+          {(["game", "annonces", "showroom"] as DevTab[]).map(tab => (
             <div
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -355,7 +356,7 @@ export function DevPanel({ onClose, onLaunch }: DevPanelProps) {
                 userSelect: "none",
               }}
             >
-              {tab === "game" ? "⚙ JEU" : "★ ANNONCES"}
+              {tab === "game" ? "⚙ JEU" : tab === "annonces" ? "★ ANNONCES" : "🥚 ASSETS"}
             </div>
           ))}
         </div>
@@ -370,6 +371,7 @@ export function DevPanel({ onClose, onLaunch }: DevPanelProps) {
           }}
         >
           {activeTab === "annonces" && <AnnouncementsTab />}
+          {activeTab === "showroom" && <PeagleAssetsGrid />}
           {activeTab === "game" && <>
           {/* Presets rapides */}
           <div style={SECTION}>
