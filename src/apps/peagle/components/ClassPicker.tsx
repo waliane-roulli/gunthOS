@@ -197,8 +197,8 @@ export function ClassPicker({ onPick }: ClassPickerProps) {
             }}
           >
             <span style={{ color: NW.gold }}>Comment jouer :</span>{" "}
-            Visez et lancez l'œuf avec la souris.
-            Cassez toutes les <span style={{ color: NW.amber }}>cibles oranges</span> avant de manquer d'œufs.
+            Visez et lancez l&apos;œuf avec la souris.
+            Cassez toutes les <span style={{ color: NW.amber }}>cibles oranges</span> avant de manquer d&apos;œufs.
             Les <span style={{ color: NW.forestBr }}>cibles vertes</span> donnent des pouvoirs bonus.
             Le panier en bas récupère un œuf si vous l&apos;attrapez.
           </div>

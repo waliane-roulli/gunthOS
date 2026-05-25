@@ -57,6 +57,7 @@ export function PeagleApp({ windowId: _windowId }: AppProps) {
 
   const userId = user?.id;
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!userId) { setIsAdmin(false); return; }
     fetch("/api/admin/check")
       .then(r => r.json())
@@ -65,6 +66,7 @@ export function PeagleApp({ windowId: _windowId }: AppProps) {
   }, [userId]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (ui.phase === "aim") setTip(pickRandom(PEAGLE_TIPS));
   }, [ui.phase]);
 
