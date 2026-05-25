@@ -812,12 +812,9 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
           {/* Result */}
           {showResult && winnerName && (
             <div
-              className={`text-center p-3 border-[3px] mb-2.5 animate-[fadeIn_0.4s_ease]
-                ${activeOpts.epicResult
-                  ? "[animation:epicBg_2s_ease_infinite,fadeIn_0.4s_ease] border-black"
-                  : ""
-                }`}
-              style={activeOpts.epicResult ? (activeThemeId === "os" ? {
+              className={`text-center p-3 border-[3px] mb-2.5 [animation:epicBg_2s_ease_infinite,fadeIn_0.4s_ease]
+                ${activeOpts.epicResult ? "border-black" : ""}`}
+              style={activeThemeId === "os" ? {
                 background: "linear-gradient(135deg, #ff00ff, #00ffff, #ffff00, #ff00ff)",
                 backgroundSize: "400% 400%",
                 boxShadow: "0 0 30px rgba(255,0,255,0.6), inset 0 0 0 3px #ffff00",
@@ -825,12 +822,6 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
                 background: `linear-gradient(135deg, var(--plouf-accent), color-mix(in srgb, var(--plouf-accent) 50%, white), #ffff00, var(--plouf-accent))`,
                 backgroundSize: "400% 400%",
                 boxShadow: `0 0 30px color-mix(in srgb, var(--plouf-accent) 60%, transparent), inset 0 0 0 3px color-mix(in srgb, var(--plouf-accent) 90%, white)`,
-              }) : {
-                backgroundColor: "var(--t-card-bg, #c0c0c0)",
-                borderTopColor: "var(--t-border-dark, #808080)",
-                borderLeftColor: "var(--t-border-dark, #808080)",
-                borderBottomColor: "var(--t-border-light, #fff)",
-                borderRightColor: "var(--t-border-light, #fff)",
               }}
             >
               <p
