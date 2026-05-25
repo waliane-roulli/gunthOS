@@ -19,6 +19,7 @@ import {
   Globe,
   MessagesSquare,
   ScrollText,
+  Palette,
 } from "lucide-react";
 import { MsnLogo } from "@/components/ui/msn-logo";
 import type { IconTheme, IconRenderer } from "../types";
@@ -33,7 +34,8 @@ export const lucideTheme: IconTheme = {
   preview: "✨",
   style: "colored-bg",
   icons: {
-    peagle:          { icon: Target,          color: "#c0392b" },
+    peagle:              { icon: Target,          color: "#c0392b" },
+    "peagle-showroom":   { icon: Palette,         color: "#9b59b6" },
     "plouf-plouf":   { icon: Droplets,        color: "#2980b9" },
     profile:         { icon: User,            color: "#8e44ad" },
     directory:       { icon: Users,           color: "#27ae60" },

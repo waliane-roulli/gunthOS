@@ -5,36 +5,119 @@ const NAVY = "#ff6b35"; // warm orange for launcher pixel art
 import { win98Button, raisedBevel } from "./helpers";
 import type { GameState } from "../engine/types";
 
-// Pixel art eagle mascot — queue en haut, pattes/bec vers le bas
-// L'aigle est inversé verticalement pour "envoyer ses œufs avec ses fesses"
-const EAGLE_GRID = [
-  "...ywy...",   // pattes jaunes en bas
-  "...wbw...",
-  ".wbbbbbw.",
-  "wwbbbbbww",
-  ".wbbbbbb.",
-  "..wwwyy.",
-  "..wywyw..",
-  "..wbwbw..",
-  "...www...",   // tête en haut
-] as const;
-const EAGLE_PAL: Record<string, string> = {
-  w: "#f5f0e8",
-  b: "#8b5e3c",
-  y: "#f5c542",
+interface BirdSkin {
+  grid: readonly string[];
+  palette: Record<string, string>;
+}
+
+// Skins indexed by skin id — each grid is rendered upside-down (queue en haut, pattes vers le bas)
+const BIRD_SKINS: Record<string, BirdSkin> = {
+  // ── Pélicans ───────────────────────────────────────────────────────────────
+  pelican_1: {
+    grid: ["...y.y...", "...www...", "..wywyw..", "..wwwyy.", ".wbbbbbb.", "wwbbbbbww", ".wbbbbbw.", "...wbbw...", "...www..."],
+    palette: { w: "#f0ece0", b: "#d4c4a0", y: "#f5c542" },
+  },
+  pelican_2: {
+    grid: ["...y.y...", "...www...", "..wywyw..", "...wbbw..", ".wbbbbwa.", "wwbbbbwa.", "..wbbbba.", "...wbbww.", "....www.."],
+    palette: { w: "#e8f4ff", b: "#c8e0ff", a: "#ff7722", y: "#ffdd44" },
+  },
+  pelican_3: {
+    grid: ["...y.y...", "...www...", "..wnyw...", "..wppw...", ".wppppw..", "wwppppww.", ".wppppw..", "..wpppw..", "...www..."],
+    palette: { w: "#ffe8f0", p: "#ffaacc", n: "#ff6688", y: "#ffdd44" },
+  },
+  pelican_4: {
+    grid: ["...ydy...", "...wdw...", "..wddw...", "..wddw...", ".wbbbbw..", "wwbbbbww.", ".wbbbbw..", "...wbbw...", "...www..."],
+    palette: { w: "#c8a878", b: "#a07848", d: "#884422", y: "#f5c542" },
+  },
+  pelican_5: {
+    grid: ["...r.r...", "...ggg...", "..gorgg..", "..goorr..", ".gooooog.", "ggooooogg", ".gooooog.", "..ggoog..", "...ggg..."],
+    palette: { g: "#ffd700", o: "#ffeeaa", r: "#ff4422" },
+  },
+
+  // ── Corbeaux ───────────────────────────────────────────────────────────────
+  corbeau_1: {
+    grid: ["..b...b..", "..bb.bb..", "..bbbbb..", ".bbbbbbb.", "bbbbbbbb.", ".bbbbbbb.", "..bbbbb..", "..brrbb..", "...bbb..."],
+    palette: { b: "#1a1a2e", r: "#ff2244" },
+  },
+  corbeau_2: {
+    grid: ["..b...b..", "..bb.bb..", "..bbbbb..", ".bbbbbbb.", "bbbbbbbb.", "..brrb...", "..bbbbb..", ".hbbbbh..", "..hhhh..."],
+    palette: { b: "#1a1a2e", r: "#ff2244", h: "#111111" },
+  },
+  corbeau_3: {
+    grid: ["..p...p..", "..pp.pp..", "..ppppp..", ".ppppppp.", "pppppppp.", ".ppppppp.", "..ppppp..", "..pvvpp..", "...ppp..."],
+    palette: { p: "#2d0a4e", v: "#cc00ff" },
+  },
+  corbeau_4: {
+    grid: ["..b...b..", "..bb.bb..", "..bbbbb..", "bbbbbbbb.", ".bbbbbbb.", "..bbbbb..", "..bXrbb..", "...bbb...", "........."],
+    palette: { b: "#1a1a2e", r: "#ff2244", X: "#cc2200" },
+  },
+  corbeau_5: {
+    grid: ["..w...w..", "..ww.ww..", "..wwwww..", "wwwwwwww.", ".wwwwwww.", "..wwwww..", "..wwwww..", "..wrrww..", "...www..."],
+    palette: { w: "#e8e0f0", r: "#ff2244" },
+  },
+
+  // ── Faucons ────────────────────────────────────────────────────────────────
+  faucon_1: {
+    grid: ["...y..y..", "..mbbm...", "..mbbm...", ".mbbbbbm.", "mmwwwwwmm", ".mwwwwwm.", "..mwwwm..", "..mbbwm..", "...mmm..."],
+    palette: { m: "#1a1a1a", b: "#8b6040", w: "#f0ece8", y: "#f5c542" },
+  },
+  faucon_2: {
+    grid: ["...y..y..", "..r.r.r..", "..rdddr..", ".rrrddrr.", "rrrrrrrr.", ".rrrrrrr.", "..rrrrr..", "..roorr..", "...rrr..."],
+    palette: { r: "#cc4422", o: "#ffcc88", d: "#882200", y: "#f5c542" },
+  },
+  faucon_3: {
+    grid: ["...g..g..", "..w..w...", "..wggw...", ".wgggggw.", "wwwwwwww.", ".wwwwwww.", "..wwwww..", "..wggww..", "...www..."],
+    palette: { w: "#f8f0e8", g: "#ffd700" },
+  },
+  faucon_4: {
+    grid: ["...y..y..", "..w..w...", "..wwsww..", ".wwwwwww.", "wwswwsww.", ".wwwwwww.", "..wwwww..", "..wsbww..", "...www..."],
+    palette: { w: "#f8fcff", s: "#334455", b: "#4488cc", y: "#f5c542" },
+  },
+  faucon_5: {
+    grid: ["...e..e..", "..c..c...", "..ceec...", ".cceeecc.", "cccccccc.", ".ccccccc.", "..ccccc..", "..cnnccc.", "...ccc..."],
+    palette: { c: "#003344", n: "#00ffff", e: "#00ff88" },
+  },
 };
 
-function drawEaglePixelArt(ctx: CanvasRenderingContext2D, cx: number, cy: number, cellPx: number) {
-  const rows = EAGLE_GRID.length;
-  const cols = EAGLE_GRID[0].length;
+// Fallback — aigle générique utilisé si aucun skin n'est sélectionné
+const DEFAULT_SKIN: BirdSkin = {
+  grid: [
+    "...ywy...",
+    "...wbw...",
+    ".wbbbbbw.",
+    "wwbbbbbww",
+    ".wbbbbbb.",
+    "..wwwyy.",
+    "..wywyw..",
+    "..wbwbw..",
+    "...www...",
+  ],
+  palette: { w: "#f5f0e8", b: "#8b5e3c", y: "#f5c542" },
+};
+
+function getActiveSkin(classId: string): BirdSkin {
+  if (typeof window === "undefined") return DEFAULT_SKIN;
+  try {
+    const stored = JSON.parse(localStorage.getItem("peagle_active_skins") ?? "{}") as Record<string, string>;
+    const skinId = stored[classId];
+    if (skinId && BIRD_SKINS[skinId]) return BIRD_SKINS[skinId]!;
+  } catch { /* ignore */ }
+  // Default skin per class
+  const defaults: Record<string, string> = { canonnier: "pelican_1", alchimiste: "corbeau_1", sniper: "faucon_1" };
+  return BIRD_SKINS[defaults[classId] ?? ""] ?? DEFAULT_SKIN;
+}
+
+function drawBirdSkin(ctx: CanvasRenderingContext2D, skin: BirdSkin, cx: number, cy: number, cellPx: number) {
+  const rows = skin.grid.length;
+  const cols = skin.grid[0]?.length ?? 9;
   const ox = cx - (cols * cellPx) / 2;
   const oy = cy - (rows * cellPx) / 2;
   for (let r = 0; r < rows; r++) {
-    const row = EAGLE_GRID[r]!;
+    const row = skin.grid[r]!;
     for (let c = 0; c < cols; c++) {
       const ch = row[c]!;
       if (ch === ".") continue;
-      const color = EAGLE_PAL[ch];
+      const color = skin.palette[ch];
       if (!color) continue;
       ctx.fillStyle = color;
       ctx.fillRect(Math.round(ox + c * cellPx), Math.round(oy + r * cellPx), cellPx, cellPx);
@@ -92,16 +175,15 @@ export function drawLauncher(ctx: CanvasRenderingContext2D, s: GameState, aimAng
   ctx.save();
   ctx.translate(LAUNCHER_X, LAUNCHER_Y);
 
-  // L'aigle est inversé (queue en haut, pattes vers le bas) — il vise avec son derrière
-  // L'offset de rotation reste le même : les pattes pointent dans la direction du tir
+  const skin = getActiveSkin(s.runClassId);
+
   if (s.phase === "aim" || s.phase === "firing") {
     ctx.save();
     ctx.rotate(aimAngle + Math.PI / 2);
-    drawEaglePixelArt(ctx, 0, 0, 3);
+    drawBirdSkin(ctx, skin, 0, 0, 3);
     ctx.restore();
   } else {
-    // idle — pattes vers le bas (direction de tir par défaut)
-    drawEaglePixelArt(ctx, 0, 0, 3);
+    drawBirdSkin(ctx, skin, 0, 0, 3);
   }
 
   ctx.restore();

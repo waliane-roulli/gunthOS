@@ -6,6 +6,35 @@ import { CLASSES, CLASS_COLORS } from "../engine/roguelite";
 import { GAME_THEMES } from "../engine/game-theme";
 import type { DevConfig } from "./DevPanel";
 import { btnRaised, PG } from "../styles";
+import { useOpenApp } from "@/lib/hooks/use-open-app";
+
+export const PEAGLE_LIVE_THEME_KEY = "peagle_live_theme";
+export const PEAGLE_LIVE_SKIN_KEY = "peagle_live_skin";
+
+// 5 skin options per class — maps classId to array of PegIconId skins
+export const CLASS_SKINS: Record<string, { id: string; name: string; desc: string }[]> = {
+  canonnier: [
+    { id: "pelican_1", name: "Classique",   desc: "Le pélican de base. Fier de sa poche." },
+    { id: "pelican_2", name: "Tropical",    desc: "Bec orange flamboyant, plumes de vacances." },
+    { id: "pelican_3", name: "Rosé",        desc: "Une teinte rosée suspecte. Il a mangé des crevettes." },
+    { id: "pelican_4", name: "Terreux",     desc: "Brun, solide, fiable. Ou juste sale." },
+    { id: "pelican_5", name: "Dorée",       desc: "Édition légendaire. Plumes or, ego XXL." },
+  ],
+  alchimiste: [
+    { id: "corbeau_1", name: "Classique",   desc: "Le corbeau de base. Regardé de travers." },
+    { id: "corbeau_2", name: "Détective",   desc: "Chapeau, air mystérieux, zéro réponse." },
+    { id: "corbeau_3", name: "Sorcier",     desc: "Plumes violettes. Pratique la magie noire." },
+    { id: "corbeau_4", name: "Pirate",      desc: "Bandeau sur l'œil. L'autre aussi est fermé." },
+    { id: "corbeau_5", name: "Albinos",     desc: "Blanc rare. L'exception qui confirme la règle." },
+  ],
+  sniper: [
+    { id: "faucon_1",  name: "Pèlerin",     desc: "Le classique. Masque noir, regard d'acier." },
+    { id: "faucon_2",  name: "Crécerelle",  desc: "Rouille et feu. Imprévisible en descente." },
+    { id: "faucon_3",  name: "Royal",       desc: "Plumes blanches et or. Ne rate jamais." },
+    { id: "faucon_4",  name: "Gerfaut",     desc: "Arctique. Blanc immaculé. Discret et mortel." },
+    { id: "faucon_5",  name: "Cyber",       desc: "Yeux laser. Version 3.0. Mise à jour en cours." },
+  ],
+};
 
 interface PegDef {
   id: string; name: string; description: string;
@@ -78,6 +107,30 @@ interface PeagleAssetsGridProps {
 export function PeagleAssetsGrid({ cfg, onLaunch, onApplyTheme }: PeagleAssetsGridProps) {
   const [selectedPeg,   setSelectedPeg]   = useState<string | null>(null);
   const [selectedDecor, setSelectedDecor] = useState<string | null>(null);
+  const [activeSkins, setActiveSkins] = useState<Record<string, string>>(() => {
+    if (typeof window === "undefined") return {};
+    try { return JSON.parse(localStorage.getItem("peagle_active_skins") ?? "{}") as Record<string, string>; }
+    catch { return {}; }
+  });
+  const { openApp } = useOpenApp();
+
+  function broadcastAndApplyTheme(themeId: string) {
+    localStorage.setItem(PEAGLE_LIVE_THEME_KEY, themeId);
+    window.dispatchEvent(new StorageEvent("storage", { key: PEAGLE_LIVE_THEME_KEY, newValue: themeId }));
+    onApplyTheme(themeId);
+  }
+
+  function applySkin(classId: string, skinId: string) {
+    const next = { ...activeSkins, [classId]: skinId };
+    setActiveSkins(next);
+    localStorage.setItem("peagle_active_skins", JSON.stringify(next));
+    localStorage.setItem(PEAGLE_LIVE_SKIN_KEY, JSON.stringify({ classId, skinId }));
+    window.dispatchEvent(new StorageEvent("storage", { key: PEAGLE_LIVE_SKIN_KEY, newValue: JSON.stringify({ classId, skinId }) }));
+  }
+
+  function openPreview() {
+    openApp("peagle-showroom");
+  }
 
   const classArr = Object.values(CLASSES);
 
@@ -103,6 +156,28 @@ export function PeagleAssetsGrid({ cfg, onLaunch, onApplyTheme }: PeagleAssetsGr
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+
+      {/* Live preview button */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+        <span style={{ fontFamily: "var(--font-press-start), monospace", fontSize: 7, color: PG.textMuted, lineHeight: 1.5 }}>
+          Les thèmes s'appliquent en live dans une fenêtre de préview.
+        </span>
+        <button
+          style={{
+            ...btnRaised,
+            fontSize: 7,
+            padding: "5px 10px",
+            flexShrink: 0,
+            borderTopColor: PG.cyan,
+            borderLeftColor: PG.cyan,
+            color: PG.cyan,
+            whiteSpace: "nowrap",
+          }}
+          onClick={openPreview}
+        >
+          ⧉ OUVRIR PREVIEW
+        </button>
+      </div>
 
       {/* Themes visuels */}
       <div>
@@ -147,7 +222,7 @@ export function PeagleAssetsGrid({ cfg, onLaunch, onApplyTheme }: PeagleAssetsGr
                       borderLeftColor: theme.preview.accent,
                     }}
                     disabled={isActive}
-                    onClick={() => onApplyTheme(theme.id)}
+                    onClick={() => broadcastAndApplyTheme(theme.id)}
                   >
                     {isActive ? "✔ ACTIF" : "▶ APPLIQUER"}
                   </button>
@@ -158,42 +233,97 @@ export function PeagleAssetsGrid({ cfg, onLaunch, onApplyTheme }: PeagleAssetsGr
         </div>
       </div>
 
-      {/* Classes */}
+      {/* Classes + skins */}
       <div>
         {subHeader("CLASSES (LANCEUR)", classArr.length)}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 8 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {classArr.map((cls) => {
             const color = CLASS_COLORS[cls.id];
-            const isActive = cfg.classId === cls.id;
+            const isActiveClass = cfg.classId === cls.id;
+            const skins = CLASS_SKINS[cls.id] ?? [];
+            const activeSkinId = activeSkins[cls.id] ?? skins[0]?.id ?? cls.id;
+
             return (
-              <div key={cls.id} style={cardStyle(isActive, color)}>
-                <div style={{ height: 72, background: "#0a0a1e", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, position: "relative" }}>
-                  {isActive && (
-                    <div style={{ position: "absolute", top: 4, right: 4, background: color, color: "#000", fontFamily: "var(--font-press-start), monospace", fontSize: 6, padding: "2px 5px", letterSpacing: "0.04em" }}>
+              <div key={cls.id} style={{
+                border: "2px solid",
+                borderTopColor: isActiveClass ? color : "#2a1a4a",
+                borderLeftColor: isActiveClass ? color : "#2a1a4a",
+                borderBottomColor: isActiveClass ? color : "#0a0520",
+                borderRightColor: isActiveClass ? color : "#0a0520",
+                background: isActiveClass ? `${color}0a` : "#100828",
+              }}>
+                {/* Classe header */}
+                <div style={{
+                  padding: "6px 10px", display: "flex", alignItems: "center",
+                  gap: 8, borderBottom: `1px solid #2a1a4a`,
+                  background: isActiveClass ? `${color}18` : "#0a0820",
+                }}>
+                  <div style={{ fontFamily: "var(--font-press-start), monospace", fontSize: 8, color, letterSpacing: "0.08em" }}>
+                    {cls.name.toUpperCase()}
+                  </div>
+                  {isActiveClass && (
+                    <div style={{ background: color, color: "#000", fontFamily: "var(--font-press-start), monospace", fontSize: 6, padding: "1px 5px" }}>
                       ACTIF
                     </div>
                   )}
-                  <PegIcon id={cls.id as "canonnier" | "alchimiste" | "sniper"} size={28} />
-                  <div style={{ fontFamily: "var(--font-press-start), monospace", fontSize: 7, color, letterSpacing: "0.08em" }}>{cls.name.toUpperCase()}</div>
-                </div>
-                <div style={{ padding: "6px 8px", display: "flex", flexDirection: "column", gap: 3 }}>
-                  <div style={{ fontFamily: "var(--font-press-start), monospace", fontSize: 7, color: "#e0d0ff" }}>{cls.desc}</div>
-                  <div style={{ fontFamily: "var(--font-press-start), monospace", fontSize: 6, color: "#6655aa", fontStyle: "italic", lineHeight: 1.4, marginBottom: 4 }}>&quot;{cls.flavorText}&quot;</div>
+                  <div style={{ flex: 1 }} />
                   <button
                     style={{
-                      ...btnRaised,
-                      fontSize: 7,
-                      padding: "4px 0",
-                      width: "100%",
-                      background: isActive ? `linear-gradient(to bottom, ${color}cc, ${color}88)` : undefined,
-                      color: isActive ? "#000" : color,
-                      borderTopColor: color,
-                      borderLeftColor: color,
+                      ...btnRaised, fontSize: 6, padding: "3px 8px",
+                      background: isActiveClass ? `linear-gradient(to bottom, ${color}cc, ${color}88)` : undefined,
+                      color: isActiveClass ? "#000" : color,
+                      borderTopColor: color, borderLeftColor: color,
                     }}
                     onClick={() => onLaunch({ ...cfg, classId: cls.id })}
                   >
-                    {isActive ? "▶ RELANCER" : "▶ JOUER"}
+                    {isActiveClass ? "▶ RELANCER" : "▶ JOUER"}
                   </button>
+                </div>
+
+                {/* Classe description */}
+                <div style={{ padding: "4px 10px 6px", display: "flex", flexDirection: "column", gap: 2 }}>
+                  <div style={{ fontFamily: "var(--font-press-start), monospace", fontSize: 6, color: "#e0d0ff", lineHeight: 1.5 }}>{cls.desc}</div>
+                  <div style={{ fontFamily: "var(--font-press-start), monospace", fontSize: 6, color: "#6655aa", fontStyle: "italic", lineHeight: 1.4 }}>&quot;{cls.flavorText}&quot;</div>
+                </div>
+
+                {/* Skins grid */}
+                <div style={{ padding: "0 8px 8px", display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 4 }}>
+                  {skins.map((skin) => {
+                    const isSkinActive = activeSkinId === skin.id;
+                    return (
+                      <div
+                        key={skin.id}
+                        title={`${skin.name} — ${skin.desc}`}
+                        onClick={() => applySkin(cls.id, skin.id)}
+                        style={{
+                          cursor: "pointer",
+                          border: "2px solid",
+                          borderTopColor: isSkinActive ? color : "#2a1a4a",
+                          borderLeftColor: isSkinActive ? color : "#2a1a4a",
+                          borderBottomColor: isSkinActive ? "#0a0520" : "#0a0520",
+                          borderRightColor: isSkinActive ? "#0a0520" : "#0a0520",
+                          background: isSkinActive ? `${color}22` : "#0a0a1e",
+                          display: "flex", flexDirection: "column",
+                          alignItems: "center", gap: 4, padding: "6px 2px 5px",
+                          position: "relative",
+                        }}
+                      >
+                        {isSkinActive && (
+                          <div style={{
+                            position: "absolute", top: 1, right: 2,
+                            fontFamily: "monospace", fontSize: 7, color,
+                          }}>✔</div>
+                        )}
+                        <PegIcon id={skin.id as Parameters<typeof PegIcon>[0]["id"]} size={32} />
+                        <div style={{
+                          fontFamily: "var(--font-press-start), monospace",
+                          fontSize: 5, color: isSkinActive ? color : "#6655aa",
+                          textAlign: "center", lineHeight: 1.3,
+                          wordBreak: "break-word",
+                        }}>{skin.name}</div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             );

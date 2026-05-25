@@ -20,6 +20,7 @@ import { makeInitialRunState, generateUpgradeOffer } from "./engine/roguelite";
 import { DevPanel, DEFAULT_DEV_CONFIG } from "./components/DevPanel";
 import type { DevConfig } from "./components/DevPanel";
 import { SidePanel } from "./components/SidePanel";
+import { PEAGLE_LIVE_THEME_KEY } from "./components/Showroom";
 type Screen = "menu" | "class-pick" | "game" | "leaderboard";
 
 const EMPTY_RUN: RunState = makeInitialRunState("canonnier");
@@ -182,6 +183,16 @@ export function PeagleApp({ windowId: _windowId }: AppProps) {
       devConfigRef.current = { ...DEFAULT_DEV_CONFIG, gameThemeId: themeId };
     }
   }, []);
+
+  // Live theme sync — listens for broadcasts from the Showroom in another window
+  useEffect(() => {
+    function onLiveTheme(e: StorageEvent) {
+      if (e.key !== PEAGLE_LIVE_THEME_KEY || !e.newValue) return;
+      handleApplyTheme(e.newValue);
+    }
+    window.addEventListener("storage", onLiveTheme);
+    return () => window.removeEventListener("storage", onLiveTheme);
+  }, [handleApplyTheme]);
 
   const handleReplay = useCallback(() => {
     runStateRef.current = makeInitialRunState(runStateRef.current.classId);
