@@ -91,14 +91,14 @@ const ENEMY_DEFS: Record<
   EnemyType,
   { hp: number; speed: number; score: number; canShoot: boolean; emoji: string; w: number; h: number; fireRate: number }
 > = {
-  plouf:     { hp: 1, speed: 100, score: 100, canShoot: false, emoji: "🐟",  w: 32, h: 24, fireRate: 0 },
-  notif:     { hp: 1, speed: 145, score: 125, canShoot: false, emoji: "🔔",  w: 28, h: 28, fireRate: 0 },
-  popup:     { hp: 2, speed: 55,  score: 200, canShoot: false, emoji: "💬",  w: 48, h: 40, fireRate: 0 },
-  radio:     { hp: 2, speed: 65,  score: 250, canShoot: true,  emoji: "📡",  w: 34, h: 34, fireRate: 2.0 },
-  solitaire: { hp: 1, speed: 135, score: 175, canShoot: false, emoji: "🃏",  w: 28, h: 36, fireRate: 0 },
-  clippy:    { hp: 4, speed: 50,  score: 500, canShoot: true,  emoji: "📎",  w: 56, h: 56, fireRate: 1.3 },
-  trash:     { hp: 3, speed: 45,  score: 225, canShoot: false, emoji: "🗑️", w: 40, h: 40, fireRate: 0 },
-  bsod:      { hp: 5, speed: 35,  score: 400, canShoot: false, emoji: "💀",  w: 56, h: 44, fireRate: 0 },
+  plouf:     { hp: 3,  speed: 100, score: 100, canShoot: false, emoji: "🐟",  w: 32, h: 24, fireRate: 0 },
+  notif:     { hp: 3,  speed: 145, score: 125, canShoot: false, emoji: "🔔",  w: 28, h: 28, fireRate: 0 },
+  popup:     { hp: 6,  speed: 55,  score: 200, canShoot: false, emoji: "💬",  w: 48, h: 40, fireRate: 0 },
+  radio:     { hp: 6,  speed: 65,  score: 250, canShoot: true,  emoji: "📡",  w: 34, h: 34, fireRate: 2.0 },
+  solitaire: { hp: 3,  speed: 135, score: 175, canShoot: false, emoji: "🃏",  w: 28, h: 36, fireRate: 0 },
+  clippy:    { hp: 12, speed: 50,  score: 500, canShoot: true,  emoji: "📎",  w: 56, h: 56, fireRate: 1.3 },
+  trash:     { hp: 9,  speed: 45,  score: 225, canShoot: false, emoji: "🗑️", w: 40, h: 40, fireRate: 0 },
+  bsod:      { hp: 15, speed: 35,  score: 400, canShoot: false, emoji: "💀",  w: 56, h: 44, fireRate: 0 },
 };
 
 const PLAYER_SPEED = 360;
@@ -693,8 +693,8 @@ export class TaskkillEngine {
     this.boss = {
       x: this.W + 20, y: this.H / 2 - 50,
       w: 140, h: 100,
-      hp: 35 + this.wave * 10,
-      maxHp: 35 + this.wave * 10,
+      hp: 105 + this.wave * 30,
+      maxHp: 105 + this.wave * 30,
       phase: 0, fireTimer: 0, fireRate: 0.7,
       moveTimer: 0, targetY: this.H / 2 - 50,
       alive: true, entered: false,
@@ -1300,10 +1300,6 @@ export class TaskkillEngine {
       ctx.translate(this.glitchX, this.glitchY);
     }
 
-    // Fond
-    ctx.fillStyle = "#0a0a14";
-    ctx.fillRect(-10, -10, this.W + 20, this.H + 20);
-
     if (this.state === "title") {
       this.renderBackground(ctx);
       this.renderParticles(ctx);
@@ -1356,9 +1352,32 @@ export class TaskkillEngine {
     ctx.restore();
   }
 
+  private getThemeWave(): number {
+    return (this.state === "playing" || this.state === "waveIntro" || this.state === "gameover" || this.state === "victory") ? this.wave : 0;
+  }
+
   private renderBackground(ctx: CanvasRenderingContext2D): void {
+    const wave = this.getThemeWave();
+    const now = performance.now() / 1000;
+
+    // Couleurs par thème
+    const themes: Record<number, { bg: string; grid: string; starR: number; starG: number; starB: number }> = {
+      0: { bg: "#0a0a14", grid: "rgba(255,255,255,0.03)", starR: 255, starG: 255, starB: 255 },
+      1: { bg: "#061020", grid: "rgba(60,140,255,0.05)", starR: 80,  starG: 180, starB: 255 },
+      2: { bg: "#081008", grid: "rgba(80,255,80,0.04)",   starR: 100, starG: 255, starB: 100 },
+      3: { bg: "#0d0d20", grid: "rgba(180,180,255,0.05)", starR: 160, starG: 180, starB: 255 },
+      4: { bg: "#100818", grid: "rgba(200,80,255,0.05)",  starR: 180, starG: 100, starB: 255 },
+      5: { bg: "#100505", grid: "rgba(255,60,60,0.04)",   starR: 255, starG: 80,  starB: 80  },
+      6: { bg: "#000820", grid: "rgba(60,120,255,0.06)",  starR: 60,  starG: 140, starB: 255 },
+    };
+    const t = themes[wave] ?? themes[0]!;
+
+    // Fond
+    ctx.fillStyle = t.bg;
+    ctx.fillRect(-10, -10, this.W + 20, this.H + 20);
+
     // Grille
-    ctx.strokeStyle = "rgba(255,255,255,0.03)";
+    ctx.strokeStyle = t.grid;
     ctx.lineWidth = 1;
     const gs = 40;
     const ox = -(this.bgOffset % gs);
@@ -1368,11 +1387,171 @@ export class TaskkillEngine {
     for (let y = 0; y < this.H; y += gs) {
       ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(this.W, y); ctx.stroke();
     }
-    // Étoiles
+
+    // Étoiles thématiques
     for (const s of this.stars) {
-      ctx.fillStyle = `rgba(255,255,255,${0.2 + s.r * 0.25})`;
+      const alpha = 0.15 + s.r * 0.2;
+      ctx.fillStyle = `rgba(${t.starR},${t.starG},${t.starB},${alpha})`;
       ctx.fillRect(s.x, s.y, s.r, s.r);
     }
+
+    // Décorations spécifiques au thème
+    if (wave === 1) this.renderBgPlouf(ctx, now);
+    else if (wave === 2) this.renderBgMessenger(ctx, now);
+    else if (wave === 3) this.renderBgIE6(ctx, now);
+    else if (wave === 4) this.renderBgRadio(ctx, now);
+    else if (wave === 5) this.renderBgCorbeille(ctx, now);
+    else if (wave === 6) this.renderBgUpdate(ctx, now);
+  }
+
+  // --- Décorations par niveau ---
+
+  private renderBgPlouf(ctx: CanvasRenderingContext2D, now: number): void {
+    // Vagues sinusoïdales en fond
+    ctx.strokeStyle = "rgba(60,160,255,0.12)";
+    ctx.lineWidth = 2;
+    for (let wave = 0; wave < 3; wave++) {
+      const baseY = this.H * (0.7 + wave * 0.1);
+      ctx.beginPath();
+      for (let x = 0; x <= this.W; x += 6) {
+        const y = baseY + Math.sin((x + this.bgOffset * 1.5) * 0.018 + wave * 1.8) * 25;
+        x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+    // Bulles qui montent
+    ctx.fillStyle = "rgba(100,200,255,0.1)";
+    for (let i = 0; i < 8; i++) {
+      const bx = ((i * 110 + 30) + now * 15) % (this.W + 60) - 30;
+      const by = this.H - ((now * 25 + i * 70) % (this.H + 40));
+      ctx.beginPath();
+      ctx.arc(bx, by, 3 + (i % 3), 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  private renderBgMessenger(ctx: CanvasRenderingContext2D, now: number): void {
+    // Bulles de chat flottantes
+    ctx.strokeStyle = "rgba(100,255,100,0.1)";
+    ctx.lineWidth = 1;
+    for (let i = 0; i < 6; i++) {
+      const bx = ((i * 140 + 40) + now * 20) % (this.W + 100) - 50;
+      const by = 40 + i * 70 + Math.sin(now * 1.3 + i) * 25;
+      ctx.strokeRect(bx, by, 50, 22);
+      // Petite queue de bulle
+      ctx.beginPath();
+      ctx.moveTo(bx + 8, by + 22);
+      ctx.lineTo(bx + 2, by + 30);
+      ctx.lineTo(bx + 18, by + 22);
+      ctx.stroke();
+    }
+    // Petites cloches
+    ctx.fillStyle = "rgba(150,255,150,0.08)";
+    ctx.font = "14px serif";
+    for (let i = 0; i < 5; i++) {
+      const bx = ((i * 180 + 80) + now * 35) % (this.W + 40) - 20;
+      const by = 20 + i * 90 + Math.cos(now * 2 + i) * 30;
+      ctx.fillText("🔔", bx, by);
+    }
+  }
+
+  private renderBgIE6(ctx: CanvasRenderingContext2D, now: number): void {
+    // Lignes horizontales pointillées style navigateur
+    ctx.strokeStyle = "rgba(180,200,255,0.08)";
+    ctx.lineWidth = 1;
+    for (let i = 0; i < 5; i++) {
+      const y = 50 + i * 85 + Math.sin(now * 0.5 + i) * 10;
+      ctx.beginPath();
+      for (let x = 0; x < this.W; x += 16) {
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + 8, y);
+      }
+      ctx.stroke();
+    }
+    // Fenêtres popup fantômes
+    ctx.strokeStyle = "rgba(200,200,255,0.06)";
+    for (let i = 0; i < 4; i++) {
+      const wx = ((i * 170 + 60) + now * 10) % (this.W + 80) - 40;
+      const wy = 30 + i * 95 + Math.cos(now * 0.7 + i) * 20;
+      ctx.strokeRect(wx, wy, 70, 45);
+      // Titlebar
+      ctx.fillStyle = "rgba(100,120,200,0.06)";
+      ctx.fillRect(wx, wy, 70, 10);
+    }
+  }
+
+  private renderBgRadio(ctx: CanvasRenderingContext2D, now: number): void {
+    // Cercles concentriques (ondes radio) depuis la droite
+    ctx.strokeStyle = "rgba(180,100,255,0.08)";
+    ctx.lineWidth = 1;
+    const cx = this.W - 60;
+    const cy = this.H / 2;
+    for (let r = 30; r < Math.max(this.W, this.H); r += 45) {
+      const pulse = r + Math.sin(now * 3 + r * 0.01) * 10;
+      ctx.beginPath();
+      ctx.arc(cx, cy, pulse, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    // Symboles de cartes
+    const suits = ["♠", "♥", "♦", "♣"];
+    ctx.font = "16px serif";
+    for (let i = 0; i < 8; i++) {
+      const sx = ((i * 120 + 50) + now * 25) % (this.W + 40) - 20;
+      const sy = 30 + i * 55 + Math.sin(now * 1.5 + i) * 30;
+      ctx.fillStyle = `rgba(${i % 2 === 0 ? "255,80,80" : "200,150,255"},0.1)`;
+      ctx.fillText(pick(suits), sx, sy);
+    }
+  }
+
+  private renderBgCorbeille(ctx: CanvasRenderingContext2D, now: number): void {
+    // Grille corrompue (offset aléatoire sur certaines lignes)
+    ctx.strokeStyle = "rgba(255,60,60,0.06)";
+    ctx.lineWidth = 1;
+    for (let y = 20; y < this.H; y += 35) {
+      const glitchOff = Math.sin(y * 0.3 + now * 5) > 0.6 ? rnd(-15, 15) : 0;
+      ctx.beginPath();
+      ctx.moveTo(glitchOff, y);
+      ctx.lineTo(this.W + glitchOff, y);
+      ctx.stroke();
+    }
+    // Blocs "corrompus" aléatoires
+    ctx.fillStyle = "rgba(255,30,30,0.04)";
+    for (let i = 0; i < 6; i++) {
+      const gx = ((i * 150 + 70 + Math.sin(now * 3 + i) * 60) % (this.W + 40)) - 20;
+      const gy = ((i * 110 + 40 + Math.cos(now * 2.7 + i) * 50) % (this.H + 40)) - 20;
+      ctx.fillRect(gx, gy, rnd(20, 60), rnd(8, 20));
+    }
+    // Petits crânes flottants
+    ctx.font = "12px serif";
+    for (let i = 0; i < 4; i++) {
+      const sx = ((i * 160 + 90) + now * 15) % (this.W + 30) - 15;
+      const sy = 25 + i * 100 + Math.sin(now * 1.8 + i) * 25;
+      ctx.fillStyle = "rgba(255,100,100,0.1)";
+      ctx.fillText("💀", sx, sy);
+    }
+  }
+
+  private renderBgUpdate(ctx: CanvasRenderingContext2D, now: number): void {
+    // Scanline horizontale qui descend
+    const scanY = (now * 40) % (this.H + 60) - 30;
+    ctx.fillStyle = "rgba(60,140,255,0.06)";
+    ctx.fillRect(0, scanY, this.W, 3);
+
+    // Points de progression style "défilement"
+    ctx.fillStyle = "rgba(80,160,255,0.12)";
+    for (let i = 0; i < 10; i++) {
+      const dx = ((i * 90 + 20) + now * 40) % (this.W + 60) - 30;
+      const dy = 30 + i * 45;
+      ctx.fillRect(dx, dy, 5, 5);
+    }
+    // Barre de progression fantôme en bas
+    ctx.strokeStyle = "rgba(60,140,255,0.1)";
+    ctx.lineWidth = 2;
+    const pbx = 40, pby = this.H - 20, pbw = this.W - 80, pbh = 8;
+    ctx.strokeRect(pbx, pby, pbw, pbh);
+    const progress = (now * 15) % 100 / 100;
+    ctx.fillStyle = "rgba(60,140,255,0.08)";
+    ctx.fillRect(pbx + 2, pby + 2, (pbw - 4) * progress, pbh - 4);
   }
 
   private renderPlayer(ctx: CanvasRenderingContext2D): void {
@@ -1453,6 +1632,7 @@ export class TaskkillEngine {
         ctx.fillRect(-e.w / 2 - 2, -e.h / 2 - 2, e.w + 4, e.h + 4);
       }
 
+      ctx.fillStyle = "#fff";
       ctx.font = `${e.h * 0.75}px serif`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
@@ -1479,6 +1659,7 @@ export class TaskkillEngine {
       const angle = (b.spreadIndex - 2) * 0.25;
       ctx.rotate(angle);
       // Glow
+      ctx.fillStyle = "#ff0";
       ctx.shadowColor = "#ff0";
       ctx.shadowBlur = 6;
       ctx.font = `${b.w + 2}px serif`;
@@ -1590,6 +1771,7 @@ export class TaskkillEngine {
       const pulse = 1 + Math.sin(p.pulsePhase) * 0.2;
       ctx.scale(pulse, pulse);
       // Glow
+      ctx.fillStyle = "#fff";
       ctx.shadowColor = "#ff0";
       ctx.shadowBlur = 10;
       ctx.font = `${p.w}px serif`;
