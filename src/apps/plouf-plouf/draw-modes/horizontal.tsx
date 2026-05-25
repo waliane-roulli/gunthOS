@@ -75,21 +75,34 @@ export function HorizontalPicker({
                 className={[
                   "px-5 py-3 border-[3px] font-bold text-center whitespace-nowrap transition-none min-w-[80px]",
                   isWinner &&
-                    "!bg-gradient-to-b !from-[#ffd700] !to-[#ff8c00] text-black border-[#ffd700] scale-125 z-20 shadow-[0_0_20px_rgba(255,215,0,0.7)] [animation:winnerPulse_0.6s_ease-in-out_infinite_alternate]",
+                    "scale-125 z-20 [animation:winnerPulse_0.6s_ease-in-out_infinite_alternate]",
                   isHighlighted && !isWinner &&
-                    "!bg-[#00ffff] text-black border-[#00ffff] scale-110 z-10 shadow-[0_0_15px_#00ffff]",
+                    "scale-110 z-10",
                 ]
                   .filter(Boolean)
                   .join(" ")}
                 style={{
-                  backgroundColor: isWinner ? undefined : isHighlighted ? undefined : PALETTE[i % PALETTE.length],
-                  color: isWinner ? "#000" : isHighlighted ? "#000" : "#fff",
+                  background: isWinner
+                    ? "var(--plouf-accent, #ffd700)"
+                    : isHighlighted
+                    ? "var(--plouf-accent, #00ffff)"
+                    : PALETTE[i % PALETTE.length],
+                  color: isWinner || isHighlighted ? "#000" : "#fff",
                   fontFamily: "var(--t-font-body)",
                   borderRadius: "6px",
-                  borderColor: isWinner ? "#ffd700" : isHighlighted ? "#00ffff" : "rgba(0,0,0,0.25)",
+                  borderColor: isWinner
+                    ? "var(--plouf-accent, #ffd700)"
+                    : isHighlighted
+                    ? "var(--plouf-accent, #00ffff)"
+                    : "rgba(0,0,0,0.25)",
                   textShadow: isWinner || isHighlighted ? "none" : "1px 1px 0 rgba(0,0,0,0.35)",
                   transform: isWinner ? "scale(1.25)" : isHighlighted ? "scale(1.1)" : "scale(0.92)",
                   opacity: isWinner || isHighlighted ? 1 : 0.75,
+                  boxShadow: isWinner
+                    ? "0 0 20px color-mix(in srgb, var(--plouf-accent, #ffd700) 70%, transparent)"
+                    : isHighlighted
+                    ? "0 0 15px var(--plouf-accent, #00ffff)"
+                    : "none",
                 }}
               >
                 {/* Number badge */}

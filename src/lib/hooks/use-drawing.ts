@@ -14,7 +14,7 @@ export interface DrawingState {
 
 export function useDrawing(
   gamesCount: number,
-  onBip: () => void,
+  onBip: (progress: number) => void,
   onVictory?: () => void
 ) {
   const [state, setState] = useState<DrawingState>({
@@ -57,20 +57,20 @@ export function useDrawing(
       }
       prevItemIndex = itemIndex;
       setState((prev) => ({ ...prev, highlightedIndex: itemIndex }));
-      onBip();
 
       const progress = step / totalSteps;
       let delay: number;
-      if (progress < 0.1) {
-        const t = progress / 0.1;
-        delay = 50 + t * (30 - 50);
-      } else if (progress < 0.7) {
+      if (progress < 0.15) {
+        const t = progress / 0.15;
+        delay = 50 + t * t * (30 - 50);
+      } else if (progress < 0.30) {
         delay = 30;
       } else {
-        const s = (progress - 0.7) / 0.3;
-        delay = 30 + s * s * 470;
+        const s = (progress - 0.30) / 0.70;
+        delay = 30 + s * s * s * 400;
       }
 
+      onBip(progress);
       await sleep(delay);
     }
 

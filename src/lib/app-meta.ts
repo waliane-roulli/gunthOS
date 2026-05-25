@@ -22,4 +22,5 @@ export const APP_META: { slug: string; name: string; emoji: string; audioChannel
   { slug: "printer",        name: "GunthPrint 3000™",        emoji: "🖨️" },
   { slug: "ie",             name: "Internet Explorer 6",     emoji: "🌐" },
   { slug: "changelog",     name: "Notes de version",        emoji: "📋" },
+  { slug: "taskkill",      name: "TASKKILL.EXE",             emoji: "🎮", audioChannels: ["taskkill-sfx"] },
 ];

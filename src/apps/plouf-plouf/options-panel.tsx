@@ -5,6 +5,8 @@ import type { CelebrationOptions, PresetName } from "@/types/plouf-plouf";
 import { useDraggable } from "@/lib/hooks/use-draggable";
 import { GAME_THEMES } from "./game-themes";
 import type { PloufThemeId } from "./game-themes";
+import { PLOUF_SOUND_THEMES } from "./sound-themes";
+import type { PloufSoundThemeId } from "./sound-themes";
 import { RetroTitlebarBtn } from "@/components/ui/retro-titlebar-btn";
 
 interface OptionsPanelProps {
@@ -17,6 +19,8 @@ interface OptionsPanelProps {
   appThemeStyle: Record<string, string>;
   disabledPresets: PresetName[];
   onTogglePreset: (name: PresetName) => void;
+  soundThemeId: PloufSoundThemeId;
+  onSoundThemeChange: (id: PloufSoundThemeId) => void;
 }
 
 export function OptionsPanel({
@@ -29,6 +33,8 @@ export function OptionsPanel({
   appThemeStyle,
   disabledPresets,
   onTogglePreset,
+  soundThemeId,
+  onSoundThemeChange,
 }: OptionsPanelProps) {
   const update = (patch: Partial<CelebrationOptions>) =>
     onChange({ ...options, ...patch, preset: "custom" });
@@ -38,6 +44,8 @@ export function OptionsPanel({
   const asideStyle = drag.isDragged
     ? drag.style
     : { top: "50%", transform: "translateY(-50%)", right: open ? "20px" : "-420px" };
+
+  const resolvedThemeId = appThemeId ?? "os";
 
   return (
     <aside
@@ -312,15 +320,48 @@ export function OptionsPanel({
           ))}
         </OptGroup>
 
+        {/* Sound theme */}
+        <OptGroup title="🔊 Thème sonore du tirage">
+          <div className="grid grid-cols-2 gap-[3px]">
+            {PLOUF_SOUND_THEMES.map((t) => {
+              const isActive = soundThemeId === t.id;
+              return (
+                <button
+                  key={t.id}
+                  onClick={() => onSoundThemeChange(t.id)}
+                  className="border-[2px] px-2 py-[6px] text-sm font-bold cursor-pointer text-center transition-none"
+                  style={{
+                    fontFamily: "var(--t-font-body)",
+                    backgroundColor: isActive ? "var(--t-accent)" : "var(--t-bg)",
+                    color: isActive ? "var(--t-titlebar-text)" : "var(--t-text)",
+                    borderTopColor: isActive ? "var(--t-border-dark)" : "var(--t-border-light)",
+                    borderLeftColor: isActive ? "var(--t-border-dark)" : "var(--t-border-light)",
+                    borderBottomColor: isActive ? "var(--t-border-light)" : "var(--t-border-dark)",
+                    borderRightColor: isActive ? "var(--t-border-light)" : "var(--t-border-dark)",
+                  }}
+                >
+                  {t.label}
+                </button>
+              );
+            })}
+          </div>
+          <p
+            className="text-[0.7rem] mt-1"
+            style={{ color: "var(--t-text-muted)", fontFamily: "var(--t-font-body)" }}
+          >
+            {PLOUF_SOUND_THEMES.find((t) => t.id === soundThemeId)?.description}
+          </p>
+        </OptGroup>
+
         {/* Theme */}
         <OptGroup title="🎮 Theme jeu vidéo (cet app uniquement)">
           <div className="grid grid-cols-2 gap-[3px]">
             {GAME_THEMES.map((t) => {
-              const isActive = appThemeId === t.id;
+              const isActive = resolvedThemeId === t.id;
               return (
                 <button
                   key={t.id}
-                  onClick={() => onThemeChange(isActive ? null : t.id)}
+                  onClick={() => onThemeChange(t.id)}
                   className="border-[2px] px-2 py-[6px] text-sm font-bold cursor-pointer text-center transition-none"
                   style={{
                     fontFamily: "var(--t-font-body)",

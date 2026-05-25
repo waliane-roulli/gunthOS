@@ -50,6 +50,11 @@ export function useWinnerHistory() {
     });
   }, []);
 
+  const clearHistory = useCallback(() => {
+    setHistory([]);
+    setHistoryIndex(-1);
+  }, [setHistory]);
+
   const hasPrev = history.length > 0 && historyIndex < history.length - 1;
   const hasNext = historyIndex > -1;
   const displayNumber = historyIndex === -1 ? 1 : historyIndex + 1;
@@ -57,6 +62,7 @@ export function useWinnerHistory() {
   return {
     history,
     addWinner,
+    clearHistory,
     currentEntry,
     goPrev,
     goNext,

@@ -52,13 +52,13 @@ export function ItemList({
 
         const rowStyle = isWinner
           ? {
-              background: "linear-gradient(to bottom, #ff00ff, #ff0080)",
+              background: "var(--plouf-accent, #ff00ff)",
               color: "white",
               borderColor: "black",
             }
           : isHighlighted
           ? {
-              background: "linear-gradient(to bottom, #00ffff, #0088ff)",
+              background: "color-mix(in srgb, var(--plouf-accent, #00ffff) 60%, white)",
               color: "white",
               borderColor: "black",
             }
@@ -72,7 +72,7 @@ export function ItemList({
             className={[
               "flex items-center px-[10px] py-[6px] mb-[2px] border border-transparent transition-none",
               isWinner && "[animation:winnerPulse_0.6s_ease-in-out_infinite_alternate] scale-[1.04]",
-              isHighlighted && "scale-[1.02] shadow-[inset_0_0_0_2px_#fff,0_0_10px_#00ffff]",
+              isHighlighted && "scale-[1.02] shadow-[inset_0_0_0_2px_#fff,0_0_10px_var(--plouf-accent,#00ffff)]",
             ]
               .filter(Boolean)
               .join(" ")}

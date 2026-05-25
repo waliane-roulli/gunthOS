@@ -101,9 +101,9 @@ export function RouletteWheel({
                   height: `${ITEM_H}px`,
                   marginBottom: `${GAP}px`,
                   background: isWinner
-                    ? "linear-gradient(to bottom, #ff00ff, #ff0080)"
+                    ? "var(--plouf-accent, #ff00ff)"
                     : isHighlighted
-                    ? "linear-gradient(to bottom, #00ffff, #0088ff)"
+                    ? "color-mix(in srgb, var(--plouf-accent, #00ffff) 60%, white)"
                     : copyIdx % 2 === 0
                     ? "var(--t-card-bg)"
                     : "var(--t-inset-from)",
@@ -118,14 +118,14 @@ export function RouletteWheel({
                     ? "scale(1.04)"
                     : "scale(1)",
                   boxShadow: isWinner
-                    ? "0 0 20px rgba(255,0,128,0.5), inset 0 0 8px rgba(255,255,255,0.3)"
+                    ? "0 0 20px color-mix(in srgb, var(--plouf-accent, #ff00ff) 50%, transparent), inset 0 0 8px rgba(255,255,255,0.3)"
                     : isHighlighted
-                    ? "0 0 18px rgba(0,255,255,0.4), inset 0 0 6px rgba(255,255,255,0.25)"
+                    ? "0 0 18px color-mix(in srgb, var(--plouf-accent, #00ffff) 30%, transparent), inset 0 0 6px rgba(255,255,255,0.25)"
                     : "0 1px 2px rgba(0,0,0,0.06)",
                   border: isWinner
-                    ? "2px solid #ff0080"
+                    ? "2px solid var(--plouf-accent, #ff0080)"
                     : isHighlighted
-                    ? "2px solid #00bcd4"
+                    ? "2px solid color-mix(in srgb, var(--plouf-accent, #00bcd4) 70%, white)"
                     : copyIdx % 2 === 0
                     ? "1px solid var(--t-border-light)"
                     : "1px solid var(--t-border-dark)",
@@ -147,9 +147,9 @@ export function RouletteWheel({
             top: "50%",
             transform: "translateY(-50%)",
             height: `${ITEM_H}px`,
-            borderTop: "2px dashed rgba(0,255,255,0.5)",
-            borderBottom: "2px dashed rgba(0,255,255,0.5)",
-            backgroundColor: "rgba(0,255,255,0.05)",
+            borderTop: "2px dashed color-mix(in srgb, var(--plouf-accent, #00ffff) 50%, transparent)",
+            borderBottom: "2px dashed color-mix(in srgb, var(--plouf-accent, #00ffff) 50%, transparent)",
+            backgroundColor: "color-mix(in srgb, var(--plouf-accent, #00ffff) 5%, transparent)",
           }}
         />
       </div>

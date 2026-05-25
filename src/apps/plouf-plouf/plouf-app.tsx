@@ -11,6 +11,7 @@ import { RetroInput } from "@/components/ui/retro-input";
 import { useItemList } from "@/lib/hooks/use-item-list";
 import { useDrawing } from "@/lib/hooks/use-drawing";
 import { useSoundContext } from "@/lib/contexts/sound-context";
+import { useSettingsState } from "@/lib/contexts/settings-context";
 import { useCelebration } from "@/lib/hooks/use-celebration";
 import { useCelebrationEffects } from "@/lib/hooks/use-celebration-effects";
 import { useLocalStorage } from "@/lib/hooks/use-local-storage";
@@ -21,6 +22,8 @@ import { DEFAULT_OPTIONS, PRESETS } from "@/types/plouf-plouf";
 import type { CelebrationOptions, DrawMode, PresetName, CelebType } from "@/types/plouf-plouf";
 import { GAME_THEMES } from "./game-themes";
 import type { PloufThemeId } from "./game-themes";
+import { playSchemePop, playSchemeDelete, playSchemeVictory, playDynamicBip } from "./sound-themes";
+import type { PloufSoundThemeId } from "./sound-themes";
 
 const VALID_TYPES: Set<string> = new Set([
   "confetti", "fireworks", "rain", "matrix", "hearts", "stars",
@@ -36,6 +39,22 @@ function sanitizeOptions(raw: CelebrationOptions): CelebrationOptions {
 }
 
 const WATER_DROP = <WaterDropSVG />;
+
+interface ThemePreview {
+  bg: string;
+  titlebarFrom: string;
+  titlebarTo: string;
+  titlebarText: string;
+  accent: string;
+  text: string;
+}
+
+function ploufVarsFromPreview(p: ThemePreview): Record<string, string> {
+  return {
+    "--plouf-accent": p.accent,
+    "--plouf-accent2": p.titlebarFrom,
+  };
+}
 
 export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
   const [inputValue, setInputValue] = useState("");
@@ -65,6 +84,10 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
     "ploufPloufDisabledPresets",
     []
   );
+  const [soundThemeId, setSoundThemeId] = useLocalStorage<PloufSoundThemeId>(
+    "ploufPloufSoundTheme",
+    "os-default"
+  );
 
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -83,9 +106,44 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
   const winnerHistory = useWinnerHistory();
   const { games, inputError, addGame, removeGame, clearGames, importGames } = useItemList();
   const sound = useSoundContext();
+  const { settings } = useSettingsState();
   const { canvasRef, start: startCelebration, stop: stopCelebration } = useCelebration();
 
-  const playBip = useCallback(() => { if (!sfxMuted) sound.playBip(); }, [sfxMuted, sound]);
+  const playBip = useCallback((progress: number) => {
+    if (sfxMuted) return;
+    if (soundThemeId === "os-default") {
+      playDynamicBip(progress, settings.soundSchemeId);
+    } else {
+      playDynamicBip(progress, soundThemeId);
+    }
+  }, [sfxMuted, soundThemeId, settings.soundSchemeId]);
+
+  const playPopSfx = useCallback(() => {
+    if (sfxMuted) return;
+    if (soundThemeId === "os-default") {
+      sound.playPop();
+    } else {
+      playSchemePop(soundThemeId);
+    }
+  }, [sfxMuted, sound, soundThemeId]);
+
+  const playDeleteSfx = useCallback(() => {
+    if (sfxMuted) return;
+    if (soundThemeId === "os-default") {
+      sound.playDelete();
+    } else {
+      playSchemeDelete(soundThemeId);
+    }
+  }, [sfxMuted, sound, soundThemeId]);
+
+  const playVictorySfx = useCallback(() => {
+    if (sfxMuted) return;
+    if (soundThemeId === "os-default") {
+      sound.playVictory();
+    } else {
+      playSchemeVictory(soundThemeId);
+    }
+  }, [sfxMuted, sound, soundThemeId]);
   const drawing = useDrawing(games.length, playBip, undefined);
 
   const [winnerName, setWinnerName] = useState<string | null>(null);
@@ -110,7 +168,7 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [musicMuted]);
 
-  const soundForCelebration = { ...sound, playVictory: () => { if (!sfxMuted) sound.playVictory(); } };
+  const soundForCelebration = { ...sound, playVictory: playVictorySfx };
 
   const { trigger: triggerCelebration } = useCelebrationEffects({
     flashRef,
@@ -133,7 +191,7 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
       setWinnerName(null);
       drawing.reset();
     } else if (inputError !== "duplicate") {
-      if (!sfxMuted) sound.playPop();
+      playPopSfx();
     }
   }, [sound, sfxMuted, addGame, inputValue, inputError, drawing]);
 
@@ -141,7 +199,7 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
     (index: number) => {
       if (drawing.isDrawing) return;
       sound.init();
-      if (!sfxMuted) sound.playDelete();
+      playDeleteSfx();
       removeGame(index);
       setShowResult(false);
       setWinnerName(null);
@@ -153,7 +211,7 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
   const handleClear = useCallback(() => {
     if (drawing.isDrawing || games.length === 0) return;
     sound.init();
-    if (!sfxMuted) sound.playDelete();
+    playDeleteSfx();
     clearGames();
     setShowResult(false);
     setWinnerName(null);
@@ -198,7 +256,7 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
   const handleRemoveWinner = useCallback(() => {
     if (drawing.winnerIndex < 0 || drawing.isDrawing) return;
     sound.init();
-    if (!sfxMuted) sound.playDelete();
+    playDeleteSfx();
     removeGame(drawing.winnerIndex);
     drawing.reset();
     setShowResult(false);
@@ -219,12 +277,12 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
 
   const handleExport = useCallback(() => {
     if (games.length === 0) return;
-    const json = JSON.stringify(games, null, 2);
-    const blob = new Blob([json], { type: "application/json" });
+    const text = games.join("\n");
+    const blob = new Blob([text], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "ploufplouf-list.json";
+    a.download = "ploufplouf-list.txt";
     a.click();
     URL.revokeObjectURL(url);
   }, [games]);
@@ -239,20 +297,19 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
       if (!file) return;
       const reader = new FileReader();
       reader.onload = (evt) => {
-        try {
-          const data = JSON.parse(evt.target?.result as string);
-          if (Array.isArray(data) && data.every((item) => typeof item === "string")) {
-            importGames(data);
-            setShowResult(false);
-            setWinnerName(null);
-            drawing.reset();
-          }
-        } catch {
-          // fichier invalide, on ignore
+        const text = evt.target?.result as string;
+        const items = text
+          .split(/\r?\n/)
+          .map((s) => s.trim())
+          .filter(Boolean);
+        if (items.length > 0) {
+          importGames(items);
+          setShowResult(false);
+          setWinnerName(null);
+          drawing.reset();
         }
       };
       reader.readAsText(file);
-      // reset pour permettre de réimporter le même fichier
       e.target.value = "";
     },
     [importGames, drawing]
@@ -279,8 +336,32 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
     return () => document.removeEventListener("keydown", onKey);
   }, [showResult, optionsOpen, handlePlouf, handleRetry, handleClear, stopCelebration]);
 
-  const appTheme = appThemeId ? GAME_THEMES.find((t) => t.id === appThemeId) : null;
-  const appThemeStyle = appTheme ? appTheme.vars : {};
+  const activeThemeId: PloufThemeId = appThemeId ?? "os";
+
+  // Force le nettoyage des CSS custom properties quand on passe en Mode OS
+  useEffect(() => {
+    if (activeThemeId !== "os") return;
+    const el = containerRef.current;
+    if (!el) return;
+    const id = requestAnimationFrame(() => {
+      const s = el.style;
+      for (let i = s.length - 1; i >= 0; i--) {
+        const prop = s[i];
+        if (prop && prop.startsWith("--t-")) s.removeProperty(prop);
+      }
+      s.setProperty("--plouf-accent", "#ff00ff");
+      s.setProperty("--plouf-accent2", "#00ffff");
+    });
+    return () => cancelAnimationFrame(id);
+  }, [activeThemeId]);
+
+  const appTheme = GAME_THEMES.find((t) => t.id === activeThemeId) ?? null;
+  const appThemeStyle = appTheme && activeThemeId !== "os"
+    ? { ...appTheme.vars, ...ploufVarsFromPreview(appTheme.preview) }
+    : {
+        "--plouf-accent": "#ff00ff",
+        "--plouf-accent2": "#00ffff",
+      };
 
   const canDraw = games.length >= 2 && !drawing.isDrawing;
 
@@ -656,7 +737,19 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
 
           {/* Drawing indicator */}
           {drawing.isDrawing && (
-            <div className="text-center py-1 font-[family-name:var(--font-vt323)] text-[1.1rem] tracking-[2px] font-bold text-[#000080] bg-[#ffff00] border-[2px] border-dashed border-red-600 mb-2 animate-[blink_0.5s_step-end_infinite]">
+            <div
+              className="text-center py-1 font-[family-name:var(--font-vt323)] text-[1.1rem] tracking-[2px] font-bold border-[2px] border-dashed mb-2 animate-[blink_0.5s_step-end_infinite]"
+              style={activeThemeId === "os" ? {
+                backgroundColor: "#ffff00",
+                color: "#000080",
+                borderColor: "#ff0000",
+              } : {
+                backgroundColor: "var(--plouf-accent2)",
+                color: "#ffffff",
+                textShadow: "1px 1px 0 #000",
+                borderColor: "var(--plouf-accent)",
+              }}
+            >
               ★ TIRAGE EN COURS... ★
             </div>
           )}
@@ -668,9 +761,31 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
               disabled={!canDraw}
               className={`flex-1 min-w-[200px] py-2.5 px-4 font-[family-name:var(--font-fredoka)] text-[1.1rem] font-bold tracking-wider cursor-pointer relative overflow-hidden border-[3px] transition-none
                 ${canDraw
-                  ? "bg-gradient-to-b from-[#ff8800] via-[#ff0000] to-[#cc0000] text-[#ffff00] border-t-[#ffaa00] border-l-[#ffaa00] border-b-[#880000] border-r-[#880000] [text-shadow:2px_2px_0_#000,-1px_-1px_0_#000] hover:from-[#ffaa00] hover:via-[#ff2200] hover:to-[#dd0000] hover:shadow-[0_0_20px_rgba(255,100,0,0.7)] active:border-t-[#880000] active:border-l-[#880000]"
-                  : "bg-gradient-to-b from-[#aaaaaa] to-[#888888] text-[#cccccc] border-[#999] cursor-not-allowed [text-shadow:1px_1px_0_#555]"
+                  ? "hover:brightness-110"
+                  : "cursor-not-allowed"
                 }`}
+              style={canDraw ? (activeThemeId === "os" ? {
+                background: "linear-gradient(to bottom, #ff8800, #ff0000, #cc0000)",
+                color: "#ffff00",
+                textShadow: "2px 2px 0 #000, -1px -1px 0 #000",
+                borderTopColor: "#ffaa00",
+                borderLeftColor: "#ffaa00",
+                borderBottomColor: "#880000",
+                borderRightColor: "#880000",
+              } : {
+                background: "var(--plouf-accent)",
+                color: "#ffffff",
+                textShadow: "2px 2px 0 #000, -1px -1px 0 #000",
+                borderTopColor: "color-mix(in srgb, var(--plouf-accent) 80%, white)",
+                borderLeftColor: "color-mix(in srgb, var(--plouf-accent) 80%, white)",
+                borderBottomColor: "color-mix(in srgb, var(--plouf-accent) 70%, black)",
+                borderRightColor: "color-mix(in srgb, var(--plouf-accent) 70%, black)",
+              }) : {
+                background: "linear-gradient(to bottom, #aaaaaa, #888888)",
+                color: "#cccccc",
+                textShadow: "1px 1px 0 #555",
+                borderColor: "#999",
+              }}
               aria-label="Lancer le tirage au sort"
             >
               {canDraw && (
@@ -688,7 +803,7 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
             <input
               ref={fileInputRef}
               type="file"
-              accept=".json"
+              accept=".txt"
               className="hidden"
               onChange={handleFileChange}
             />
@@ -697,14 +812,30 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
           {/* Result */}
           {showResult && winnerName && (
             <div
-              className={`text-center p-3 border-[3px] border-t-[#808080] border-l-[#808080] border-b-white border-r-white mb-2.5 animate-[fadeIn_0.4s_ease]
+              className={`text-center p-3 border-[3px] mb-2.5 animate-[fadeIn_0.4s_ease]
                 ${activeOpts.epicResult
-                  ? "bg-[linear-gradient(135deg,#ff00ff,#00ffff,#ffff00,#ff00ff)] bg-[length:400%_400%] [animation:epicBg_2s_ease_infinite,fadeIn_0.4s_ease] border-black shadow-[0_0_30px_rgba(255,0,255,0.6),inset_0_0_0_3px_#ffff00]"
-                  : "bg-[#c0c0c0]"
+                  ? "[animation:epicBg_2s_ease_infinite,fadeIn_0.4s_ease] border-black"
+                  : ""
                 }`}
+              style={activeOpts.epicResult ? (activeThemeId === "os" ? {
+                background: "linear-gradient(135deg, #ff00ff, #00ffff, #ffff00, #ff00ff)",
+                backgroundSize: "400% 400%",
+                boxShadow: "0 0 30px rgba(255,0,255,0.6), inset 0 0 0 3px #ffff00",
+              } : {
+                background: `linear-gradient(135deg, var(--plouf-accent), color-mix(in srgb, var(--plouf-accent) 50%, white), #ffff00, var(--plouf-accent))`,
+                backgroundSize: "400% 400%",
+                boxShadow: `0 0 30px color-mix(in srgb, var(--plouf-accent) 60%, transparent), inset 0 0 0 3px color-mix(in srgb, var(--plouf-accent) 90%, white)`,
+              }) : {
+                backgroundColor: "var(--t-card-bg, #c0c0c0)",
+                borderTopColor: "var(--t-border-dark, #808080)",
+                borderLeftColor: "var(--t-border-dark, #808080)",
+                borderBottomColor: "var(--t-border-light, #fff)",
+                borderRightColor: "var(--t-border-light, #fff)",
+              }}
             >
               <p
-                className={`text-sm font-bold uppercase tracking-[2px] mb-1.5 font-[family-name:var(--font-vt323)] text-xl ${activeOpts.epicResult ? "text-black [text-shadow:1px_1px_0_#fff]" : "text-[#000080]"}`}
+                className={`text-sm font-bold uppercase tracking-[2px] mb-1.5 font-[family-name:var(--font-vt323)] text-xl ${activeOpts.epicResult ? "text-black [text-shadow:1px_1px_0_#fff]" : ""}`}
+                style={activeOpts.epicResult ? undefined : { color: "var(--plouf-accent, #000080)" }}
               >
                 ★ RESULTAT ★
               </p>
@@ -742,14 +873,26 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
               }}
             >
               <div
-                className="text-center font-bold text-[0.9rem] tracking-wider pb-1 mb-1.5 border-b border-dashed"
+                className="flex items-center justify-between font-bold text-[0.9rem] tracking-wider pb-1 mb-1.5 border-b border-dashed"
                 style={{
                   color: "var(--t-accent)",
                   fontFamily: "var(--t-font-display)",
                   borderBottomColor: "var(--t-accent)",
                 }}
               >
-                🏆 DERNIERS VAINQUEURS
+                <span>🏆 DERNIERS VAINQUEURS</span>
+                <button
+                  onClick={() => { winnerHistory.clearHistory(); }}
+                  title="Effacer l'historique"
+                  className="text-sm px-1.5 py-0.5 border border-black cursor-pointer hover:bg-red-100"
+                  style={{
+                    backgroundColor: "var(--t-bg)",
+                    color: "var(--t-text)",
+                    fontFamily: "var(--t-font-display)",
+                  }}
+                >
+                  🗑
+                </button>
               </div>
 
               {/* Navigation + Current */}
@@ -859,6 +1002,8 @@ export function PloufApp({ embedded = false }: { embedded?: boolean } = {}) {
             prev.includes(name) ? prev.filter((n) => n !== name) : [...prev, name]
           );
         }}
+        soundThemeId={soundThemeId}
+        onSoundThemeChange={setSoundThemeId}
       />
     </>
   );
