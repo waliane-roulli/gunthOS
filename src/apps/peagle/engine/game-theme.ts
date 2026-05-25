@@ -14,10 +14,10 @@ export interface PegTheme {
   orangeFever: string; orangeGlow: string;
   // Green
   green: string; greenHi: string; greenDark: string;
-  // Bomb
-  bomb: string; bombHi: string; bombDark: string;
-  // Warp
-  warp: string; warpHi: string; warpDark: string;
+  // Bomb — bombDark = bevel shadow edge; bombHit = fill when hit (darker)
+  bomb: string; bombHi: string; bombDark: string; bombHit: string;
+  // Warp — warpDark = bevel shadow edge; warpHit = fill when hit (darker)
+  warp: string; warpHi: string; warpDark: string; warpHit: string;
   // Boss
   boss: string; bossHi: string; bossDark: string;
   // Armor
@@ -37,9 +37,11 @@ export interface BgTheme {
   groundColorFever:  string;
   subGroundColor:    string;
   subGroundColorFever: string;
-  // Ground mist overlay (rgba string)
-  mistColor:       string;
-  mistColorFever:  string;
+  // Ground mist: two depth layers (near @ groundY-8, far @ groundY-16)
+  mistColor:          string;  // near layer, normal
+  mistColorFever:     string;  // near layer, fever
+  mistFarColor:       string;  // far layer, normal  (lower opacity)
+  mistFarColorFever:  string;  // far layer, fever   (lower opacity)
   // Decorative elements
   hasTrees:     boolean;
   hasFireflies: boolean;
@@ -74,8 +76,8 @@ export const THEME_FORET: GameTheme = {
     orange:   "#ff5500", orangeHi:   "#ffdd44", orangeDark: "#882200",
     orangeFever: "#ff00cc", orangeGlow: "#ff88ee",
     green:    "#009922", greenHi:    "#aaffcc", greenDark:  "#003311",
-    bomb:     "#ff1133", bombHi:     "#ff8899", bombDark:   "#880011",
-    warp:     "#6600cc", warpHi:     "#ee88ff", warpDark:   "#330066",
+    bomb:     "#ff1133", bombHi:     "#ff8899", bombDark:   "#880011", bombHit: "#440000",
+    warp:     "#6600cc", warpHi:     "#ee88ff", warpDark:   "#330066", warpHit: "#220033",
     boss:     "#cc8800", bossHi:     "#ffff88", bossDark:   "#664400",
     armor:    "#888899", armorHi:    "#dddde8", armorDark:  "#333340",
     popRing: {
@@ -88,8 +90,10 @@ export const THEME_FORET: GameTheme = {
     skyTopFever: [8,  4,   28],  skyBotFever: [18,  10,  52],
     groundColor:        "#3a8c28", groundColorFever:      "#0a0a28",
     subGroundColor:     "#1e6016", subGroundColorFever:   "#050514",
-    mistColor:      "rgba(180,240,160,0.07)",
-    mistColorFever: "rgba(100,80,200,0.06)",
+    mistColor:         "rgba(180,240,160,0.07)",
+    mistColorFever:    "rgba(100,80,200,0.06)",
+    mistFarColor:      "rgba(180,240,160,0.04)",
+    mistFarColorFever: "rgba(80,60,180,0.04)",
     hasTrees: true, hasFireflies: true,
   },
   flash: { normal: "#4455ff", fever: "#ff00cc" },
@@ -108,8 +112,8 @@ export const THEME_ABIME: GameTheme = {
     orange:   "#ff7700", orangeHi:   "#ffcc44", orangeDark: "#883300",
     orangeFever: "#ff00ff", orangeGlow: "#ff88ff",
     green:    "#00ffaa", greenHi:    "#aaffee", greenDark:  "#004433",
-    bomb:     "#ff2255", bombHi:     "#ff88aa", bombDark:   "#880022",
-    warp:     "#9900ff", warpHi:     "#cc88ff", warpDark:   "#440077",
+    bomb:     "#ff2255", bombHi:     "#ff88aa", bombDark:   "#880022", bombHit: "#440011",
+    warp:     "#9900ff", warpHi:     "#cc88ff", warpDark:   "#440077", warpHit: "#220044",
     boss:     "#ffee00", bossHi:     "#ffffaa", bossDark:   "#776600",
     armor:    "#667788", armorHi:    "#aabbcc", armorDark:  "#223344",
     popRing: {
@@ -122,8 +126,10 @@ export const THEME_ABIME: GameTheme = {
     skyTopFever: [6,  0,  18], skyBotFever: [12, 4,  36],
     groundColor:        "#04000c", groundColorFever:      "#080018",
     subGroundColor:     "#020008", subGroundColorFever:   "#04000e",
-    mistColor:      "rgba(80,0,180,0.08)",
-    mistColorFever: "rgba(180,0,255,0.10)",
+    mistColor:         "rgba(80,0,180,0.08)",
+    mistColorFever:    "rgba(180,0,255,0.10)",
+    mistFarColor:      "rgba(60,0,150,0.05)",
+    mistFarColorFever: "rgba(140,0,200,0.07)",
     hasTrees: false, hasFireflies: false,
   },
   flash: { normal: "#4488ff", fever: "#ff00ff" },
@@ -142,8 +148,8 @@ export const THEME_ENFER: GameTheme = {
     orange:   "#ff8800", orangeHi:   "#ffcc00", orangeDark: "#884400",
     orangeFever: "#ff0000", orangeGlow: "#ff6600",
     green:    "#aaff00", greenHi:    "#eeff88", greenDark:  "#445500",
-    bomb:     "#cc0000", bombHi:     "#ff4444", bombDark:   "#440000",
-    warp:     "#ff00aa", warpHi:     "#ff88cc", warpDark:   "#660044",
+    bomb:     "#cc0000", bombHi:     "#ff4444", bombDark:   "#440000", bombHit: "#220000",
+    warp:     "#ff00aa", warpHi:     "#ff88cc", warpDark:   "#660044", warpHit: "#330022",
     boss:     "#ffaa00", bossHi:     "#ffee88", bossDark:   "#664400",
     armor:    "#775544", armorHi:    "#aa8866", armorDark:  "#332211",
     popRing: {
@@ -156,8 +162,10 @@ export const THEME_ENFER: GameTheme = {
     skyTopFever: [60, 4,  2], skyBotFever: [100, 10, 4],
     groundColor:        "#3d1208", groundColorFever:      "#220600",
     subGroundColor:     "#1a0602", subGroundColorFever:   "#0e0200",
-    mistColor:      "rgba(200,60,0,0.08)",
-    mistColorFever: "rgba(255,40,0,0.12)",
+    mistColor:         "rgba(200,60,0,0.08)",
+    mistColorFever:    "rgba(255,40,0,0.12)",
+    mistFarColor:      "rgba(180,40,0,0.05)",
+    mistFarColorFever: "rgba(220,20,0,0.08)",
     hasTrees: false, hasFireflies: false,
   },
   flash: { normal: "#ff4400", fever: "#ff0000" },
@@ -176,8 +184,8 @@ export const THEME_GLACE: GameTheme = {
     orange:   "#ee6622", orangeHi:   "#ffcc88", orangeDark: "#883311",
     orangeFever: "#00ccff", orangeGlow: "#88eeff",
     green:    "#00ddcc", greenHi:    "#88ffee", greenDark:  "#004433",
-    bomb:     "#2244aa", bombHi:     "#88aaff", bombDark:   "#001144",
-    warp:     "#00eeff", warpHi:     "#aaffff", warpDark:   "#006677",
+    bomb:     "#2244aa", bombHi:     "#88aaff", bombDark:   "#001144", bombHit: "#000822",
+    warp:     "#00eeff", warpHi:     "#aaffff", warpDark:   "#006677", warpHit: "#003344",
     boss:     "#ddeeff", bossHi:     "#ffffff", bossDark:   "#8899aa",
     armor:    "#aabbc8", armorHi:    "#ddeeff", armorDark:  "#445566",
     popRing: {
@@ -190,8 +198,10 @@ export const THEME_GLACE: GameTheme = {
     skyTopFever: [60,  100, 160], skyBotFever: [100, 150, 200],
     groundColor:        "#b0d8ee", groundColorFever:      "#5077aa",
     subGroundColor:     "#80b8d8", subGroundColorFever:   "#304466",
-    mistColor:      "rgba(200,235,255,0.12)",
-    mistColorFever: "rgba(100,150,220,0.12)",
+    mistColor:         "rgba(200,235,255,0.12)",
+    mistColorFever:    "rgba(100,150,220,0.12)",
+    mistFarColor:      "rgba(180,220,255,0.08)",
+    mistFarColorFever: "rgba(80,120,200,0.08)",
     hasTrees: false, hasFireflies: false,
   },
   flash: { normal: "#44ccff", fever: "#00eeff" },

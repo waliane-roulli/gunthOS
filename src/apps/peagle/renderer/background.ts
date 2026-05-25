@@ -190,10 +190,10 @@ function buildStaticBg(feverMode: boolean, bg: BgTheme, themeId: string): Offscr
   }
   ctx.fillStyle = feverMode ? bg.subGroundColorFever : bg.subGroundColor;
   ctx.fillRect(-BG_PAD, groundY + 10, CW, CH);
-  // Ground mist
+  // Ground mist — two depth layers at different opacities
   ctx.fillStyle = feverMode ? bg.mistColorFever : bg.mistColor;
   ctx.fillRect(-BG_PAD, groundY - 8, CW, 16);
-  ctx.fillStyle = feverMode ? bg.mistColorFever : bg.mistColor;
+  ctx.fillStyle = feverMode ? bg.mistFarColorFever : bg.mistFarColor;
   ctx.fillRect(-BG_PAD, groundY - 16, CW, 12);
 
   // Scanlines (static — baked once, cover full padded area)
