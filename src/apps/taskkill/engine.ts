@@ -16,7 +16,7 @@ export interface EngineConfig {
 // ====================================================================
 // TYPES
 // ====================================================================
-type EnemyType = "plouf" | "notif" | "popup" | "radio" | "solitaire" | "clippy" | "trash" | "bsod";
+type EnemyType = "plouf" | "notif" | "popup" | "radio" | "defrag" | "clippy" | "trash" | "bsod";
 type GameState = "title" | "playing" | "waveIntro" | "gameover" | "victory";
 
 interface Poolable {
@@ -95,7 +95,7 @@ const ENEMY_DEFS: Record<
   notif:     { hp: 3,  speed: 145, score: 125, canShoot: true,  emoji: "🔔",  w: 28, h: 28, fireRate: 2.2 },
   popup:     { hp: 6,  speed: 55,  score: 200, canShoot: false, emoji: "💬",  w: 48, h: 40, fireRate: 0 },
   radio:     { hp: 6,  speed: 65,  score: 250, canShoot: true,  emoji: "📡",  w: 34, h: 34, fireRate: 2.0 },
-  solitaire: { hp: 3,  speed: 135, score: 175, canShoot: true,  emoji: "🃏",  w: 28, h: 36, fireRate: 2.5 },
+  defrag:    { hp: 4,  speed: 75,  score: 200, canShoot: false, emoji: "🧩",  w: 36, h: 36, fireRate: 0 },
   clippy:    { hp: 12, speed: 50,  score: 500, canShoot: true,  emoji: "📎",  w: 56, h: 56, fireRate: 1.3 },
   trash:     { hp: 9,  speed: 45,  score: 225, canShoot: false, emoji: "🗑️", w: 40, h: 40, fireRate: 0 },
   bsod:      { hp: 15, speed: 35,  score: 400, canShoot: false, emoji: "💀",  w: 56, h: 44, fireRate: 0 },
@@ -124,8 +124,8 @@ const BOSS_CHARS = ["CRASH", "DUMP", "FATAL", "0x0F", "HALT", "☠", "💀", "BS
 const WAVE_CONFIG = [
   { name: "🐟 Plouf Plouf a crashé — les poissons s'échappent !", types: { plouf: 20 } },
   { name: "🔔 GunthMessenger™ — spam de notifications", types: { plouf: 8, notif: 14 } },
-  { name: "🟢 Matrix — le système se fait hacker", types: { notif: 6, popup: 4, solitaire: 6 } },
-  { name: "📡 GunthRadio™ — ondes parasites + Solitaire buggé", types: { radio: 8, popup: 6, solitaire: 8 } },
+  { name: "🟢 Matrix — le système se fait hacker", types: { notif: 6, popup: 4, defrag: 6 } },
+  { name: "📡 GunthRadio™ — ondes parasites + Défragmenteur bloqué", types: { radio: 8, popup: 6, defrag: 8 } },
   { name: "🗑️ Corbeille pleine — fichiers corrompus + BSOD", types: { trash: 8, clippy: 3, bsod: 4 } },
   { name: "💀 MISE À JOUR CRITIQUE — Windows Update.exe", types: {}, boss: true },
 ];
@@ -152,18 +152,18 @@ const GUNTHOS_NOTIFS = [
   "🐟 Plouf Plouf a essayé de nager dans votre RAM. Il s'est noyé.",
   "📡 GunthRadio™ diffuse vos échecs en direct sur 98.8 FM.",
   "💬 GunthMessenger™ : 'Vous êtes nul' — message de vous-même.",
-  "🃏 Solitaire a planté. Même les cartes vous abandonnent.",
+  "🧩 Défragmenteur bloqué à 99%. Comme votre vie.",
   "🗑️ La Corbeille est pleine. Comme votre historique de défaites.",
   "🔔 Nouvelle notification : vous perdez. Encore.",
 ];
 
 // Banners spécifiques par type d'ennemi
 const ENEMY_BANNERS: Partial<Record<EnemyType, string[]>> = {
-  plouf:     ["🐟 PLOUF !", "À L'EAU !", "FISH & CHIPS !", "POISSON PANÉ !"],
+  plouf:     ["🐟 PLOUF !", "LE SORT A CHOISI...", "SPLASH !", "ÇA FAIT PLOUF !"],
   notif:     ["🔔 MUTED !", "SPAM ÉLIMINÉ !", "NOTIF FERMÉE !", "SILENCE !"],
   popup:     ["💬 POP-UP FERMÉ !", "AD BLOCKED !", "FENÊTRE FERMÉE !", "CLIQUE PAS !"],
   radio:     ["📡 SIGNAL PERDU !", "RADIO OFF !", "FRÉQUENCE COUPÉE !", "MUTE FORCÉ !"],
-  solitaire: ["🃏 CARTE PERDUE !", "MAUVAIS JEU !", "FULL HOUSE... DE MERDE !", "BATU À PLAT !"],
+  defrag:    ["🧩 DÉFRAGMENTÉ !", "BLOC CORROMPU !", "SECTEUR EFFACÉ !", "DISQUE FRAGMENTÉ !"],
   clippy:    ["📎 CLIPPY OUT !", "T'ES MOCHE !", "ASSISTANT VIRÉ !", "AIDE REFUSÉE !", "CLIPPY DÉSINSTALLÉ !"],
   trash:     [
     "🗑️ bukake_facials_vol3.avi",
@@ -969,9 +969,9 @@ export class TaskkillEngine {
           this.enemyShoot(e, dt);
           break;
         }
-        case "solitaire":
-          if (e.phaseTimer > 0.35) { e.phaseTimer = 0; e.vy = rnd(-130, 130); }
-          this.enemyShoot(e, dt);
+        case "defrag":
+          // Avance par à-coups
+          e.vx = -75 + Math.sin(e.phaseTimer * 4) * 30;
           break;
         case "clippy": {
           const dy = this.player.y - e.y;
@@ -1501,14 +1501,14 @@ export class TaskkillEngine {
       ctx.arc(cx, cy, pulse, 0, Math.PI * 2);
       ctx.stroke();
     }
-    // Symboles de cartes
-    const suits = ["♠", "♥", "♦", "♣"];
-    ctx.font = "16px serif";
+    // Blocs défragmentés flottants
+    const blocks = ["▓", "▒", "░", "▣", "▧"];
+    ctx.font = "14px monospace";
     for (let i = 0; i < 8; i++) {
       const sx = ((i * 120 + 50) + now * 25) % (this.W + 40) - 20;
       const sy = 30 + i * 55 + Math.sin(now * 1.5 + i) * 30;
-      ctx.fillStyle = `rgba(${i % 2 === 0 ? "255,80,80" : "200,150,255"},0.1)`;
-      ctx.fillText(pick(suits), sx, sy);
+      ctx.fillStyle = `rgba(${i % 2 === 0 ? "200,180,255" : "255,200,100"},0.1)`;
+      ctx.fillText(pick(blocks), sx, sy);
     }
   }
 
