@@ -172,22 +172,45 @@ export function NotificationLayer() {
 
   if (notifications.length === 0) return null;
 
+  const positioned = notifications.filter((n) => n.x !== undefined && n.y !== undefined);
+  const stacked = notifications.filter((n) => n.x === undefined || n.y === undefined);
+
   return (
-    <div
-      style={{
-        position: "fixed",
-        top: 8,
-        right: 8,
-        zIndex: 98000,
-        display: "flex",
-        flexDirection: "column",
-        gap: 6,
-        pointerEvents: "none",
-      }}
-    >
-      {notifications.map((n) => (
-        <NotificationToast key={n.id} notif={n} onDismiss={() => dismiss(n.id)} />
+    <>
+      {/* Notifs positionnées — partout sur l'écran */}
+      {positioned.map((n) => (
+        <div
+          key={n.id}
+          style={{
+            position: "fixed",
+            left: n.x,
+            top: n.y,
+            zIndex: 98000,
+            pointerEvents: "none",
+          }}
+        >
+          <NotificationToast notif={n} onDismiss={() => dismiss(n.id)} />
+        </div>
       ))}
-    </div>
+      {/* Notifs empilées classiques — en haut à droite */}
+      {stacked.length > 0 && (
+        <div
+          style={{
+            position: "fixed",
+            top: 8,
+            right: 8,
+            zIndex: 98000,
+            display: "flex",
+            flexDirection: "column",
+            gap: 6,
+            pointerEvents: "none",
+          }}
+        >
+          {stacked.map((n) => (
+            <NotificationToast key={n.id} notif={n} onDismiss={() => dismiss(n.id)} />
+          ))}
+        </div>
+      )}
+    </>
   );
 }

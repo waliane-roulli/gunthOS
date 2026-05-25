@@ -21,6 +21,9 @@ export interface Notification {
   message?: string;
   duration: number | null; // ms, null = persist until dismissed
   onClick?: () => void;
+  /** Position custom — si défini, la notif s'affiche à ces coordonnées au lieu d'en haut à droite */
+  x?: number;
+  y?: number;
 }
 
 export type NotifyOptions = Omit<Notification, "id" | "duration"> & { duration?: number | null };

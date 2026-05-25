@@ -42,11 +42,16 @@ export function TaskkillApp({ windowId: _windowId }: AppProps) {
           });
         },
         onNotify: (message: string) => {
+          const spread = Math.random() < 0.55;
           notify({
             type: "info",
-            title: "TASKKILL.EXE",
+            title: "dragmenteur.exe",
             message,
             duration: 3500,
+            ...(spread ? {
+              x: 20 + Math.random() * (window.innerWidth - 340),
+              y: 10 + Math.random() * (window.innerHeight - 180),
+            } : {}),
           });
         },
       });
@@ -86,7 +91,7 @@ export function TaskkillApp({ windowId: _windowId }: AppProps) {
   if (error) {
     return (
       <div className="w-full h-full flex items-center justify-center bg-[#0a0a0a] text-[#f44] font-mono text-sm p-4 text-center">
-        TASKKILL.EXE a crashé.<br />
+        dragmenteur.exe a crashé.<br />
         <span className="text-[#888] text-xs mt-2">{error}</span>
         <br />
         <span className="text-[#666] text-xs mt-4">Fermez la fenêtre et réessayez.</span>
