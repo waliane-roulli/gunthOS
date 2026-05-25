@@ -1,11 +1,11 @@
 "use client";
 
-import { useMemo } from "react";
+import { useState } from "react";
 
 const FIREFLY_COUNT = 14;
 
 export function ForestBackground() {
-  const fireflies = useMemo(() =>
+  const [fireflies] = useState(() =>
     Array.from({ length: FIREFLY_COUNT }, (_, i) => ({
       id: i,
       left:  `${8 + Math.random() * 84}%`,
@@ -15,7 +15,7 @@ export function ForestBackground() {
       dur:   `${3.5 + Math.random() * 5}s`,
       delay: `${-Math.random() * 8}s`,
     })),
-  []);
+  );
 
   return (
     <>

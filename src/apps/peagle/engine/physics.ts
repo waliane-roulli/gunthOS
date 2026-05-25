@@ -74,7 +74,7 @@ export function arcCollide(
 
   // Angular range check (normalize to handle wrapping)
   let ballAngle = Math.atan2(dy, dx);
-  let sa = startAngle, ea = endAngle;
+  const sa = startAngle; let ea = endAngle;
   while (ea < sa) ea += Math.PI * 2;
   while (ballAngle < sa) ballAngle += Math.PI * 2;
   if (ballAngle > ea) return null;

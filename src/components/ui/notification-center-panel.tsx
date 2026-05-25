@@ -60,6 +60,7 @@ export function NotificationCenterPanel({ anchorTop, anchorRight, onClose, onUnr
     setLoading(false);
   }, [onUnreadChange]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { fetchItems(); }, [fetchItems]);
 
   const markAllRead = async () => {

@@ -73,7 +73,7 @@ export function ChangelogApp(_: AppProps) {
             fontSize: "var(--t-text-sm)",
           }}>
             <span style={{ fontSize: 36 }}>📭</span>
-            Aucune version publiée pour l'instant.
+            Aucune version publiée pour l&apos;instant.
           </div>
         )}
         {releases.map((r, i) => (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import "../peagle.css";
 import { captionBtn } from "../styles";
 import { PegIcon } from "./PegIcon";
@@ -51,7 +51,7 @@ interface MainMenuProps {
 }
 
 export function MainMenu({ bestScore, displayName, isAdmin, onPlay, onLeaderboard, onDevLaunch }: MainMenuProps) {
-  const tip = useMemo(() => TIPS[Math.floor(Math.random() * TIPS.length)]!, []);
+  const [tip] = useState(() => TIPS[Math.floor(Math.random() * TIPS.length)]!);
   const [showDev, setShowDev] = useState(false);
   const { announcements, popupAnnouncement, showChangelog, dismiss, openChangelog, setShowChangelog } = useAnnouncements();
   return (

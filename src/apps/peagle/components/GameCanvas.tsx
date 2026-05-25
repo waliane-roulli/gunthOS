@@ -84,14 +84,13 @@ export function GameCanvas({
   const isGameOver = isLost || isWon;
   const isRecord = ui.score > 0 && ui.score >= bestScore;
   const displayUser = user?.name ?? user?.email ?? null;
-  const quip = useMemo(
-    () => isWon
-      ? WIN_QUIPS[Math.floor(Math.random() * WIN_QUIPS.length)]!
-      : LOSE_QUIPS[Math.floor(Math.random() * LOSE_QUIPS.length)]!,
-    // isGameOver triggers the memo on transition; isWon selects the quip pool
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isGameOver, isWon],
-  );
+  /* eslint-disable react-hooks/purity */
+  const quip = useMemo(() => isWon
+    ? WIN_QUIPS[Math.floor(Math.random() * WIN_QUIPS.length)]!
+    : LOSE_QUIPS[Math.floor(Math.random() * LOSE_QUIPS.length)]!,
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  [isGameOver, isWon]);
+  /* eslint-enable react-hooks/purity */
 
   return (
     <div
