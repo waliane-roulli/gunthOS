@@ -124,9 +124,70 @@ export function GameHud({ ui, bestScore, displayName, isAdmin, showDevTools, onA
   const inFever = ui.orangeLeft > 0 && ui.orangeLeft <= 3;
   const lowBalls = ui.balls <= 2 && ui.balls > 0;
 
+  const menuBtn = (
+    <button
+      onClick={onMenu}
+      title="Retour au nid principal. L'aigle ne vous retiendra pas."
+      style={{
+        height: "100%",
+        padding: "0 10px",
+        fontFamily: "var(--pg-font)",
+        fontSize: 12,
+        cursor: "pointer",
+        background: HUD.surface2,
+        color: HUD.textMuted,
+        border: "none",
+        borderRight: `2px solid ${HUD.sh}`,
+        flexShrink: 0,
+        lineHeight: 1,
+        transition: "color 0.1s, background 0.1s",
+      }}
+      onMouseEnter={e => { e.currentTarget.style.color = PG.orange; e.currentTarget.style.background = HUD.bg; }}
+      onMouseLeave={e => { e.currentTarget.style.color = HUD.textMuted; e.currentTarget.style.background = HUD.surface2; }}
+    >
+      ≡
+    </button>
+  );
+
+  const multiballBtn = showMultiball && (
+    <button
+      onClick={onActivateMultiball}
+      disabled={!mbClickable}
+      title="Ponte triple — l'aigle pond 3 œufs d'un coup. Science inexpliquée."
+      style={{
+        height: 24,
+        padding: "0 8px",
+        fontSize: 7,
+        fontFamily: "var(--pg-font)",
+        cursor: mbClickable ? "pointer" : "default",
+        background: ui.multiballPending
+          ? `linear-gradient(to bottom, ${HUD.accent}, #558822)`
+          : ui.multiballReady
+            ? `linear-gradient(to bottom, ${PG.orange}, #cc4400)`
+            : HUD.bg,
+        color: ui.multiballPending ? "#000" : ui.multiballReady ? "#fff" : HUD.textMuted,
+        borderWidth: 2,
+        borderStyle: "solid",
+        borderTopColor: mbClickable || ui.multiballPending ? HUD.hi : HUD.sh,
+        borderLeftColor: mbClickable || ui.multiballPending ? HUD.hi : HUD.sh,
+        borderBottomColor: HUD.sh,
+        borderRightColor: HUD.sh,
+        opacity: ui.multiballUsed && !ui.multiballPending ? 0.4 : 1,
+        whiteSpace: "nowrap",
+        lineHeight: 1,
+        textShadow: ui.multiballReady ? "0 1px 0 rgba(0,0,0,0.6)" : undefined,
+        boxShadow: ui.multiballReady ? `0 0 8px ${PG.orange}66` : undefined,
+        letterSpacing: "0.04em",
+        flexShrink: 0,
+      }}
+    >
+      {ui.multiballPending ? ">>PONTE!" : "×3🥚"}
+    </button>
+  );
+
   return (
     <div
-      className="peagle-root"
+      className="peagle-root pg-hud-scrollable"
       style={{
         display: "flex",
         alignItems: "stretch",
@@ -135,110 +196,56 @@ export function GameHud({ ui, bestScore, displayName, isAdmin, showDevTools, onA
         borderBottom: `2px solid ${HUD.sh}`,
         borderTop: `1px solid ${HUD.hi}`,
         background: HUD.surface,
-        overflow: "hidden",
       }}
     >
-      {/* Menu button */}
-      <button
-        onClick={onMenu}
-        title="Retour au nid principal. L'aigle ne vous retiendra pas."
-        style={{
-          height: "100%",
-          padding: "0 12px",
-          fontFamily: "var(--pg-font)",
-          fontSize: 12,
-          cursor: "pointer",
-          background: HUD.surface2,
-          color: HUD.textMuted,
-          border: "none",
-          borderRight: `2px solid ${HUD.sh}`,
-          flexShrink: 0,
-          lineHeight: 1,
-          transition: "color 0.1s, background 0.1s",
-        }}
-        onMouseEnter={e => { e.currentTarget.style.color = PG.orange; e.currentTarget.style.background = HUD.bg; }}
-        onMouseLeave={e => { e.currentTarget.style.color = HUD.textMuted; e.currentTarget.style.background = HUD.surface2; }}
-      >
-        ≡
-      </button>
+      {menuBtn}
 
-      <HudStat label="NID" value={ui.level} minW={36} />
+      {/* Stats — toujours visibles, scroll horizontal sur mobile */}
+      <HudStat label="NID" value={ui.level} minW={32} />
       {ui.bossLevel && (
         <>
           <Sep />
-          <HudStat label="AIGLE BOSS" value="[!]" accent minW={52} />
+          <HudStat label="BOSS" value="⚠" accent minW={36} />
         </>
       )}
       <Sep />
-      <HudStat label="SCORE" value={ui.score.toLocaleString()} minW={80} />
+      <HudStat label="SCORE" value={ui.score.toLocaleString()} minW={70} />
       <Sep />
       <HudStat
         label="PROIES"
         value={`${ui.orangeLeft}/${ui.orangeTotal}`}
         accent={!inFever}
         urgent={inFever}
-        minW={76}
+        minW={68}
       />
       <Sep />
-      <HudStat label="ŒUFS" value={ui.balls} warn={lowBalls} minW={48} />
+      <HudStat label="ŒUFS" value={ui.balls} warn={lowBalls} minW={40} />
 
       {ui.combo >= 3 && (
         <>
           <Sep />
-          <HudStat label="ENVOL" value={`×${Math.max(1, Math.floor(ui.combo / 3))}`} accent minW={48} />
+          <HudStat label="ENVOL" value={`×${Math.max(1, Math.floor(ui.combo / 3))}`} accent minW={40} />
         </>
       )}
 
+      {/* Record — masqué en mode compact (visible dans SidePanel droit) */}
       {bestScore > 0 && (
-        <>
+        <div className="pg-hud-record-wide">
           <Sep />
-          <HudStat label="RECORD NIDAL" value={bestScore.toLocaleString()} muted minW={90} />
-        </>
+          <HudStat label="RECORD" value={bestScore.toLocaleString()} muted minW={80} />
+        </div>
       )}
 
-      <div style={{ flex: 1 }} />
+      <div style={{ flex: 1, minWidth: 4 }} />
 
       {/* Relics */}
       <RelicBar relics={ui.relics} spookyActive={ui.spookyActive} magnetFrames={ui.magnetFrames} />
 
       <Sep />
 
-      {/* Right group */}
-      <div style={{ display: "flex", alignItems: "center", gap: 6, paddingRight: 8 }}>
-        {showMultiball && (
-          <button
-            onClick={onActivateMultiball}
-            disabled={!mbClickable}
-            title="Ponte triple — l'aigle pond 3 œufs d'un coup. Science inexpliquée."
-            style={{
-              height: 24,
-              padding: "0 10px",
-              fontSize: 7,
-              fontFamily: "var(--pg-font)",
-              cursor: mbClickable ? "pointer" : "default",
-              background: ui.multiballPending
-                ? `linear-gradient(to bottom, ${HUD.accent}, #558822)`
-                : ui.multiballReady
-                  ? `linear-gradient(to bottom, ${PG.orange}, #cc4400)`
-                  : HUD.bg,
-              color: ui.multiballPending ? "#000" : ui.multiballReady ? "#fff" : HUD.textMuted,
-              borderWidth: 2,
-              borderStyle: "solid",
-              borderTopColor: mbClickable || ui.multiballPending ? HUD.hi : HUD.sh,
-              borderLeftColor: mbClickable || ui.multiballPending ? HUD.hi : HUD.sh,
-              borderBottomColor: HUD.sh,
-              borderRightColor: HUD.sh,
-              opacity: ui.multiballUsed && !ui.multiballPending ? 0.4 : 1,
-              whiteSpace: "nowrap",
-              lineHeight: 1,
-              textShadow: ui.multiballReady ? "0 1px 0 rgba(0,0,0,0.6)" : undefined,
-              boxShadow: ui.multiballReady ? `0 0 8px ${PG.orange}66` : undefined,
-              letterSpacing: "0.04em",
-            }}
-          >
-            {ui.multiballPending ? ">> PONTE !" : ">>×3 🥚"}
-          </button>
-        )}
+      {/* Boutons droite */}
+      <div style={{ display: "flex", alignItems: "center", gap: 4, paddingRight: 6, flexShrink: 0 }}>
+        {multiballBtn}
 
         {isAdmin && (
           <>
@@ -249,7 +256,7 @@ export function GameHud({ ui, bestScore, displayName, isAdmin, showDevTools, onA
                 title="[DEV] Skip au niveau suivant"
                 style={{
                   height: 24,
-                  padding: "0 8px",
+                  padding: "0 6px",
                   fontSize: 7,
                   fontFamily: "var(--pg-font)",
                   cursor: "pointer",
@@ -266,7 +273,7 @@ export function GameHud({ ui, bestScore, displayName, isAdmin, showDevTools, onA
                   letterSpacing: "0.04em",
                 }}
               >
-                ⏭ SKIP
+                ⏭
               </button>
             )}
             <button
@@ -274,7 +281,7 @@ export function GameHud({ ui, bestScore, displayName, isAdmin, showDevTools, onA
               title="[DEV] Ouvrir les dev tools"
               style={{
                 height: 24,
-                padding: "0 8px",
+                padding: "0 6px",
                 fontSize: 7,
                 fontFamily: "var(--pg-font)",
                 cursor: "pointer",
@@ -303,7 +310,7 @@ export function GameHud({ ui, bestScore, displayName, isAdmin, showDevTools, onA
               style={{
                 fontSize: 7,
                 color: HUD.accentDim,
-                padding: "0 8px",
+                padding: "0 6px",
                 whiteSpace: "nowrap",
                 fontFamily: "var(--pg-font)",
               }}

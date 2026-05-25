@@ -12,7 +12,7 @@ import type { TableauResult } from "./tableau";
 
 function makeBossPeg(cx: number): Peg {
   return {
-    x: cx, y: 260,
+    x: cx, y: 320,
     hit: false, orange: false, green: false, bomb: false, boss: true,
     armorHits: 4, hitCooldown: 0,
     popping: false, popAlpha: 1, scale: 1,
@@ -34,13 +34,13 @@ function layout1(cx: number): TableauResult {
   ];
   return {
     pegs: dedup([
-      ...tPixelArt(face, 26, 24, cx - 104, 88),
-      ...tHexGrid(24, 298, 17, 5, 26),
+      ...tPixelArt(face, 26, 24, cx - 104, 108),
+      ...tHexGrid(24, 367, 17, 5, 26),
     ]),
     decors: [
-      mkBumper(cx - 50, 420, 13, "#cc44ff"),
-      mkBumper(cx + 50, 420, 13, "#cc44ff"),
-      mkBumper(cx, 460, 15, "#ff44ff"),
+      mkBumper(cx - 50, 516, 13, "#cc44ff"),
+      mkBumper(cx + 50, 516, 13, "#cc44ff"),
+      mkBumper(cx, 566, 15, "#ff44ff"),
     ],
   };
 }
@@ -59,31 +59,31 @@ function layout2(cx: number): TableauResult {
   ];
   return {
     pegs: dedup([
-      ...tPixelArt(invader, 24, 22, cx - 96, 85),
-      ...tHexGrid(28, 290, 15, 6, 28),
+      ...tPixelArt(invader, 24, 22, cx - 96, 105),
+      ...tHexGrid(28, 357, 15, 6, 28),
     ]),
     decors: [
-      mkBumper(70, 365, 14, "#cc44ff"),
-      mkBumper(410, 365, 14, "#cc44ff"),
-      mkBumper(cx, 455, 13, "#ff44ff"),
-      mkPlank(cx - 90, 262, 48, Math.PI / 4),
-      mkPlank(cx + 90, 262, 48, -Math.PI / 4),
+      mkBumper(70, 449, 14, "#cc44ff"),
+      mkBumper(410, 449, 14, "#cc44ff"),
+      mkBumper(cx, 560, 13, "#ff44ff"),
+      mkPlank(cx - 90, 322, 48, Math.PI / 4),
+      mkPlank(cx + 90, 322, 48, -Math.PI / 4),
     ],
   };
 }
 
 function layout3(cx: number): TableauResult {
   // 🟡 Pac-Man + ligne de points + terrain + bumpers fantômes
-  const pacBody = tArc(150, 200, 80, 0.45, Math.PI * 2 - 0.45, 20);
-  const dots = tLine(242, 200, 450, 200, 28);
-  const field = tHexGrid(28, 310, 16, 5, 27);
+  const pacBody = tArc(150, 246, 80, 0.45, Math.PI * 2 - 0.45, 20);
+  const dots = tLine(242, 246, 450, 246, 28);
+  const field = tHexGrid(28, 381, 16, 5, 27);
   return {
     pegs: dedup([...pacBody, ...dots, ...field]),
     decors: [
-      mkBumper(385, 155, 11, "#cc44ff"),
-      mkBumper(420, 135, 9, "#ff44ff"),
-      mkBumper(355, 160, 10, "#cc44ff"),
-      mkArc(cx, 490, 95, Math.PI, 0, "#cc44ff"),
+      mkBumper(385, 191, 11, "#cc44ff"),
+      mkBumper(420, 166, 9, "#ff44ff"),
+      mkBumper(355, 197, 10, "#cc44ff"),
+      mkArc(cx, 603, 95, Math.PI, 0, "#cc44ff"),
     ],
   };
 }
@@ -96,7 +96,7 @@ function layout4(cx: number): TableauResult {
     armorHits: 0, hitCooldown: 0, popping: false, popAlpha: 1, scale: 1,
   });
   for (let i = 0; i < 24; i++) {
-    const y = 80 + i * 18;
+    const y = 98 + i * 22;
     const x1 = cx + Math.cos(i * 0.56) * 115;
     const x2 = cx - Math.cos(i * 0.56) * 115;
     pegs.push(mk(x1, y), mk(x2, y));
@@ -105,10 +105,10 @@ function layout4(cx: number): TableauResult {
   return {
     pegs: dedup(pegs),
     decors: [
-      mkBumper(cx, 200, 11, "#cc44ff"),
-      mkBumper(cx, 370, 11, "#cc44ff"),
-      mkPlank(cx - 130, 110, 30, 0.4),
-      mkPlank(cx + 130, 110, 30, -0.4),
+      mkBumper(cx, 246, 11, "#cc44ff"),
+      mkBumper(cx, 455, 11, "#cc44ff"),
+      mkPlank(cx - 130, 135, 30, 0.4),
+      mkPlank(cx + 130, 135, 30, -0.4),
     ],
   };
 }
@@ -122,21 +122,21 @@ function layout5(cx: number): TableauResult {
     armorHits: 0, hitCooldown: 0, popping: false, popAlpha: 1, scale: 1,
   });
   for (let row = 0; row < 9; row++) {
-    const y = 88 + row * spacing;
+    const y = 108 + row * spacing;
     const count = row + 1;
     for (let col = 0; col < count; col++) {
       pegs.push(mk(cx - (count - 1) * spacing * 0.5 + col * spacing, y));
     }
   }
-  pegs.push(...tHexGrid(30, 395, 13, 3, 31));
+  pegs.push(...tHexGrid(30, 486, 13, 3, 31));
   return {
     pegs: dedup(pegs),
     decors: [
-      mkBumper(78, 265, 15, "#ff44ff"),
-      mkBumper(402, 265, 15, "#cc44ff"),
-      mkBumper(cx, 340, 15, "#ff44ff"),
-      mkSpike(cx - 40, 382, 18, Math.PI / 2),
-      mkSpike(cx + 40, 382, 18, Math.PI / 2),
+      mkBumper(78, 326, 15, "#ff44ff"),
+      mkBumper(402, 326, 15, "#cc44ff"),
+      mkBumper(cx, 418, 15, "#ff44ff"),
+      mkSpike(cx - 40, 470, 18, Math.PI / 2),
+      mkSpike(cx + 40, 470, 18, Math.PI / 2),
     ],
   };
 }
@@ -145,17 +145,17 @@ function layout6(cx: number): TableauResult {
   // 🦋 Papillon — deux ailes en arc symétriques + corps central
   return {
     pegs: dedup([
-      ...tArc(cx - 80, 210, 130, Math.PI * 0.52, Math.PI * 1.9, 20),
-      ...tArc(cx + 80, 210, 130, -Math.PI * 0.9, Math.PI * 0.48, 20),
-      ...tArc(cx - 70, 360, 85, Math.PI * 0.6, Math.PI * 1.85, 14),
-      ...tArc(cx + 70, 360, 85, -Math.PI * 0.85, Math.PI * 0.4, 14),
-      ...tLine(cx, 100, cx, 460, 22),
+      ...tArc(cx - 80, 258, 130, Math.PI * 0.52, Math.PI * 1.9, 20),
+      ...tArc(cx + 80, 258, 130, -Math.PI * 0.9, Math.PI * 0.48, 20),
+      ...tArc(cx - 70, 443, 85, Math.PI * 0.6, Math.PI * 1.85, 14),
+      ...tArc(cx + 70, 443, 85, -Math.PI * 0.85, Math.PI * 0.4, 14),
+      ...tLine(cx, 123, cx, 566, 22),
     ]),
     decors: [
-      mkBumper(cx - 80, 210, 14, "#cc44ff"),
-      mkBumper(cx + 80, 210, 14, "#cc44ff"),
-      mkBumper(cx - 70, 360, 11, "#ff44ff"),
-      mkBumper(cx + 70, 360, 11, "#ff44ff"),
+      mkBumper(cx - 80, 258, 14, "#cc44ff"),
+      mkBumper(cx + 80, 258, 14, "#cc44ff"),
+      mkBumper(cx - 70, 443, 11, "#ff44ff"),
+      mkBumper(cx + 70, 443, 11, "#ff44ff"),
     ],
   };
 }
@@ -168,7 +168,7 @@ function layout7(cx: number): TableauResult {
     armorHits: 0, hitCooldown: 0, popping: false, popAlpha: 1, scale: 1,
   });
   for (let row = 0; row < 19; row++) {
-    const y = 80 + row * 22;
+    const y = 98 + row * 27;
     const halfSpread = Math.max(18, 200 - row * 9);
     const step = Math.max(18, 30 - row);
     for (let x = cx - halfSpread; x <= cx + halfSpread; x += step) {
@@ -178,10 +178,10 @@ function layout7(cx: number): TableauResult {
   return {
     pegs: dedup(pegs),
     decors: [
-      mkArc(cx, 75, 205, Math.PI, 0, "#cc44ff"),
-      mkBumper(cx, 460, 17, "#ff44ff"),
-      mkPlank(cx - 65, 390, 42, 0.62),
-      mkPlank(cx + 65, 390, 42, -0.62),
+      mkArc(cx, 92, 205, Math.PI, 0, "#cc44ff"),
+      mkBumper(cx, 566, 17, "#ff44ff"),
+      mkPlank(cx - 65, 480, 42, 0.62),
+      mkPlank(cx + 65, 480, 42, -0.62),
     ],
   };
 }
@@ -202,15 +202,15 @@ function layout8(cx: number): TableauResult {
   ];
   return {
     pegs: dedup([
-      ...tPixelArt(cactus, 26, 24, cx - 100, 80),
-      ...tHexGrid(26, 330, 16, 5, 28),
+      ...tPixelArt(cactus, 26, 24, cx - 100, 98),
+      ...tHexGrid(26, 406, 16, 5, 28),
     ]),
     decors: [
-      mkSpike(72, 230, 18, 0),
-      mkSpike(408, 230, 18, Math.PI),
-      mkBumper(cx + 148, 168, 11, "#cc44ff"),
-      mkBumper(cx - 100, 302, 11, "#cc44ff"),
-      mkArc(cx, 495, 80, Math.PI, 0, "#cc44ff"),
+      mkSpike(72, 283, 18, 0),
+      mkSpike(408, 283, 18, Math.PI),
+      mkBumper(cx + 148, 207, 11, "#cc44ff"),
+      mkBumper(cx - 100, 372, 11, "#cc44ff"),
+      mkArc(cx, 609, 80, Math.PI, 0, "#cc44ff"),
     ],
   };
 }
@@ -218,12 +218,12 @@ function layout8(cx: number): TableauResult {
 function layout9(cx: number): TableauResult {
   // 🎆 Feu d'artifice — 12 rayons radiaux depuis le centre
   const pegs: Peg[] = [];
-  const cy = 252;
+  const cy = 310;
   const rayCount = 12;
   for (let i = 0; i < rayCount; i++) {
     const angle = (i / rayCount) * Math.PI * 2;
     const ex = Math.max(22, Math.min(W - 22, cx + Math.cos(angle) * 178));
-    const ey = Math.max(82, Math.min(485, cy + Math.sin(angle) * 155));
+    const ey = Math.max(101, Math.min(597, cy + Math.sin(angle) * 190));
     pegs.push(...tLine(cx, cy, ex, ey, 28));
   }
   pegs.push(...tCircle(cx, cy, 72, 16));
@@ -231,10 +231,10 @@ function layout9(cx: number): TableauResult {
     pegs: dedup(pegs),
     decors: [
       mkBumper(cx, cy, 16, "#cc44ff"),
-      mkBumper(cx - 82, cy - 62, 10, "#cc44ff"),
-      mkBumper(cx + 82, cy - 62, 10, "#cc44ff"),
-      mkBumper(cx - 82, cy + 62, 10, "#cc44ff"),
-      mkBumper(cx + 82, cy + 62, 10, "#cc44ff"),
+      mkBumper(cx - 82, cy - 76, 10, "#cc44ff"),
+      mkBumper(cx + 82, cy - 76, 10, "#cc44ff"),
+      mkBumper(cx - 82, cy + 76, 10, "#cc44ff"),
+      mkBumper(cx + 82, cy + 76, 10, "#cc44ff"),
     ],
   };
 }
@@ -243,27 +243,27 @@ function layout10(cx: number): TableauResult {
   // 🎉 Délire de bumpers — chaos total façon flipper
   return {
     pegs: dedup([
-      ...tCircle(cx, 185, 105, 16),
-      ...tCircle(cx, 185, 52, 9),
-      ...tCircle(cx, 355, 85, 13),
-      ...tCircle(cx, 355, 42, 7),
+      ...tCircle(cx, 228, 105, 16),
+      ...tCircle(cx, 228, 52, 9),
+      ...tCircle(cx, 437, 85, 13),
+      ...tCircle(cx, 437, 42, 7),
     ]),
     decors: [
-      mkBumper(75,  128, 15, "#cc44ff"),
-      mkBumper(405, 128, 15, "#cc44ff"),
-      mkBumper(55,  280, 13, "#ff44ff"),
-      mkBumper(425, 280, 13, "#ff44ff"),
-      mkBumper(cx - 105, 205, 12, "#cc44ff"),
-      mkBumper(cx + 105, 205, 12, "#cc44ff"),
-      mkBumper(78,  425, 14, "#cc44ff"),
-      mkBumper(402, 425, 14, "#cc44ff"),
-      mkBumper(cx - 58, 375, 12, "#cc44ff"),
-      mkBumper(cx + 58, 375, 12, "#cc44ff"),
-      mkBumper(cx, 460, 16, "#ff44ff"),
-      mkArc(cx, 515, 150, Math.PI * 1.1, Math.PI * 1.9, "#cc44ff"),
-      mkArc(cx, 95, 105, 0.1, Math.PI - 0.1, "#cc44ff"),
-      mkPlank(cx - 82, 292, 62, Math.PI / 4),
-      mkPlank(cx + 82, 292, 62, -Math.PI / 4),
+      mkBumper(75,  157, 15, "#cc44ff"),
+      mkBumper(405, 157, 15, "#cc44ff"),
+      mkBumper(55,  344, 13, "#ff44ff"),
+      mkBumper(425, 344, 13, "#ff44ff"),
+      mkBumper(cx - 105, 252, 12, "#cc44ff"),
+      mkBumper(cx + 105, 252, 12, "#cc44ff"),
+      mkBumper(78,  523, 14, "#cc44ff"),
+      mkBumper(402, 523, 14, "#cc44ff"),
+      mkBumper(cx - 58, 461, 12, "#cc44ff"),
+      mkBumper(cx + 58, 461, 12, "#cc44ff"),
+      mkBumper(cx, 566, 16, "#ff44ff"),
+      mkArc(cx, 634, 150, Math.PI * 1.1, Math.PI * 1.9, "#cc44ff"),
+      mkArc(cx, 117, 105, 0.1, Math.PI - 0.1, "#cc44ff"),
+      mkPlank(cx - 82, 359, 62, Math.PI / 4),
+      mkPlank(cx + 82, 359, 62, -Math.PI / 4),
     ],
   };
 }
@@ -282,14 +282,14 @@ function layout11(cx: number): TableauResult {
   ];
   return {
     pegs: dedup([
-      ...tPixelArt(skull, 24, 22, cx - 96, 88),
-      ...tHexGrid(26, 300, 16, 5, 28),
+      ...tPixelArt(skull, 24, 22, cx - 96, 108),
+      ...tHexGrid(26, 369, 16, 5, 28),
     ]),
     decors: [
-      mkBumper(cx - 72, 378, 13, "#cc44ff"),
-      mkBumper(cx + 72, 378, 13, "#cc44ff"),
-      mkBumper(cx, 455, 15, "#9933cc"),
-      mkArc(cx, 88, 105, 0.2, Math.PI - 0.2, "#cc44ff"),
+      mkBumper(cx - 72, 465, 13, "#cc44ff"),
+      mkBumper(cx + 72, 465, 13, "#cc44ff"),
+      mkBumper(cx, 560, 15, "#9933cc"),
+      mkArc(cx, 108, 105, 0.2, Math.PI - 0.2, "#cc44ff"),
     ],
   };
 }
@@ -309,15 +309,15 @@ function layout12(cx: number): TableauResult {
   ];
   return {
     pegs: dedup([
-      ...tPixelArt(shroom, 24, 22, cx - 96, 85),
-      ...tHexGrid(28, 310, 15, 5, 28),
+      ...tPixelArt(shroom, 24, 22, cx - 96, 105),
+      ...tHexGrid(28, 381, 15, 5, 28),
     ]),
     decors: [
-      mkBumper(cx - 90, 355, 12, "#cc44ff"),
-      mkBumper(cx + 90, 355, 12, "#cc44ff"),
-      mkBumper(cx, 460, 15, "#ff44ff"),
-      mkSpike(50, 160, 16, 0),
-      mkSpike(430, 160, 16, Math.PI),
+      mkBumper(cx - 90, 437, 12, "#cc44ff"),
+      mkBumper(cx + 90, 437, 12, "#cc44ff"),
+      mkBumper(cx, 566, 15, "#ff44ff"),
+      mkSpike(50, 197, 16, 0),
+      mkSpike(430, 197, 16, Math.PI),
     ],
   };
 }
@@ -326,19 +326,19 @@ function layout13(cx: number): TableauResult {
   // ⚓ Ancre — anneau + mât + traverse + courbe du bas + flukes
   return {
     pegs: dedup([
-      ...tCircle(cx, 128, 28, 10),
-      ...tLine(cx, 100, cx, 415, 22),
-      ...tLine(cx - 90, 148, cx + 90, 148, 22),
-      ...tArc(cx, 390, 78, Math.PI, Math.PI * 2, 13),
-      ...tLine(cx - 78, 390, cx - 58, 340, 18),
-      ...tLine(cx + 78, 390, cx + 58, 340, 18),
+      ...tCircle(cx, 157, 28, 10),
+      ...tLine(cx, 123, cx, 510, 22),
+      ...tLine(cx - 90, 182, cx + 90, 182, 22),
+      ...tArc(cx, 480, 78, Math.PI, Math.PI * 2, 13),
+      ...tLine(cx - 78, 480, cx - 58, 418, 18),
+      ...tLine(cx + 78, 480, cx + 58, 418, 18),
     ]),
     decors: [
-      mkBumper(cx - 90, 148, 10, "#cc44ff"),
-      mkBumper(cx + 90, 148, 10, "#cc44ff"),
-      mkBumper(cx, 390, 12, "#9933cc"),
-      mkBumper(cx - 58, 340, 9, "#ff44ff"),
-      mkBumper(cx + 58, 340, 9, "#ff44ff"),
+      mkBumper(cx - 90, 182, 10, "#cc44ff"),
+      mkBumper(cx + 90, 182, 10, "#cc44ff"),
+      mkBumper(cx, 480, 12, "#9933cc"),
+      mkBumper(cx - 58, 418, 9, "#ff44ff"),
+      mkBumper(cx + 58, 418, 9, "#ff44ff"),
     ],
   };
 }
@@ -351,7 +351,7 @@ function layout14(cx: number): TableauResult {
     armorHits: 0, hitCooldown: 0, popping: false, popAlpha: 1, scale: 1,
   });
   for (let row = 0; row < 20; row++) {
-    const y = 75 + row * 21;
+    const y = 92 + row * 26;
     const d = Math.abs(row - 9.5);
     const halfWidth = Math.max(20, Math.round(20 + d * 18));
     for (let x = cx - halfWidth; x <= cx + halfWidth; x += 22) {
@@ -361,10 +361,10 @@ function layout14(cx: number): TableauResult {
   return {
     pegs: dedup(pegs),
     decors: [
-      mkBumper(cx, 285, 10, "#cc44ff"),
-      mkPlank(cx - 42, 285, 52, Math.PI / 5),
-      mkPlank(cx + 42, 285, 52, -Math.PI / 5),
-      mkArc(cx, 70, 120, Math.PI * 1.1, Math.PI * 1.9, "#cc44ff"),
+      mkBumper(cx, 351, 10, "#cc44ff"),
+      mkPlank(cx - 42, 351, 52, Math.PI / 5),
+      mkPlank(cx + 42, 351, 52, -Math.PI / 5),
+      mkArc(cx, 86, 120, Math.PI * 1.1, Math.PI * 1.9, "#cc44ff"),
     ],
   };
 }
@@ -373,17 +373,17 @@ function layout15(cx: number): TableauResult {
   // 🎯 Cible — 4 cercles concentriques + bullseye
   return {
     pegs: dedup([
-      ...tCircle(cx, 275, 160, 26),
-      ...tCircle(cx, 275, 115, 20),
-      ...tCircle(cx, 275, 72, 13),
-      ...tCircle(cx, 275, 36, 7),
+      ...tCircle(cx, 338, 160, 26),
+      ...tCircle(cx, 338, 115, 20),
+      ...tCircle(cx, 338, 72, 13),
+      ...tCircle(cx, 338, 36, 7),
     ]),
     decors: [
-      mkBumper(cx, 275, 14, "#cc44ff"),
-      mkSpike(50, 130, 16, Math.PI * 0.25),
-      mkSpike(430, 130, 16, Math.PI * 0.75),
-      mkSpike(50, 420, 16, -Math.PI * 0.25),
-      mkSpike(430, 420, 16, -Math.PI * 0.75),
+      mkBumper(cx, 338, 14, "#cc44ff"),
+      mkSpike(50, 160, 16, Math.PI * 0.25),
+      mkSpike(430, 160, 16, Math.PI * 0.75),
+      mkSpike(50, 517, 16, -Math.PI * 0.25),
+      mkSpike(430, 517, 16, -Math.PI * 0.75),
     ],
   };
 }
@@ -392,17 +392,17 @@ function layout16(cx: number): TableauResult {
   // ☯ Yin-Yang — cercle extérieur + diviseur en S + deux petits cercles
   return {
     pegs: dedup([
-      ...tCircle(cx, 280, 140, 22),
-      ...tArc(cx, 210, 70, -Math.PI / 2, Math.PI / 2, 10),
-      ...tArc(cx, 350, 70, Math.PI / 2, Math.PI * 1.5, 10),
-      ...tCircle(cx, 210, 28, 6),
-      ...tCircle(cx, 350, 28, 6),
+      ...tCircle(cx, 344, 140, 22),
+      ...tArc(cx, 258, 70, -Math.PI / 2, Math.PI / 2, 10),
+      ...tArc(cx, 430, 70, Math.PI / 2, Math.PI * 1.5, 10),
+      ...tCircle(cx, 258, 28, 6),
+      ...tCircle(cx, 430, 28, 6),
     ]),
     decors: [
-      mkBumper(cx - 65, 280, 11, "#cc44ff"),
-      mkBumper(cx + 65, 280, 11, "#9933cc"),
-      mkBumper(cx, 280, 9, "#ff44ff"),
-      mkArc(cx, 280, 145, Math.PI, Math.PI * 2, "#cc44ff"),
+      mkBumper(cx - 65, 344, 11, "#cc44ff"),
+      mkBumper(cx + 65, 344, 11, "#9933cc"),
+      mkBumper(cx, 344, 9, "#ff44ff"),
+      mkArc(cx, 344, 145, Math.PI, Math.PI * 2, "#cc44ff"),
     ],
   };
 }
@@ -410,10 +410,10 @@ function layout16(cx: number): TableauResult {
 function layout17(cx: number): TableauResult {
   // 🐛 Chenille — chaîne de cercles serpentant + tête
   const segments: [number, number][] = [
-    [155, 130], [315, 185], [155, 255], [315, 325], [155, 395], [315, 460],
+    [155, 160], [315, 228], [155, 314], [315, 400], [155, 486], [315, 566],
   ];
   const pegs: Peg[] = [
-    ...tCircle(155, 78, 35, 9),
+    ...tCircle(155, 96, 35, 9),
     ...segments.flatMap(([sx, sy]) => tCircle(sx, sy, 42, 10)),
   ];
   for (let i = 0; i < segments.length - 1; i++) {
@@ -425,7 +425,7 @@ function layout17(cx: number): TableauResult {
     pegs: dedup(pegs),
     decors: [
       ...segments.map(([sx, sy]) => mkBumper(sx, sy, 11, "#cc44ff")),
-      mkBumper(155, 78, 12, "#ff44ff"),
+      mkBumper(155, 96, 12, "#ff44ff"),
     ],
   };
 }
@@ -445,14 +445,14 @@ function layout18(cx: number): TableauResult {
   ];
   return {
     pegs: dedup([
-      ...tPixelArt(bolt, 22, 24, cx - 88, 80),
-      ...tHexGrid(28, 310, 15, 5, 28),
+      ...tPixelArt(bolt, 22, 24, cx - 88, 98),
+      ...tHexGrid(28, 381, 15, 5, 28),
     ]),
     decors: [
-      mkBumper(cx - 60, 360, 13, "#cc44ff"),
-      mkBumper(cx + 60, 360, 13, "#cc44ff"),
-      mkBumper(cx, 435, 15, "#cc44ff"),
-      mkPlank(cx - 20, 265, 40, Math.PI / 4),
+      mkBumper(cx - 60, 443, 13, "#cc44ff"),
+      mkBumper(cx + 60, 443, 13, "#cc44ff"),
+      mkBumper(cx, 535, 15, "#cc44ff"),
+      mkPlank(cx - 20, 326, 40, Math.PI / 4),
     ],
   };
 }
@@ -462,18 +462,18 @@ function layout19(cx: number): TableauResult {
   const radii = [190, 162, 135, 108, 82, 58, 38];
   const counts = [26, 22, 18, 14, 11, 8, 6];
   const pegs: Peg[] = [
-    ...tHexGrid(28, 82, 15, 3, 30),
+    ...tHexGrid(28, 101, 15, 3, 30),
   ];
   for (let i = 0; i < radii.length; i++) {
-    pegs.push(...tArc(cx, 490, radii[i]!, Math.PI, Math.PI * 2, counts[i]!));
+    pegs.push(...tArc(cx, 603, radii[i]!, Math.PI, Math.PI * 2, counts[i]!));
   }
   return {
     pegs: dedup(pegs),
     decors: [
-      mkBumper(cx - 100, 400, 12, "#cc44ff"),
-      mkBumper(cx, 318, 12, "#cc44ff"),
-      mkBumper(cx + 100, 400, 12, "#ff44ff"),
-      mkArc(cx, 490, 210, Math.PI, Math.PI * 2, "#cc44ff"),
+      mkBumper(cx - 100, 492, 12, "#cc44ff"),
+      mkBumper(cx, 391, 12, "#cc44ff"),
+      mkBumper(cx + 100, 492, 12, "#ff44ff"),
+      mkArc(cx, 603, 210, Math.PI, Math.PI * 2, "#cc44ff"),
     ],
   };
 }
@@ -489,12 +489,12 @@ function layout20(cx: number): TableauResult {
     const t = i / 28;
     const a = t * Math.PI * 2 * 2;
     const r = 12 + t * 162;
-    pegs.push(mk(cx + Math.cos(a) * r * 0.9, 270 + Math.sin(a) * r * 0.64));
-    pegs.push(mk(cx + Math.cos(a + Math.PI) * r * 0.9, 270 + Math.sin(a + Math.PI) * r * 0.64));
+    pegs.push(mk(cx + Math.cos(a) * r * 0.9, 332 + Math.sin(a) * r * 0.64));
+    pegs.push(mk(cx + Math.cos(a + Math.PI) * r * 0.9, 332 + Math.sin(a + Math.PI) * r * 0.64));
   }
   const stars: [number, number][] = [
-    [55, 92], [415, 88], [32, 235], [448, 280], [68, 420], [412, 432],
-    [158, 78], [338, 82], [28, 158], [450, 168], [85, 475], [395, 470],
+    [55, 113], [415, 108], [32, 289], [448, 344], [68, 517], [412, 532],
+    [158, 96], [338, 101], [28, 194], [450, 207], [85, 585], [395, 578],
   ];
   for (const [sx, sy] of stars) {
     pegs.push(mk(sx, sy));
@@ -502,11 +502,11 @@ function layout20(cx: number): TableauResult {
   return {
     pegs: dedup(pegs),
     decors: [
-      mkBumper(cx, 270, 16, "#cc44ff"),
-      mkBumper(cx - 100, 195, 10, "#ff44ff"),
-      mkBumper(cx + 100, 345, 10, "#ff44ff"),
-      mkPlank(cx - 58, 175, 36, Math.PI / 6),
-      mkPlank(cx + 58, 365, 36, Math.PI / 6),
+      mkBumper(cx, 332, 16, "#cc44ff"),
+      mkBumper(cx - 100, 240, 10, "#ff44ff"),
+      mkBumper(cx + 100, 424, 10, "#ff44ff"),
+      mkPlank(cx - 58, 215, 36, Math.PI / 6),
+      mkPlank(cx + 58, 449, 36, Math.PI / 6),
     ],
   };
 }
@@ -556,7 +556,7 @@ export function buildLevel(level: number, runState?: RunState): { pegs: Peg[]; d
 
   // Clear boss area + add boss peg
   const result = isBoss
-    ? filtered.filter(p => Math.hypot(p.x - cx, p.y - 260) > 40)
+    ? filtered.filter(p => Math.hypot(p.x - cx, p.y - 320) > 40)
     : filtered;
   if (isBoss) result.push(makeBossPeg(cx));
 

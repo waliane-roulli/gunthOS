@@ -10,7 +10,7 @@ import type { RunState } from "../roguelite";
 function makeStars(): Star[] {
   return Array.from({ length: STAR_COUNT }, () => ({
     x: Math.random() * W,
-    y: Math.random() * (520),
+    y: Math.random() * (640),
     layer: Math.floor(Math.random() * 3) as 0 | 1 | 2,
     size: 0.4 + Math.random() * 1.4,
     phase: Math.random() * Math.PI * 2,

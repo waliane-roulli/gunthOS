@@ -82,7 +82,7 @@ export function drawVignette(ctx: CanvasRenderingContext2D, s: GameState): void 
 
 export function drawBezel(ctx: CanvasRenderingContext2D): void {
   const W_canvas = 480;
-  const H_canvas = 520;
+  const H_canvas = 640;
   ctx.save();
   ctx.lineWidth = 1;
   ctx.strokeStyle = "rgba(0,0,0,0.45)";

@@ -19,6 +19,7 @@ import type { RunState, ClassId } from "./engine/roguelite";
 import { makeInitialRunState, generateUpgradeOffer } from "./engine/roguelite";
 import { DevPanel } from "./components/DevPanel";
 import type { DevConfig } from "./components/DevPanel";
+import { SidePanel } from "./components/SidePanel";
 
 type Screen = "menu" | "class-pick" | "game" | "leaderboard";
 
@@ -220,6 +221,7 @@ export function PeagleApp({ windowId: _windowId }: AppProps) {
           flexDirection: "column",
           flex: 1,
           overflow: "hidden",
+          background: "linear-gradient(to bottom, #122010 0%, #0a1806 50%, #060e04 100%)",
         }}
       >
         <GameHud
@@ -255,92 +257,104 @@ export function PeagleApp({ windowId: _windowId }: AppProps) {
           />
         )}
 
-        {/* Canvas area — upgrade picker overlays here */}
-        <div style={{ position: "relative", flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-          <GameCanvas
-            canvasRef={canvasRef}
-            ui={ui}
-            bestScore={bestScore}
-            user={user}
-            upgradeOfferPending={!!upgradeOffer}
-            onMouseMove={handleMouseMove}
-            onClick={handleClick}
-            onReplay={handleReplay}
-            onLeaderboard={handleGoToLeaderboard}
-            onMenu={handleGoToMenu}
-          />
+        {/* Layout responsive : vertical (mobile) ou horizontal (16/9+) */}
+        <div className="pg-game-layout peagle-root" style={{ flex: 1, overflow: "hidden", alignItems: "stretch" }}>
+          {/* Panneau gauche — stats + aigle (visible seulement en mode large) */}
+          <SidePanel side="left" ui={ui} bestScore={bestScore} feverMode={ui.orangeLeft > 0 && ui.orangeLeft <= 3} />
 
-          {/* Upgrade picker overlay — shown after each won level */}
-          {upgradeOffer && (
-            <UpgradePicker
-              offers={upgradeOffer}
-              relics={ui.relics}
-              level={ui.level}
-              score={ui.score}
-              bossKilled={lastBossKilled}
-              onPick={handleUpgradePick}
-              onSkip={handleUpgradeSkip}
-            />
-          )}
-        </div>
+          {/* Zone canvas centrale */}
+          <div className="pg-canvas-area">
+            {/* Canvas area — upgrade picker overlays here */}
+            <div style={{ position: "relative", flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+              <GameCanvas
+                canvasRef={canvasRef}
+                ui={ui}
+                bestScore={bestScore}
+                user={user}
+                upgradeOfferPending={!!upgradeOffer}
+                onMouseMove={handleMouseMove}
+                onClick={handleClick}
+                onReplay={handleReplay}
+                onLeaderboard={handleGoToLeaderboard}
+                onMenu={handleGoToMenu}
+              />
 
-        {/* Win98 status bar */}
-        <div
-          style={{
-            display: "flex",
-            gap: 3,
-            padding: "2px 4px",
-            borderTop: "2px solid var(--t-border-dark)",
-            background: "var(--t-bg)",
-            alignItems: "center",
-            flexShrink: 0,
-          }}
-        >
-          <div
-            style={{
-              flex: 1,
-              padding: "1px 8px",
-              fontSize: "var(--t-text-xs)",
-              color: "var(--t-text-muted)",
-              borderWidth: 1,
-              borderStyle: "solid",
-              borderTopColor: "var(--t-border-dark)",
-              borderLeftColor: "var(--t-border-dark)",
-              borderBottomColor: "var(--t-border-light)",
-              borderRightColor: "var(--t-border-light)",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {upgradeOffer
-              ? "Choisissez une amélioration pour continuer le run..."
-              : ui.phase === "aim" ? tip : ui.phase === "firing" ? "En vol..." : " "}
+              {/* Upgrade picker overlay — shown after each won level */}
+              {upgradeOffer && (
+                <UpgradePicker
+                  offers={upgradeOffer}
+                  relics={ui.relics}
+                  level={ui.level}
+                  score={ui.score}
+                  bossKilled={lastBossKilled}
+                  onPick={handleUpgradePick}
+                  onSkip={handleUpgradeSkip}
+                />
+              )}
+            </div>
+
+            {/* Win98 status bar */}
+            <div
+              style={{
+                display: "flex",
+                gap: 3,
+                padding: "2px 4px",
+                borderTop: "2px solid var(--t-border-dark)",
+                background: "var(--t-bg)",
+                alignItems: "center",
+                flexShrink: 0,
+              }}
+            >
+              <div
+                style={{
+                  flex: 1,
+                  padding: "1px 8px",
+                  fontSize: "var(--t-text-xs)",
+                  color: "var(--t-text-muted)",
+                  borderWidth: 1,
+                  borderStyle: "solid",
+                  borderTopColor: "var(--t-border-dark)",
+                  borderLeftColor: "var(--t-border-dark)",
+                  borderBottomColor: "var(--t-border-light)",
+                  borderRightColor: "var(--t-border-light)",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {upgradeOffer
+                  ? "Choisissez une amélioration pour continuer le run..."
+                  : ui.phase === "aim" ? tip : ui.phase === "firing" ? "En vol..." : " "}
+              </div>
+              <div
+                style={{
+                  padding: "1px 8px",
+                  fontSize: "var(--t-text-xs)",
+                  color: "var(--t-text-muted)",
+                  borderWidth: 1,
+                  borderStyle: "solid",
+                  borderTopColor: "var(--t-border-dark)",
+                  borderLeftColor: "var(--t-border-dark)",
+                  borderBottomColor: "var(--t-border-light)",
+                  borderRightColor: "var(--t-border-light)",
+                  whiteSpace: "nowrap",
+                  minWidth: 72,
+                  textAlign: "center",
+                }}
+              >
+                {upgradeOffer
+                  ? "Upgrade !"
+                  : ui.phase === "aim" ? "En attente"
+                  : ui.phase === "firing" ? "En vol"
+                  : ui.phase === "won" ? "Victoire !"
+                  : ui.phase === "lost" ? "Game Over"
+                  : " "}
+              </div>
+            </div>
           </div>
-          <div
-            style={{
-              padding: "1px 8px",
-              fontSize: "var(--t-text-xs)",
-              color: "var(--t-text-muted)",
-              borderWidth: 1,
-              borderStyle: "solid",
-              borderTopColor: "var(--t-border-dark)",
-              borderLeftColor: "var(--t-border-dark)",
-              borderBottomColor: "var(--t-border-light)",
-              borderRightColor: "var(--t-border-light)",
-              whiteSpace: "nowrap",
-              minWidth: 72,
-              textAlign: "center",
-            }}
-          >
-            {upgradeOffer
-              ? "Upgrade !"
-              : ui.phase === "aim" ? "En attente"
-              : ui.phase === "firing" ? "En vol"
-              : ui.phase === "won" ? "Victoire !"
-              : ui.phase === "lost" ? "Game Over"
-              : " "}
-          </div>
+
+          {/* Panneau droit — record, combo, décor (visible seulement en mode large) */}
+          <SidePanel side="right" ui={ui} bestScore={bestScore} feverMode={ui.orangeLeft > 0 && ui.orangeLeft <= 3} />
         </div>
       </div>
     </div>

@@ -1,5 +1,5 @@
 export const W = 480;
-export const H = 520;
+export const H = 640;
 export const BALL_R = 6;
 export const PEG_R = 4;
 export const BUCKET_W = 80;

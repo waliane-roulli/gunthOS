@@ -57,12 +57,25 @@ export function GameCanvas({
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
-    const ro = new ResizeObserver(() => {
-      const { width, height } = el.getBoundingClientRect();
-      const scale = Math.min(width / W, height / H);
-      setCssSize({ w: Math.floor(W * scale), h: Math.floor(H * scale) });
-    });
+    const measure = () => {
+      const area = el.closest('.pg-canvas-area') ?? el;
+      const { width } = area.getBoundingClientRect();
+      const { height } = el.getBoundingClientRect();
+      // In landscape the canvas-area has a CSS aspect-ratio so height is always
+      // proportional to width — use Math.min to fit within both axes.
+      // In portrait we want the canvas to always fill the full width (no black
+      // side bands), so we only clamp by height if the canvas would overflow.
+      const scaleByW = width / W;
+      const scaleByH = height / H;
+      // If fitting by width makes the canvas taller than available height, clamp.
+      // Otherwise always use width so there are no left/right black bands.
+      const scale = H * scaleByW <= height ? scaleByW : scaleByH;
+      setCssSize({ w: Math.round(W * scale), h: Math.round(H * scale) });
+    };
+    const ro = new ResizeObserver(measure);
     ro.observe(el);
+    const area = el.closest('.pg-canvas-area');
+    if (area) ro.observe(area);
     return () => ro.disconnect();
   }, []);
 
@@ -84,7 +97,7 @@ export function GameCanvas({
     <div
       ref={containerRef}
       className="peagle-root relative flex-1 flex items-center justify-center overflow-hidden"
-      style={{ background: PG.bg }}
+      style={{ background: "transparent" }}
     >
       <canvas
         ref={canvasRef}
@@ -97,6 +110,7 @@ export function GameCanvas({
           display: "block",
           imageRendering: "pixelated",
           touchAction: "none",
+          background: "#060e04",
         }}
         onMouseMove={onMouseMove}
         onClick={onClick}

@@ -22,7 +22,7 @@ export function drawFrame(
 
   // Camera: zoom follows ball during slow-mo, otherwise just screen shake
   if (hasZoom && s.ball) {
-    const W = 480, H = 520;
+    const W = 480, H = 640;
     ctx.translate(s.shakeX * 0.4, s.shakeY * 0.4);
     ctx.translate(W / 2, H / 2);
     ctx.scale(s.zoomLevel, s.zoomLevel);

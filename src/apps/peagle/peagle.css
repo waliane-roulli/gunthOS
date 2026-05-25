@@ -436,3 +436,191 @@
 .pg-rarity-common { border-color: #4a4a6a !important; }
 .pg-rarity-rare   { border-color: #4488ff !important; box-shadow: 0 0 8px rgba(68,136,255,0.3); }
 .pg-rarity-epic   { border-color: var(--pg-purple) !important; box-shadow: 0 0 12px rgba(204,68,255,0.4); }
+
+/* ─── Layout responsive — panneaux latéraux ──────────────────────────────────── */
+
+.pg-game-layout {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  background: linear-gradient(to bottom, #122010 0%, #0a1806 50%, #060e04 100%);
+}
+
+/* En 16/9 ou plus large : canvas centré + panneaux latéraux */
+@media (min-aspect-ratio: 1.2/1) {
+  .pg-game-layout {
+    flex-direction: row;
+    align-items: stretch;
+  }
+}
+
+.pg-side-panel {
+  overflow: hidden;
+  position: relative;
+  display: none;
+  flex-shrink: 1;
+  background: linear-gradient(to bottom, #122010 0%, #0d2008 30%, #060e04 70%, #030804 100%);
+}
+
+/* Panneaux déco : visibles uniquement en mode paysage large.
+   flex: 1 absorbe tout l'espace résiduel.
+   min-width: 1px force le panneau à exister même minuscule — le fond forêt
+   du pg-game-layout couvre le reste. */
+@media (min-aspect-ratio: 1.2/1) {
+  .pg-side-panel {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0;
+    min-width: 1px;
+  }
+}
+
+.pg-canvas-area {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex: 1;
+  background: linear-gradient(to bottom, #0a1a06 0%, #0d2008 30%, #060e04 70%, #030804 100%);
+}
+
+/* En paysage : zone canvas à hauteur totale avec ratio exact.
+   Le ResizeObserver lit les dimensions de cet élément (pas du container flex-1 interne).
+   Les panneaux (flex:1) absorbent tout le reste. */
+@media (min-aspect-ratio: 1.2/1) {
+  .pg-canvas-area {
+    flex: 0 0 auto;
+    align-self: stretch;
+    aspect-ratio: 480 / 640;
+    min-width: 0;
+  }
+}
+
+/* ─── Panneaux latéraux — fond forêt ─────────────────────────────────────────── */
+
+.pg-side-forest {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to bottom, #0a1a06 0%, #0d2008 30%, #060e04 70%, #030804 100%);
+}
+
+/* Scanlines légères */
+.pg-side-forest::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 1px,
+    rgba(0,0,0,0.06) 2px,
+    rgba(0,0,0,0.06) 2px
+  );
+  pointer-events: none;
+}
+
+/* ─── Aigle animé ────────────────────────────────────────────────────────────── */
+
+@keyframes pg-eagle-soar {
+  0%   { transform: translate(0, 0) scaleX(1); }
+  25%  { transform: translate(6px, -12px) scaleX(1); }
+  50%  { transform: translate(0, -8px) scaleX(1); }
+  75%  { transform: translate(-5px, -14px) scaleX(1); }
+  100% { transform: translate(0, 0) scaleX(1); }
+}
+
+@keyframes pg-eagle-flap {
+  0%, 100% { transform: scaleY(1); }
+  50%       { transform: scaleY(0.65); }
+}
+
+@keyframes pg-wing-l {
+  0%, 100% { transform: rotate(-20deg) translateY(0); }
+  50%       { transform: rotate(15deg) translateY(-4px); }
+}
+
+@keyframes pg-wing-r {
+  0%, 100% { transform: rotate(20deg) translateY(0); }
+  50%       { transform: rotate(-15deg) translateY(-4px); }
+}
+
+@keyframes pg-tree-sway-left {
+  0%, 100% { transform: rotate(-0.5deg) translateX(0); }
+  50%       { transform: rotate(0.8deg) translateX(1px); }
+}
+
+@keyframes pg-tree-sway-right {
+  0%, 100% { transform: rotate(0.5deg) translateX(0); }
+  50%       { transform: rotate(-0.8deg) translateX(-1px); }
+}
+
+@keyframes pg-side-firefly {
+  0%   { transform: translate(0, 0); opacity: 0; }
+  15%  { opacity: 0.9; }
+  85%  { opacity: 0.7; }
+  100% { transform: translate(var(--sfx, 8px), var(--sfy, -12px)); opacity: 0; }
+}
+
+@keyframes pg-fog-roll {
+  0%, 100% { transform: translateX(0) scaleX(1); opacity: 0.4; }
+  50%       { transform: translateX(8px) scaleX(1.05); opacity: 0.6; }
+}
+
+@keyframes pg-stat-glow {
+  0%, 100% { text-shadow: 0 0 4px currentColor; }
+  50%       { text-shadow: 0 0 10px currentColor, 0 0 20px currentColor; }
+}
+
+@keyframes pg-bird-cross {
+  0%   { transform: translateX(-120%) translateY(0); opacity: 0; }
+  5%   { opacity: 1; }
+  45%  { transform: translateX(120%) translateY(-20px); opacity: 1; }
+  50%, 100% { opacity: 0; transform: translateX(200%); }
+}
+
+@keyframes pg-moon-pulse {
+  0%, 100% { box-shadow: 0 0 8px 2px rgba(180,150,255,0.3); }
+  50%       { box-shadow: 0 0 20px 6px rgba(180,150,255,0.5); }
+}
+
+@keyframes pg-leaf-fall {
+  0%   { transform: translate(0, 0) rotate(0deg); opacity: 0.8; }
+  100% { transform: translate(var(--lx, 10px), 60px) rotate(180deg); opacity: 0; }
+}
+
+.pg-side-eagle {
+  animation: pg-eagle-soar 4s ease-in-out infinite;
+}
+
+.pg-side-firefly-el {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: #aaff44;
+  box-shadow: 0 0 4px 2px rgba(100,255,30,0.6);
+  animation: pg-side-firefly var(--sfd, 3s) ease-in-out infinite;
+  animation-delay: var(--sfdel, 0s);
+}
+
+/* En mode étroit : HUD horizontal scrollable */
+@media (max-aspect-ratio: 1/1) {
+  .pg-hud-scrollable {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+  }
+  .pg-hud-scrollable::-webkit-scrollbar { display: none; }
+}
+
+/* Record masqué dans le HUD en mode large (il apparaît dans SidePanel) */
+@media (min-aspect-ratio: 1/1) {
+  .pg-hud-record-wide {
+    display: none;
+  }
+}
+
+.pg-hud-record-wide {
+  display: contents;
+}
