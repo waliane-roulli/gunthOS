@@ -72,6 +72,45 @@ export interface Star {
   phase: number;
 }
 
+// ─── Décor (éléments non-poppables) ─────────────────────────────────────────
+
+export interface DecorBumper {
+  kind: "bumper";
+  x: number; y: number; r: number;
+  flashFrames: number;
+  color: string;
+}
+
+export interface DecorPlank {
+  kind: "plank";
+  x: number; y: number;
+  len: number;
+  thickness: number;
+  angle: number;
+  flashFrames: number;
+  color: string;
+}
+
+export interface DecorArc {
+  kind: "arc";
+  x: number; y: number; r: number;
+  startAngle: number; endAngle: number;
+  thickness: number;
+  flashFrames: number;
+  color: string;
+}
+
+export interface DecorSpike {
+  kind: "spike";
+  x: number; y: number;
+  size: number;
+  angle: number;
+  flashFrames: number;
+  color: string;
+}
+
+export type Decor = DecorBumper | DecorPlank | DecorArc | DecorSpike;
+
 export interface GameState {
   pegs: Peg[];
   ball: Ball | null;
@@ -125,6 +164,8 @@ export interface GameState {
   ballsLostThisLevel: number;
 
   bossKilledThisLevel: boolean;
+
+  decors: Decor[];
 }
 
 export interface UiState {

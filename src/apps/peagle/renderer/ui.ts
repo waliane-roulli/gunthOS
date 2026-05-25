@@ -43,7 +43,7 @@ function drawEaglePixelArt(ctx: CanvasRenderingContext2D, cx: number, cy: number
 
 export function drawAimLine(ctx: CanvasRenderingContext2D, s: GameState, aimAngle: number): void {
   if (s.phase !== "aim") return;
-  const pts = computeAimLine(LAUNCHER_X, LAUNCHER_Y, aimAngle, s.pegs, s.effectiveBallR, s.effectiveAimSteps);
+  const pts = computeAimLine(LAUNCHER_X, LAUNCHER_Y, aimAngle, s.pegs, s.decors, s.effectiveBallR, s.effectiveAimSteps);
   if (pts.length < 2) return;
 
   ctx.save();

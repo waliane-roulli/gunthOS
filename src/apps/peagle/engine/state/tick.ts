@@ -53,6 +53,11 @@ export function tick(s: GameState, ironWillUsed: boolean): TickResult {
 
   updatePegAnimations(s);
 
+  // Decay decor flash
+  for (const d of s.decors) {
+    if (d.flashFrames > 0) d.flashFrames--;
+  }
+
   // Ball physics (main + extra balls)
   if (s.ball?.active) processBallPhysics(s.ball, s, timeScale, events);
 

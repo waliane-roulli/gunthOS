@@ -2,6 +2,7 @@ import type { GameState } from "../engine/types";
 import { PEG_R } from "../engine/constants";
 import { drawBackground } from "./background";
 import { drawWarpCables, drawPegs } from "./pegs";
+import { drawDecors, drawDecorHitboxes } from "./decor";
 import { drawAimLine, drawLauncher, drawBuckets } from "./ui";
 import { drawBall } from "./ball";
 import { drawParticles, drawFloatingTexts, drawScreenFlash, drawVignette, drawBezel } from "./effects";
@@ -31,6 +32,7 @@ export function drawFrame(
   }
 
   drawBackground(ctx, s, feverIntensity);
+  drawDecors(ctx, s);
   drawAimLine(ctx, s, aimAngle);
   drawWarpCables(ctx, s);
   drawPegs(ctx, s, inFever, feverIntensity);
@@ -51,7 +53,7 @@ export function drawFrame(
   drawScreenFlash(ctx, s, inFever);
   drawVignette(ctx, s);
 
-  if (showHitboxes) drawDebugHitboxes(ctx, s);
+  if (showHitboxes) { drawDebugHitboxes(ctx, s); drawDecorHitboxes(ctx, s); }
 }
 
 function drawDebugHitboxes(ctx: CanvasRenderingContext2D, s: GameState): void {
