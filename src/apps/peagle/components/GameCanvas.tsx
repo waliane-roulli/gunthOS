@@ -21,7 +21,7 @@ const LOSE_QUIPS = [
   "Plus d'œufs. L'aigle hausse les épaules. Il n'a pas d'épaules.",
   "Game Over. Les cibles orange survivent. Elles vont fêter ça.",
   "L'aigle demande si vous avez lu les astuces du menu. Vous n'avez pas lu les astuces.",
-  "Défaite. Le Pélican est déçu. Le Faucon dit qu'il l'avait prévu.",
+  "Défaite. L'Aigle est déçu. Le Pingouin dit qu'il l'avait prévu.",
   "Raté. La physique est responsable. Comme toujours. La physique ne s'excuse pas.",
   "Pas de chance. Ou de talent. L'aigle ne tranche pas.",
 ];

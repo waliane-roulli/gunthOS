@@ -57,18 +57,18 @@ interface GroupMessage {
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const MSN_WINKS = [
-  "🫨 NUDGE REÇU !",
+  "🫨 WIZZ REÇU !",
   "🫨 Ton écran tremble !",
-  "🫨 NUDGE x3 — Au secours",
-  "🫨 Attention ! Nudge détecté !",
-  "🫨 GunthMessenger™ confirme : tu te fais nudger",
+  "🫨 WIZZ x3 — Au secours",
+  "🫨 Attention ! Wizz détecté !",
+  "🫨 GunthMessenger™ confirme : tu te fais wizzé",
   "🫨 ALERTE VIBRATION MAXIMALE",
 ];
 
 const EASTER_EGGS: Array<{ triggers: RegExp; reaction: string; duration?: number }> = [
   { triggers: /\blol\b|\blmao\b|\bptdr\b|\bmdr\b/i, reaction: "😂 GunthMessenger™ a détecté un fou rire", duration: 3000 },
   { triggers: /\b<3\b|❤️|🧡|💛|💚|💙|💜/i, reaction: "💌 GunthMessenger™ rougit légèrement", duration: 3000 },
-  { triggers: /\bnudge\b/i, reaction: "🫨 Tu parles de nudge ? Essaie le vrai bouton !", duration: 3000 },
+  { triggers: /\bwizz\b|\bnudge\b/i, reaction: "🫨 Tu parles de wizz ? Essaie le vrai bouton !", duration: 3000 },
   { triggers: /\bpizza\b|\bpizza🍕/i, reaction: "🍕 Commande pizza enregistrée (faux)", duration: 4000 },
   { triggers: /\bsalut\b|\bbonjour\b|\bhello\b|\bhey\b|\bcoucou\b/i, reaction: "👋 GunthMessenger™ dit aussi bonjour !", duration: 2500 },
   { triggers: /\bbye\b|\bauvoir\b|\bbonne nuit\b|\bà plus\b|\bciao\b/i, reaction: "😢 GunthMessenger™ est triste de te voir partir", duration: 3000 },
@@ -337,8 +337,8 @@ export function ChatWindowContent({
     const wink = MSN_WINKS[Math.floor(Math.random() * MSN_WINKS.length)] ?? MSN_WINKS[0]!;
     setWinkMsg(`${wink} — ${fromName}`);
     setNudgeActive(true);
-    setTimeout(() => setNudgeActive(false), 600);
-    setTimeout(() => setWinkMsg(null), 3000);
+    setTimeout(() => setNudgeActive(false), 1500);
+    setTimeout(() => setWinkMsg(null), 4000);
   }, []);
 
   const triggerEffect = useCallback((effect: ChatEffect, fromName: string) => {
@@ -412,10 +412,10 @@ export function ChatWindowContent({
   }
 
   async function sendNudge() {
-    setWinkMsg("🫨 NUDGE ENVOYÉ !");
+    setWinkMsg("🫨 WIZZ ENVOYÉ !");
     setNudgeActive(true);
-    setTimeout(() => setNudgeActive(false), 600);
-    setTimeout(() => setWinkMsg(null), 3000);
+    setTimeout(() => setNudgeActive(false), 1500);
+    setTimeout(() => setWinkMsg(null), 4000);
     await fetch("/api/messages/nudge", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ toUserId: contact.id }) });
   }
 
@@ -511,9 +511,9 @@ export function ChatWindowContent({
           </button>
         ))}
         <div style={{ flex: 1 }} />
-        <button onClick={sendNudge} title="Envoyer un nudge !"
+        <button onClick={sendNudge} title="Envoyer un wizz !"
           style={{ background: "var(--t-bg)", border: "2px solid", borderTopColor: "var(--t-border-light)", borderLeftColor: "var(--t-border-light)", borderBottomColor: "var(--t-border-dark)", borderRightColor: "var(--t-border-dark)", cursor: "pointer", fontSize: 11, padding: "1px 6px", fontFamily: "var(--t-font-display)", color: "var(--t-text)", letterSpacing: "0.1em" }}>
-          🫨 Nudge
+          🫨 Wizz
         </button>
       </div>
 

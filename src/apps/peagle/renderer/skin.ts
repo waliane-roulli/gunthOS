@@ -98,17 +98,35 @@ const DEFAULT_DECOR_SKINS: Record<string, string> = {
 };
 
 // ── Runtime readers ────────────────────────────────────────────────────────────
+// Parsed once and invalidated on storage events — safe to call every frame.
+
+let _pegSkinCache: Record<string, string> | null = null;
+let _decorSkinCache: Record<string, string> | null = null;
+
+function initSkinCache(): void {
+  if (typeof window === "undefined") return;
+  window.addEventListener("storage", (e) => {
+    if (e.key === "peagle_active_peg_skins")   _pegSkinCache   = null;
+    if (e.key === "peagle_active_decor_skins")  _decorSkinCache = null;
+  });
+}
+
+if (typeof window !== "undefined") initSkinCache();
 
 function readStoredPegSkins(): Record<string, string> {
   if (typeof window === "undefined") return {};
-  try { return JSON.parse(localStorage.getItem("peagle_active_peg_skins") ?? "{}") as Record<string, string>; }
-  catch { return {}; }
+  if (_pegSkinCache !== null) return _pegSkinCache;
+  try { _pegSkinCache = JSON.parse(localStorage.getItem("peagle_active_peg_skins") ?? "{}") as Record<string, string>; }
+  catch { _pegSkinCache = {}; }
+  return _pegSkinCache;
 }
 
 function readStoredDecorSkins(): Record<string, string> {
   if (typeof window === "undefined") return {};
-  try { return JSON.parse(localStorage.getItem("peagle_active_decor_skins") ?? "{}") as Record<string, string>; }
-  catch { return {}; }
+  if (_decorSkinCache !== null) return _decorSkinCache;
+  try { _decorSkinCache = JSON.parse(localStorage.getItem("peagle_active_decor_skins") ?? "{}") as Record<string, string>; }
+  catch { _decorSkinCache = {}; }
+  return _decorSkinCache;
 }
 
 function getActivePegSkinColors(pegType: string): PegSkinColors | undefined {

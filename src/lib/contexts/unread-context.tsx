@@ -183,7 +183,7 @@ export function UnreadProvider({ children }: { children: React.ReactNode }) {
         onNudgeOpen.current?.(fromId);
         notify({
           type: "warning",
-          title: `🫨 Nudge de ${event.fromName}`,
+          title: `🫨 Wizz de ${event.fromName}`,
           duration: 4000,
           onClick: () => openApp("msn"),
         });
@@ -193,7 +193,7 @@ export function UnreadProvider({ children }: { children: React.ReactNode }) {
           body: JSON.stringify({
             source: "msn",
             type: "warning",
-            title: `🫨 Nudge de ${event.fromName}`,
+            title: `🫨 Wizz de ${event.fromName}`,
             actionAppSlug: "msn",
           }),
         }).catch(() => {});

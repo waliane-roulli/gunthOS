@@ -38,7 +38,7 @@ const TIPS = [
   "ASTUCE : Le score monte quand vous touchez des trucs. C'est à peu près toute la philosophie du jeu.",
   "ASTUCE : Ce jeu a été inspecté par des ornithologues. Aucun n'a survécu pour confirmer.",
   "ASTUCE : Vous jouez à Peggle. Mais avec des aigles. La FDA n'a pas encore statué si c'est un médicament.",
-  "ASTUCE : Choisissez une classe avant de jouer. Le Faucon juge ceux qui choisissent le Pélican. Injustement.",
+  "ASTUCE : Choisissez une classe avant de jouer. Le Pingouin juge ceux qui choisissent l'Aigle. Injustement.",
 ];
 
 interface MainMenuProps {

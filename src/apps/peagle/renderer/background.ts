@@ -743,8 +743,7 @@ function drawFireflies(ctx: CanvasRenderingContext2D, s: GameState, feverMode: b
 // ─── Cache de fond statique (OffscreenCanvas) ────────────────────────────
 // ═══════════════════════════════════════════════════════════════════════════
 
-let _staticBgCache: OffscreenCanvas | null = null;
-let _staticBgKey: string | null = null;
+const _staticBgCache = new Map<string, OffscreenCanvas>();
 
 function buildStaticBg(feverMode: boolean, bg: BgTheme, themeId: string): OffscreenCanvas {
   const CW = W + BG_PAD * 2;
@@ -826,11 +825,12 @@ function buildStaticBg(feverMode: boolean, bg: BgTheme, themeId: string): Offscr
 
 function getStaticBg(feverMode: boolean, theme: GameTheme): OffscreenCanvas {
   const key = `${feverMode ? 1 : 0}:${theme.id}`;
-  if (_staticBgCache === null || _staticBgKey !== key) {
-    _staticBgCache = buildStaticBg(feverMode, theme.bg, theme.id);
-    _staticBgKey   = key;
+  let cached = _staticBgCache.get(key);
+  if (!cached) {
+    cached = buildStaticBg(feverMode, theme.bg, theme.id);
+    _staticBgCache.set(key, cached);
   }
-  return _staticBgCache;
+  return cached;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

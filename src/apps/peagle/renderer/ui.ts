@@ -12,70 +12,85 @@ interface BirdSkin {
 
 // Skins indexed by skin id — each grid is rendered upside-down (queue en haut, pattes vers le bas)
 const BIRD_SKINS: Record<string, BirdSkin> = {
-  // ── Pélicans ───────────────────────────────────────────────────────────────
-  pelican_1: {
-    grid: ["...y.y...", "...www...", "..wywyw..", "..wwwyy.", ".wbbbbbb.", "wwbbbbbww", ".wbbbbbw.", "...wbbw...", "...www..."],
-    palette: { w: "#f0ece0", b: "#d4c4a0", y: "#f5c542" },
+  // ── Aigles ─────────────────────────────────────────────────────────────────
+  aigle_1: {
+    // Pygargue — tête blanche, corps brun, bec jaune
+    grid: ["...y.y...", "..wwwww..", ".wwwEwww.", "wwwwwwwww", ".bbbbbbb.", "bbbbbbbb.", ".bbbbbbb.", "..bbbbb..", "...bbb..."],
+    palette: { w: "#f0ece0", b: "#6b4226", E: "#111111", y: "#f5c542" },
   },
-  pelican_2: {
-    grid: ["...y.y...", "...www...", "..wywyw..", "...wbbw..", ".wbbbbwa.", "wwbbbbwa.", "..wbbbba.", "...wbbww.", "....www.."],
-    palette: { w: "#e8f4ff", b: "#c8e0ff", a: "#ff7722", y: "#ffdd44" },
+  aigle_2: {
+    // Aigle royal — plumes dorées, bec jaune vif
+    grid: ["...H.H...", "..ggggg..", ".gggEggg.", "ggggggggg", ".ddddddd.", "dddddddd.", ".ddddddd.", "..ddddd..", "...ddd..."],
+    palette: { g: "#e8c84a", d: "#8b5e2a", E: "#111111", H: "#fff0a0" },
   },
-  pelican_3: {
-    grid: ["...y.y...", "...www...", "..wnyw...", "..wppw...", ".wppppw..", "wwppppww.", ".wppppw..", "..wpppw..", "...www..."],
-    palette: { w: "#ffe8f0", p: "#ffaacc", n: "#ff6688", y: "#ffdd44" },
+  aigle_3: {
+    // Aigle tempête — plumes sombres, œil cyan électrique
+    grid: ["...n.n...", "..sssss..", ".sssEsss.", "sssssssss", ".kkkkkkk.", "kkkkkkkk.", ".kkkkkkk.", "..kkkkk..", "...kkk..."],
+    palette: { s: "#c0b8a8", k: "#1a1a2e", E: "#00ffff", n: "#8888aa" },
   },
-  pelican_4: {
-    grid: ["...ydy...", "...wdw...", "..wddw...", "..wddw...", ".wbbbbw..", "wwbbbbww.", ".wbbbbw..", "...wbbw...", "...www..."],
-    palette: { w: "#c8a878", b: "#a07848", d: "#884422", y: "#f5c542" },
+  aigle_4: {
+    // Aigle albinos — tout blanc, œil rose
+    grid: ["...p.p...", "..wwwww..", ".wwwPwww.", "wwwwwwwww", ".lllllll.", "llllllll.", ".lllllll.", "..lllll..", "...lll..."],
+    palette: { w: "#f8f4f0", l: "#e0dcd8", P: "#ff88aa", p: "#ffaacc" },
   },
-  pelican_5: {
-    grid: ["...r.r...", "...ggg...", "..gorgg..", "..goorr..", ".gooooog.", "ggooooogg", ".gooooog.", "..ggoog..", "...ggg..."],
-    palette: { g: "#ffd700", o: "#ffeeaa", r: "#ff4422" },
-  },
-
-  // ── Corbeaux ───────────────────────────────────────────────────────────────
-  corbeau_1: {
-    grid: ["..b...b..", "..bb.bb..", "..bbbbb..", ".bbbbbbb.", "bbbbbbbb.", ".bbbbbbb.", "..bbbbb..", "..brrbb..", "...bbb..."],
-    palette: { b: "#1a1a2e", r: "#ff2244" },
-  },
-  corbeau_2: {
-    grid: ["..b...b..", "..bb.bb..", "..bbbbb..", ".bbbbbbb.", "bbbbbbbb.", "..brrb...", "..bbbbb..", ".hbbbbh..", "..hhhh..."],
-    palette: { b: "#1a1a2e", r: "#ff2244", h: "#111111" },
-  },
-  corbeau_3: {
-    grid: ["..p...p..", "..pp.pp..", "..ppppp..", ".ppppppp.", "pppppppp.", ".ppppppp.", "..ppppp..", "..pvvpp..", "...ppp..."],
-    palette: { p: "#2d0a4e", v: "#cc00ff" },
-  },
-  corbeau_4: {
-    grid: ["..b...b..", "..bb.bb..", "..bbbbb..", "bbbbbbbb.", ".bbbbbbb.", "..bbbbb..", "..bXrbb..", "...bbb...", "........."],
-    palette: { b: "#1a1a2e", r: "#ff2244", X: "#cc2200" },
-  },
-  corbeau_5: {
-    grid: ["..w...w..", "..ww.ww..", "..wwwww..", "wwwwwwww.", ".wwwwwww.", "..wwwww..", "..wwwww..", "..wrrww..", "...www..."],
-    palette: { w: "#e8e0f0", r: "#ff2244" },
+  aigle_5: {
+    // Aigle cyber — armure métal, œil rouge laser
+    grid: ["...n.n...", "..ccccc..", ".cccEccc.", "ccccccccc", ".kkkkkkk.", "kkkkkkkk.", ".kkkkkkk.", "..kkkkk..", "...kkk..."],
+    palette: { c: "#dce8f0", k: "#1a2a3a", E: "#ff2244", n: "#00ffff" },
   },
 
-  // ── Faucons ────────────────────────────────────────────────────────────────
-  faucon_1: {
-    grid: ["...y..y..", "..mbbm...", "..mbbm...", ".mbbbbbm.", "mmwwwwwmm", ".mwwwwwm.", "..mwwwm..", "..mbbwm..", "...mmm..."],
-    palette: { m: "#1a1a1a", b: "#8b6040", w: "#f0ece8", y: "#f5c542" },
+  // ── Hiboux ─────────────────────────────────────────────────────────────────
+  hibou_1: {
+    // Grand duc — yeux orange, aigrettes, plumes dorées
+    grid: ["t..ttt..t", ".tttttttt", "ttOtttOtt", "ttOoOOoOt", "ttttttttt", ".ttttttt.", "..ttttt..", "..t.t.t..", "..t...t.."],
+    palette: { t: "#c8942a", O: "#ff8800", o: "#ffcc44" },
   },
-  faucon_2: {
-    grid: ["...y..y..", "..r.r.r..", "..rdddr..", ".rrrddrr.", "rrrrrrrr.", ".rrrrrrr.", "..rrrrr..", "..roorr..", "...rrr..."],
-    palette: { r: "#cc4422", o: "#ffcc88", d: "#882200", y: "#f5c542" },
+  hibou_2: {
+    // Hibou des neiges — blanc, yeux jaunes
+    grid: ["........." , ".ttttttt.", "ttYtttYtt", "ttYyYYyYt", "ttttttttt", ".ttttttt.", "..ttttt..", "..t.t.t..", "..t...t.."],
+    palette: { t: "#f0ece8", Y: "#ffcc00", y: "#ffee66" },
   },
-  faucon_3: {
-    grid: ["...g..g..", "..w..w...", "..wggw...", ".wgggggw.", "wwwwwwww.", ".wwwwwww.", "..wwwww..", "..wggww..", "...www..."],
-    palette: { w: "#f8f0e8", g: "#ffd700" },
+  hibou_3: {
+    // Hibou sorcier — violet, yeux magiques
+    grid: ["........." , ".ppppppp.", "ppVpppVpp", "ppVvVVvVp", "ppppppppp", ".ppppppp.", "..ppppp..", "..p.p.p..", "..p...p.."],
+    palette: { p: "#2a0a3e", V: "#cc44ff", v: "#ee88ff" },
   },
-  faucon_4: {
-    grid: ["...y..y..", "..w..w...", "..wwsww..", ".wwwwwww.", "wwswwsww.", ".wwwwwww.", "..wwwww..", "..wsbww..", "...www..."],
-    palette: { w: "#f8fcff", s: "#334455", b: "#4488cc", y: "#f5c542" },
+  hibou_4: {
+    // Effraie — visage blanc en cœur, plumes dorées
+    grid: ["........." , ".ttttttt.", "ttftttftt", "tfffBffft", "tttBBBttt", ".ttttttt.", "..ttttt..", "..t.t.t..", "..t...t.."],
+    palette: { t: "#d4a84b", f: "#f4f0e8", B: "#c8a060" },
   },
-  faucon_5: {
-    grid: ["...e..e..", "..c..c...", "..ceec...", ".cceeecc.", "cccccccc.", ".ccccccc.", "..ccccc..", "..cnnccc.", "...ccc..."],
-    palette: { c: "#003344", n: "#00ffff", e: "#00ff88" },
+  hibou_5: {
+    // Hibou démon — noir, yeux rouge sang
+    grid: ["........." , ".ttttttt.", "ttRtttRtt", "ttRrRRrRt", "ttttttttt", ".ttttttt.", "..ttttt..", "..t.t.t..", "..t...t.."],
+    palette: { t: "#0a0a14", R: "#ff2244", r: "#ff6677" },
+  },
+
+  // ── Pingouins ──────────────────────────────────────────────────────────────
+  pingouin_1: {
+    // Manchot classique — smoking noir/blanc
+    grid: ["...o.o...", "..bbbbb..", ".bbwwwbb.", "bbwwwwwbb", ".bbwwwbb.", "bbbwwwbbb", ".bbbbbbb.", "..bbbbb..", "...bbb..."],
+    palette: { b: "#111122", w: "#f0ece8", o: "#ff8800" },
+  },
+  pingouin_2: {
+    // Manchot royal — tache jaune dorée au cou
+    grid: ["...o.o...", "..bbbbb..", ".bbwwwbb.", "bbwyywwbb", ".bbwwwbb.", "bbbwwwbbb", ".bbbbbbb.", "..bbbbb..", "...bbb..."],
+    palette: { b: "#111122", w: "#f0ece8", y: "#ffcc00", o: "#ff8800" },
+  },
+  pingouin_3: {
+    // Rockhopper — huppe jaune punk
+    grid: ["..yyy.y..", "...bbbbb.", ".bbwwwbb.", "bbwwwwwbb", ".bbwwwbb.", "bbbwwwbbb", ".bbbbbbb.", "..bbbbb..", "...bbb..."],
+    palette: { b: "#111122", w: "#f0ece8", y: "#ffcc00" },
+  },
+  pingouin_4: {
+    // Manchot pygmée — plumes bleu ardoise
+    grid: ["...s.s...", "..bbbbb..", ".bbwwwbb.", "bbwwwwwbb", ".bbwwwbb.", "bbbwwwbbb", ".bbbbbbb.", "..bbbbb..", "...bbb..."],
+    palette: { b: "#2a4466", w: "#f0ece8", s: "#ffcc44" },
+  },
+  pingouin_5: {
+    // Manchot cyber — armure néon
+    grid: ["...n.n...", "..bbbbb..", ".bbcccbb.", "bbcccccbb", ".bbcccbb.", "bbbcccbbb", ".bbbbbbb.", "..bbbbb..", "...bbb..."],
+    palette: { b: "#0a1a2e", c: "#aaddff", n: "#00ffff" },
   },
 };
 
@@ -103,7 +118,7 @@ function getActiveSkin(classId: string): BirdSkin {
     if (skinId && BIRD_SKINS[skinId]) return BIRD_SKINS[skinId]!;
   } catch { /* ignore */ }
   // Default skin per class
-  const defaults: Record<string, string> = { canonnier: "pelican_1", alchimiste: "corbeau_1", sniper: "faucon_1" };
+  const defaults: Record<string, string> = { canonnier: "aigle_1", alchimiste: "hibou_1", sniper: "pingouin_1" };
   return BIRD_SKINS[defaults[classId] ?? ""] ?? DEFAULT_SKIN;
 }
 

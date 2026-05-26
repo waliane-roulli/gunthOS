@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import type { CSSProperties, ReactNode } from "react";
+import type { ReactNode } from "react";
 import { PegIcon } from "./PegIcon";
+import type { PegIconId } from "./PegIcon";
 import { CLASSES, CLASS_COLORS } from "../engine/roguelite";
 import { GAME_THEMES } from "../engine/game-theme";
 import type { GameTheme } from "../engine/game-theme";
@@ -17,25 +18,25 @@ export const PEAGLE_LIVE_DECOR_SKIN_KEY = "peagle_live_decor_skin";
 
 export const CLASS_SKINS: Record<string, { id: string; name: string; desc: string }[]> = {
   canonnier: [
-    { id: "pelican_1", name: "Classique",   desc: "Le pélican de base. Fier de sa poche." },
-    { id: "pelican_2", name: "Tropical",    desc: "Bec orange flamboyant, plumes de vacances." },
-    { id: "pelican_3", name: "Rosé",        desc: "Une teinte rosée suspecte. Il a mangé des crevettes." },
-    { id: "pelican_4", name: "Terreux",     desc: "Brun, solide, fiable. Ou juste sale." },
-    { id: "pelican_5", name: "Dorée",       desc: "Édition légendaire. Plumes or, ego XXL." },
+    { id: "aigle_1", name: "Classique",  desc: "Le pygargue classique. Tête blanche, regard d'acier." },
+    { id: "aigle_2", name: "Doré",       desc: "Aigle royal doré. Légende vivante." },
+    { id: "aigle_3", name: "Tempête",    desc: "Plumes sombres, œil électrique. Redoutable." },
+    { id: "aigle_4", name: "Albinos",    desc: "Blanc immaculé. Rarissime. Terrifiant quand même." },
+    { id: "aigle_5", name: "Cyber",      desc: "Armure numérique. Œil laser. Mise à jour en cours." },
   ],
   alchimiste: [
-    { id: "corbeau_1", name: "Classique",   desc: "Le corbeau de base. Regardé de travers." },
-    { id: "corbeau_2", name: "Détective",   desc: "Chapeau, air mystérieux, zéro réponse." },
-    { id: "corbeau_3", name: "Sorcier",     desc: "Plumes violettes. Pratique la magie noire." },
-    { id: "corbeau_4", name: "Pirate",      desc: "Bandeau sur l'œil. L'autre aussi est fermé." },
-    { id: "corbeau_5", name: "Albinos",     desc: "Blanc rare. L'exception qui confirme la règle." },
+    { id: "hibou_1", name: "Classique",  desc: "Le grand duc. Yeux orange, plumes dorées." },
+    { id: "hibou_2", name: "Neige",      desc: "Hibou des neiges. Blanc arctique, regard perçant." },
+    { id: "hibou_3", name: "Sorcier",    desc: "Plumes violettes. Pratique la magie noire." },
+    { id: "hibou_4", name: "Fantôme",    desc: "Effraie des clochers. Visage en cœur pâle." },
+    { id: "hibou_5", name: "Démon",      desc: "Yeux rouges. Présage funeste. Ne pas croiser." },
   ],
   sniper: [
-    { id: "faucon_1",  name: "Pèlerin",     desc: "Le classique. Masque noir, regard d'acier." },
-    { id: "faucon_2",  name: "Crécerelle",  desc: "Rouille et feu. Imprévisible en descente." },
-    { id: "faucon_3",  name: "Royal",       desc: "Plumes blanches et or. Ne rate jamais." },
-    { id: "faucon_4",  name: "Gerfaut",     desc: "Arctique. Blanc immaculé. Discret et mortel." },
-    { id: "faucon_5",  name: "Cyber",       desc: "Yeux laser. Version 3.0. Mise à jour en cours." },
+    { id: "pingouin_1", name: "Classique",  desc: "Le manchot classique. Smoking naturel." },
+    { id: "pingouin_2", name: "Royal",      desc: "Manchot royal. Tache jaune dorée sur le cou." },
+    { id: "pingouin_3", name: "Rockhopper", desc: "Huppe jaune punk. Regard de défi permanent." },
+    { id: "pingouin_4", name: "Bleu",       desc: "Manchot pygmée. Petit mais imprévisible." },
+    { id: "pingouin_5", name: "Cyber",      desc: "Version robotisée. Propulsion à réaction." },
   ],
 };
 
@@ -484,14 +485,14 @@ export function PeagleAssetsGrid({ cfg, onLaunch, onApplyTheme }: PeagleAssetsGr
                           borderRightColor:  "#0a0520",
                           background: isSkinActive ? `${color}22` : "#0a0a1e",
                           display: "flex", flexDirection: "column",
-                          alignItems: "center", gap: 4, padding: "6px 2px 5px",
+                          alignItems: "center", gap: 4, padding: "6px 4px 5px",
                           position: "relative",
                         }}
                       >
                         {isSkinActive && (
                           <div style={{ position: "absolute", top: 1, right: 2, fontFamily: "monospace", fontSize: 7, color }}>✔</div>
                         )}
-                        <PegIcon id={skin.id as Parameters<typeof PegIcon>[0]["id"]} size={32} />
+                        <PegIcon id={skin.id as PegIconId} size={52} />
                         <div style={{
                           fontFamily: "var(--font-press-start), monospace",
                           fontSize: 5, color: isSkinActive ? color : "#6655aa",
@@ -558,7 +559,7 @@ export function PeagleAssetsGrid({ cfg, onLaunch, onApplyTheme }: PeagleAssetsGr
                         {isSkinActive && (
                           <div style={{ position: "absolute", top: 1, right: 2, fontFamily: "monospace", fontSize: 7, color }}>✔</div>
                         )}
-                        <PegIcon id={skin.id as Parameters<typeof PegIcon>[0]["id"]} size={32} />
+                        <PegIcon id={skin.id as PegIconId} size={32} />
                         <div style={{
                           fontFamily: "var(--font-press-start), monospace",
                           fontSize: 5, color: isSkinActive ? color : "#6655aa",
@@ -624,7 +625,7 @@ export function PeagleAssetsGrid({ cfg, onLaunch, onApplyTheme }: PeagleAssetsGr
                         {isSkinActive && (
                           <div style={{ position: "absolute", top: 1, right: 2, fontFamily: "monospace", fontSize: 7, color }}>✔</div>
                         )}
-                        <PegIcon id={skin.id as Parameters<typeof PegIcon>[0]["id"]} size={32} />
+                        <PegIcon id={skin.id as PegIconId} size={32} />
                         <div style={{
                           fontFamily: "var(--font-press-start), monospace",
                           fontSize: 5, color: isSkinActive ? color : "#6655aa",
