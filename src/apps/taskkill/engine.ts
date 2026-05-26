@@ -144,6 +144,9 @@ const POWERUP_LABELS: Record<PowerUpType, string> = {
   shield: "🛡️ SHIELD", speed: "💨 SPEED", option: "🛸 OPTION",
 };
 
+const GAME_W = 480;
+const GAME_H = 700;
+
 // ====================================================================
 // OBJECT POOL
 // ====================================================================
@@ -202,6 +205,7 @@ class InputManager {
   touchActive = false;
   touchX = 0;
   touchY = 0;
+  private getScale: () => number;
   private onKD: (e: KeyboardEvent) => void;
   private onKU: (e: KeyboardEvent) => void;
   private onBlur: () => void;
@@ -213,8 +217,9 @@ class InputManager {
   private onTE: (e: TouchEvent) => void;
   private canvas: HTMLCanvasElement;
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement, getScale: () => number) {
     this.canvas = canvas;
+    this.getScale = getScale;
     this.onKD = (e) => {
       if (!this.keys.has(e.key)) this.justPressed.add(e.key);
       this.keys.add(e.key);
@@ -224,28 +229,32 @@ class InputManager {
     this.onBlur = () => this.keys.clear();
     this.onMM = (e) => {
       const r = canvas.getBoundingClientRect();
-      this.mouseX = e.clientX - r.left;
-      this.mouseY = e.clientY - r.top;
+      const s = this.getScale();
+      this.mouseX = (e.clientX - r.left) / s;
+      this.mouseY = (e.clientY - r.top) / s;
     };
     this.onMD = (e) => {
       this.mouseDown = true;
       const r = canvas.getBoundingClientRect();
-      this.mouseX = e.clientX - r.left;
-      this.mouseY = e.clientY - r.top;
+      const s = this.getScale();
+      this.mouseX = (e.clientX - r.left) / s;
+      this.mouseY = (e.clientY - r.top) / s;
     };
     this.onMU = () => { this.mouseDown = false; };
     this.onTS = (e) => {
       e.preventDefault();
       this.touchActive = true;
       const r = canvas.getBoundingClientRect();
-      this.touchX = e.touches[0]!.clientX - r.left;
-      this.touchY = e.touches[0]!.clientY - r.top;
+      const s = this.getScale();
+      this.touchX = (e.touches[0]!.clientX - r.left) / s;
+      this.touchY = (e.touches[0]!.clientY - r.top) / s;
     };
     this.onTM = (e) => {
       e.preventDefault();
       const r = canvas.getBoundingClientRect();
-      this.touchX = e.touches[0]!.clientX - r.left;
-      this.touchY = e.touches[0]!.clientY - r.top;
+      const s = this.getScale();
+      this.touchX = (e.touches[0]!.clientX - r.left) / s;
+      this.touchY = (e.touches[0]!.clientY - r.top) / s;
     };
     this.onTE = () => { this.touchActive = false; };
 
@@ -390,8 +399,7 @@ export class TaskkillEngine {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
   private cfg: EngineConfig;
-  private W = 480;
-  private H = 700;
+  private scale = 1;
 
   // Systems
   private input: InputManager;
@@ -474,7 +482,7 @@ export class TaskkillEngine {
     this.ctx = canvas.getContext("2d")!;
     this.ctx.imageSmoothingEnabled = false;
     this.cfg = config;
-    this.input = new InputManager(canvas);
+    this.input = new InputManager(canvas, () => this.scale);
     this.audio = new AudioSystem();
     this.resize();
 
@@ -515,7 +523,7 @@ export class TaskkillEngine {
 
     for (let i = 0; i < 80; i++) {
       this.stars.push({
-        x: rnd(0, this.W), y: rnd(0, this.H),
+        x: rnd(0, GAME_W), y: rnd(0, GAME_H),
         r: rnd(0.5, 2.5), speed: rnd(30, 120),
         brightness: rnd(0.3, 1),
       });
@@ -525,21 +533,22 @@ export class TaskkillEngine {
   resize(): void {
     const rect = this.canvas.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
-    this.W = rect.width;
-    this.H = rect.height;
+    const scaleX = rect.width / GAME_W;
+    const scaleY = rect.height / GAME_H;
+    this.scale = Math.min(scaleX, scaleY);
+
     this.canvas.width = rect.width * dpr;
     this.canvas.height = rect.height * dpr;
     this.canvas.style.width = `${rect.width}px`;
     this.canvas.style.height = `${rect.height}px`;
-    this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    this.player.x = Math.min(this.player.x, this.W - 20);
-    this.player.y = Math.min(this.player.y, this.H - 20);
+
+    this.ctx.setTransform(dpr * this.scale, 0, 0, dpr * this.scale, 0, 0);
   }
 
   // ---- Lifecycle ----
   start(): void {
     if (this.running) return;
-    if (this.W <= 0 || this.H <= 0) { this.resize(); if (this.W <= 0 || this.H <= 0) return; }
+    if (this.scale <= 0) { this.resize(); if (this.scale <= 0) return; }
     this.running = true;
     this.audio.init();
     this.lastT = performance.now();
@@ -560,7 +569,7 @@ export class TaskkillEngine {
     this.comboCount = 0; this.comboTimer = 0; this.comboMultiplier = 1;
     this.gameTimer = 0;
     this.waveQueue = [];
-    this.queueNotif("dragmenteur.exe v3 — Édition VERTICALE. 🖕");
+    this.queueNotif("dragmenteur.exe v3.1 — Édition VERTICALE (résolution fixe). 🖕");
     this.rafId = requestAnimationFrame(this.loop);
   }
 
@@ -587,8 +596,8 @@ export class TaskkillEngine {
 
   // ---- Player ----
   private resetPlayer(): void {
-    this.player.x = this.W / 2;
-    this.player.y = this.H - 80;
+    this.player.x = GAME_W / 2;
+    this.player.y = GAME_H - 80;
     this.player.health = PLAYER_MAX_HEALTH;
     this.player.invTimer = 0;
     this.player.fireTimer = 0;
@@ -616,7 +625,7 @@ export class TaskkillEngine {
     this.glitchLines = [];
     const count = Math.floor(rnd(1, 3) * intensity);
     for (let i = 0; i < count; i++) {
-      this.glitchLines.push({ y: rnd(0, this.H), h: rnd(4, 14), offset: rnd(-25, 25) * intensity, alpha: rnd(0.4, 0.8) });
+      this.glitchLines.push({ y: rnd(0, GAME_H), h: rnd(4, 14), offset: rnd(-25, 25) * intensity, alpha: rnd(0.4, 0.8) });
     }
     this.audio.glitch();
   }
@@ -650,7 +659,7 @@ export class TaskkillEngine {
   private enemyShootTargeted(e: EnemyData): void {
     if (!e.canShoot) return;
     e.fireTimer -= 1 / 60;
-    if (e.fireTimer <= 0 && e.y > 0 && e.y < this.H) {
+    if (e.fireTimer <= 0 && e.y > 0 && e.y < GAME_H) {
       e.fireTimer = e.fireRate;
       const cx = e.x + e.w / 2;
       const cy = e.y + e.h / 2;
@@ -661,7 +670,7 @@ export class TaskkillEngine {
 
   private enemyShootFan(e: EnemyData, count: number, spread: number): void {
     e.fireTimer -= 1 / 60;
-    if (e.fireTimer <= 0 && e.y > 0 && e.y < this.H) {
+    if (e.fireTimer <= 0 && e.y > 0 && e.y < GAME_H) {
       e.fireTimer = e.fireRate;
       const cx = e.x + e.w / 2;
       const cy = e.y + e.h / 2;
@@ -740,7 +749,7 @@ export class TaskkillEngine {
     e.fireTimer = rnd(0.5, e.fireRate);
     e.shootPattern = type === "ploufplouf" ? 1 : type === "clippy" ? 2 : 0;
     e.y = -e.h - rnd(5, 40);
-    e.x = rnd(20, this.W - e.w - 20);
+    e.x = rnd(20, GAME_W - e.w - 20);
     e.baseX = e.x;
     e.vy = def.speed * rnd(0.85, 1.15);
     e.vx = 0;
@@ -754,17 +763,17 @@ export class TaskkillEngine {
   private spawnBoss(): void {
     if (this.boss?.alive) return;
     this.boss = {
-      x: this.W / 2 - 80, y: -120,
+      x: GAME_W / 2 - 80, y: -120,
       w: 160, h: 120,
       hp: 120 + this.wave * 25,
       maxHp: 120 + this.wave * 25,
       phase: 0, fireTimer: 0, fireRate: 0.6,
-      moveTimer: 0, targetX: this.W / 2 - 80,
+      moveTimer: 0, targetX: GAME_W / 2 - 80,
       alive: true, entered: false,
       updateProgress: 0,
       deathTimer: 0,
     };
-    this.spawnBanner("⚠️ WINDOWS UPDATE ⚠️", this.W / 2, this.H * 0.35, "#f44", 24, 0);
+    this.spawnBanner("⚠️ WINDOWS UPDATE ⚠️", GAME_W / 2, GAME_H * 0.35, "#f44", 24, 0);
   }
 
   // ================================================================
@@ -888,7 +897,7 @@ export class TaskkillEngine {
     // Stars scroll downward
     for (const s of this.stars) {
       s.y += s.speed * dt;
-      if (s.y > this.H + 5) { s.y = -5; s.x = rnd(0, this.W); }
+      if (s.y > GAME_H + 5) { s.y = -5; s.x = rnd(0, GAME_W); }
     }
   }
 
@@ -940,8 +949,8 @@ export class TaskkillEngine {
     const speed = this.player.speedBoost ? PLAYER_SPEED * 1.6 : PLAYER_SPEED;
     this.player.x += dx * speed * dt;
     this.player.y += dy * speed * dt;
-    this.player.x = Math.max(5, Math.min(this.W - this.player.w - 5, this.player.x));
-    this.player.y = Math.max(40, Math.min(this.H - this.player.h - 5, this.player.y));
+    this.player.x = Math.max(5, Math.min(GAME_W - this.player.w - 5, this.player.x));
+    this.player.y = Math.max(40, Math.min(GAME_H - this.player.h - 5, this.player.y));
 
     // Invincibility
     if (this.player.invTimer > 0) this.player.invTimer -= dt;
@@ -1029,7 +1038,7 @@ export class TaskkillEngine {
       const b = this.bullets.active[i]!;
       b.x += b.vx * dt;
       b.y += b.vy * dt;
-      if (b.y < -40 || b.y > this.H + 40 || b.x < -40 || b.x > this.W + 40) {
+      if (b.y < -40 || b.y > GAME_H + 40 || b.x < -40 || b.x > GAME_W + 40) {
         this.bullets.release(b);
       }
     }
@@ -1040,7 +1049,7 @@ export class TaskkillEngine {
       const b = this.enemyBullets.active[i]!;
       b.x += b.vx * dt;
       b.y += b.vy * dt;
-      if (b.y < -30 || b.y > this.H + 30 || b.x < -30 || b.x > this.W + 30) {
+      if (b.y < -30 || b.y > GAME_H + 30 || b.x < -30 || b.x > GAME_W + 30) {
         this.enemyBullets.release(b);
       }
     }
@@ -1075,7 +1084,7 @@ export class TaskkillEngine {
           e.y += e.vy * dt;
           e.x = e.baseX + Math.sin(e.phaseTimer * 3) * 40;
           e.fireTimer -= dt;
-          if (e.fireTimer <= 0 && e.y > 10 && e.y < this.H - 10) {
+          if (e.fireTimer <= 0 && e.y > 10 && e.y < GAME_H - 10) {
             e.fireTimer = e.fireRate;
             const cx = e.x + e.w / 2;
             const cy = e.y + e.h / 2;
@@ -1134,7 +1143,7 @@ export class TaskkillEngine {
       }
 
       // Remove if off screen bottom
-      if (e.y > this.H + 60) {
+      if (e.y > GAME_H + 60) {
         this.enemies.release(e);
         // Penalty: reset combo
         this.comboCount = 0;
@@ -1150,7 +1159,7 @@ export class TaskkillEngine {
     if (b.hp <= 0) {
       b.deathTimer -= dt;
       b.y += 40 * dt; // drift down
-      if (b.deathTimer <= 0 || b.y > this.H + 200) { b.alive = false; this.boss = null; }
+      if (b.deathTimer <= 0 || b.y > GAME_H + 200) { b.alive = false; this.boss = null; }
       return;
     }
 
@@ -1171,9 +1180,9 @@ export class TaskkillEngine {
 
     // Horizontal movement
     b.moveTimer -= dt;
-    if (b.moveTimer <= 0) { b.moveTimer = rnd(1.0, 2.0); b.targetX = rnd(20, this.W - b.w - 20); }
+    if (b.moveTimer <= 0) { b.moveTimer = rnd(1.0, 2.0); b.targetX = rnd(20, GAME_W - b.w - 20); }
     b.x += (b.targetX - b.x) * 1.5 * dt;
-    b.x = Math.max(5, Math.min(this.W - b.w - 5, b.x));
+    b.x = Math.max(5, Math.min(GAME_W - b.w - 5, b.x));
 
     // Phase based on HP
     const hpRatio = b.hp / b.maxHp;
@@ -1259,7 +1268,7 @@ export class TaskkillEngine {
       p.y += p.vy * dt;
       p.timer -= dt;
       p.pulsePhase += dt * 5;
-      if (p.timer <= 0 || p.y > this.H + 30) {
+      if (p.timer <= 0 || p.y > GAME_H + 30) {
         this.powerUps.release(p);
       }
     }
@@ -1339,7 +1348,7 @@ export class TaskkillEngine {
             this.triggerGlitch(1.5);
             this.audio.bossDeath();
             this.queueNotif("MISE À JOUR ANNULÉE. Windows Update a été purgé. 🖕");
-            this.spawnBanner("💀 WINDOWS UPDATE DÉSINSTALLÉ 💀", this.W / 2, this.H / 2, "#f0f", 20, 0);
+            this.spawnBanner("💀 WINDOWS UPDATE DÉSINSTALLÉ 💀", GAME_W / 2, GAME_H / 2, "#f0f", 20, 0);
             this.boss.deathTimer = 3;
           }
         }
@@ -1425,7 +1434,7 @@ export class TaskkillEngine {
       this.addShake(10);
       this.addFlash(0.4);
       this.audio.bomb();
-      this.spawnBanner("💣 BOMBE ! 💣", this.W / 2, this.H / 2, "#ff0", 22, -30);
+      this.spawnBanner("💣 BOMBE ! 💣", GAME_W / 2, GAME_H / 2, "#ff0", 22, -30);
       this.player.activePowerUp = null;
       this.player.powerTimer = 0;
       return;
@@ -1497,7 +1506,7 @@ export class TaskkillEngine {
     this.banners = [];
     this.boss = null;
     this.queueNotif(message);
-    this.spawnBanner(message, this.W / 2, this.H / 2, "#f00", 20, 0);
+    this.spawnBanner(message, GAME_W / 2, GAME_H / 2, "#f00", 20, 0);
     this.cfg.onLose?.(this.score);
   }
 
@@ -1512,6 +1521,14 @@ export class TaskkillEngine {
   // ================================================================
   private render(): void {
     const ctx = this.ctx;
+
+    // Clear full canvas in device-pixel space (game transform set via resize)
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.fillStyle = "#000";
+    ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    ctx.restore();
+
     ctx.save();
 
     if (this.shakeAmt > 0.1) {
@@ -1562,14 +1579,14 @@ export class TaskkillEngine {
     // Flash overlay
     if (this.flashAlpha > 0.01) {
       ctx.fillStyle = `rgba(255,255,255,${this.flashAlpha})`;
-      ctx.fillRect(0, 0, this.W, this.H);
+      ctx.fillRect(0, 0, GAME_W, GAME_H);
     }
 
     // Boss rage red vignette
     if (this.boss?.alive && this.boss.phase >= 3) {
       const a = 0.05 + Math.sin(performance.now() / 80) * 0.03;
       ctx.fillStyle = `rgba(255,0,0,${a})`;
-      ctx.fillRect(0, 0, this.W, this.H);
+      ctx.fillRect(0, 0, GAME_W, GAME_H);
     }
 
     ctx.restore();
@@ -1577,25 +1594,25 @@ export class TaskkillEngine {
 
   private renderBackground(ctx: CanvasRenderingContext2D): void {
     // Dark space background
-    const grad = ctx.createLinearGradient(0, 0, 0, this.H);
+    const grad = ctx.createLinearGradient(0, 0, 0, GAME_H);
     grad.addColorStop(0, "#020210");
     grad.addColorStop(0.5, "#0a0a1e");
     grad.addColorStop(1, "#0d0d28");
     ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, this.W, this.H);
+    ctx.fillRect(0, 0, GAME_W, GAME_H);
 
     // Grid lines scrolling downward
     ctx.strokeStyle = "rgba(255,255,255,0.03)";
     ctx.lineWidth = 1;
     const gs = 48;
     const oy = this.bgScroll % gs;
-    for (let y = -gs + oy; y < this.H + gs; y += gs) {
-      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(this.W, y); ctx.stroke();
+    for (let y = -gs + oy; y < GAME_H + gs; y += gs) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(GAME_W, y); ctx.stroke();
     }
 
     // Vertical lines
-    for (let x = 0; x < this.W; x += gs) {
-      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, this.H); ctx.stroke();
+    for (let x = 0; x < GAME_W; x += gs) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, GAME_H); ctx.stroke();
     }
 
     // Stars
@@ -1610,8 +1627,8 @@ export class TaskkillEngine {
     ctx.fillStyle = "rgba(0,255,100,0.06)";
     ctx.font = "9px monospace";
     for (let i = 0; i < 6; i++) {
-      const dx = ((i * 97 + 31) + now * 25) % this.W;
-      const dy = ((i * 73 + 17) + now * 35) % this.H;
+      const dx = ((i * 97 + 31) + now * 25) % GAME_W;
+      const dy = ((i * 73 + 17) + now * 35) % GAME_H;
       ctx.fillText(["0101","0xFF","SYS","RAM","98","DOS"][i]!, dx, dy);
     }
   }
@@ -1902,19 +1919,19 @@ export class TaskkillEngine {
     ctx.fillStyle = "#fff";
     ctx.font = "bold 12px monospace";
     ctx.textAlign = "right";
-    ctx.fillText(`SCORE: ${this.score.toLocaleString()}`, this.W - padX, padY + 14);
+    ctx.fillText(`SCORE: ${this.score.toLocaleString()}`, GAME_W - padX, padY + 14);
 
     // Combo (below score)
     if (this.comboMultiplier > 1) {
       ctx.fillStyle = "#ff0";
       ctx.font = "bold 10px monospace";
-      ctx.fillText(`COMBO x${this.comboMultiplier}`, this.W - padX, padY + 28);
+      ctx.fillText(`COMBO x${this.comboMultiplier}`, GAME_W - padX, padY + 28);
     }
 
     // Wave
     ctx.fillStyle = "#aaa";
     ctx.font = "9px monospace";
-    ctx.fillText(`VAGUE ${this.wave}`, this.W - padX, padY + 40);
+    ctx.fillText(`VAGUE ${this.wave}`, GAME_W - padX, padY + 40);
 
     // HP bar (top-left)
     const hbW = 140, hbH = 12;
@@ -1943,36 +1960,36 @@ export class TaskkillEngine {
 
   private renderTitle(ctx: CanvasRenderingContext2D): void {
     ctx.fillStyle = "#fff";
-    ctx.font = `bold ${Math.min(32, this.W * 0.065)}px monospace`;
+    ctx.font = `bold ${Math.min(32, GAME_W * 0.065)}px monospace`;
     ctx.textAlign = "center";
-    ctx.fillText("dragmenteur.exe", this.W / 2, this.H * 0.18);
+    ctx.fillText("dragmenteur.exe", GAME_W / 2, GAME_H * 0.18);
 
     ctx.fillStyle = "#0ff";
-    ctx.font = `${Math.min(14, this.W * 0.028)}px monospace`;
-    ctx.fillText("The Bloatware Purge v3.0", this.W / 2, this.H * 0.18 + 32);
+    ctx.font = `${Math.min(14, GAME_W * 0.028)}px monospace`;
+    ctx.fillText("The Bloatware Purge v3.0", GAME_W / 2, GAME_H * 0.18 + 32);
 
     // Ship decoration
     ctx.fillStyle = "#aaa";
     ctx.font = "28px serif";
-    ctx.fillText("🛸", this.W / 2, this.H * 0.18 + 70);
+    ctx.fillText("🛸", GAME_W / 2, GAME_H * 0.18 + 70);
 
     const blink = Math.sin(this.titleBlink * 3) > 0;
     if (blink) {
       ctx.fillStyle = "#fff";
-      ctx.font = `${Math.min(16, this.W * 0.032)}px monospace`;
-      ctx.fillText("ESPACE ou CLIC pour DÉFRAGMENTER", this.W / 2, this.H * 0.55);
+      ctx.font = `${Math.min(16, GAME_W * 0.032)}px monospace`;
+      ctx.fillText("ESPACE ou CLIC pour DÉFRAGMENTER", GAME_W / 2, GAME_H * 0.55);
     }
 
     ctx.fillStyle = "#666";
-    ctx.font = `${Math.min(11, this.W * 0.022)}px monospace`;
-    ctx.fillText("↑↓←→ / ZQSD = Déplacer", this.W / 2, this.H * 0.68);
-    ctx.fillText("Souris = Suivre   |   Clic = Tirer", this.W / 2, this.H * 0.73);
-    ctx.fillText("Mobile = Touch & Drag (auto-fire)", this.W / 2, this.H * 0.78);
-    ctx.fillText("Tuez vite = COMBO ! 💥", this.W / 2, this.H * 0.83);
+    ctx.font = `${Math.min(11, GAME_W * 0.022)}px monospace`;
+    ctx.fillText("↑↓←→ / ZQSD = Déplacer", GAME_W / 2, GAME_H * 0.68);
+    ctx.fillText("Souris = Suivre   |   Clic = Tirer", GAME_W / 2, GAME_H * 0.73);
+    ctx.fillText("Mobile = Touch & Drag (auto-fire)", GAME_W / 2, GAME_H * 0.78);
+    ctx.fillText("Tuez vite = COMBO ! 💥", GAME_W / 2, GAME_H * 0.83);
 
     ctx.fillStyle = "#444";
     ctx.font = "9px monospace";
-    ctx.fillText("v3.0.0 — Édition VERTICALE", this.W / 2, this.H - 12);
+    ctx.fillText("v3.1.0 — Édition VERTICALE (résolution fixe 480x700)", GAME_W / 2, GAME_H - 12);
     ctx.textAlign = "start";
   }
 
@@ -1980,33 +1997,33 @@ export class TaskkillEngine {
     const blink = Math.sin(this.titleBlink * 4) > 0;
     if (!blink) return;
     ctx.fillStyle = "#fff";
-    ctx.font = `bold ${Math.min(24, this.W * 0.05)}px monospace`;
+    ctx.font = `bold ${Math.min(24, GAME_W * 0.05)}px monospace`;
     ctx.textAlign = "center";
-    ctx.fillText(`VAGUE ${this.wave}`, this.W / 2, this.H * 0.35);
+    ctx.fillText(`VAGUE ${this.wave}`, GAME_W / 2, GAME_H * 0.35);
     ctx.fillStyle = "#0ff";
-    ctx.font = `${Math.min(13, this.W * 0.026)}px monospace`;
-    ctx.fillText(this.waveMessage, this.W / 2, this.H * 0.45);
+    ctx.font = `${Math.min(13, GAME_W * 0.026)}px monospace`;
+    ctx.fillText(this.waveMessage, GAME_W / 2, GAME_H * 0.45);
     ctx.textAlign = "start";
   }
 
   private renderEndScreen(ctx: CanvasRenderingContext2D, title: string, color: string): void {
     ctx.fillStyle = "rgba(0,0,0,0.7)";
-    ctx.fillRect(0, 0, this.W, this.H);
+    ctx.fillRect(0, 0, GAME_W, GAME_H);
 
     ctx.fillStyle = color;
-    ctx.font = `bold ${Math.min(28, this.W * 0.055)}px monospace`;
+    ctx.font = `bold ${Math.min(28, GAME_W * 0.055)}px monospace`;
     ctx.textAlign = "center";
-    ctx.fillText(title, this.W / 2, this.H * 0.3);
+    ctx.fillText(title, GAME_W / 2, GAME_H * 0.3);
 
     ctx.fillStyle = "#fff";
-    ctx.font = `${Math.min(18, this.W * 0.035)}px monospace`;
-    ctx.fillText(`Score final : ${this.score.toLocaleString()}`, this.W / 2, this.H * 0.42);
+    ctx.font = `${Math.min(18, GAME_W * 0.035)}px monospace`;
+    ctx.fillText(`Score final : ${this.score.toLocaleString()}`, GAME_W / 2, GAME_H * 0.42);
 
     const blink = Math.sin(this.titleBlink * 3) > 0;
     if (blink) {
       ctx.fillStyle = "#aaa";
-      ctx.font = `${Math.min(13, this.W * 0.025)}px monospace`;
-      ctx.fillText("ESPACE pour recommencer", this.W / 2, this.H * 0.55);
+      ctx.font = `${Math.min(13, GAME_W * 0.025)}px monospace`;
+      ctx.fillText("ESPACE pour recommencer", GAME_W / 2, GAME_H * 0.55);
     }
     ctx.textAlign = "start";
   }
