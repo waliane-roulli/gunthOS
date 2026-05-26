@@ -179,6 +179,11 @@ export function useMeet(
 
         if (event.kind === "peer-joined" && event.participant.userId === currentUserId) return;
 
+        // Wait for getUserMedia to resolve before creating peer connections
+        if (event.kind === "room-state" || event.kind === "peer-joined") {
+          await media.waitForStream();
+        }
+
         await webrtc.handleSseEvent(event, currentUserId, media.localStreamRef);
       })();
     });

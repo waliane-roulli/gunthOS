@@ -14,6 +14,7 @@ export interface UseLocalMediaReturn {
   selectedVideoId: string | null;
   localStreamRef: React.MutableRefObject<MediaStream | null>;
   screenStreamRef: React.MutableRefObject<MediaStream | null>;
+  waitForStream: () => Promise<MediaStream>;
   toggleMute: () => void;
   toggleCam: () => void;
   startScreenShare: (onEnded: () => void) => Promise<void>;
@@ -35,6 +36,7 @@ export function useLocalMedia(): UseLocalMediaReturn {
 
   const localStreamRef = useRef<MediaStream | null>(null);
   const screenStreamRef = useRef<MediaStream | null>(null);
+  const streamReadyResolversRef = useRef<Array<(s: MediaStream) => void>>([]);
 
   const enumerateDevices = useCallback(async () => {
     try {
@@ -61,6 +63,8 @@ export function useLocalMedia(): UseLocalMediaReturn {
       }
       localStreamRef.current = stream;
       setLocalStream(stream);
+      for (const resolve of streamReadyResolversRef.current) resolve(stream);
+      streamReadyResolversRef.current = [];
 
       const audioTrack = stream.getAudioTracks()[0];
       const videoTrack = stream.getVideoTracks()[0];
@@ -78,6 +82,13 @@ export function useLocalMedia(): UseLocalMediaReturn {
       screenStreamRef.current?.getTracks().forEach((t) => t.stop());
     };
   }, [enumerateDevices]);
+
+  const waitForStream = useCallback((): Promise<MediaStream> => {
+    if (localStreamRef.current) return Promise.resolve(localStreamRef.current);
+    return new Promise((resolve) => {
+      streamReadyResolversRef.current.push(resolve);
+    });
+  }, []);
 
   const toggleMute = useCallback(() => {
     const stream = localStreamRef.current;
@@ -158,6 +169,7 @@ export function useLocalMedia(): UseLocalMediaReturn {
     selectedVideoId,
     localStreamRef,
     screenStreamRef,
+    waitForStream,
     toggleMute,
     toggleCam,
     startScreenShare,
