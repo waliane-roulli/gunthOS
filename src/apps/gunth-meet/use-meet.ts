@@ -28,6 +28,8 @@ interface Peer {
   makingOffer: boolean;
   ignoreOffer: boolean;
   polite: boolean;
+  pendingCandidates: RTCIceCandidateInit[];
+  hasRemoteDescription: boolean;
 }
 
 async function fetchIceServers(): Promise<RTCIceServer[]> {
@@ -95,6 +97,8 @@ export function useMeet(roomId: string, currentUserId: string, currentDisplayNam
       makingOffer: false,
       ignoreOffer: false,
       polite,
+      pendingCandidates: [],
+      hasRemoteDescription: false,
     };
 
     if (localStreamRef.current) {
@@ -148,15 +152,31 @@ export function useMeet(roomId: string, currentUserId: string, currentDisplayNam
       if (peer.ignoreOffer) return;
 
       await pc.setRemoteDescription(desc);
+      peer.hasRemoteDescription = true;
+
       if (type === "offer") {
         await pc.setLocalDescription();
         sendSignal(from, "answer", pc.localDescription);
       }
+
+      // Flush any ICE candidates that arrived before the remote description
+      for (const candidate of peer.pendingCandidates) {
+        try {
+          await pc.addIceCandidate(candidate);
+        } catch {
+          // ignore stale candidates
+        }
+      }
+      peer.pendingCandidates = [];
     } else if (type === "ice-candidate") {
-      try {
-        await pc.addIceCandidate(payload as RTCIceCandidateInit);
-      } catch (err) {
-        if (!peer.ignoreOffer) console.error("ICE error", err);
+      if (!peer.hasRemoteDescription) {
+        peer.pendingCandidates.push(payload as RTCIceCandidateInit);
+      } else {
+        try {
+          await pc.addIceCandidate(payload as RTCIceCandidateInit);
+        } catch (err) {
+          if (!peer.ignoreOffer) console.error("ICE error", err);
+        }
       }
     } else if (type === "screen-share-state") {
       peer.isScreenSharing = (payload as { sharing: boolean }).sharing;
