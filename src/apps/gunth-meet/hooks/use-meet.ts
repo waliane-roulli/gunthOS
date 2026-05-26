@@ -1,0 +1,225 @@
+"use client";
+
+import { useEffect, useRef, useState, useCallback } from "react";
+import type { UseLocalMediaReturn } from "./use-local-media";
+import { useWebRtc } from "./use-webrtc";
+import { useChat, type UseChatReturn } from "./use-chat";
+import type { SseEvent, Reaction, ReactionEmoji } from "../types";
+
+export interface UseMeetReturn {
+  // media
+  localStream: UseLocalMediaReturn["localStream"];
+  screenStream: UseLocalMediaReturn["screenStream"];
+  isMuted: boolean;
+  isCamOff: boolean;
+  isScreenSharing: boolean;
+  audioDevices: UseLocalMediaReturn["audioDevices"];
+  videoDevices: UseLocalMediaReturn["videoDevices"];
+  selectedAudioId: string | null;
+  selectedVideoId: string | null;
+  toggleMute: () => void;
+  toggleCam: () => void;
+  startScreenShare: () => Promise<void>;
+  stopScreenShare: () => Promise<void>;
+  switchAudioDevice: (deviceId: string) => Promise<void>;
+  switchVideoDevice: (deviceId: string) => Promise<void>;
+  // peers
+  peers: ReturnType<typeof useWebRtc>["peers"];
+  // chat
+  chatMessages: UseChatReturn["chatMessages"];
+  unreadCount: number;
+  sendChat: (text: string) => Promise<void>;
+  markChatRead: () => void;
+  markChatUnread: () => void;
+  // reactions
+  reactions: Reaction[];
+  sendReaction: (emoji: ReactionEmoji) => Promise<void>;
+  // moderation
+  isHost: boolean;
+  mutePeer: (userId: string) => Promise<void>;
+  // connection
+  connected: boolean;
+}
+
+export function useMeet(
+  roomId: string,
+  currentUserId: string,
+  currentDisplayName: string,
+  initialIsHost: boolean,
+  media: UseLocalMediaReturn,
+): UseMeetReturn {
+  const [connected, setConnected] = useState(false);
+  const [isHost, setIsHost] = useState(initialIsHost);
+  const [reactions, setReactions] = useState<Reaction[]>([]);
+
+  const webrtc = useWebRtc(roomId);
+  const chat = useChat();
+
+  const stopScreenShareRef = useRef<() => Promise<void>>(() => Promise.resolve());
+  const eventSourceRef = useRef<EventSource | null>(null);
+
+  // Broadcast our own state changes to all peers
+  const broadcastParticipantUpdate = useCallback((update: { isMuted?: boolean; isCamOff?: boolean; isScreenSharing?: boolean }) => {
+    for (const peer of webrtc.peersRef.current.values()) {
+      webrtc.sendSignal(peer.userId, "participant-update", update);
+    }
+  }, [webrtc]);
+
+  const toggleMute = useCallback(() => {
+    media.toggleMute();
+    broadcastParticipantUpdate({ isMuted: !media.isMuted });
+  }, [media, broadcastParticipantUpdate]);
+
+  const toggleCam = useCallback(() => {
+    media.toggleCam();
+    broadcastParticipantUpdate({ isCamOff: !media.isCamOff });
+  }, [media, broadcastParticipantUpdate]);
+
+  const stopScreenShare = useCallback(async () => {
+    await media.stopScreenShare();
+    const localVideo = media.localStreamRef.current?.getVideoTracks()[0];
+    await webrtc.replaceVideoTrack(localVideo ?? null);
+    broadcastParticipantUpdate({ isScreenSharing: false });
+    for (const peer of webrtc.peersRef.current.values()) {
+      webrtc.sendSignal(peer.userId, "screen-share-state", { sharing: false });
+    }
+  }, [media, webrtc, broadcastParticipantUpdate]);
+  stopScreenShareRef.current = stopScreenShare;
+
+  const startScreenShare = useCallback(async () => {
+    await media.startScreenShare(async () => {
+      await stopScreenShareRef.current();
+    });
+    const screenTrack = media.screenStreamRef.current?.getVideoTracks()[0];
+    if (!screenTrack) return;
+    const localVideo = media.localStreamRef.current?.getVideoTracks()[0];
+    if (localVideo) localVideo.enabled = false;
+    await webrtc.replaceVideoTrack(screenTrack);
+    broadcastParticipantUpdate({ isScreenSharing: true });
+    for (const peer of webrtc.peersRef.current.values()) {
+      webrtc.sendSignal(peer.userId, "screen-share-state", { sharing: true });
+    }
+  }, [media, webrtc, broadcastParticipantUpdate]);
+
+  const switchAudioDevice = useCallback(async (deviceId: string) => {
+    await media.switchAudioDevice(deviceId);
+    const newTrack = media.localStreamRef.current?.getAudioTracks()[0];
+    if (newTrack) await webrtc.replaceAudioTrack(newTrack);
+  }, [media, webrtc]);
+
+  const switchVideoDevice = useCallback(async (deviceId: string) => {
+    const newTrack = await media.switchVideoDevice(deviceId);
+    if (newTrack) await webrtc.replaceVideoTrack(newTrack);
+  }, [media, webrtc]);
+
+  const sendChat = useCallback(async (text: string) => {
+    await chat.sendChat(roomId, currentUserId, currentDisplayName, text);
+  }, [chat, roomId, currentUserId, currentDisplayName]);
+
+  const sendReaction = useCallback(async (emoji: ReactionEmoji) => {
+    const reaction: Reaction = {
+      userId: currentUserId,
+      displayName: currentDisplayName,
+      emoji,
+      id: `${Date.now()}-${currentUserId}`,
+    };
+    setReactions((prev) => [...prev, reaction]);
+    setTimeout(() => setReactions((prev) => prev.filter((r) => r.id !== reaction.id)), 3000);
+
+    for (const peer of webrtc.peersRef.current.values()) {
+      webrtc.sendSignal(peer.userId, "reaction", reaction);
+    }
+  }, [currentUserId, currentDisplayName, webrtc]);
+
+  const mutePeer = useCallback(async (userId: string) => {
+    if (!isHost) return;
+    webrtc.sendSignal(userId, "host-mute-peer", { targetUserId: userId });
+  }, [isHost, webrtc]);
+
+  // SSE setup
+  useEffect(() => {
+    const es = new EventSource(`/api/meet/rooms/${roomId}/signal`);
+    eventSourceRef.current = es;
+
+    es.onopen = () => setConnected(true);
+    es.onerror = () => setConnected(false);
+
+    es.addEventListener("message", (e: MessageEvent) => {
+      void (async () => {
+        const event = JSON.parse(e.data) as SseEvent;
+
+        if (event.kind === "chat") {
+          const m = event.message;
+          if (m.userId !== currentUserId) {
+            chat.addMessage({ id: m.id, from: m.userId, displayName: m.displayName, text: m.content, ts: m.createdAt });
+          }
+          return;
+        }
+
+        if (event.kind === "reaction") {
+          const reaction = event.reaction;
+          if (reaction.userId !== currentUserId) {
+            setReactions((prev) => [...prev, reaction]);
+            setTimeout(() => setReactions((prev) => prev.filter((r) => r.id !== reaction.id)), 3000);
+          }
+          return;
+        }
+
+        if (event.kind === "host-mute-peer") {
+          if (event.targetUserId === currentUserId) {
+            media.toggleMute();
+          }
+          return;
+        }
+
+        if (event.kind === "room-state") {
+          const me = event.participants.find((p) => p.userId === currentUserId);
+          if (me?.isHost) setIsHost(true);
+        }
+
+        if (event.kind === "peer-joined" && event.participant.userId === currentUserId) return;
+
+        await webrtc.handleSseEvent(event, currentUserId, media.localStreamRef);
+      })();
+    });
+
+    // Load chat history on connect
+    chat.loadHistory(roomId);
+
+    return () => {
+      es.close();
+      for (const peer of webrtc.peersRef.current.values()) peer.pc.close();
+      webrtc.peersRef.current.clear();
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roomId, currentUserId]);
+
+  return {
+    localStream: media.localStream,
+    screenStream: media.screenStream,
+    isMuted: media.isMuted,
+    isCamOff: media.isCamOff,
+    isScreenSharing: media.isScreenSharing,
+    audioDevices: media.audioDevices,
+    videoDevices: media.videoDevices,
+    selectedAudioId: media.selectedAudioId,
+    selectedVideoId: media.selectedVideoId,
+    toggleMute,
+    toggleCam,
+    startScreenShare,
+    stopScreenShare,
+    switchAudioDevice,
+    switchVideoDevice,
+    peers: webrtc.peers,
+    chatMessages: chat.chatMessages,
+    unreadCount: chat.unreadCount,
+    sendChat,
+    markChatRead: chat.markRead,
+    markChatUnread: chat.markUnread,
+    reactions,
+    sendReaction,
+    isHost,
+    mutePeer,
+    connected,
+  };
+}

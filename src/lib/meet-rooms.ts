@@ -1,16 +1,14 @@
 // In-memory room store — survives across requests in the same Node.js process
 // Rooms are ephemeral: no DB, no persistence across restarts.
 
-export interface Participant {
-  userId: string;
-  displayName: string;
-  joinedAt: number;
-}
+import type { ParticipantState, SignalType, SseEvent } from "@/apps/gunth-meet/types";
+
+export type { ParticipantState };
 
 export interface SignalMessage {
   from: string;
   to: string;
-  type: "offer" | "answer" | "ice-candidate" | "screen-share-state";
+  type: SignalType;
   payload: unknown;
 }
 
@@ -19,7 +17,8 @@ type Writer = (data: string) => void;
 interface Room {
   id: string;
   createdAt: number;
-  participants: Map<string, Participant>;
+  hostUserId: string | null;
+  participants: Map<string, ParticipantState>;
   writers: Map<string, Writer>;
 }
 
@@ -30,6 +29,7 @@ export function getOrCreateRoom(roomId: string): Room {
     rooms.set(roomId, {
       id: roomId,
       createdAt: Date.now(),
+      hostUserId: null,
       participants: new Map(),
       writers: new Map(),
     });
@@ -43,38 +43,49 @@ export function getRoom(roomId: string): Room | undefined {
 
 export function joinRoom(
   roomId: string,
-  participant: Participant,
+  participant: { userId: string; displayName: string; joinedAt: number },
   writer: Writer
 ): () => void {
   const room = getOrCreateRoom(roomId);
 
-  // Snapshot participants BEFORE adding the new one (for peer-joined broadcast)
-  const existingParticipants = [...room.participants.values()];
+  const isFirstParticipant = room.participants.size === 0;
+  if (isFirstParticipant) room.hostUserId = participant.userId;
 
-  room.participants.set(participant.userId, participant);
+  const fullParticipant: ParticipantState = {
+    ...participant,
+    isMuted: false,
+    isCamOff: false,
+    isScreenSharing: false,
+    isHost: isFirstParticipant,
+  };
+
+  const existingParticipants = [...room.participants.values()];
+  room.participants.set(participant.userId, fullParticipant);
   room.writers.set(participant.userId, writer);
 
-  // Notify existing participants that a new peer joined
+  // Notify existing participants
   for (const p of existingParticipants) {
     const w = room.writers.get(p.userId);
     if (!w) continue;
     try {
-      w(`data: ${JSON.stringify({
+      const event: SseEvent = {
         kind: "peer-joined",
-        participant,
+        participant: fullParticipant,
         participants: [...room.participants.values()],
-      })}\n\n`);
+      };
+      w(`data: ${JSON.stringify(event)}\n\n`);
     } catch {
       room.writers.delete(p.userId);
     }
   }
 
-  // Send the new peer the current participant list (deferred so the SSE stream is open)
+  // Send the new peer the current room state (deferred so SSE stream is open)
   queueMicrotask(() => {
-    sendToParticipant(roomId, participant.userId, {
+    const event: SseEvent = {
       kind: "room-state",
       participants: [...room.participants.values()],
-    });
+    };
+    sendToParticipant(roomId, participant.userId, event);
   });
 
   return () => leaveRoom(roomId, participant.userId);
@@ -87,13 +98,22 @@ export function leaveRoom(roomId: string, userId: string): void {
   room.participants.delete(userId);
   room.writers.delete(userId);
 
-  broadcastToRoom(roomId, {
+  // Elect new host if the host left
+  if (room.hostUserId === userId && room.participants.size > 0) {
+    const newHost = [...room.participants.values()][0]!;
+    newHost.isHost = true;
+    room.hostUserId = newHost.userId;
+    const updateEvent: SseEvent = { kind: "participant-update", participant: { ...newHost } };
+    broadcastToRoom(roomId, updateEvent);
+  }
+
+  const leaveEvent: SseEvent = {
     kind: "peer-left",
     userId,
     participants: [...room.participants.values()],
-  });
+  };
+  broadcastToRoom(roomId, leaveEvent);
 
-  // Clean up empty rooms after a delay
   if (room.participants.size === 0) {
     setTimeout(() => {
       const r = rooms.get(roomId);
@@ -108,7 +128,8 @@ export function relaySignal(roomId: string, msg: SignalMessage): boolean {
   const writer = room.writers.get(msg.to);
   if (!writer) return false;
   try {
-    writer(`data: ${JSON.stringify({ kind: "signal", ...msg })}\n\n`);
+    const event: SseEvent = { kind: "signal", ...msg };
+    writer(`data: ${JSON.stringify(event)}\n\n`);
     return true;
   } catch {
     return false;
@@ -117,12 +138,12 @@ export function relaySignal(roomId: string, msg: SignalMessage): boolean {
 
 export function broadcastToRoom(
   roomId: string,
-  payload: Record<string, unknown>,
+  event: SseEvent,
   excludeUserId?: string
 ): void {
   const room = rooms.get(roomId);
   if (!room) return;
-  const data = `data: ${JSON.stringify(payload)}\n\n`;
+  const data = `data: ${JSON.stringify(event)}\n\n`;
   for (const [userId, writer] of room.writers) {
     if (userId === excludeUserId) continue;
     try {
@@ -136,21 +157,39 @@ export function broadcastToRoom(
 export function sendToParticipant(
   roomId: string,
   userId: string,
-  payload: Record<string, unknown>
+  event: SseEvent
 ): void {
   const room = rooms.get(roomId);
   if (!room) return;
   const writer = room.writers.get(userId);
   if (!writer) return;
   try {
-    writer(`data: ${JSON.stringify(payload)}\n\n`);
+    writer(`data: ${JSON.stringify(event)}\n\n`);
   } catch {
     room.writers.delete(userId);
   }
 }
 
-export function listParticipants(roomId: string): Participant[] {
+export function updateParticipantState(
+  roomId: string,
+  userId: string,
+  update: Partial<Pick<ParticipantState, "isMuted" | "isCamOff" | "isScreenSharing">>
+): void {
+  const room = rooms.get(roomId);
+  if (!room) return;
+  const p = room.participants.get(userId);
+  if (!p) return;
+  Object.assign(p, update);
+  const event: SseEvent = { kind: "participant-update", participant: { ...p } };
+  broadcastToRoom(roomId, event, userId);
+}
+
+export function listParticipants(roomId: string): ParticipantState[] {
   const room = rooms.get(roomId);
   if (!room) return [];
   return [...room.participants.values()];
+}
+
+export function getHost(roomId: string): string | null {
+  return rooms.get(roomId)?.hostUserId ?? null;
 }

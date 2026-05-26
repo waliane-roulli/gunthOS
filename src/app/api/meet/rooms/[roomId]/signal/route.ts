@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { joinRoom, relaySignal, listParticipants } from "@/lib/meet-rooms";
+import { VALID_SIGNAL_TYPES } from "@/apps/gunth-meet/types";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -71,11 +72,10 @@ export async function POST(
   const body = await req.json();
   const { to, type, payload } = body;
 
-  const VALID_TYPES = ["offer", "answer", "ice-candidate", "screen-share-state"] as const;
   if (!to || !type || payload === undefined) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 });
   }
-  if (!VALID_TYPES.includes(type)) {
+  if (!VALID_SIGNAL_TYPES.includes(type)) {
     return NextResponse.json({ error: "Invalid signal type" }, { status: 400 });
   }
 
@@ -89,7 +89,7 @@ export async function POST(
   return NextResponse.json({ sent });
 }
 
-// HEAD /api/meet/rooms/[roomId]/participants (bonus endpoint)
+// HEAD /api/meet/rooms/[roomId]/signal — participant count
 export async function HEAD(
   _req: NextRequest,
   { params }: { params: Promise<{ roomId: string }> }

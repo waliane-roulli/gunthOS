@@ -59,7 +59,7 @@ export async function POST(
 
   const message = { id, roomId, userId, displayName, content, createdAt: createdAt.getTime() };
 
-  broadcastToRoom(roomId, { kind: "chat", message });
+  broadcastToRoom(roomId, { kind: "chat", message }, userId);
 
   return NextResponse.json({ message });
 }
