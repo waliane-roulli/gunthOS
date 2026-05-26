@@ -11,7 +11,7 @@ export const manifest: AppManifest = {
   description: "Dragmenteur.exe — la purge dégéntée de GunthOS. PloufPlouf, MSN, IE6, Radio, Solitaire... éliminez les apps devenues folles !",
   emoji: "🖕",
   version: "3.0.0",
-  defaultSize: { w: 520, h: 700 },
+  defaultSize: { w: 380, h: 670 },
   loadDuration: 2200,
   showInLauncher: false,
   component: TaskkillApp,

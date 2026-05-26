@@ -178,7 +178,7 @@ export function MyComputerApp(_: AppProps) {
     },
     {
       icon: "🗂️", label: "Défragmenteur",
-      onClick: () => openWindow("taskkill", "Défragmentation en cours — dragmenteur.exe", "🗂️"),
+      onClick: () => openWindow("taskkill", "Défragmentation en cours — dragmenteur.exe", "🗂️", { defaultSize: { w: 380, h: 670 } }),
     },
     {
       icon: "📝", label: "Bloc-notes",
@@ -255,7 +255,7 @@ export function MyComputerApp(_: AppProps) {
           config={dialog}
           onClose={(response) => {
             setDialog(null);
-            if (response === "defrag") openWindow("taskkill", "Défragmentation en cours — dragmenteur.exe", "🗂️");
+            if (response === "defrag") openWindow("taskkill", "Défragmentation en cours — dragmenteur.exe", "🗂️", { defaultSize: { w: 380, h: 670 } });
           }}
         />
       )}

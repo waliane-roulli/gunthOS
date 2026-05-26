@@ -11,7 +11,7 @@ export const manifest: AppManifest = {
   description: "Optimise votre disque (résultat non garanti)",
   emoji: "🗂️",
   version: "1.0.0",
-  loadDuration: 1800,
+  loadDuration: 0,
   showInLauncher: false,
   component: DefragApp,
 };
