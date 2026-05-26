@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { PegIcon } from "./PegIcon";
 import { CLASSES, CLASS_COLORS } from "../engine/roguelite";
 import { GAME_THEMES } from "../engine/game-theme";
+import type { GameTheme } from "../engine/game-theme";
 import type { DevConfig } from "./DevPanel";
 import { btnRaised, PG } from "../styles";
 import { useOpenApp } from "@/lib/hooks/use-open-app";
@@ -13,7 +15,6 @@ export const PEAGLE_LIVE_SKIN_KEY = "peagle_live_skin";
 export const PEAGLE_LIVE_PEG_SKIN_KEY = "peagle_live_peg_skin";
 export const PEAGLE_LIVE_DECOR_SKIN_KEY = "peagle_live_decor_skin";
 
-// 5 skin options per class — maps classId to array of PegIconId skins
 export const CLASS_SKINS: Record<string, { id: string; name: string; desc: string }[]> = {
   canonnier: [
     { id: "pelican_1", name: "Classique",   desc: "Le pélican de base. Fier de sa poche." },
@@ -80,8 +81,8 @@ export const PEG_SKINS: Record<string, SkinDef[]> = {
     { id: "peg_green_5", name: "Nature",    desc: "Texture mousse organique." },
   ],
   boss: [
-    { id: "peg_boss_1", name: "Couronne", desc: "Or et couronne. Le roi des pegs." },
-    { id: "peg_boss_2", name: "Démon",    desc: "Rouge sang, crocs apparents." },
+    { id: "peg_boss_1", name: "Couronne",   desc: "Or et couronne. Le roi des pegs." },
+    { id: "peg_boss_2", name: "Démon",      desc: "Rouge sang, crocs apparents." },
     { id: "peg_boss_3", name: "Obsidienne", desc: "Noir profond, runes violettes." },
   ],
   bomb: [
@@ -118,11 +119,155 @@ export const DECOR_SKINS: Record<string, SkinDef[]> = {
     { id: "decor_arc_3", name: "Néon",  desc: "Arc lumineux rose. Bien visible." },
   ],
   spike: [
-    { id: "decor_spike_1", name: "Rouge",  desc: "Classique rouge tranchant." },
-    { id: "decor_spike_2", name: "Glace",  desc: "Pointe bleue translucide." },
-    { id: "decor_spike_3", name: "Or",     desc: "Dorée, précieuse et mortelle." },
+    { id: "decor_spike_1", name: "Rouge", desc: "Classique rouge tranchant." },
+    { id: "decor_spike_2", name: "Glace", desc: "Pointe bleue translucide." },
+    { id: "decor_spike_3", name: "Or",    desc: "Dorée, précieuse et mortelle." },
   ],
 };
+
+// ─── Canvas : mini-scène de thème ─────────────────────────────────────────────
+
+function ThemeMiniScene({ theme }: { theme: GameTheme }) {
+  const ref = useRef<HTMLCanvasElement>(null);
+  const W   = 180;
+  const H   = 72;
+
+  useEffect(() => {
+    const canvas = ref.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    ctx.clearRect(0, 0, W, H);
+    ctx.imageSmoothingEnabled = false;
+
+    const [r1, g1, b1] = theme.bg.skyTop;
+    const [r2, g2, b2] = theme.bg.skyBot;
+    const sky = ctx.createLinearGradient(0, 0, 0, H);
+    sky.addColorStop(0, `rgb(${r1},${g1},${b1})`);
+    sky.addColorStop(1, `rgb(${r2},${g2},${b2})`);
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.fillStyle = theme.bg.groundColor;
+    ctx.fillRect(0, H - 10, W, 10);
+    ctx.fillStyle = theme.bg.subGroundColor;
+    ctx.fillRect(0, H - 5, W, 5);
+
+    const pegs: { x: number; y: number; orange: boolean }[] = [
+      { x: 22,  y: 26, orange: false },
+      { x: 52,  y: 15, orange: true  },
+      { x: 88,  y: 11, orange: false },
+      { x: 124, y: 15, orange: true  },
+      { x: 154, y: 26, orange: false },
+      { x: 38,  y: 46, orange: true  },
+      { x: 90,  y: 42, orange: false },
+      { x: 142, y: 46, orange: true  },
+    ];
+
+    for (const p of pegs) {
+      const pegR = 3;
+      const s    = pegR * 2;
+      const col  = p.orange ? theme.peg.orange    : theme.peg.normal;
+      const hi   = p.orange ? theme.peg.orangeHi  : theme.peg.normalHi;
+      const dark = p.orange ? theme.peg.orangeDark : theme.peg.normalDark;
+
+      if (p.orange) { ctx.shadowColor = `${col}99`; ctx.shadowBlur = 5; }
+      ctx.fillStyle = col;
+      ctx.fillRect(p.x - pegR, p.y - pegR, s, s);
+      ctx.shadowBlur = 0;
+
+      ctx.fillStyle = hi;
+      ctx.fillRect(p.x - pegR, p.y - pegR, s, 1);
+      ctx.fillRect(p.x - pegR, p.y - pegR, 1, s);
+      ctx.fillStyle = dark;
+      ctx.fillRect(p.x - pegR, p.y + pegR - 1, s, 1);
+      ctx.fillRect(p.x + pegR - 1, p.y - pegR, 1, s);
+    }
+  }, [theme]);
+
+  return (
+    <canvas
+      ref={ref}
+      width={W}
+      height={H}
+      style={{ imageRendering: "pixelated", width: "100%", height: "100%", display: "block" }}
+    />
+  );
+}
+
+// ─── Composants UI ────────────────────────────────────────────────────────────
+
+function SectionHeader({ label, count, color = "#cc88ff" }: { label: string; count: number; color?: string }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, marginTop: 2 }}>
+      <div style={{ width: 3, height: 12, background: color, flexShrink: 0, boxShadow: `0 0 6px ${color}` }} />
+      <span style={{
+        fontFamily: "var(--font-press-start), monospace",
+        fontSize: 7, color, letterSpacing: "0.1em",
+      }}>{label}</span>
+      <div style={{ flex: 1, height: 1, background: `linear-gradient(to right, ${color}44, transparent)` }} />
+      <span style={{ fontFamily: "var(--font-press-start), monospace", fontSize: 6, color: PG.textMuted }}>
+        {count}
+      </span>
+    </div>
+  );
+}
+
+function CardBase({
+  isSelected, color, onClick, children,
+}: {
+  isSelected: boolean; color: string; onClick?: () => void; children: ReactNode;
+}) {
+  return (
+    <div
+      onClick={onClick}
+      style={{
+        border: "2px solid",
+        borderTopColor:    isSelected ? color : "#22224a",
+        borderLeftColor:   isSelected ? color : "#22224a",
+        borderBottomColor: isSelected ? color : "#080818",
+        borderRightColor:  isSelected ? color : "#080818",
+        background: isSelected ? `${color}10` : "#0f0f26",
+        overflow: "hidden", cursor: onClick ? "pointer" : "default",
+        display: "flex", flexDirection: "column",
+        transition: "border-color 0.1s",
+        boxShadow: isSelected ? `0 0 12px ${color}33` : "none",
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function CardMeta({ children }: { children: ReactNode }) {
+  return (
+    <div style={{ padding: "7px 8px", display: "flex", flexDirection: "column", gap: 4, flex: 1 }}>
+      {children}
+    </div>
+  );
+}
+
+function CardTitle({ children, color }: { children: ReactNode; color?: string }) {
+  return (
+    <div style={{
+      fontFamily: "var(--font-press-start), monospace",
+      fontSize: 7, color: color ?? "#e0d0ff", letterSpacing: "0.06em",
+      lineHeight: 1.4,
+    }}>{children}</div>
+  );
+}
+
+function CardDesc({ children }: { children: ReactNode }) {
+  return (
+    <div style={{
+      fontFamily: "var(--font-press-start), monospace",
+      fontSize: 6, color: PG.textMuted, lineHeight: 1.6,
+    }}>{children}</div>
+  );
+}
+
+// ─── Composant principal ─────────────────────────────────────────────────────
 
 interface PeagleAssetsGridProps {
   cfg: DevConfig;
@@ -184,28 +329,8 @@ export function PeagleAssetsGrid({ cfg, onLaunch, onApplyTheme }: PeagleAssetsGr
 
   const classArr = Object.values(CLASSES);
 
-  const subHeader = (label: string, count: number) => (
-    <div style={{
-      display: "flex", alignItems: "center", gap: 10, marginBottom: 8, marginTop: 4,
-      borderBottom: `1px solid #2a1a4a`, paddingBottom: 4,
-    }}>
-      <span style={{ fontFamily: "var(--font-press-start), monospace", fontSize: 8, color: "#cc88ff", letterSpacing: "0.06em" }}>{label}</span>
-      <span style={{ fontFamily: "var(--font-press-start), monospace", fontSize: 7, color: "#6655aa" }}>{count} éléments</span>
-    </div>
-  );
-
-  const cardStyle = (isSelected: boolean, color: string): React.CSSProperties => ({
-    border: "2px solid",
-    borderTopColor: isSelected ? color : "#2a1a4a",
-    borderLeftColor: isSelected ? color : "#2a1a4a",
-    borderBottomColor: isSelected ? color : "#0a0520",
-    borderRightColor: isSelected ? color : "#0a0520",
-    background: isSelected ? `${color}14` : "#100828",
-    overflow: "hidden", cursor: "pointer", display: "flex", flexDirection: "column",
-  });
-
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
 
       {/* Live preview button */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
@@ -229,46 +354,34 @@ export function PeagleAssetsGrid({ cfg, onLaunch, onApplyTheme }: PeagleAssetsGr
         </button>
       </div>
 
-      {/* Themes visuels */}
-      <div>
-        {subHeader("THÈMES VISUELS", GAME_THEMES.length)}
+      {/* ── Thèmes visuels ── */}
+      <section>
+        <SectionHeader label="THÈMES VISUELS" count={GAME_THEMES.length} color="#cc88ff" />
         <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8 }}>
-          {GAME_THEMES.map(theme => {
+          {GAME_THEMES.map((theme: GameTheme) => {
             const isActive = cfg.gameThemeId === theme.id;
             return (
-              <div key={theme.id} style={cardStyle(isActive, theme.preview.accent)}>
-                {/* Gradient thumbnail with peg color swatches */}
-                <div style={{
-                  height: 56, background: theme.preview.gradient,
-                  position: "relative", display: "flex",
-                  alignItems: "flex-end", padding: "0 8px 7px",
-                  gap: 4,
-                }}>
+              <CardBase key={theme.id} isSelected={isActive} color={theme.preview.accent}>
+                <div style={{ position: "relative", height: 72, overflow: "hidden" }}>
+                  <ThemeMiniScene theme={theme} />
                   {isActive && (
                     <div style={{
-                      position: "absolute", top: 4, right: 4,
+                      position: "absolute", top: 5, right: 5,
                       background: theme.preview.accent, color: "#000",
                       fontFamily: "var(--font-press-start), monospace",
-                      fontSize: 6, padding: "2px 5px",
+                      fontSize: 6, padding: "2px 5px", letterSpacing: "0.06em",
                     }}>ACTIF</div>
                   )}
-                  {/* Mini peg swatches */}
-                  {([theme.peg.normal, theme.peg.orange, theme.peg.green, theme.peg.warp] as const).map((color, i) => (
-                    <div key={i} style={{
-                      width: 9, height: 9, background: color,
-                      boxShadow: `0 0 4px ${color}`,
-                    }} />
-                  ))}
                 </div>
-                <div style={{ padding: "5px 8px", display: "flex", flexDirection: "column", gap: 3 }}>
-                  <div style={{ fontFamily: "var(--font-press-start), monospace", fontSize: 7, color: "#e0d0ff" }}>{theme.name}</div>
-                  <div style={{ fontFamily: "var(--font-press-start), monospace", fontSize: 6, color: PG.textMuted, lineHeight: 1.4 }}>{theme.description}</div>
+                <CardMeta>
+                  <CardTitle color={theme.preview.accent}>{theme.name.toUpperCase()}</CardTitle>
+                  <CardDesc>{theme.description}</CardDesc>
                   <button
                     style={{
                       ...btnRaised, fontSize: 6, padding: "3px 0", width: "100%", marginTop: 2,
-                      background: isActive ? `linear-gradient(to bottom, ${theme.preview.accent}cc, ${theme.preview.accent}88)` : undefined,
-                      color: isActive ? "#000" : theme.preview.accent,
-                      borderTopColor: theme.preview.accent,
+                      background:    isActive ? `linear-gradient(to bottom, ${theme.preview.accent}cc, ${theme.preview.accent}88)` : undefined,
+                      color:         isActive ? "#000" : theme.preview.accent,
+                      borderTopColor:  theme.preview.accent,
                       borderLeftColor: theme.preview.accent,
                     }}
                     disabled={isActive}
@@ -276,16 +389,16 @@ export function PeagleAssetsGrid({ cfg, onLaunch, onApplyTheme }: PeagleAssetsGr
                   >
                     {isActive ? "✔ ACTIF" : "▶ APPLIQUER"}
                   </button>
-                </div>
-              </div>
+                </CardMeta>
+              </CardBase>
             );
           })}
         </div>
-      </div>
+      </section>
 
-      {/* Classes + skins */}
-      <div>
-        {subHeader("CLASSES (LANCEUR)", classArr.length)}
+      {/* ── Classes + skins ── */}
+      <section>
+        <SectionHeader label="CLASSES (LANCEUR)" count={classArr.length} color="#4488ff" />
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {classArr.map((cls) => {
             const color = CLASS_COLORS[cls.id];
@@ -293,13 +406,21 @@ export function PeagleAssetsGrid({ cfg, onLaunch, onApplyTheme }: PeagleAssetsGr
             const skins = CLASS_SKINS[cls.id] ?? [];
             const activeSkinId = activeSkins[cls.id] ?? skins[0]?.id ?? cls.id;
 
+            const statLines: string[] = [];
+            if (cls.startBalls >= 12)   statLines.push(`★ ${cls.startBalls} ŒUFS`);
+            else                        statLines.push(`◆ ${cls.startBalls} ŒUFS`);
+            if (cls.aimStepsMult >= 2)  statLines.push("◎ VISÉE ×2");
+            if (cls.startRelics.length) statLines.push(`⊕ ${cls.startRelics.length} RELIQUE${cls.startRelics.length > 1 ? "S" : ""}`);
+            if (cls.noBombs)            statLines.push("✕ SANS BOMBES");
+            if (cls.ballRadiusMult < 1) statLines.push(`● ŒUFS −${Math.round((1 - cls.ballRadiusMult) * 100)}%`);
+
             return (
               <div key={cls.id} style={{
                 border: "2px solid",
-                borderTopColor: isActiveClass ? color : "#2a1a4a",
-                borderLeftColor: isActiveClass ? color : "#2a1a4a",
+                borderTopColor:    isActiveClass ? color : "#2a1a4a",
+                borderLeftColor:   isActiveClass ? color : "#2a1a4a",
                 borderBottomColor: isActiveClass ? color : "#0a0520",
-                borderRightColor: isActiveClass ? color : "#0a0520",
+                borderRightColor:  isActiveClass ? color : "#0a0520",
                 background: isActiveClass ? `${color}0a` : "#100828",
               }}>
                 {/* Classe header */}
@@ -330,13 +451,22 @@ export function PeagleAssetsGrid({ cfg, onLaunch, onApplyTheme }: PeagleAssetsGr
                   </button>
                 </div>
 
-                {/* Classe description */}
+                {/* Stats rapides */}
+                {statLines.length > 0 && (
+                  <div style={{ padding: "3px 10px 1px", display: "flex", gap: 6, flexWrap: "wrap" }}>
+                    {statLines.map((s, i) => (
+                      <span key={i} style={{ fontFamily: "var(--font-press-start), monospace", fontSize: 6, color, letterSpacing: "0.06em" }}>{s}</span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Description */}
                 <div style={{ padding: "4px 10px 6px", display: "flex", flexDirection: "column", gap: 2 }}>
                   <div style={{ fontFamily: "var(--font-press-start), monospace", fontSize: 6, color: "#e0d0ff", lineHeight: 1.5 }}>{cls.desc}</div>
                   <div style={{ fontFamily: "var(--font-press-start), monospace", fontSize: 6, color: "#6655aa", fontStyle: "italic", lineHeight: 1.4 }}>&quot;{cls.flavorText}&quot;</div>
                 </div>
 
-                {/* Skins grid */}
+                {/* Skins */}
                 <div style={{ padding: "0 8px 8px", display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 4 }}>
                   {skins.map((skin) => {
                     const isSkinActive = activeSkinId === skin.id;
@@ -348,10 +478,10 @@ export function PeagleAssetsGrid({ cfg, onLaunch, onApplyTheme }: PeagleAssetsGr
                         style={{
                           cursor: "pointer",
                           border: "2px solid",
-                          borderTopColor: isSkinActive ? color : "#2a1a4a",
-                          borderLeftColor: isSkinActive ? color : "#2a1a4a",
-                          borderBottomColor: isSkinActive ? "#0a0520" : "#0a0520",
-                          borderRightColor: isSkinActive ? "#0a0520" : "#0a0520",
+                          borderTopColor:    isSkinActive ? color : "#2a1a4a",
+                          borderLeftColor:   isSkinActive ? color : "#2a1a4a",
+                          borderBottomColor: "#0a0520",
+                          borderRightColor:  "#0a0520",
                           background: isSkinActive ? `${color}22` : "#0a0a1e",
                           display: "flex", flexDirection: "column",
                           alignItems: "center", gap: 4, padding: "6px 2px 5px",
@@ -359,17 +489,13 @@ export function PeagleAssetsGrid({ cfg, onLaunch, onApplyTheme }: PeagleAssetsGr
                         }}
                       >
                         {isSkinActive && (
-                          <div style={{
-                            position: "absolute", top: 1, right: 2,
-                            fontFamily: "monospace", fontSize: 7, color,
-                          }}>✔</div>
+                          <div style={{ position: "absolute", top: 1, right: 2, fontFamily: "monospace", fontSize: 7, color }}>✔</div>
                         )}
                         <PegIcon id={skin.id as Parameters<typeof PegIcon>[0]["id"]} size={32} />
                         <div style={{
                           fontFamily: "var(--font-press-start), monospace",
                           fontSize: 5, color: isSkinActive ? color : "#6655aa",
-                          textAlign: "center", lineHeight: 1.3,
-                          wordBreak: "break-word",
+                          textAlign: "center", lineHeight: 1.3, wordBreak: "break-word",
                         }}>{skin.name}</div>
                       </div>
                     );
@@ -379,11 +505,11 @@ export function PeagleAssetsGrid({ cfg, onLaunch, onApplyTheme }: PeagleAssetsGr
             );
           })}
         </div>
-      </div>
+      </section>
 
-      {/* Peg types */}
-      <div>
-        {subHeader("TYPES DE PEGS", PEG_DEFS.length)}
+      {/* ── Types de pegs ── */}
+      <section>
+        <SectionHeader label="TYPES DE PEGS" count={PEG_DEFS.length} color="#ff8844" />
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {PEG_DEFS.map((def) => {
             const color = def.color;
@@ -393,7 +519,7 @@ export function PeagleAssetsGrid({ cfg, onLaunch, onApplyTheme }: PeagleAssetsGr
             return (
               <div key={def.id} style={{
                 border: "2px solid",
-                borderTopColor: color, borderLeftColor: color,
+                borderTopColor:    color, borderLeftColor:   color,
                 borderBottomColor: "#0a0520", borderRightColor: "#0a0520",
                 background: "#100828",
               }}>
@@ -420,8 +546,8 @@ export function PeagleAssetsGrid({ cfg, onLaunch, onApplyTheme }: PeagleAssetsGr
                         style={{
                           cursor: "pointer",
                           border: "2px solid",
-                          borderTopColor: isSkinActive ? color : "#2a1a4a",
-                          borderLeftColor: isSkinActive ? color : "#2a1a4a",
+                          borderTopColor:    isSkinActive ? color : "#2a1a4a",
+                          borderLeftColor:   isSkinActive ? color : "#2a1a4a",
                           borderBottomColor: "#0a0520", borderRightColor: "#0a0520",
                           background: isSkinActive ? `${color}22` : "#0a0a1e",
                           display: "flex", flexDirection: "column",
@@ -446,11 +572,11 @@ export function PeagleAssetsGrid({ cfg, onLaunch, onApplyTheme }: PeagleAssetsGr
             );
           })}
         </div>
-      </div>
+      </section>
 
-      {/* Décors */}
-      <div>
-        {subHeader("DÉCORS (NON-POPPABLES)", DECOR_DEFS.length)}
+      {/* ── Décors ── */}
+      <section>
+        <SectionHeader label="DÉCORS (NON-POPPABLES)" count={DECOR_DEFS.length} color="#44ffaa" />
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {DECOR_DEFS.map((def) => {
             const color = def.color;
@@ -459,7 +585,7 @@ export function PeagleAssetsGrid({ cfg, onLaunch, onApplyTheme }: PeagleAssetsGr
             return (
               <div key={def.id} style={{
                 border: "2px solid",
-                borderTopColor: color, borderLeftColor: color,
+                borderTopColor:    color, borderLeftColor:   color,
                 borderBottomColor: "#0a0520", borderRightColor: "#0a0520",
                 background: "#100828",
               }}>
@@ -486,8 +612,8 @@ export function PeagleAssetsGrid({ cfg, onLaunch, onApplyTheme }: PeagleAssetsGr
                         style={{
                           cursor: "pointer",
                           border: "2px solid",
-                          borderTopColor: isSkinActive ? color : "#2a1a4a",
-                          borderLeftColor: isSkinActive ? color : "#2a1a4a",
+                          borderTopColor:    isSkinActive ? color : "#2a1a4a",
+                          borderLeftColor:   isSkinActive ? color : "#2a1a4a",
                           borderBottomColor: "#0a0520", borderRightColor: "#0a0520",
                           background: isSkinActive ? `${color}22` : "#0a0a1e",
                           display: "flex", flexDirection: "column",
@@ -512,7 +638,8 @@ export function PeagleAssetsGrid({ cfg, onLaunch, onApplyTheme }: PeagleAssetsGr
             );
           })}
         </div>
-      </div>
+      </section>
+
     </div>
   );
 }

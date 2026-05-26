@@ -49,7 +49,9 @@ type PegIconId =
   // Relics
   | "boomerang" | "scorpion" | "blessed_cursor" | "trophy" | "phoenix" | "cursed_luck"
   // UI
-  | "gamepad" | "victory" | "skull" | "boss" | "ball_cat" | "score_cat" | "utility_cat";
+  | "gamepad" | "victory" | "skull" | "boss" | "ball_cat" | "score_cat" | "utility_cat"
+  // Décors (Showroom)
+  | "decor_bumper" | "decor_plank" | "decor_arc" | "decor_spike";
 
 // Pixel grid: each char maps to a color key. "." = transparent.
 // Colors are resolved per-icon via the `palette` map.
@@ -1231,6 +1233,61 @@ const ICONS: Record<PegIconId, IconDef> = {
       ".aaa.",
     ],
     palette: { a: "#44ffaa", b: "#ffffff" },
+  },
+
+  // ─── Décors ───────────────────────────────────────────────────────────────
+  decor_bumper: {
+    // Disque rond avec reflet central
+    grid: [
+      "...bbb...",
+      "..bhhhb..",
+      ".bhhhhhb.",
+      "bhhhhhhhb",
+      "bhhhhhhhb",
+      "bhhhhhhhb",
+      ".bhhhhhb.",
+      "..bhhhb..",
+      "...bbb...",
+    ],
+    palette: { b: "#224488", h: "#4477cc" },
+  },
+  decor_plank: {
+    // Planche avec bevel (vue de dessus)
+    grid: [
+      "hhhhhhhhhhh",
+      "bbbbbbbbbbb",
+      "bbbbbbbbbbb",
+      "bbbbbbbbbbb",
+      "ddddddddddd",
+    ],
+    palette: { h: "#ddbb88", b: "#aa7733", d: "#553311" },
+  },
+  decor_arc: {
+    // Arc en U ouvert vers le bas
+    grid: [
+      "b.......b",
+      "b.......b",
+      "b.......b",
+      ".bb...bb.",
+      "..bbbbb..",
+      ".........",
+    ],
+    palette: { b: "#7766ee" },
+  },
+  decor_spike: {
+    // Pointe triangulaire vers le haut
+    grid: [
+      "...b...",
+      "..bbb..",
+      "..bbb..",
+      ".bbbbb.",
+      ".bbbbb.",
+      "bbbbbbb",
+      "bbbbbbb",
+      ".hhhhh.",
+      ".......",
+    ],
+    palette: { b: "#cc3355", h: "#ff6677" },
   },
 };
 
