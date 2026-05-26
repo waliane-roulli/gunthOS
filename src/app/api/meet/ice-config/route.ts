@@ -18,8 +18,11 @@ export async function GET() {
   ];
 
   if (url && username && credential) {
+    // Strip any scheme prefix, then append port if not already present
+    const stripped = url.replace(/^https?:\/\//, "");
+    const host = stripped.includes(":") ? stripped : `${stripped}:3478`;
     iceServers.push({
-      urls: [`turn:${url}:3478`, `turn:${url}:3478?transport=tcp`],
+      urls: [`turn:${host}`, `turn:${host}?transport=tcp`],
       username,
       credential,
     });
