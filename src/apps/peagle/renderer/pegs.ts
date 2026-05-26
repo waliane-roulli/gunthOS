@@ -2,6 +2,7 @@ import { PEG_R } from "../engine/constants";
 import type { GameState, Peg, GreenPowerupId } from "../engine/types";
 import { getPegType } from "../engine/types";
 import type { GameTheme, PegTheme } from "../engine/game-theme";
+import { applyPegSkinOverrides } from "./skin";
 
 // Fake pixel glow — 3 concentric semi-transparent rects instead of ctx.shadowBlur.
 // shadowBlur triggers a full GPU Gaussian pass per draw call; this is ~10× cheaper
@@ -198,7 +199,7 @@ function drawNormalPeg(ctx: CanvasRenderingContext2D, p: Peg, r: number, t: PegT
 }
 
 export function drawPegs(ctx: CanvasRenderingContext2D, s: GameState, inFever: boolean, feverIntensity: number, theme: GameTheme): void {
-  const t = theme.peg;
+  const t = applyPegSkinOverrides(theme.peg);
   ctx.imageSmoothingEnabled = false;
 
   for (const p of s.pegs) {

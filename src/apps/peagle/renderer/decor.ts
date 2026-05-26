@@ -1,4 +1,5 @@
 import type { GameState, Decor, DecorBumper, DecorPlank, DecorArc, DecorSpike } from "../engine/types";
+import { getDecorColor } from "./skin";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -374,10 +375,11 @@ function drawSpike(ctx: CanvasRenderingContext2D, d: DecorSpike): void {
 export function drawDecors(ctx: CanvasRenderingContext2D, s: GameState): void {
   ctx.imageSmoothingEnabled = false;
   for (const d of s.decors) {
-    if (d.kind === "bumper") drawBumper(ctx, d, s.animClock);
-    else if (d.kind === "plank") drawPlank(ctx, d);
-    else if (d.kind === "arc") drawArc(ctx, d, s.animClock);
-    else if (d.kind === "spike") drawSpike(ctx, d);
+    const skinned = { ...d, color: getDecorColor(d.kind, d.color) };
+    if (skinned.kind === "bumper") drawBumper(ctx, skinned as DecorBumper, s.animClock);
+    else if (skinned.kind === "plank") drawPlank(ctx, skinned as DecorPlank);
+    else if (skinned.kind === "arc") drawArc(ctx, skinned as DecorArc, s.animClock);
+    else if (skinned.kind === "spike") drawSpike(ctx, skinned as DecorSpike);
   }
 }
 

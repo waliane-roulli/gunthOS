@@ -10,6 +10,8 @@ import { useOpenApp } from "@/lib/hooks/use-open-app";
 
 export const PEAGLE_LIVE_THEME_KEY = "peagle_live_theme";
 export const PEAGLE_LIVE_SKIN_KEY = "peagle_live_skin";
+export const PEAGLE_LIVE_PEG_SKIN_KEY = "peagle_live_peg_skin";
+export const PEAGLE_LIVE_DECOR_SKIN_KEY = "peagle_live_decor_skin";
 
 // 5 skin options per class — maps classId to array of PegIconId skins
 export const CLASS_SKINS: Record<string, { id: string; name: string; desc: string }[]> = {
@@ -36,67 +38,91 @@ export const CLASS_SKINS: Record<string, { id: string; name: string; desc: strin
   ],
 };
 
-interface PegDef {
-  id: string; name: string; description: string;
-  color: string; hi: string; dark: string; glow?: string; symbol?: string;
-}
+type SkinDef = { id: string; name: string; desc: string };
 
-const PEG_DEFS: PegDef[] = [
-  { id: "normal", name: "Peg Normal",  description: "Le peg de base. À détruire.",              color: "#2233aa", hi: "#4455ff", dark: "#000d44" },
-  { id: "orange", name: "Peg Orange",  description: "Objectif principal de chaque niveau.",     color: "#ff5500", hi: "#ffdd44", dark: "#882200", glow: "rgba(255,100,0,0.5)" },
-  { id: "green",  name: "Peg Vert",    description: "Bonus aléatoire au contact.",              color: "#009922", hi: "#aaffcc", dark: "#003311", glow: "rgba(0,255,68,0.4)", symbol: "✓" },
-  { id: "boss",   name: "Boss Peg",    description: "5 HP. Pulsant. Redoutable.",               color: "#cc8800", hi: "#ffff88", dark: "#664400", glow: "rgba(255,204,0,0.6)", symbol: "♛" },
-  { id: "bomb",   name: "Bombe",       description: "Explose et élimine les pegs voisins.",     color: "#ff1133", hi: "#ff8899", dark: "#880011", glow: "rgba(255,20,60,0.5)", symbol: "!" },
-  { id: "armor",  name: "Blindé",      description: "Résiste à plusieurs impacts.",             color: "#888899", hi: "#dddde8", dark: "#333340" },
-  { id: "warp",   name: "Warp",        description: "Téléporte la balle vers son peg jumeau.", color: "#6600cc", hi: "#ee88ff", dark: "#330066", glow: "rgba(204,0,255,0.6)" },
+const PEG_DEFS: { id: string; name: string; description: string; color: string; skinCount: number }[] = [
+  { id: "normal", name: "Peg Normal",  description: "Le peg de base. À détruire.",              color: "#2233aa", skinCount: 5 },
+  { id: "orange", name: "Peg Orange",  description: "Objectif principal de chaque niveau.",     color: "#ff5500", skinCount: 5 },
+  { id: "green",  name: "Peg Vert",    description: "Bonus aléatoire au contact.",              color: "#009922", skinCount: 5 },
+  { id: "boss",   name: "Boss Peg",    description: "5 HP. Pulsant. Redoutable.",               color: "#cc8800", skinCount: 3 },
+  { id: "bomb",   name: "Bombe",       description: "Explose et élimine les pegs voisins.",     color: "#ff1133", skinCount: 3 },
+  { id: "armor",  name: "Blindé",      description: "Résiste à plusieurs impacts.",             color: "#888899", skinCount: 3 },
+  { id: "warp",   name: "Warp",        description: "Téléporte la balle vers son peg jumeau.", color: "#6600cc", skinCount: 3 },
 ];
 
-const DECOR_DEFS = [
-  { id: "bumper", name: "Bumper",  description: "Renvoie la balle avec force. Idéal pour les combos.", color: "#3355dd" },
-  { id: "plank",  name: "Planche", description: "Surface inclinée qui guide la trajectoire.",           color: "#aa7733" },
-  { id: "arc",    name: "Arc",     description: "Courbe qui dévie doucement la balle.",                 color: "#5544cc" },
-  { id: "spike",  name: "Pointe",  description: "Obstacle tranchant — la balle rebondit dessus.",       color: "#cc3355" },
+const DECOR_DEFS: { id: string; name: string; description: string; color: string; skinCount: number }[] = [
+  { id: "bumper", name: "Bumper",  description: "Renvoie la balle avec force. Idéal pour les combos.", color: "#3355dd", skinCount: 3 },
+  { id: "plank",  name: "Planche", description: "Surface inclinée qui guide la trajectoire.",           color: "#aa7733", skinCount: 3 },
+  { id: "arc",    name: "Arc",     description: "Courbe qui dévie doucement la balle.",                 color: "#5544cc", skinCount: 3 },
+  { id: "spike",  name: "Pointe",  description: "Obstacle tranchant — la balle rebondit dessus.",       color: "#cc3355", skinCount: 3 },
 ];
 
-function CssPeg({ def }: { def: PegDef }) {
-  return (
-    <div style={{
-      width: 36, height: 36, flexShrink: 0,
-      backgroundColor: def.color,
-      borderTop: `2px solid ${def.hi}`, borderLeft: `2px solid ${def.hi}`,
-      borderBottom: `2px solid ${def.dark}`, borderRight: `2px solid ${def.dark}`,
-      boxShadow: def.glow ? `0 0 10px ${def.glow}, 0 0 4px ${def.glow}` : "none",
-      display: "flex", alignItems: "center", justifyContent: "center",
-      fontFamily: "monospace", fontSize: "0.9rem", color: "rgba(255,255,255,0.85)",
-    }}>
-      {def.symbol ?? ""}
-    </div>
-  );
-}
+export const PEG_SKINS: Record<string, SkinDef[]> = {
+  normal: [
+    { id: "peg_normal_1", name: "Classique", desc: "Le peg bleu de base. Solide." },
+    { id: "peg_normal_2", name: "Ardoise",   desc: "Gris-bleu froid, reflet métallique." },
+    { id: "peg_normal_3", name: "Minuit",    desc: "Bleu sombre, presque invisible." },
+    { id: "peg_normal_4", name: "Acier",     desc: "Argent brossé, industriel." },
+    { id: "peg_normal_5", name: "Fantôme",   desc: "Contours pointillés, à peine là." },
+  ],
+  orange: [
+    { id: "peg_orange_1", name: "Classique", desc: "Orange vif. L'objectif absolu." },
+    { id: "peg_orange_2", name: "Soleil",    desc: "Rayons dorés, cœur éclatant." },
+    { id: "peg_orange_3", name: "Braise",    desc: "Rouge-orange, bords noircis." },
+    { id: "peg_orange_4", name: "Lava",      desc: "Volcanique, cracks internes." },
+    { id: "peg_orange_5", name: "Doré",      desc: "Édition légendaire. Or pur." },
+  ],
+  green: [
+    { id: "peg_green_1", name: "Classique", desc: "Vert avec checkmark. Bonus garanti." },
+    { id: "peg_green_2", name: "Trèfle",    desc: "Motif feuille vert foncé. Chanceux." },
+    { id: "peg_green_3", name: "Émeraude",  desc: "Vert précieux, facettes brillantes." },
+    { id: "peg_green_4", name: "Toxic",     desc: "Vert acide. Ne pas avaler." },
+    { id: "peg_green_5", name: "Nature",    desc: "Texture mousse organique." },
+  ],
+  boss: [
+    { id: "peg_boss_1", name: "Couronne", desc: "Or et couronne. Le roi des pegs." },
+    { id: "peg_boss_2", name: "Démon",    desc: "Rouge sang, crocs apparents." },
+    { id: "peg_boss_3", name: "Obsidienne", desc: "Noir profond, runes violettes." },
+  ],
+  bomb: [
+    { id: "peg_bomb_1", name: "Dynamite", desc: "Rouge vif, mèche en feu." },
+    { id: "peg_bomb_2", name: "Grenade",  desc: "Verte militaire, nervures." },
+    { id: "peg_bomb_3", name: "Mine",     desc: "Noire avec croix rouge. Discret." },
+  ],
+  armor: [
+    { id: "peg_armor_1", name: "Métal",  desc: "Gris métal, rivets apparents." },
+    { id: "peg_armor_2", name: "Titane", desc: "Bleu acier. Quasi indestructible." },
+    { id: "peg_armor_3", name: "Bois",   desc: "Planche clouée. Rustique mais solide." },
+  ],
+  warp: [
+    { id: "peg_warp_1", name: "Spirale", desc: "Violet pulsant, vortex central." },
+    { id: "peg_warp_2", name: "Portail", desc: "Bleu électrique, anneau ouvert." },
+    { id: "peg_warp_3", name: "Néon",    desc: "Rose flashy, halo éblouissant." },
+  ],
+};
 
-function CssDecor({ def }: { def: typeof DECOR_DEFS[number] }) {
-  if (def.id === "bumper") {
-    return <div style={{ width: 40, height: 40, flexShrink: 0, backgroundColor: def.color, borderRadius: 6, border: `2px solid ${def.color}cc`, boxShadow: `0 0 10px ${def.color}88` }} />;
-  }
-  if (def.id === "plank") {
-    return (
-      <div style={{ width: 60, height: 20, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-        <div style={{ width: 54, height: 10, backgroundColor: def.color, border: `1px solid ${def.color}cc`, transform: "rotate(-18deg)", boxShadow: "1px 2px 0 rgba(0,0,0,0.4)" }} />
-      </div>
-    );
-  }
-  if (def.id === "arc") {
-    return (
-      <div style={{ width: 60, height: 35, display: "flex", alignItems: "flex-end", justifyContent: "center", flexShrink: 0 }}>
-        <div style={{ width: 52, height: 26, border: `4px solid ${def.color}`, borderBottomColor: "transparent", borderRadius: "30px 30px 0 0", boxShadow: `0 0 8px ${def.color}66` }} />
-      </div>
-    );
-  }
-  if (def.id === "spike") {
-    return <div style={{ width: 0, height: 0, flexShrink: 0, borderLeft: "16px solid transparent", borderRight: "16px solid transparent", borderBottom: `30px solid ${def.color}`, filter: `drop-shadow(0 0 4px ${def.color}88)` }} />;
-  }
-  return null;
-}
+export const DECOR_SKINS: Record<string, SkinDef[]> = {
+  bumper: [
+    { id: "decor_bumper_1", name: "Classique", desc: "Bleu standard. Rebondit bien." },
+    { id: "decor_bumper_2", name: "Néon",      desc: "Rouge pulsant. Dangereux à l'œil." },
+    { id: "decor_bumper_3", name: "Or",        desc: "Doré, prestige. Rebondit mieux." },
+  ],
+  plank: [
+    { id: "decor_plank_1", name: "Bois",   desc: "Planche en bois avec nœud visible." },
+    { id: "decor_plank_2", name: "Métal",  desc: "Plaque d'acier grise, industrielle." },
+    { id: "decor_plank_3", name: "Pierre", desc: "Dalle de roc. Inébranlable." },
+  ],
+  arc: [
+    { id: "decor_arc_1", name: "Bois",  desc: "Courbe organique, naturelle." },
+    { id: "decor_arc_2", name: "Acier", desc: "Arc métallique brillant." },
+    { id: "decor_arc_3", name: "Néon",  desc: "Arc lumineux rose. Bien visible." },
+  ],
+  spike: [
+    { id: "decor_spike_1", name: "Rouge",  desc: "Classique rouge tranchant." },
+    { id: "decor_spike_2", name: "Glace",  desc: "Pointe bleue translucide." },
+    { id: "decor_spike_3", name: "Or",     desc: "Dorée, précieuse et mortelle." },
+  ],
+};
 
 interface PeagleAssetsGridProps {
   cfg: DevConfig;
@@ -105,11 +131,19 @@ interface PeagleAssetsGridProps {
 }
 
 export function PeagleAssetsGrid({ cfg, onLaunch, onApplyTheme }: PeagleAssetsGridProps) {
-  const [selectedPeg,   setSelectedPeg]   = useState<string | null>(null);
-  const [selectedDecor, setSelectedDecor] = useState<string | null>(null);
   const [activeSkins, setActiveSkins] = useState<Record<string, string>>(() => {
     if (typeof window === "undefined") return {};
     try { return JSON.parse(localStorage.getItem("peagle_active_skins") ?? "{}") as Record<string, string>; }
+    catch { return {}; }
+  });
+  const [activePegSkins, setActivePegSkins] = useState<Record<string, string>>(() => {
+    if (typeof window === "undefined") return {};
+    try { return JSON.parse(localStorage.getItem("peagle_active_peg_skins") ?? "{}") as Record<string, string>; }
+    catch { return {}; }
+  });
+  const [activeDecorSkins, setActiveDecorSkins] = useState<Record<string, string>>(() => {
+    if (typeof window === "undefined") return {};
+    try { return JSON.parse(localStorage.getItem("peagle_active_decor_skins") ?? "{}") as Record<string, string>; }
     catch { return {}; }
   });
   const { openApp } = useOpenApp();
@@ -126,6 +160,22 @@ export function PeagleAssetsGrid({ cfg, onLaunch, onApplyTheme }: PeagleAssetsGr
     localStorage.setItem("peagle_active_skins", JSON.stringify(next));
     localStorage.setItem(PEAGLE_LIVE_SKIN_KEY, JSON.stringify({ classId, skinId }));
     window.dispatchEvent(new StorageEvent("storage", { key: PEAGLE_LIVE_SKIN_KEY, newValue: JSON.stringify({ classId, skinId }) }));
+  }
+
+  function applyPegSkin(pegId: string, skinId: string) {
+    const next = { ...activePegSkins, [pegId]: skinId };
+    setActivePegSkins(next);
+    localStorage.setItem("peagle_active_peg_skins", JSON.stringify(next));
+    localStorage.setItem(PEAGLE_LIVE_PEG_SKIN_KEY, JSON.stringify({ pegId, skinId }));
+    window.dispatchEvent(new StorageEvent("storage", { key: PEAGLE_LIVE_PEG_SKIN_KEY, newValue: JSON.stringify({ pegId, skinId }) }));
+  }
+
+  function applyDecorSkin(decorId: string, skinId: string) {
+    const next = { ...activeDecorSkins, [decorId]: skinId };
+    setActiveDecorSkins(next);
+    localStorage.setItem("peagle_active_decor_skins", JSON.stringify(next));
+    localStorage.setItem(PEAGLE_LIVE_DECOR_SKIN_KEY, JSON.stringify({ decorId, skinId }));
+    window.dispatchEvent(new StorageEvent("storage", { key: PEAGLE_LIVE_DECOR_SKIN_KEY, newValue: JSON.stringify({ decorId, skinId }) }));
   }
 
   function openPreview() {
@@ -334,21 +384,63 @@ export function PeagleAssetsGrid({ cfg, onLaunch, onApplyTheme }: PeagleAssetsGr
       {/* Peg types */}
       <div>
         {subHeader("TYPES DE PEGS", PEG_DEFS.length)}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 8 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {PEG_DEFS.map((def) => {
-            const isSelected = selectedPeg === def.id;
+            const color = def.color;
+            const skins = PEG_SKINS[def.id] ?? [];
+            const activeSkinId = activePegSkins[def.id] ?? skins[0]?.id;
+            const cols = skins.length <= 3 ? skins.length : 5;
             return (
-              <div key={def.id} onClick={() => setSelectedPeg(isSelected ? null : def.id)} style={cardStyle(isSelected, def.color)}>
-                <div style={{ height: 64, background: "#0a0a1e", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <CssPeg def={def} />
-                </div>
-                <div style={{ padding: "5px 7px", display: "flex", flexDirection: "column", gap: 3 }}>
-                  <div style={{ fontFamily: "var(--font-press-start), monospace", fontSize: 7, color: "#e0d0ff" }}>{def.name}</div>
-                  <div style={{ fontFamily: "var(--font-press-start), monospace", fontSize: 6, color: "#6655aa", lineHeight: 1.4 }}>{def.description}</div>
-                  <div style={{ display: "flex", gap: 4, alignItems: "center", marginTop: 2 }}>
-                    <div style={{ width: 10, height: 10, backgroundColor: def.color, flexShrink: 0, boxShadow: def.glow ? `0 0 4px ${def.glow}` : "none" }} />
-                    <span style={{ fontFamily: "var(--font-press-start), monospace", fontSize: 6, color: "#6655aa" }}>{def.color}</span>
+              <div key={def.id} style={{
+                border: "2px solid",
+                borderTopColor: color, borderLeftColor: color,
+                borderBottomColor: "#0a0520", borderRightColor: "#0a0520",
+                background: "#100828",
+              }}>
+                <div style={{
+                  padding: "6px 10px", display: "flex", alignItems: "center",
+                  gap: 8, borderBottom: "1px solid #2a1a4a", background: "#0a0820",
+                }}>
+                  <div style={{ width: 8, height: 8, backgroundColor: color, flexShrink: 0 }} />
+                  <div style={{ fontFamily: "var(--font-press-start), monospace", fontSize: 8, color, letterSpacing: "0.08em" }}>
+                    {def.name.toUpperCase()}
                   </div>
+                </div>
+                <div style={{ padding: "4px 10px 6px" }}>
+                  <div style={{ fontFamily: "var(--font-press-start), monospace", fontSize: 6, color: "#e0d0ff", lineHeight: 1.5 }}>{def.description}</div>
+                </div>
+                <div style={{ padding: "0 8px 8px", display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 4 }}>
+                  {skins.map((skin) => {
+                    const isSkinActive = activeSkinId === skin.id;
+                    return (
+                      <div
+                        key={skin.id}
+                        title={`${skin.name} — ${skin.desc}`}
+                        onClick={() => applyPegSkin(def.id, skin.id)}
+                        style={{
+                          cursor: "pointer",
+                          border: "2px solid",
+                          borderTopColor: isSkinActive ? color : "#2a1a4a",
+                          borderLeftColor: isSkinActive ? color : "#2a1a4a",
+                          borderBottomColor: "#0a0520", borderRightColor: "#0a0520",
+                          background: isSkinActive ? `${color}22` : "#0a0a1e",
+                          display: "flex", flexDirection: "column",
+                          alignItems: "center", gap: 4, padding: "6px 2px 5px",
+                          position: "relative",
+                        }}
+                      >
+                        {isSkinActive && (
+                          <div style={{ position: "absolute", top: 1, right: 2, fontFamily: "monospace", fontSize: 7, color }}>✔</div>
+                        )}
+                        <PegIcon id={skin.id as Parameters<typeof PegIcon>[0]["id"]} size={32} />
+                        <div style={{
+                          fontFamily: "var(--font-press-start), monospace",
+                          fontSize: 5, color: isSkinActive ? color : "#6655aa",
+                          textAlign: "center", lineHeight: 1.3, wordBreak: "break-word",
+                        }}>{skin.name}</div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             );
@@ -359,21 +451,62 @@ export function PeagleAssetsGrid({ cfg, onLaunch, onApplyTheme }: PeagleAssetsGr
       {/* Décors */}
       <div>
         {subHeader("DÉCORS (NON-POPPABLES)", DECOR_DEFS.length)}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 8 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {DECOR_DEFS.map((def) => {
-            const isSelected = selectedDecor === def.id;
+            const color = def.color;
+            const skins = DECOR_SKINS[def.id] ?? [];
+            const activeSkinId = activeDecorSkins[def.id] ?? skins[0]?.id;
             return (
-              <div key={def.id} onClick={() => setSelectedDecor(isSelected ? null : def.id)} style={cardStyle(isSelected, def.color)}>
-                <div style={{ height: 64, background: "#0a0a1e", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <CssDecor def={def} />
-                </div>
-                <div style={{ padding: "5px 7px", display: "flex", flexDirection: "column", gap: 3 }}>
-                  <div style={{ fontFamily: "var(--font-press-start), monospace", fontSize: 7, color: "#e0d0ff" }}>{def.name}</div>
-                  <div style={{ fontFamily: "var(--font-press-start), monospace", fontSize: 6, color: "#6655aa", lineHeight: 1.4 }}>{def.description}</div>
-                  <div style={{ display: "flex", gap: 4, alignItems: "center", marginTop: 2 }}>
-                    <div style={{ width: 10, height: 10, backgroundColor: def.color, flexShrink: 0 }} />
-                    <span style={{ fontFamily: "var(--font-press-start), monospace", fontSize: 6, color: "#6655aa" }}>{def.color}</span>
+              <div key={def.id} style={{
+                border: "2px solid",
+                borderTopColor: color, borderLeftColor: color,
+                borderBottomColor: "#0a0520", borderRightColor: "#0a0520",
+                background: "#100828",
+              }}>
+                <div style={{
+                  padding: "6px 10px", display: "flex", alignItems: "center",
+                  gap: 8, borderBottom: "1px solid #2a1a4a", background: "#0a0820",
+                }}>
+                  <div style={{ width: 8, height: 8, backgroundColor: color, flexShrink: 0 }} />
+                  <div style={{ fontFamily: "var(--font-press-start), monospace", fontSize: 8, color, letterSpacing: "0.08em" }}>
+                    {def.name.toUpperCase()}
                   </div>
+                </div>
+                <div style={{ padding: "4px 10px 6px" }}>
+                  <div style={{ fontFamily: "var(--font-press-start), monospace", fontSize: 6, color: "#e0d0ff", lineHeight: 1.5 }}>{def.description}</div>
+                </div>
+                <div style={{ padding: "0 8px 8px", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 4 }}>
+                  {skins.map((skin) => {
+                    const isSkinActive = activeSkinId === skin.id;
+                    return (
+                      <div
+                        key={skin.id}
+                        title={`${skin.name} — ${skin.desc}`}
+                        onClick={() => applyDecorSkin(def.id, skin.id)}
+                        style={{
+                          cursor: "pointer",
+                          border: "2px solid",
+                          borderTopColor: isSkinActive ? color : "#2a1a4a",
+                          borderLeftColor: isSkinActive ? color : "#2a1a4a",
+                          borderBottomColor: "#0a0520", borderRightColor: "#0a0520",
+                          background: isSkinActive ? `${color}22` : "#0a0a1e",
+                          display: "flex", flexDirection: "column",
+                          alignItems: "center", gap: 4, padding: "6px 2px 5px",
+                          position: "relative",
+                        }}
+                      >
+                        {isSkinActive && (
+                          <div style={{ position: "absolute", top: 1, right: 2, fontFamily: "monospace", fontSize: 7, color }}>✔</div>
+                        )}
+                        <PegIcon id={skin.id as Parameters<typeof PegIcon>[0]["id"]} size={32} />
+                        <div style={{
+                          fontFamily: "var(--font-press-start), monospace",
+                          fontSize: 5, color: isSkinActive ? color : "#6655aa",
+                          textAlign: "center", lineHeight: 1.3, wordBreak: "break-word",
+                        }}>{skin.name}</div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             );
