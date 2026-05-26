@@ -71,8 +71,12 @@ export async function POST(
   const body = await req.json();
   const { to, type, payload } = body;
 
+  const VALID_TYPES = ["offer", "answer", "ice-candidate"] as const;
   if (!to || !type || payload === undefined) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 });
+  }
+  if (!VALID_TYPES.includes(type)) {
+    return NextResponse.json({ error: "Invalid signal type" }, { status: 400 });
   }
 
   const sent = relaySignal(roomId, {
@@ -90,6 +94,9 @@ export async function HEAD(
   _req: NextRequest,
   { params }: { params: Promise<{ roomId: string }> }
 ) {
+  const session = await getAuth().api.getSession({ headers: await headers() });
+  if (!session) return new Response(null, { status: 401 });
+
   const { roomId } = await params;
   const count = listParticipants(roomId).length;
   return new Response(null, { headers: { "X-Participant-Count": String(count) } });

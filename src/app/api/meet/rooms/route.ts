@@ -13,7 +13,12 @@ export async function POST(req: NextRequest) {
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json().catch(() => ({}));
-  const roomId: string = body.roomId ?? nanoid(8);
+  const rawId: string = body.roomId ?? nanoid(8);
+
+  if (!/^[a-zA-Z0-9_-]{1,32}$/.test(rawId)) {
+    return NextResponse.json({ error: "Invalid room ID" }, { status: 400 });
+  }
+  const roomId = rawId;
 
   getOrCreateRoom(roomId);
 

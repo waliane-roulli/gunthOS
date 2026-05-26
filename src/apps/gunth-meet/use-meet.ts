@@ -55,6 +55,7 @@ export function useMeet(roomId: string, currentUserId: string, currentDisplayNam
   const localStreamRef = useRef<MediaStream | null>(null);
   const screenStreamRef = useRef<MediaStream | null>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
+  const iceServersRef = useRef<RTCIceServer[] | null>(null);
 
   const updatePeersState = useCallback(() => {
     setPeers(new Map(
@@ -77,8 +78,10 @@ export function useMeet(roomId: string, currentUserId: string, currentDisplayNam
   }, [roomId]);
 
   const createPeerConnection = useCallback(async (remoteId: string, displayName: string, polite: boolean): Promise<Peer> => {
-    const iceServers = await fetchIceServers();
-    const pc = new RTCPeerConnection({ iceServers });
+    if (!iceServersRef.current) {
+      iceServersRef.current = await fetchIceServers();
+    }
+    const pc = new RTCPeerConnection({ iceServers: iceServersRef.current });
 
     const peer: Peer = {
       userId: remoteId,
@@ -197,7 +200,8 @@ export function useMeet(roomId: string, currentUserId: string, currentDisplayNam
       es.onopen = () => setConnected(true);
       es.onerror = () => setConnected(false);
 
-      es.onmessage = async (e) => {
+      es.addEventListener("message", (e: MessageEvent) => {
+        void (async () => {
         const data = JSON.parse(e.data);
 
         if (data.kind === "room-state") {
@@ -222,7 +226,8 @@ export function useMeet(roomId: string, currentUserId: string, currentDisplayNam
         } else if (data.kind === "signal") {
           await handleSignal(data.from, data.type, data.payload);
         }
-      };
+        })();
+      });
 
       cleanup = () => {
         es.close();

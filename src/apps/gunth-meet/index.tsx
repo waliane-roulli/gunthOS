@@ -150,16 +150,24 @@ function Lobby({
 
   const createRoom = async () => {
     setLoading(true);
-    const res = await fetch("/api/meet/rooms", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) });
-    const { roomId } = await res.json();
-    onJoin(roomId);
+    try {
+      const res = await fetch("/api/meet/rooms", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) });
+      const { roomId } = await res.json();
+      onJoin(roomId);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const joinRoom = async () => {
     if (!input.trim()) return;
     setLoading(true);
-    await fetch("/api/meet/rooms", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ roomId: input.trim() }) });
-    onJoin(input.trim());
+    try {
+      await fetch("/api/meet/rooms", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ roomId: input.trim() }) });
+      onJoin(input.trim());
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
