@@ -71,7 +71,7 @@ export async function POST(
   const body = await req.json();
   const { to, type, payload } = body;
 
-  const VALID_TYPES = ["offer", "answer", "ice-candidate"] as const;
+  const VALID_TYPES = ["offer", "answer", "ice-candidate", "screen-share-state"] as const;
   if (!to || !type || payload === undefined) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 });
   }

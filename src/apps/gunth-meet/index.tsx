@@ -23,12 +23,17 @@ function VideoTile({
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    if (videoRef.current && stream) {
-      videoRef.current.srcObject = stream;
-    }
+    const el = videoRef.current;
+    if (!el || !stream) return;
+    el.srcObject = stream;
+    el.play().catch(() => {
+      // Autoplay blocked — wait for a user gesture then retry
+      const resume = () => { el.play().catch(() => {}); };
+      document.addEventListener("click", resume, { once: true });
+    });
   }, [stream]);
 
-  const hasVideo = stream && stream.getVideoTracks().some((t) => t.enabled) && !noVideo;
+  const hasVideo = stream && stream.getVideoTracks().some((t) => t.readyState === "live" && t.enabled) && !noVideo;
 
   return (
     <div
@@ -45,15 +50,15 @@ function VideoTile({
         aspectRatio: "16/9",
       }}
     >
-      {hasVideo ? (
-        <video
-          ref={videoRef}
-          autoPlay
-          playsInline
-          muted={muted}
-          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-        />
-      ) : (
+      {/* Always rendered so the ref is stable and srcObject can be set before hasVideo is true */}
+      <video
+        ref={videoRef}
+        autoPlay
+        playsInline
+        muted={muted}
+        style={{ width: "100%", height: "100%", objectFit: "cover", display: hasVideo ? "block" : "none" }}
+      />
+      {!hasVideo && (
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
           <div
             style={{

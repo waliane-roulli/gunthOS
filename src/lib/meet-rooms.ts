@@ -10,7 +10,7 @@ export interface Participant {
 export interface SignalMessage {
   from: string;
   to: string;
-  type: "offer" | "answer" | "ice-candidate";
+  type: "offer" | "answer" | "ice-candidate" | "screen-share-state";
   payload: unknown;
 }
 

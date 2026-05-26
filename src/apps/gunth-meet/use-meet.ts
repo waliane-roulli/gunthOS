@@ -52,6 +52,7 @@ export function useMeet(roomId: string, currentUserId: string, currentDisplayNam
   const [connected, setConnected] = useState(false);
 
   const peersRef = useRef<Map<string, Peer>>(new Map());
+  const pendingPeersRef = useRef<Set<string>>(new Set());
   const localStreamRef = useRef<MediaStream | null>(null);
   const screenStreamRef = useRef<MediaStream | null>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
@@ -157,8 +158,11 @@ export function useMeet(roomId: string, currentUserId: string, currentDisplayNam
       } catch (err) {
         if (!peer.ignoreOffer) console.error("ICE error", err);
       }
+    } else if (type === "screen-share-state") {
+      peer.isScreenSharing = (payload as { sharing: boolean }).sharing;
+      updatePeersState();
     }
-  }, [sendSignal]);
+  }, [sendSignal, updatePeersState]);
 
   // Init local media + SSE
   useEffect(() => {
@@ -203,14 +207,18 @@ export function useMeet(roomId: string, currentUserId: string, currentDisplayNam
           if (data.kind === "room-state") {
             for (const p of data.participants as { userId: string; displayName: string }[]) {
               if (p.userId === currentUserId) continue;
-              if (!peersRef.current.has(p.userId)) {
+              if (!peersRef.current.has(p.userId) && !pendingPeersRef.current.has(p.userId)) {
+                pendingPeersRef.current.add(p.userId);
                 await createPeerConnection(p.userId, p.displayName, true);
+                pendingPeersRef.current.delete(p.userId);
               }
             }
           } else if (data.kind === "peer-joined") {
             const p = data.participant as { userId: string; displayName: string };
-            if (p.userId !== currentUserId && !peersRef.current.has(p.userId)) {
+            if (p.userId !== currentUserId && !peersRef.current.has(p.userId) && !pendingPeersRef.current.has(p.userId)) {
+              pendingPeersRef.current.add(p.userId);
               await createPeerConnection(p.userId, p.displayName, false);
+              pendingPeersRef.current.delete(p.userId);
             }
           } else if (data.kind === "peer-left") {
             const peer = peersRef.current.get(data.userId);
@@ -274,14 +282,20 @@ export function useMeet(roomId: string, currentUserId: string, currentDisplayNam
 
     for (const peer of peersRef.current.values()) {
       const sender = peer.pc.getSenders().find((s) => s.track?.kind === "video");
-      if (sender) await sender.replaceTrack(screenTrack);
+      if (sender) {
+        await sender.replaceTrack(screenTrack);
+      } else {
+        // No video sender yet (audio-only fallback) — add the screen track
+        peer.pc.addTrack(screenTrack, screenStreamRef.current!);
+      }
+      sendSignal(peer.userId, "screen-share-state", { sharing: true });
     }
 
     const localVideo = localStreamRef.current?.getVideoTracks()[0];
     if (localVideo) localVideo.enabled = false;
 
     screenTrack.onended = () => stopScreenShareRef.current();
-  }, []);
+  }, [sendSignal]);
 
   const stopScreenShare = useCallback(async () => {
     screenStreamRef.current?.getTracks().forEach((t) => t.stop());
@@ -290,14 +304,20 @@ export function useMeet(roomId: string, currentUserId: string, currentDisplayNam
     setIsScreenSharing(false);
 
     const localVideo = localStreamRef.current?.getVideoTracks()[0];
-    if (localVideo) {
-      localVideo.enabled = true;
-      for (const peer of peersRef.current.values()) {
-        const sender = peer.pc.getSenders().find((s) => s.track?.kind === "video");
-        if (sender) await sender.replaceTrack(localVideo);
+    for (const peer of peersRef.current.values()) {
+      const sender = peer.pc.getSenders().find((s) => s.track?.kind === "video");
+      if (sender) {
+        if (localVideo) {
+          localVideo.enabled = true;
+          await sender.replaceTrack(localVideo);
+        } else {
+          // No local video — remove the screen track sender entirely
+          peer.pc.removeTrack(sender);
+        }
       }
+      sendSignal(peer.userId, "screen-share-state", { sharing: false });
     }
-  }, []);
+  }, [sendSignal]);
   stopScreenShareRef.current = stopScreenShare;
 
   // Send chat message — persisted via API, broadcast via SSE
