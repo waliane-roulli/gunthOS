@@ -121,6 +121,10 @@ export function computeAimLine(
   let vx = Math.cos(angle) * LAUNCH_SPEED;
   let vy = Math.sin(angle) * LAUNCH_SPEED;
 
+  // Squared threshold avoids Math.sqrt in the hot inner loop
+  const hitThresh = ballR + PEG_R + 2;
+  const hitThreshSq = hitThresh * hitThresh;
+
   for (let i = 0; i < steps; i++) {
     x += vx; y += vy;
     vy += GRAVITY; vx *= FRICTION;
@@ -131,21 +135,21 @@ export function computeAimLine(
     for (const p of pegs) {
       if (p.hit) continue;
       const dx = x - p.x, dy = y - p.y;
-      if (Math.sqrt(dx * dx + dy * dy) < ballR + PEG_R + 2) {
+      if (dx * dx + dy * dy < hitThreshSq) {
         points.push({ x: p.x, y: p.y });
         return points;
       }
     }
-    // Aim line also responds to decors
+    // Aim line also responds to decors (use precomputed plank endpoints when available)
     for (const d of decors) {
       let r: { vx: number; vy: number } | null = null;
       if (d.kind === "bumper") {
         r = circleCollide(x, y, vx, vy, ballR, d.x, d.y, d.r, 0.9);
       } else if (d.kind === "plank") {
-        const ax = d.x + Math.cos(d.angle) * d.len;
-        const ay = d.y + Math.sin(d.angle) * d.len;
-        const ex = d.x - Math.cos(d.angle) * d.len;
-        const ey = d.y - Math.sin(d.angle) * d.len;
+        const ax = d.ax ?? d.x + Math.cos(d.angle) * d.len;
+        const ay = d.ay ?? d.y + Math.sin(d.angle) * d.len;
+        const ex = d.ex ?? d.x - Math.cos(d.angle) * d.len;
+        const ey = d.ey ?? d.y - Math.sin(d.angle) * d.len;
         r = capsuleCollide(x, y, vx, vy, ballR, ax, ay, ex, ey, d.thickness, 0.7);
       } else if (d.kind === "arc") {
         r = arcCollide(x, y, vx, vy, ballR, d.x, d.y, d.r, d.startAngle, d.endAngle, d.thickness, 0.7);

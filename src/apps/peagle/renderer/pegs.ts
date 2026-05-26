@@ -3,6 +3,23 @@ import type { GameState, Peg, GreenPowerupId } from "../engine/types";
 import { getPegType } from "../engine/types";
 import type { GameTheme, PegTheme } from "../engine/game-theme";
 
+// Fake pixel glow — 3 concentric semi-transparent rects instead of ctx.shadowBlur.
+// shadowBlur triggers a full GPU Gaussian pass per draw call; this is ~10× cheaper
+// and fits the pixel-art aesthetic (square glow halos).
+function pixelGlow(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, glowColor: string, glowBlur: number): void {
+  const g1 = Math.ceil(glowBlur * 0.3) | 0;
+  const g2 = Math.ceil(glowBlur * 0.6) | 0;
+  const g3 = Math.ceil(glowBlur) | 0;
+  ctx.fillStyle = glowColor;
+  ctx.globalAlpha = 0.28;
+  ctx.fillRect(x - g1, y - g1, s + g1 * 2, s + g1 * 2);
+  ctx.globalAlpha = 0.13;
+  ctx.fillRect(x - g2, y - g2, s + g2 * 2, s + g2 * 2);
+  ctx.globalAlpha = 0.06;
+  ctx.fillRect(x - g3, y - g3, s + g3 * 2, s + g3 * 2);
+  ctx.globalAlpha = 1;
+}
+
 // Dessin pixel art d'un peg carré avec bevel 1px
 function pixelSquare(
   ctx: CanvasRenderingContext2D,
@@ -15,14 +32,11 @@ function pixelSquare(
   const y = Math.round(cy - r);
 
   if (glowColor && glowBlur) {
-    ctx.shadowColor = glowColor;
-    ctx.shadowBlur = glowBlur;
+    pixelGlow(ctx, x, y, s, glowColor, glowBlur);
   }
 
   ctx.fillStyle = fill;
   ctx.fillRect(x, y, s, s);
-
-  ctx.shadowBlur = 0;
 
   // Bevel pixel art — 1px lignes
   ctx.fillStyle = hiColor;
@@ -61,12 +75,19 @@ function greenPowerupSymbol(p?: GreenPowerupId): string {
   }
 }
 
-// Derive an rgba string from a hex color + alpha for variable-alpha draws
+// hexAlpha cache — avoids string allocation per peg per frame for fixed alphas
+const _hexAlphaCache = new Map<string, string>();
 function hexAlpha(hex: string, a: number): string {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  return `rgba(${r},${g},${b},${a.toFixed(2)})`;
+  const key = `${hex}:${a}`;
+  let v = _hexAlphaCache.get(key);
+  if (!v) {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    v = `rgba(${r},${g},${b},${a.toFixed(2)})`;
+    _hexAlphaCache.set(key, v);
+  }
+  return v;
 }
 
 function drawWarpPeg(ctx: CanvasRenderingContext2D, p: Peg, r: number, animClock: number, t: PegTheme): void {

@@ -39,6 +39,7 @@ export interface Ball {
   vy: number;
   active: boolean;
   trail: { x: number; y: number; speed: number }[];
+  trailHead: number; // ring buffer write pointer (oldest slot)
   tint?: string;
 }
 
@@ -89,6 +90,8 @@ export interface DecorPlank {
   angle: number;
   flashFrames: number;
   color: string;
+  // Precomputed endpoints — set once by makeInitialState, avoids cos/sin every substep
+  ax?: number; ay?: number; ex?: number; ey?: number;
 }
 
 export interface DecorArc {

@@ -42,9 +42,29 @@ function drawEaglePixelArt(ctx: CanvasRenderingContext2D, cx: number, cy: number
   }
 }
 
+// Aim line cache — computeAimLine is O(steps × pegs) = ~21 000 ops/frame.
+// During aim phase, pegs never change, so we only recompute when angle or hit
+// state changes. hitSerial = count of hit pegs (O(N) but 120 iters ≪ 21 000).
+const _aimCache = { angle: NaN, level: -1, hitSerial: -1, pts: [] as { x: number; y: number }[] };
+
 export function drawAimLine(ctx: CanvasRenderingContext2D, s: GameState, aimAngle: number): void {
   if (s.phase !== "aim") return;
-  const pts = computeAimLine(LAUNCHER_X, LAUNCHER_Y, aimAngle, s.pegs, s.decors, s.effectiveBallR, s.effectiveAimSteps);
+
+  let hitSerial = 0;
+  for (const p of s.pegs) if (p.hit) hitSerial++;
+
+  if (
+    _aimCache.level !== s.level ||
+    _aimCache.hitSerial !== hitSerial ||
+    Math.abs(_aimCache.angle - aimAngle) >= 0.001
+  ) {
+    _aimCache.pts = computeAimLine(LAUNCHER_X, LAUNCHER_Y, aimAngle, s.pegs, s.decors, s.effectiveBallR, s.effectiveAimSteps);
+    _aimCache.angle = aimAngle;
+    _aimCache.level = s.level;
+    _aimCache.hitSerial = hitSerial;
+  }
+
+  const pts = _aimCache.pts;
   if (pts.length < 2) return;
 
   ctx.save();

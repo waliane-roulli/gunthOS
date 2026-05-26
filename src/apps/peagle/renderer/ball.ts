@@ -3,16 +3,18 @@ import { FACE } from "./theme";
 import type { Ball } from "../engine/types";
 
 export function drawBall(ctx: CanvasRenderingContext2D, ball: Ball, inSlowMo: boolean): void {
-  // Trail pixel art — batch without save/restore per point
+  // Trail pixel art — ring buffer: trailHead is the oldest write slot (= visual start)
   const trailLen = ball.trail.length;
   if (trailLen > 0) {
     const trailColor = ball.tint ?? (inSlowMo ? "#88aaff" : "#555588");
+    const head = ball.trailHead;
+    ctx.fillStyle = trailColor;
     for (let i = 0; i < trailLen; i++) {
-      const tp = ball.trail[i]; if (!tp) continue;
+      const idx = (head + i) % trailLen;
+      const tp = ball.trail[idx]; if (!tp) continue;
       const t = i / trailLen;
       const trailR = Math.round(Math.max(1, BALL_R * t * 0.7));
       ctx.globalAlpha = t * t * 0.35;
-      ctx.fillStyle = trailColor;
       ctx.fillRect(
         Math.round(tp.x - trailR),
         Math.round(tp.y - trailR),
@@ -26,25 +28,32 @@ export function drawBall(ctx: CanvasRenderingContext2D, ball: Ball, inSlowMo: bo
   const by = Math.round(ball.y);
   const br = BALL_R;
 
-  // Glow
   ctx.save();
-  if (inSlowMo) {
-    ctx.shadowColor = "#88aaff";
-    ctx.shadowBlur = 8;
-  } else if (ball.tint) {
-    ctx.shadowColor = ball.tint;
-    ctx.shadowBlur = 6;
-  } else {
-    ctx.shadowColor = "rgba(255,255,255,0.4)";
-    ctx.shadowBlur = 4;
+
+  // Fake pixel glow — cheaper than shadowBlur (no GPU Gaussian pass)
+  const glowColor = inSlowMo ? "#88aaff" : (ball.tint ?? "#aaaaff");
+  const glowR = inSlowMo ? 8 : (ball.tint ? 6 : 4);
+  const bsz = br * 2;
+  const bx0 = bx - br;
+  const by0 = by - br;
+  ctx.fillStyle = glowColor;
+  ctx.globalAlpha = 0.22;
+  ctx.fillRect(bx0 - 2, by0 - 2, bsz + 4, bsz + 4);
+  if (glowR >= 6) {
+    ctx.globalAlpha = 0.10;
+    ctx.fillRect(bx0 - 4, by0 - 4, bsz + 8, bsz + 8);
   }
+  if (glowR >= 8) {
+    ctx.globalAlpha = 0.05;
+    ctx.fillRect(bx0 - 6, by0 - 6, bsz + 12, bsz + 12);
+  }
+  ctx.globalAlpha = 1;
 
   // Corps principal pixel (carré arrondi — 3 rectangles superposés)
   const fill = inSlowMo ? "#aaccff" : (ball.tint ?? "#e0e0ff");
   ctx.fillStyle = fill;
   ctx.fillRect(bx - br + 1, by - br, br * 2 - 2, br * 2);     // centre
   ctx.fillRect(bx - br, by - br + 1, br * 2, br * 2 - 2);     // côtés
-  ctx.shadowBlur = 0;
 
   // Bevel pixel — top/left clairs, bottom/right sombres
   ctx.fillStyle = "#ffffff";

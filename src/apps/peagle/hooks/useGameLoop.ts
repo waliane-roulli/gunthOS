@@ -177,16 +177,16 @@ export function useGameLoop({
 
     if (s.multiballPending) {
       const a1 = angle - 0.13, a2 = angle, a3 = angle + 0.13;
-      s.ball = { x: LAUNCHER_X, y: LAUNCHER_Y, vx: Math.cos(a1) * LAUNCH_SPEED, vy: Math.sin(a1) * LAUNCH_SPEED, active: true, trail: [], tint: "#ff8888" };
+      s.ball = { x: LAUNCHER_X, y: LAUNCHER_Y, vx: Math.cos(a1) * LAUNCH_SPEED, vy: Math.sin(a1) * LAUNCH_SPEED, active: true, trail: [], trailHead: 0, tint: "#ff8888" };
       s.extraBalls = [
-        { x: LAUNCHER_X, y: LAUNCHER_Y, vx: Math.cos(a2) * LAUNCH_SPEED, vy: Math.sin(a2) * LAUNCH_SPEED, active: true, trail: [], tint: "#ffdd88" },
-        { x: LAUNCHER_X, y: LAUNCHER_Y, vx: Math.cos(a3) * LAUNCH_SPEED, vy: Math.sin(a3) * LAUNCH_SPEED, active: true, trail: [], tint: "#88ffcc" },
+        { x: LAUNCHER_X, y: LAUNCHER_Y, vx: Math.cos(a2) * LAUNCH_SPEED, vy: Math.sin(a2) * LAUNCH_SPEED, active: true, trail: [], trailHead: 0, tint: "#ffdd88" },
+        { x: LAUNCHER_X, y: LAUNCHER_Y, vx: Math.cos(a3) * LAUNCH_SPEED, vy: Math.sin(a3) * LAUNCH_SPEED, active: true, trail: [], trailHead: 0, tint: "#88ffcc" },
       ];
       s.multiballPending = false;
       s.multiballUsed = true;
       s.floatingTexts.push({ x: W / 2, y: LAUNCHER_Y + 40, text: ">> DOUBLE PONTE!", life: 1, maxLife: 2, color: "#ffcc44", combo: true, fontSize: 16 });
     } else {
-      s.ball = { x: LAUNCHER_X, y: LAUNCHER_Y, vx: Math.cos(angle) * LAUNCH_SPEED, vy: Math.sin(angle) * LAUNCH_SPEED, active: true, trail: [] };
+      s.ball = { x: LAUNCHER_X, y: LAUNCHER_Y, vx: Math.cos(angle) * LAUNCH_SPEED, vy: Math.sin(angle) * LAUNCH_SPEED, active: true, trail: [], trailHead: 0 };
     }
 
     s.ghostBallActive = s.runUpgrades.includes("ghost_ball");
