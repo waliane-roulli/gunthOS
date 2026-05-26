@@ -73,13 +73,21 @@ export function drawScreenFlash(ctx: CanvasRenderingContext2D, s: GameState, inF
   ctx.restore();
 }
 
+// createRadialGradient is expensive — cache it, rebuild only when alpha changes noticeably
+let _vigGradient: CanvasGradient | null = null;
+let _vigAlphaCached = -1;
+
 export function drawVignette(ctx: CanvasRenderingContext2D, s: GameState): void {
   if (s.zoomLevel <= 1.05) return;
   const vigAlpha = Math.min(0.45, (s.zoomLevel - 1) / (ZOOM_SCALE - 1) * 0.45);
-  const vig = ctx.createRadialGradient(W / 2, H / 2, H * 0.25, W / 2, H / 2, H * 0.85);
-  vig.addColorStop(0, "transparent");
-  vig.addColorStop(1, `rgba(0,0,80,${vigAlpha})`);
-  ctx.fillStyle = vig;
+  const vigAlphaRounded = Math.round(vigAlpha * 50) / 50; // 0.02 steps
+  if (_vigGradient === null || vigAlphaRounded !== _vigAlphaCached) {
+    _vigGradient = ctx.createRadialGradient(W / 2, H / 2, H * 0.25, W / 2, H / 2, H * 0.85);
+    _vigGradient.addColorStop(0, "transparent");
+    _vigGradient.addColorStop(1, `rgba(0,0,80,${vigAlphaRounded})`);
+    _vigAlphaCached = vigAlphaRounded;
+  }
+  ctx.fillStyle = _vigGradient;
   ctx.fillRect(0, 0, W, H);
 }
 

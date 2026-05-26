@@ -17,11 +17,20 @@ export function processBallPhysics(
   events: GameEvent[],
 ): void {
   const speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
-  b.trail.push({ x: b.x, y: b.y, speed });
-  if (b.trail.length > 32) b.trail.shift();
+
+  // Ring buffer trail — avoids O(n) Array.shift() and per-frame object allocation
+  const TRAIL_MAX = 32;
+  if (b.trail.length < TRAIL_MAX) {
+    b.trail.push({ x: b.x, y: b.y, speed });
+  } else {
+    const slot = b.trail[b.trailHead]!;
+    slot.x = b.x; slot.y = b.y; slot.speed = speed;
+    b.trailHead = (b.trailHead + 1) % TRAIL_MAX;
+  }
 
   const substeps = Math.max(1, Math.ceil(speed / (PEG_R * 0.8)));
   const dt = timeScale / substeps;
+  const frictionDt = Math.pow(FRICTION, dt); // hoisted — same value every substep
   const wallBounce = WALL_BOUNCE * (s.runRelics.includes("boomerang") ? 1.4 : 1);
 
   // Cache orange pegs for magnet — avoids repeated filter per substep
@@ -33,12 +42,15 @@ export function processBallPhysics(
     // Magnet: attract toward nearest orange peg
     if (s.magnetFrames > 0 && orangePegsForMagnet.length > 0) {
       let nearest = orangePegsForMagnet[0]!;
-      let nearDist = Math.hypot(b.x - nearest.x, b.y - nearest.y);
+      let ndx = b.x - nearest.x, ndy = b.y - nearest.y;
+      let nearDistSq = ndx * ndx + ndy * ndy;
       for (const op of orangePegsForMagnet) {
-        const d = Math.hypot(b.x - op.x, b.y - op.y);
-        if (d < nearDist) { nearest = op; nearDist = d; }
+        const odx = b.x - op.x, ody = b.y - op.y;
+        const dSq = odx * odx + ody * ody;
+        if (dSq < nearDistSq) { nearest = op; nearDistSq = dSq; ndx = odx; ndy = ody; }
       }
-      if (nearDist > 0) {
+      if (nearDistSq > 0) {
+        const nearDist = Math.sqrt(nearDistSq);
         const force = BALANCE.magnet.force * dt;
         b.vx += ((nearest.x - b.x) / nearDist) * force;
         b.vy += ((nearest.y - b.y) / nearDist) * force;
@@ -48,7 +60,7 @@ export function processBallPhysics(
     b.x += b.vx * dt;
     b.y += b.vy * dt;
     b.vy += GRAVITY * dt;
-    b.vx *= Math.pow(FRICTION, dt);
+    b.vx *= frictionDt;
 
     if (b.x - s.effectiveBallR < 0) {
       b.vx = Math.abs(b.vx) * wallBounce;
@@ -163,8 +175,8 @@ export function processBallPhysics(
             const spd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
             const baseA = Math.atan2(b.vy, b.vx);
             const spread = BALANCE.multiball.spreadAngle;
-            s.extraBalls.push({ x: b.x, y: b.y, vx: Math.cos(baseA - spread) * spd, vy: Math.sin(baseA - spread) * spd, active: true, trail: [], tint: "#ffdd88" });
-            s.extraBalls.push({ x: b.x, y: b.y, vx: Math.cos(baseA + spread) * spd, vy: Math.sin(baseA + spread) * spd, active: true, trail: [], tint: "#88ffcc" });
+            s.extraBalls.push({ x: b.x, y: b.y, vx: Math.cos(baseA - spread) * spd, vy: Math.sin(baseA - spread) * spd, active: true, trail: [], trailHead: 0, tint: "#ffdd88" });
+            s.extraBalls.push({ x: b.x, y: b.y, vx: Math.cos(baseA + spread) * spd, vy: Math.sin(baseA + spread) * spd, active: true, trail: [], trailHead: 0, tint: "#88ffcc" });
             s.floatingTexts.push({ x: p.x, y: p.y - 22, text: ">> DOUBLE PONTE!", life: 1, maxLife: 2, color: "#ffcc44", combo: true, fontSize: 15 });
             break;
           }
@@ -263,10 +275,10 @@ export function processBallPhysics(
           if (step === 0) events.push({ kind: "sound", id: "bip" });
         }
       } else if (d.kind === "plank") {
-        const ax = d.x + Math.cos(d.angle) * d.len;
-        const ay = d.y + Math.sin(d.angle) * d.len;
-        const ex = d.x - Math.cos(d.angle) * d.len;
-        const ey = d.y - Math.sin(d.angle) * d.len;
+        const ax = d.ax ?? d.x + Math.cos(d.angle) * d.len;
+        const ay = d.ay ?? d.y + Math.sin(d.angle) * d.len;
+        const ex = d.ex ?? d.x - Math.cos(d.angle) * d.len;
+        const ey = d.ey ?? d.y - Math.sin(d.angle) * d.len;
         const rc = capsuleCollide(b.x, b.y, b.vx, b.vy, s.effectiveBallR, ax, ay, ex, ey, d.thickness, 0.72);
         if (rc) {
           b.vx = rc.vx; b.vy = rc.vy;

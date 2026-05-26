@@ -37,6 +37,16 @@ export function makeInitialState(
 
   const { pegs, decors } = buildLevel(level, runState);
 
+  // Precompute plank endpoints once — avoids Math.cos/sin every physics substep
+  for (const d of decors) {
+    if (d.kind === "plank") {
+      d.ax = d.x + Math.cos(d.angle) * d.len;
+      d.ay = d.y + Math.sin(d.angle) * d.len;
+      d.ex = d.x - Math.cos(d.angle) * d.len;
+      d.ey = d.y - Math.sin(d.angle) * d.len;
+    }
+  }
+
   const orangeLeft = pegs.filter(p => p.orange).length;
 
   const warpPairs: [Peg, Peg][] = [];
