@@ -13,6 +13,7 @@ export interface UseMeetReturn {
   isMuted: boolean;
   isCamOff: boolean;
   isScreenSharing: boolean;
+  isLocalSpeaking: boolean;
   audioDevices: UseLocalMediaReturn["audioDevices"];
   videoDevices: UseLocalMediaReturn["videoDevices"];
   selectedAudioId: string | null;
@@ -57,6 +58,9 @@ export function useMeet(
 
   const stopScreenShareRef = useRef<() => Promise<void>>(() => Promise.resolve());
   const eventSourceRef = useRef<EventSource | null>(null);
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const reconnectDelayRef = useRef(1_000);
+  const mountedRef = useRef(true);
 
   // Broadcast our own state changes to all peers
   const broadcastParticipantUpdate = useCallback((update: { isMuted?: boolean; isCamOff?: boolean; isScreenSharing?: boolean }) => {
@@ -78,7 +82,7 @@ export function useMeet(
   const stopScreenShare = useCallback(async () => {
     await media.stopScreenShare();
     const localVideo = media.localStreamRef.current?.getVideoTracks()[0];
-    await webrtc.replaceVideoTrack(localVideo ?? null);
+    await webrtc.replaceVideoTrack(localVideo ?? null, false);
     broadcastParticipantUpdate({ isScreenSharing: false });
     for (const peer of webrtc.peersRef.current.values()) {
       webrtc.sendSignal(peer.userId, "screen-share-state", { sharing: false });
@@ -94,7 +98,8 @@ export function useMeet(
     if (!screenTrack) return;
     const localVideo = media.localStreamRef.current?.getVideoTracks()[0];
     if (localVideo) localVideo.enabled = false;
-    await webrtc.replaceVideoTrack(screenTrack);
+    // Higher bitrate for screen share (2.5 Mbps)
+    await webrtc.replaceVideoTrack(screenTrack, true);
     broadcastParticipantUpdate({ isScreenSharing: true });
     for (const peer of webrtc.peersRef.current.values()) {
       webrtc.sendSignal(peer.userId, "screen-share-state", { sharing: true });
@@ -109,7 +114,7 @@ export function useMeet(
 
   const switchVideoDevice = useCallback(async (deviceId: string) => {
     const newTrack = await media.switchVideoDevice(deviceId);
-    if (newTrack) await webrtc.replaceVideoTrack(newTrack);
+    if (newTrack) await webrtc.replaceVideoTrack(newTrack, false);
   }, [media, webrtc]);
 
   const sendChat = useCallback(async (text: string) => {
@@ -136,65 +141,88 @@ export function useMeet(
     webrtc.sendSignal(userId, "host-mute-peer", { targetUserId: userId });
   }, [isHost, webrtc]);
 
-  // SSE setup
+  // SSE setup with exponential backoff reconnection
   useEffect(() => {
-    const es = new EventSource(`/api/meet/rooms/${roomId}/signal`);
-    eventSourceRef.current = es;
+    mountedRef.current = true;
+    reconnectDelayRef.current = 1_000;
 
-    es.onopen = () => setConnected(true);
-    es.onerror = () => setConnected(false);
+    function connect() {
+      const es = new EventSource(`/api/meet/rooms/${roomId}/signal`);
+      eventSourceRef.current = es;
 
-    es.addEventListener("message", (e: MessageEvent) => {
-      void (async () => {
-        const event = JSON.parse(e.data) as SseEvent;
+      es.onopen = () => {
+        setConnected(true);
+        reconnectDelayRef.current = 1_000;
+        chat.loadHistory(roomId);
+      };
 
-        if (event.kind === "chat") {
-          const m = event.message;
-          if (m.userId !== currentUserId) {
-            chat.addMessage({ id: m.id, from: m.userId, displayName: m.displayName, text: m.content, ts: m.createdAt });
+      es.onerror = () => {
+        setConnected(false);
+        es.close();
+        if (!mountedRef.current) return;
+
+        // Drop all peer connections — they'll be re-established from room-state on reconnect
+        webrtc.clearPeers();
+
+        const delay = reconnectDelayRef.current;
+        reconnectDelayRef.current = Math.min(delay * 2, 30_000);
+        reconnectTimerRef.current = setTimeout(() => {
+          if (mountedRef.current) connect();
+        }, delay);
+      };
+
+      es.addEventListener("message", (e: MessageEvent) => {
+        void (async () => {
+          const event = JSON.parse(e.data) as SseEvent;
+
+          if (event.kind === "chat") {
+            const m = event.message;
+            if (m.userId !== currentUserId) {
+              chat.addMessage({ id: m.id, from: m.userId, displayName: m.displayName, text: m.content, ts: m.createdAt });
+            }
+            return;
           }
-          return;
-        }
 
-        if (event.kind === "reaction") {
-          const reaction = event.reaction;
-          if (reaction.userId !== currentUserId) {
-            setReactions((prev) => [...prev, reaction]);
-            setTimeout(() => setReactions((prev) => prev.filter((r) => r.id !== reaction.id)), 3000);
+          if (event.kind === "reaction") {
+            const reaction = event.reaction;
+            if (reaction.userId !== currentUserId) {
+              setReactions((prev) => [...prev, reaction]);
+              setTimeout(() => setReactions((prev) => prev.filter((r) => r.id !== reaction.id)), 3000);
+            }
+            return;
           }
-          return;
-        }
 
-        if (event.kind === "host-mute-peer") {
-          if (event.targetUserId === currentUserId) {
-            media.toggleMute();
+          if (event.kind === "host-mute-peer") {
+            if (event.targetUserId === currentUserId) {
+              media.toggleMute();
+            }
+            return;
           }
-          return;
-        }
 
-        if (event.kind === "room-state") {
-          const me = event.participants.find((p) => p.userId === currentUserId);
-          if (me?.isHost) setIsHost(true);
-        }
+          if (event.kind === "room-state") {
+            const me = event.participants.find((p) => p.userId === currentUserId);
+            if (me?.isHost) setIsHost(true);
+          }
 
-        if (event.kind === "peer-joined" && event.participant.userId === currentUserId) return;
+          if (event.kind === "peer-joined" && event.participant.userId === currentUserId) return;
 
-        // Wait for getUserMedia to resolve before creating peer connections
-        if (event.kind === "room-state" || event.kind === "peer-joined") {
-          await media.waitForStream();
-        }
+          // Wait for getUserMedia to resolve before creating peer connections
+          if (event.kind === "room-state" || event.kind === "peer-joined") {
+            await media.waitForStream();
+          }
 
-        await webrtc.handleSseEvent(event, currentUserId, media.localStreamRef);
-      })();
-    });
+          await webrtc.handleSseEvent(event, currentUserId, media.localStreamRef);
+        })();
+      });
+    }
 
-    // Load chat history on connect
-    chat.loadHistory(roomId);
+    connect();
 
     return () => {
-      es.close();
-      for (const peer of webrtc.peersRef.current.values()) peer.pc.close();
-      webrtc.peersRef.current.clear();
+      mountedRef.current = false;
+      if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
+      eventSourceRef.current?.close();
+      webrtc.clearPeers();
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roomId, currentUserId]);
@@ -205,6 +233,7 @@ export function useMeet(
     isMuted: media.isMuted,
     isCamOff: media.isCamOff,
     isScreenSharing: media.isScreenSharing,
+    isLocalSpeaking: media.isLocalSpeaking,
     audioDevices: media.audioDevices,
     videoDevices: media.videoDevices,
     selectedAudioId: media.selectedAudioId,

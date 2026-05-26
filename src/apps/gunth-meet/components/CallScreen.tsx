@@ -40,6 +40,7 @@ export function CallScreen({
     isMuted,
     isCamOff,
     isScreenSharing,
+    isLocalSpeaking,
     audioDevices,
     videoDevices,
     selectedAudioId,
@@ -94,6 +95,7 @@ export function CallScreen({
       isMuted,
       isCamOff,
       isHost: currentIsHost,
+      isSpeaking: isLocalSpeaking,
       userId: "local",
     },
     ...[...peers.values()].map((p) => ({
@@ -106,6 +108,7 @@ export function CallScreen({
       isMuted: p.isMuted,
       isCamOff: p.isCamOff,
       isHost: p.isHost,
+      isSpeaking: p.isSpeaking,
       userId: p.userId,
     })),
   ];
@@ -172,6 +175,7 @@ export function CallScreen({
                 isMuted={pinnedTile.isMuted}
                 isCamOff={pinnedTile.isCamOff}
                 isHost={pinnedTile.isHost}
+                isSpeaking={pinnedTile.isSpeaking}
                 isPinned
                 onPin={() => setPinnedId(null)}
                 reactions={reactionsForTile(pinnedTile.userId)}
@@ -204,6 +208,7 @@ export function CallScreen({
                 isMuted={tile.isMuted}
                 isCamOff={tile.isCamOff}
                 isHost={tile.isHost}
+                isSpeaking={tile.isSpeaking}
                 onPin={() => setPinnedId(tile.key)}
                 reactions={reactionsForTile(tile.userId)}
                 canMute={currentIsHost && tile.key !== "local"}
