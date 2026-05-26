@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { pickRandom } from "@/lib/utils/random";
+import { TASKKILL_WIN_EVENT, TASKKILL_LOSE_EVENT, submitDefragResult, type TaskkillResult } from "@/lib/defrag-game-bridge";
 import type { AppProps } from "@/types";
 
 const DEFRAG_MESSAGES = [
@@ -36,47 +37,71 @@ const BLOCK_VAR: Record<DefragBlock, string> = {
   mystery: "var(--t-defrag-mystery)",
 };
 
+type DefragPhase = "playing" | "won" | "lost";
+
 export function DefragApp(_: AppProps) {
+  const [phase, setPhase] = useState<DefragPhase>("playing");
   const [progress, setProgress] = useState(0);
-  const [message, setMessage] = useState(DEFRAG_MESSAGES[0]!);
+  const [message, setMessage] = useState("Défragmentation en cours... Jouez pour purger les menaces !");
   const [blocks, setBlocks] = useState<DefragBlock[]>(() =>
     Array.from({ length: 120 }, randomBlock)
   );
-  const [done, setDone] = useState(false);
-  const [restarted, setRestarted] = useState(0);
+  const [finalScore, setFinalScore] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Listen for game results
+  const handleWin = useCallback((e: Event) => {
+    const detail = (e as CustomEvent).detail as { score: number };
+    setPhase("won");
+    setProgress(100);
+    setFinalScore(detail.score);
+    setMessage("Défragmentation réussie !");
+    const result: TaskkillResult = { score: detail.score, won: true, timestamp: new Date().toISOString() };
+    submitDefragResult(result);
+  }, []);
+
+  const handleLose = useCallback((e: Event) => {
+    const detail = (e as CustomEvent).detail as { score: number };
+    setPhase("lost");
+    setProgress(0);
+    setFinalScore(detail.score);
+    setMessage("Échec de la défragmentation. Votre disque est plus fragmenté qu'avant.");
+    const result: TaskkillResult = { score: detail.score, won: false, timestamp: new Date().toISOString() };
+    submitDefragResult(result);
+  }, []);
+
   useEffect(() => {
-    if (done) return;
+    window.addEventListener(TASKKILL_WIN_EVENT, handleWin);
+    window.addEventListener(TASKKILL_LOSE_EVENT, handleLose);
+    return () => {
+      window.removeEventListener(TASKKILL_WIN_EVENT, handleWin);
+      window.removeEventListener(TASKKILL_LOSE_EVENT, handleLose);
+    };
+  }, [handleWin, handleLose]);
+
+  // Animate blocks and fake progress while playing
+  useEffect(() => {
+    if (phase !== "playing") return;
     intervalRef.current = setInterval(() => {
       setProgress((p) => {
-        const next = p + Math.random() * 1.2;
-        if (next >= 100) {
-          if (intervalRef.current) clearInterval(intervalRef.current);
-          setDone(true);
-          return 100;
-        }
-        setMessage(pickRandom(DEFRAG_MESSAGES)!);
-        setBlocks((b) => b.map((c) => (Math.random() < 0.08 ? randomBlock() : c)));
-        return next;
+        const next = p + Math.random() * 0.4;
+        return next >= 95 ? 95 : next;
       });
-    }, 180);
+      setMessage(pickRandom(DEFRAG_MESSAGES)!);
+      setBlocks((b) => b.map((c) => (Math.random() < 0.06 ? randomBlock() : c)));
+    }, 200);
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-  }, [done, restarted]);
+  }, [phase]);
 
-  function handleRestart() {
-    setProgress(0);
-    setDone(false);
-    setRestarted((r) => r + 1);
-    setMessage(DEFRAG_MESSAGES[0]!);
-  }
+  const isDone = phase === "won" || phase === "lost";
 
   return (
     <div className="p-4 flex flex-col gap-3" style={{ fontFamily: "var(--t-font-display)" }}>
       <div className="text-sm tracking-widest" style={{ color: "var(--t-text-muted)" }}>
-        DÉFRAGMENTEUR DE DISQUE GUNTH — Disque C:\\ (847 Mo utilisés sur 850 Mo)
+        DÉFRAGMENTEUR DE DISQUE GUNTH — Disque C:\ (847 Mo utilisés sur 850 Mo)
       </div>
 
+      {/* Block grid */}
       <div
         className="border-[2px] p-2"
         style={{
@@ -98,10 +123,19 @@ export function DefragApp(_: AppProps) {
         </div>
       </div>
 
+      {/* Status message */}
       <div>
-        <div className="text-sm tracking-wider mb-1" style={{ color: "var(--t-text)" }}>
-          {done ? "✅ Défragmentation terminée. Redémarrage recommandé." : message}
+        <div className="text-sm tracking-wider mb-1" style={{
+          color: phase === "won" ? "var(--t-accent)"
+            : phase === "lost" ? "var(--t-defrag-fragmented, #cc2200)"
+            : "var(--t-text)"
+        }}>
+          {phase === "won" && "✅ "}
+          {phase === "lost" && "❌ "}
+          {message}
         </div>
+
+        {/* Progress bar */}
         <div
           className="h-5 border-[2px] relative overflow-hidden"
           style={{
@@ -116,7 +150,11 @@ export function DefragApp(_: AppProps) {
             className="h-full transition-none"
             style={{
               width: `${progress}%`,
-              background: "linear-gradient(to right, var(--t-progress-from), var(--t-progress-to))",
+              background: phase === "lost"
+                ? "var(--t-defrag-fragmented, #cc2200)"
+                : phase === "won"
+                  ? "linear-gradient(to right, #008000, #00cc00)"
+                  : "linear-gradient(to right, var(--t-progress-from), var(--t-progress-to))",
             }}
           />
           <span
@@ -128,35 +166,37 @@ export function DefragApp(_: AppProps) {
         </div>
       </div>
 
-      {done && (
+      {/* Result panel */}
+      {isDone && (
         <div
           className="text-center text-sm tracking-wider p-2 border"
           style={{
-            color: "var(--t-text-muted)",
+            color: phase === "won" ? "var(--t-accent)" : "var(--t-defrag-fragmented, #cc2200)",
             borderColor: "var(--t-border-dark)",
             backgroundColor: "var(--t-inset-from)",
           }}
         >
-          Résultat : votre disque est exactement aussi fragmenté qu&apos;avant.
-          <br />
-          <button
-            className="mt-2 px-4 py-1 border-[2px] cursor-pointer text-sm tracking-widest"
-            style={{
-              backgroundColor: "var(--t-bg)",
-              color: "var(--t-text)",
-              fontFamily: "var(--t-font-display)",
-              borderTopColor: "var(--t-border-light)",
-              borderLeftColor: "var(--t-border-light)",
-              borderBottomColor: "var(--t-border-dark)",
-              borderRightColor: "var(--t-border-dark)",
-            }}
-            onClick={handleRestart}
-          >
-            Défragmenter à nouveau (déconseillé)
-          </button>
+          {phase === "won" ? (
+            <>
+              ✅ Défragmentation réussie !<br />
+              Votre disque est maintenant 0.3% moins fragmenté.<br />
+              <span className="text-xs" style={{ color: "var(--t-text-muted)" }}>
+                Score : {finalScore.toLocaleString()} pts — Windows Update a été purgé.
+              </span>
+            </>
+          ) : (
+            <>
+              ❌ Échec de la défragmentation.<br />
+              Votre disque est plus fragmenté qu&apos;avant.<br />
+              <span className="text-xs" style={{ color: "var(--t-text-muted)" }}>
+                Score : {finalScore.toLocaleString()} pts — Windows Update a gagné.
+              </span>
+            </>
+          )}
         </div>
       )}
 
+      {/* Legend */}
       <div className="flex gap-3 text-xs tracking-wider flex-wrap" style={{ color: "var(--t-text-muted)" }}>
         {(["used", "fragmented", "free", "system", "mystery"] as DefragBlock[]).map((block) => {
           const labels: Record<DefragBlock, string> = {

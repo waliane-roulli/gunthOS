@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useCallback, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { AppProps } from "@/types";
 import { TaskkillEngine } from "./engine";
 import { useNotify } from "@/lib/contexts/notification-context";
+import { useWindowManager } from "@/lib/contexts/window-manager-context";
+import { TASKKILL_WIN_EVENT, TASKKILL_LOSE_EVENT } from "@/lib/defrag-game-bridge";
 
 export function TaskkillApp({ windowId: _windowId }: AppProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -11,24 +13,43 @@ export function TaskkillApp({ windowId: _windowId }: AppProps) {
   const engineRef = useRef<TaskkillEngine | null>(null);
   const [error, setError] = useState<string | null>(null);
   const notify = useNotify();
+  const { openWindow, closeWindow, windows } = useWindowManager();
+
+  // Open the defrag window alongside the game (fresh every time)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      // Close any stale defrag from a previous game
+      const existingDefrag = windows.find((w) => w.appSlug === "defrag");
+      if (existingDefrag) closeWindow(existingDefrag.id);
+      // Open a fresh one right after
+      requestAnimationFrame(() => {
+        openWindow("defrag", "Défragmenteur de disque", "🗂️");
+      });
+    }, 300);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     const container = containerRef.current;
     if (!canvas || !container) return;
 
-    // S'assurer que le canvas remplit le conteneur
     const rect = container.getBoundingClientRect();
-    if (rect.width === 0 || rect.height === 0) {
-      // Container pas encore prêt — retry au prochain render
-      return;
-    }
+    if (rect.width === 0 || rect.height === 0) return;
 
     const dpr = window.devicePixelRatio || 1;
     canvas.width = rect.width * dpr;
     canvas.height = rect.height * dpr;
     canvas.style.width = `${rect.width}px`;
     canvas.style.height = `${rect.height}px`;
+
+    const onWinCb = (score: number) => {
+      window.dispatchEvent(new CustomEvent(TASKKILL_WIN_EVENT, { detail: { score } }));
+    };
+    const onLoseCb = (score: number) => {
+      window.dispatchEvent(new CustomEvent(TASKKILL_LOSE_EVENT, { detail: { score } }));
+    };
 
     try {
       const engine = new TaskkillEngine(canvas, {
@@ -54,6 +75,8 @@ export function TaskkillApp({ windowId: _windowId }: AppProps) {
             } : {}),
           });
         },
+        onWin: onWinCb,
+        onLose: onLoseCb,
       });
 
       engineRef.current = engine;

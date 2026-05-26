@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { pickRandom } from "@/lib/utils/random";
 import { useWastedTime, formatWastedTime } from "@/lib/hooks/use-wasted-time";
+import { useAuth } from "@/lib/contexts/auth-context";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -189,7 +190,6 @@ export function StatsBlock({ profile }: { profile: ProfileData }) {
   const days = getDaysSinceJoin(profile.createdAt);
   const rank = getGunthosRank(days);
   const wastedSeconds = useWastedTime();
-  const defragCount = Math.floor(days * 0.7);
   const compliment = pickRandom(PROFILE_COMPLIMENTS);
   const favApp = FAVORITE_APPS.find((a) => a.value === profile.favoriteApp);
   return (
@@ -199,7 +199,6 @@ export function StatsBlock({ profile }: { profile: ProfileData }) {
       </div>
       <StatRow icon="📅" label="Inscrit il y a" value={`${days} jour${days > 1 ? "s" : ""}`} />
       <StatRow icon="⏱️" label="Temps gaspillé" value={`${formatWastedTime(wastedSeconds)} sur GunthOS`} />
-      <StatRow icon="🗂️" label="Défragmentations" value={`${defragCount} (toutes inutiles)`} />
       <StatRow icon="🏅" label="Rang GunthOS" value={rank.rank} />
       {favApp && <StatRow icon="⭐" label="App favorite" value={favApp.label} />}
       <div className="text-xs mt-1 pt-1 border-t italic" style={{ color: "var(--t-text-subtle, var(--t-text-muted))", fontFamily: "var(--t-font-display)", borderColor: "var(--t-border-dark)" }}>
@@ -253,6 +252,7 @@ export function ViewTab({ profile, pixelEmoji, isOwn }: { profile: ProfileData; 
       )}
 
       <StatsBlock profile={profile} />
+      <DefragStatsBlock />
       <DiskUsageBar days={days} />
     </div>
   );
@@ -279,6 +279,118 @@ export function FieldSection({ label, children }: { label: string; children: Rea
     <div className="flex flex-col gap-2">
       <div className="text-xs tracking-widest font-bold" style={{ color: "var(--t-text-muted)", fontFamily: "var(--t-font-display)" }}>{label}</div>
       {children}
+    </div>
+  );
+}
+
+interface DefragStatsData {
+  total: number;
+  wins: number;
+  losses: number;
+  winRate: number;
+  lastGame: { won: boolean; score: number; date: string } | null;
+}
+
+export function DefragStatsBlock() {
+  const { user } = useAuth();
+  const [stats, setStats] = useState<DefragStatsData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) { setLoading(false); return; }
+    fetch("/api/profile/defrag-stats")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => { if (data && !data.error) setStats(data as DefragStatsData); })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [user]);
+
+  if (!user) return null;
+  if (loading) {
+    return (
+      <div className="p-3 text-xs" style={{ color: "var(--t-text-muted)", fontFamily: "var(--t-font-display)" }}>
+        ⏳ Chargement des statistiques de défragmentation...
+      </div>
+    );
+  }
+
+  const total = stats?.total ?? 0;
+  const wins = stats?.wins ?? 0;
+  const winRate = stats?.winRate ?? 0;
+  const last = stats?.lastGame ?? null;
+
+  return (
+    <div className="flex flex-col gap-2" style={{
+      border: "2px solid",
+      borderTopColor: "var(--t-border-dark)",
+      borderLeftColor: "var(--t-border-dark)",
+      borderBottomColor: "var(--t-border-light)",
+      borderRightColor: "var(--t-border-light)",
+      background: "linear-gradient(to bottom, var(--t-inset-from), var(--t-inset-to))",
+      padding: "8px 10px",
+    }}>
+      <div className="text-xs tracking-widest font-bold pb-1 mb-1 border-b" style={{ color: "var(--t-accent)", borderColor: "var(--t-border-dark)", fontFamily: "var(--t-font-display)" }}>
+        🗂️ DÉFRAGMENTATION — STATISTIQUES
+      </div>
+
+      {total === 0 ? (
+        <div className="text-xs italic" style={{ color: "var(--t-text-muted)", fontFamily: "var(--t-font-display)" }}>
+          Aucune défragmentation enregistrée. Lancez le Défragmenteur depuis Mon Ordinateur !
+        </div>
+      ) : (
+        <>
+          <StatRow icon="🎮" label="Parties jouées" value={`${total}`} />
+          <StatRow icon="✅" label="Victoires" value={`${wins}`} />
+          <StatRow icon="❌" label="Défaites" value={`${stats?.losses ?? 0}`} />
+          <StatRow icon="📊" label="Taux de réussite" value={`${winRate}%`} />
+
+          {last && (
+            <>
+              <div className="text-xs mt-1 pt-1 border-t" style={{ borderColor: "var(--t-border-dark)" }}>
+                <StatRow
+                  icon="🕐"
+                  label="Dernière partie"
+                  value={last.won ? "✅ Victoire" : "❌ Défaite"}
+                />
+                <StatRow
+                  icon="💯"
+                  label="Score"
+                  value={last.score.toLocaleString()}
+                />
+              </div>
+            </>
+          )}
+
+          {/* Win rate bar */}
+          <div className="mt-1">
+            <div className="text-xs mb-1 flex justify-between" style={{ fontFamily: "var(--t-font-display)", color: "var(--t-text-muted)" }}>
+              <span>Taux de purge de Windows Update</span>
+              <span>{winRate}%</span>
+            </div>
+            <div style={{
+              height: 12,
+              border: "2px solid",
+              borderTopColor: "var(--t-border-dark)",
+              borderLeftColor: "var(--t-border-dark)",
+              borderBottomColor: "var(--t-border-light)",
+              borderRightColor: "var(--t-border-light)",
+              backgroundColor: "var(--t-app-bg)",
+              padding: 1,
+            }}>
+              <div style={{
+                height: "100%",
+                width: `${winRate}%`,
+                background: winRate > 50
+                  ? "repeating-linear-gradient(90deg, var(--t-accent) 0, var(--t-accent) 6px, #00cc44 6px, #00cc44 8px)"
+                  : winRate > 25
+                    ? "repeating-linear-gradient(90deg, #cc8800 0, #cc8800 6px, #ffaa00 6px, #ffaa00 8px)"
+                    : "repeating-linear-gradient(90deg, var(--t-defrag-fragmented, #cc2200) 0, var(--t-defrag-fragmented, #cc2200) 6px, #ff4444 6px, #ff4444 8px)",
+                transition: "width 0.6s ease",
+              }} />
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

@@ -327,6 +327,16 @@ export const meetMessages = sqliteTable("meet_messages", {
   createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
 });
 
+// ── Defrag game stats ─────────────────────────────────────────────────────────
+
+export const defragStats = sqliteTable("defrag_stats", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: text("user_id").references(() => user.id, { onDelete: "cascade" }),
+  won: integer("won", { mode: "boolean" }).notNull(),
+  score: integer("score").notNull().default(0),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+});
+
 // ── GunthOS versioning ────────────────────────────────────────────────────────
 
 export const osVersions = sqliteTable("os_versions", {
