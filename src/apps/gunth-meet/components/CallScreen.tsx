@@ -180,7 +180,7 @@ export function CallScreen({
                 onPin={() => setPinnedId(null)}
                 reactions={reactionsForTile(pinnedTile.userId)}
                 canMute={currentIsHost && pinnedTile.key !== "local"}
-                onHostMute={currentIsHost && pinnedTile.key !== "local" ? () => mutePeer(pinnedTile.userId) : undefined}
+                onHostMute={currentIsHost && pinnedTile.key !== "local" ? () => { void mutePeer(pinnedTile.userId); } : undefined}
               />
             </div>
           )}
@@ -212,7 +212,7 @@ export function CallScreen({
                 onPin={() => setPinnedId(tile.key)}
                 reactions={reactionsForTile(tile.userId)}
                 canMute={currentIsHost && tile.key !== "local"}
-                onHostMute={currentIsHost && tile.key !== "local" ? () => mutePeer(tile.userId) : undefined}
+                onHostMute={currentIsHost && tile.key !== "local" ? () => { void mutePeer(tile.userId); } : undefined}
               />
             ))}
           </div>

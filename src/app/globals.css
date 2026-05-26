@@ -40,6 +40,8 @@ button, [role="button"], input, select, textarea, a {
   --t-page-to: #87b8d8;
   --t-badge-bg: #cc0000;
   --t-badge-text: #ffff00;
+  /* Speaking indicator (voice activity) */
+  --t-speaking: #43b581;
   --t-inset-from: #e8e8e8;
   --t-inset-to: #d0d0d0;
   /* App content areas (notepad, IE, etc.) */

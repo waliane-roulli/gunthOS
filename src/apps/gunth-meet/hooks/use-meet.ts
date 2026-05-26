@@ -98,7 +98,6 @@ export function useMeet(
     if (!screenTrack) return;
     const localVideo = media.localStreamRef.current?.getVideoTracks()[0];
     if (localVideo) localVideo.enabled = false;
-    // Higher bitrate for screen share (2.5 Mbps)
     await webrtc.replaceVideoTrack(screenTrack, true);
     broadcastParticipantUpdate({ isScreenSharing: true });
     for (const peer of webrtc.peersRef.current.values()) {

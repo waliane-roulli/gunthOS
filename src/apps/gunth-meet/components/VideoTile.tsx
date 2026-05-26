@@ -53,11 +53,11 @@ export function VideoTile({
 
   // Speaking border: green pulsed glow when active, accent when pinned, default otherwise
   const borderStyle = isSpeaking
-    ? "2px solid #43b581"
+    ? "2px solid var(--t-speaking)"
     : isPinned
       ? "2px solid var(--t-accent)"
       : "2px solid";
-  const boxShadow = isSpeaking ? "0 0 0 2px #43b581, 0 0 8px 2px rgba(67,181,129,0.4)" : undefined;
+  const boxShadow = isSpeaking ? "0 0 0 2px var(--t-speaking), 0 0 8px 2px color-mix(in srgb, var(--t-speaking) 40%, transparent)" : undefined;
 
   return (
     <div
@@ -93,7 +93,7 @@ export function VideoTile({
               width: 56,
               height: 56,
               borderRadius: "50%",
-              background: isSpeaking ? "#43b581" : "var(--t-accent)",
+              background: isSpeaking ? "var(--t-speaking)" : "var(--t-accent)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",

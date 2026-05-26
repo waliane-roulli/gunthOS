@@ -2,6 +2,7 @@
 
 import { useRef, useState, useCallback } from "react";
 import type { RemotePeer, SseEvent, SignalType } from "../types";
+import { getVADContext } from "../lib/vad-context";
 
 interface InternalPeer {
   userId: string;
@@ -80,13 +81,16 @@ async function applyBitrateLimits(pc: RTCPeerConnection, videoIsScreenShare: boo
   }
 }
 
-// RMS-based voice activity detection for a remote audio track
+const VAD_THRESHOLD = 0.01;
+const VAD_SILENCE_DELAY_MS = 500;
+
+// RMS-based VAD using the shared AudioContext (avoids per-page context limit).
 function setupRemoteVAD(
   audioTrack: MediaStreamTrack,
   onSpeakingChange: (speaking: boolean) => void,
 ): () => void {
   try {
-    const ctx = new AudioContext();
+    const ctx = getVADContext();
     const source = ctx.createMediaStreamSource(new MediaStream([audioTrack]));
     const analyser = ctx.createAnalyser();
     analyser.fftSize = 512;
@@ -96,28 +100,28 @@ function setupRemoteVAD(
     const buf = new Float32Array(analyser.fftSize);
     let speaking = false;
     let silenceTimer: ReturnType<typeof setTimeout> | null = null;
-    const THRESHOLD = 0.01;
 
     const interval = setInterval(() => {
       analyser.getFloatTimeDomainData(buf);
-      const rms = Math.sqrt(buf.reduce((s, x) => s + x * x, 0) / buf.length);
-      if (rms > THRESHOLD && !speaking) {
+      const rms = Math.sqrt(buf.reduce((s: number, x: number) => s + x * x, 0) / buf.length);
+      if (rms > VAD_THRESHOLD && !speaking) {
         if (silenceTimer) { clearTimeout(silenceTimer); silenceTimer = null; }
         speaking = true;
         onSpeakingChange(true);
-      } else if (rms <= THRESHOLD && speaking && !silenceTimer) {
+      } else if (rms <= VAD_THRESHOLD && speaking && !silenceTimer) {
         silenceTimer = setTimeout(() => {
           speaking = false;
           onSpeakingChange(false);
           silenceTimer = null;
-        }, 500);
+        }, VAD_SILENCE_DELAY_MS);
       }
     }, 100);
 
     return () => {
       clearInterval(interval);
       if (silenceTimer) clearTimeout(silenceTimer);
-      ctx.close();
+      // Disconnect source node — shared ctx stays open for other peers
+      source.disconnect();
     };
   } catch {
     return () => {};
@@ -225,9 +229,8 @@ export function useWebRtc(roomId: string): UseWebRtcReturn {
     applyCodecPreferences(pc);
 
     pc.ontrack = (e) => {
-      if (e.streams[0]) peer.stream = e.streams[0];
+      peer.stream = e.streams[0] ?? peer.stream;
 
-      // Set up VAD for the remote audio track
       if (e.track.kind === "audio") {
         peer.vadCleanup?.();
         peer.vadCleanup = setupRemoteVAD(e.track, (isSpeaking) => {
