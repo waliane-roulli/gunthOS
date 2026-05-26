@@ -11,6 +11,7 @@ export interface RemotePeer {
 }
 
 export interface ChatMessage {
+  id?: string;
   from: string;
   displayName: string;
   text: string;
@@ -21,7 +22,6 @@ interface Peer {
   userId: string;
   displayName: string;
   pc: RTCPeerConnection;
-  dc: RTCDataChannel | null;
   stream: MediaStream | null;
   isSpeaking: boolean;
   isScreenSharing: boolean;
@@ -56,6 +56,7 @@ export function useMeet(roomId: string, currentUserId: string, currentDisplayNam
   const screenStreamRef = useRef<MediaStream | null>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
   const iceServersRef = useRef<RTCIceServer[] | null>(null);
+  const stopScreenShareRef = useRef<() => Promise<void>>(() => Promise.resolve());
 
   const updatePeersState = useCallback(() => {
     setPeers(new Map(
@@ -87,7 +88,6 @@ export function useMeet(roomId: string, currentUserId: string, currentDisplayNam
       userId: remoteId,
       displayName,
       pc,
-      dc: null,
       stream: null,
       isSpeaking: false,
       isScreenSharing: false,
@@ -96,45 +96,24 @@ export function useMeet(roomId: string, currentUserId: string, currentDisplayNam
       polite,
     };
 
-    // Add local tracks
     if (localStreamRef.current) {
       for (const track of localStreamRef.current.getTracks()) {
         pc.addTrack(track, localStreamRef.current);
       }
     }
 
-    // Data channel for chat (only the impolite peer creates it)
-    if (!polite) {
-      const dc = pc.createDataChannel("chat");
-      peer.dc = dc;
-      dc.onmessage = (e) => {
-        const msg = JSON.parse(e.data) as ChatMessage;
-        setChatMessages((prev) => [...prev, msg]);
-      };
-    } else {
-      pc.ondatachannel = (e) => {
-        peer.dc = e.channel;
-        e.channel.onmessage = (ev) => {
-          const msg = JSON.parse(ev.data) as ChatMessage;
-          setChatMessages((prev) => [...prev, msg]);
-        };
-      };
-    }
 
-    // Remote tracks
     pc.ontrack = (e) => {
       peer.stream = e.streams[0] ?? null;
       updatePeersState();
     };
 
-    // ICE candidates
     pc.onicecandidate = (e) => {
       if (e.candidate) {
         sendSignal(remoteId, "ice-candidate", e.candidate.toJSON());
       }
     };
 
-    // Negotiation needed (perfect negotiation pattern)
     pc.onnegotiationneeded = async () => {
       try {
         peer.makingOffer = true;
@@ -193,6 +172,23 @@ export function useMeet(roomId: string, currentUserId: string, currentDisplayNam
       localStreamRef.current = stream;
       setLocalStream(stream);
 
+      // Load chat history
+      try {
+        const res = await fetch(`/api/meet/rooms/${roomId}/messages`);
+        if (res.ok) {
+          const { messages } = await res.json() as { messages: Array<{ id: string; userId: string; displayName: string; content: string; createdAt: number }> };
+          setChatMessages(messages.map((m) => ({
+            id: m.id,
+            from: m.userId,
+            displayName: m.displayName,
+            text: m.content,
+            ts: m.createdAt,
+          })));
+        }
+      } catch {
+        // not critical
+      }
+
       // Connect SSE
       const es = new EventSource(`/api/meet/rooms/${roomId}/signal`);
       eventSourceRef.current = es;
@@ -202,30 +198,37 @@ export function useMeet(roomId: string, currentUserId: string, currentDisplayNam
 
       es.addEventListener("message", (e: MessageEvent) => {
         void (async () => {
-        const data = JSON.parse(e.data);
+          const data = JSON.parse(e.data);
 
-        if (data.kind === "room-state") {
-          for (const p of data.participants as { userId: string; displayName: string }[]) {
-            if (p.userId === currentUserId) continue;
-            if (!peersRef.current.has(p.userId)) {
-              await createPeerConnection(p.userId, p.displayName, true);
+          if (data.kind === "room-state") {
+            for (const p of data.participants as { userId: string; displayName: string }[]) {
+              if (p.userId === currentUserId) continue;
+              if (!peersRef.current.has(p.userId)) {
+                await createPeerConnection(p.userId, p.displayName, true);
+              }
             }
+          } else if (data.kind === "peer-joined") {
+            const p = data.participant as { userId: string; displayName: string };
+            if (p.userId !== currentUserId && !peersRef.current.has(p.userId)) {
+              await createPeerConnection(p.userId, p.displayName, false);
+            }
+          } else if (data.kind === "peer-left") {
+            const peer = peersRef.current.get(data.userId);
+            if (peer) {
+              peer.pc.close();
+              peersRef.current.delete(data.userId);
+              updatePeersState();
+            }
+          } else if (data.kind === "signal") {
+            await handleSignal(data.from, data.type, data.payload);
+          } else if (data.kind === "chat") {
+            const m = data.message as { id: string; userId: string; displayName: string; content: string; createdAt: number };
+            // Don't duplicate our own messages (already shown optimistically)
+            setChatMessages((prev) => {
+              if (m.userId === currentUserId) return prev;
+              return [...prev, { id: m.id, from: m.userId, displayName: m.displayName, text: m.content, ts: m.createdAt }];
+            });
           }
-        } else if (data.kind === "peer-joined") {
-          const p = data.participant as { userId: string; displayName: string };
-          if (p.userId !== currentUserId && !peersRef.current.has(p.userId)) {
-            await createPeerConnection(p.userId, p.displayName, false);
-          }
-        } else if (data.kind === "peer-left") {
-          const peer = peersRef.current.get(data.userId);
-          if (peer) {
-            peer.pc.close();
-            peersRef.current.delete(data.userId);
-            updatePeersState();
-          }
-        } else if (data.kind === "signal") {
-          await handleSignal(data.from, data.type, data.payload);
-        }
         })();
       });
 
@@ -242,7 +245,6 @@ export function useMeet(roomId: string, currentUserId: string, currentDisplayNam
     return () => cleanup?.();
   }, [roomId, currentUserId, createPeerConnection, handleSignal, updatePeersState]);
 
-  // Toggle mute
   const toggleMute = useCallback(() => {
     const stream = localStreamRef.current;
     if (!stream) return;
@@ -252,7 +254,6 @@ export function useMeet(roomId: string, currentUserId: string, currentDisplayNam
     setIsMuted((prev) => !prev);
   }, []);
 
-  // Toggle camera
   const toggleCam = useCallback(() => {
     const stream = localStreamRef.current;
     if (!stream) return;
@@ -262,7 +263,6 @@ export function useMeet(roomId: string, currentUserId: string, currentDisplayNam
     setIsCamOff((prev) => !prev);
   }, []);
 
-  // Screen share
   const startScreenShare = useCallback(async () => {
     const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
     screenStreamRef.current = screenStream;
@@ -272,17 +272,15 @@ export function useMeet(roomId: string, currentUserId: string, currentDisplayNam
     const screenTrack = screenStream.getVideoTracks()[0] ?? null;
     if (!screenTrack) return;
 
-    // Replace video track in all peer connections
     for (const peer of peersRef.current.values()) {
       const sender = peer.pc.getSenders().find((s) => s.track?.kind === "video");
       if (sender) await sender.replaceTrack(screenTrack);
     }
 
-    // Also replace in local stream for preview
     const localVideo = localStreamRef.current?.getVideoTracks()[0];
     if (localVideo) localVideo.enabled = false;
 
-    screenTrack.onended = () => stopScreenShare();
+    screenTrack.onended = () => stopScreenShareRef.current();
   }, []);
 
   const stopScreenShare = useCallback(async () => {
@@ -300,22 +298,28 @@ export function useMeet(roomId: string, currentUserId: string, currentDisplayNam
       }
     }
   }, []);
+  stopScreenShareRef.current = stopScreenShare;
 
-  // Send chat message
-  const sendChat = useCallback((text: string) => {
-    const msg: ChatMessage = {
+  // Send chat message — persisted via API, broadcast via SSE
+  const sendChat = useCallback(async (text: string) => {
+    const optimistic: ChatMessage = {
       from: currentUserId,
       displayName: currentDisplayName,
       text,
       ts: Date.now(),
     };
-    setChatMessages((prev) => [...prev, msg]);
-    for (const peer of peersRef.current.values()) {
-      if (peer.dc?.readyState === "open") {
-        peer.dc.send(JSON.stringify(msg));
-      }
+    setChatMessages((prev) => [...prev, optimistic]);
+
+    try {
+      await fetch(`/api/meet/rooms/${roomId}/messages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: text }),
+      });
+    } catch {
+      // message already shown optimistically, fail silently
     }
-  }, [currentUserId, currentDisplayName]);
+  }, [roomId, currentUserId, currentDisplayName]);
 
   return {
     peers,

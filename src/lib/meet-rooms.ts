@@ -47,20 +47,34 @@ export function joinRoom(
   writer: Writer
 ): () => void {
   const room = getOrCreateRoom(roomId);
+
+  // Snapshot participants BEFORE adding the new one (for peer-joined broadcast)
+  const existingParticipants = [...room.participants.values()];
+
   room.participants.set(participant.userId, participant);
   room.writers.set(participant.userId, writer);
 
   // Notify existing participants that a new peer joined
-  broadcastToRoom(roomId, {
-    kind: "peer-joined",
-    participant,
-    participants: [...room.participants.values()],
-  }, participant.userId);
+  for (const p of existingParticipants) {
+    const w = room.writers.get(p.userId);
+    if (!w) continue;
+    try {
+      w(`data: ${JSON.stringify({
+        kind: "peer-joined",
+        participant,
+        participants: [...room.participants.values()],
+      })}\n\n`);
+    } catch {
+      room.writers.delete(p.userId);
+    }
+  }
 
-  // Send the new peer the current participant list
-  sendToParticipant(roomId, participant.userId, {
-    kind: "room-state",
-    participants: [...room.participants.values()],
+  // Send the new peer the current participant list (deferred so the SSE stream is open)
+  queueMicrotask(() => {
+    sendToParticipant(roomId, participant.userId, {
+      kind: "room-state",
+      participants: [...room.participants.values()],
+    });
   });
 
   return () => leaveRoom(roomId, participant.userId);

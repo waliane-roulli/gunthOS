@@ -147,14 +147,31 @@ function Lobby({
 }) {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const joinGeneral = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/meet/rooms", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ roomId: "general" }) });
+      if (!res.ok) throw new Error("Erreur serveur");
+      onJoin("general");
+    } catch {
+      setError("Impossible de rejoindre la room générale.");
+      setLoading(false);
+    }
+  };
 
   const createRoom = async () => {
     setLoading(true);
+    setError(null);
     try {
       const res = await fetch("/api/meet/rooms", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) });
+      if (!res.ok) throw new Error("Erreur serveur");
       const { roomId } = await res.json();
       onJoin(roomId);
-    } finally {
+    } catch {
+      setError("Impossible de créer la room.");
       setLoading(false);
     }
   };
@@ -162,10 +179,13 @@ function Lobby({
   const joinRoom = async () => {
     if (!input.trim()) return;
     setLoading(true);
+    setError(null);
     try {
-      await fetch("/api/meet/rooms", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ roomId: input.trim() }) });
+      const res = await fetch("/api/meet/rooms", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ roomId: input.trim() }) });
+      if (!res.ok) throw new Error("Erreur serveur");
       onJoin(input.trim());
-    } finally {
+    } catch {
+      setError("Impossible de rejoindre cette room.");
       setLoading(false);
     }
   };
@@ -190,8 +210,13 @@ function Lobby({
           maxWidth: 320,
         }}
       >
+        {error && (
+          <div style={{ fontSize: "var(--t-text-xs)", color: "#c0392b", fontFamily: "var(--t-font-display)" }}>
+            {error}
+          </div>
+        )}
         <button
-          onClick={createRoom}
+          onClick={joinGeneral}
           disabled={loading}
           style={{
             padding: "6px 14px",
@@ -204,7 +229,24 @@ function Lobby({
             fontSize: "var(--t-text-sm)",
           }}
         >
-          + Créer une room
+          🌐 Rejoindre la room générale
+        </button>
+
+        <button
+          onClick={createRoom}
+          disabled={loading}
+          style={{
+            padding: "6px 14px",
+            background: "var(--t-bg)",
+            color: "var(--t-text)",
+            border: "2px solid",
+            borderColor: "var(--t-border-light) var(--t-border-dark) var(--t-border-dark) var(--t-border-light)",
+            cursor: "pointer",
+            fontFamily: "var(--t-font-display)",
+            fontSize: "var(--t-text-sm)",
+          }}
+        >
+          + Créer une room privée
         </button>
 
         <div style={{ borderTop: "1px solid var(--t-border-dark)", paddingTop: 12, display: "flex", flexDirection: "column", gap: 6 }}>

@@ -316,6 +316,17 @@ export const notifications = sqliteTable("notifications", {
   createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
 });
 
+// ── GunthMeet chat messages ───────────────────────────────────────────────────
+
+export const meetMessages = sqliteTable("meet_messages", {
+  id: text("id").primaryKey(),
+  roomId: text("room_id").notNull(),
+  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  displayName: text("display_name").notNull(),
+  content: text("content").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+});
+
 // ── GunthOS versioning ────────────────────────────────────────────────────────
 
 export const osVersions = sqliteTable("os_versions", {
