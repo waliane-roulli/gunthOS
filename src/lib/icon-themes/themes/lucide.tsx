@@ -20,6 +20,7 @@ import {
   MessagesSquare,
   ScrollText,
   Palette,
+  Video,
 } from "lucide-react";
 import { MsnLogo } from "@/components/ui/msn-logo";
 import type { IconTheme, IconRenderer } from "../types";
@@ -40,6 +41,7 @@ export const lucideTheme: IconTheme = {
     profile:         { icon: User,            color: "#8e44ad" },
     directory:       { icon: Users,           color: "#27ae60" },
     msn:             { icon: MsnIcon,         color: "#0078d4" },
+    "gunth-meet":    { icon: Video,           color: "#00897b" },
     radio:           { icon: Radio,           color: "#d35400" },
     "linked-gunth":  { icon: Network,         color: "#0077b5" },
     "gunther-board": { icon: LayoutDashboard, color: "#026aa7" },

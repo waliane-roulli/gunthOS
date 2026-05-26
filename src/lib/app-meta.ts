@@ -8,6 +8,7 @@ export const APP_META: { slug: string; name: string; emoji: string; audioChannel
   { slug: "profile",        name: "Mon Profil",              emoji: "👤" },
   { slug: "directory",      name: "Annuaire",                emoji: "📋" },
   { slug: "msn",            name: "GunthMessenger™",         emoji: "💬" },
+  { slug: "gunth-meet",     name: "GunthMeet™",              emoji: "📹" },
   { slug: "radio",          name: "GunthRadio™",             emoji: "📻" },
   { slug: "linked-gunth",   name: "LinkedGunth™",            emoji: "🔗" },
   { slug: "gunther-board",  name: "GuntherBoard",            emoji: "📝" },

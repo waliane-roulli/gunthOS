@@ -16,6 +16,7 @@ export const neonTheme: IconTheme = {
     profile:         { ...lucideTheme.icons.profile!,         color: "#cc44ff" },
     directory:       { ...lucideTheme.icons.directory!,       color: "#00ff88" },
     msn:             { ...lucideTheme.icons.msn!,             color: "#00ccff" },
+    "gunth-meet":    { ...lucideTheme.icons["gunth-meet"]!,   color: "#00ffcc" },
     radio:           { ...lucideTheme.icons.radio!,           color: "#ff8800" },
     "linked-gunth":  { ...lucideTheme.icons["linked-gunth"]!, color: "#0099ff" },
     "gunther-board": { ...lucideTheme.icons["gunther-board"]!,color: "#00bbff" },
