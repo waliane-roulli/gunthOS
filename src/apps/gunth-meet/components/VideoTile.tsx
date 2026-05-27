@@ -10,6 +10,7 @@ export function VideoTile({
   isScreenSharing = false,
   noVideo = false,
   isPinned = false,
+  isSpeaking = false,
   onPin,
   reactions = [],
   isMuted = false,
@@ -24,6 +25,7 @@ export function VideoTile({
   isScreenSharing?: boolean;
   noVideo?: boolean;
   isPinned?: boolean;
+  isSpeaking?: boolean;
   onPin?: () => void;
   reactions?: Reaction[];
   isMuted?: boolean;
@@ -49,21 +51,31 @@ export function VideoTile({
     stream.getVideoTracks().some((t) => t.readyState === "live" && t.enabled) &&
     !noVideo;
 
+  // Speaking border: green pulsed glow when active, accent when pinned, default otherwise
+  const borderStyle = isSpeaking
+    ? "2px solid var(--t-speaking)"
+    : isPinned
+      ? "2px solid var(--t-accent)"
+      : "2px solid";
+  const boxShadow = isSpeaking ? "0 0 0 2px var(--t-speaking), 0 0 8px 2px color-mix(in srgb, var(--t-speaking) 40%, transparent)" : undefined;
+
   return (
     <div
       style={{
         position: "relative",
         background: "var(--t-bg)",
-        border: isPinned ? "2px solid var(--t-accent)" : "2px solid",
-        borderColor: isPinned
-          ? "var(--t-accent)"
+        border: borderStyle,
+        borderColor: isSpeaking || isPinned
+          ? undefined
           : "var(--t-border-dark) var(--t-border-light) var(--t-border-light) var(--t-border-dark)",
+        boxShadow,
         overflow: "hidden",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         minHeight: 120,
         aspectRatio: "16/9",
+        transition: "border-color 0.15s, box-shadow 0.15s",
       }}
     >
       <video
@@ -81,13 +93,14 @@ export function VideoTile({
               width: 56,
               height: 56,
               borderRadius: "50%",
-              background: "var(--t-accent)",
+              background: isSpeaking ? "var(--t-speaking)" : "var(--t-accent)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               fontSize: 24,
               color: "#fff",
               fontFamily: "var(--t-font-display)",
+              transition: "background 0.15s",
             }}
           >
             {label.charAt(0).toUpperCase()}

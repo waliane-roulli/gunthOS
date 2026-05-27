@@ -1,6 +1,74 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
+import { getVADContext } from "../lib/vad-context";
+
+const AUDIO_CONSTRAINTS: MediaTrackConstraints = {
+  echoCancellation: true,
+  noiseSuppression: true,
+  autoGainControl: true,
+  sampleRate: 48000,
+  channelCount: 1,
+};
+
+const VIDEO_CONSTRAINTS: MediaTrackConstraints = {
+  width: { ideal: 1280 },
+  height: { ideal: 720 },
+  frameRate: { ideal: 30, max: 30 },
+  facingMode: "user",
+};
+
+const VAD_THRESHOLD = 0.01;
+const VAD_SILENCE_DELAY_MS = 500;
+
+// RMS-based VAD using the shared AudioContext.
+// Returns a cleanup function. onSpeakingChange fires on state transitions only.
+function startVADOnStream(
+  stream: MediaStream,
+  onSpeakingChange: (speaking: boolean) => void,
+): () => void {
+  const audioTrack = stream.getAudioTracks()[0];
+  if (!audioTrack) return () => {};
+  try {
+    const ctx = getVADContext();
+    const source = ctx.createMediaStreamSource(stream);
+    const analyser = ctx.createAnalyser();
+    analyser.fftSize = 512;
+    analyser.smoothingTimeConstant = 0.8;
+    source.connect(analyser);
+
+    const buf = new Float32Array(analyser.fftSize);
+    let speaking = false;
+    let silenceTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const interval = setInterval(() => {
+      analyser.getFloatTimeDomainData(buf);
+      const rms = Math.sqrt(buf.reduce((s: number, x: number) => s + x * x, 0) / buf.length);
+      if (rms > VAD_THRESHOLD && !speaking) {
+        if (silenceTimer) { clearTimeout(silenceTimer); silenceTimer = null; }
+        speaking = true;
+        onSpeakingChange(true);
+      } else if (rms <= VAD_THRESHOLD && speaking && !silenceTimer) {
+        silenceTimer = setTimeout(() => {
+          speaking = false;
+          onSpeakingChange(false);
+          silenceTimer = null;
+        }, VAD_SILENCE_DELAY_MS);
+      }
+    }, 100);
+
+    return () => {
+      clearInterval(interval);
+      if (silenceTimer) clearTimeout(silenceTimer);
+      // Disconnect the source node — the shared ctx stays open
+      source.disconnect();
+      onSpeakingChange(false);
+    };
+  } catch {
+    // Non-secure contexts or AudioContext suspended — VAD is non-critical
+    return () => {};
+  }
+}
 
 export interface UseLocalMediaReturn {
   localStream: MediaStream | null;
@@ -8,6 +76,7 @@ export interface UseLocalMediaReturn {
   isMuted: boolean;
   isCamOff: boolean;
   isScreenSharing: boolean;
+  isLocalSpeaking: boolean;
   audioDevices: MediaDeviceInfo[];
   videoDevices: MediaDeviceInfo[];
   selectedAudioId: string | null;
@@ -29,6 +98,7 @@ export function useLocalMedia(): UseLocalMediaReturn {
   const [isMuted, setIsMuted] = useState(false);
   const [isCamOff, setIsCamOff] = useState(false);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
+  const [isLocalSpeaking, setIsLocalSpeaking] = useState(false);
   const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
   const [videoDevices, setVideoDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedAudioId, setSelectedAudioId] = useState<string | null>(null);
@@ -37,6 +107,10 @@ export function useLocalMedia(): UseLocalMediaReturn {
   const localStreamRef = useRef<MediaStream | null>(null);
   const screenStreamRef = useRef<MediaStream | null>(null);
   const streamReadyResolversRef = useRef<Array<(s: MediaStream) => void>>([]);
+  const vadCleanupRef = useRef<(() => void) | null>(null);
+  // Ref-stable setter to avoid stale closures inside startVADOnStream
+  const setLocalSpeakingRef = useRef(setIsLocalSpeaking);
+  setLocalSpeakingRef.current = setIsLocalSpeaking;
 
   const enumerateDevices = useCallback(async () => {
     try {
@@ -53,10 +127,13 @@ export function useLocalMedia(): UseLocalMediaReturn {
 
     async function init() {
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: VIDEO_CONSTRAINTS,
+          audio: AUDIO_CONSTRAINTS,
+        });
       } catch {
         try {
-          stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          stream = await navigator.mediaDevices.getUserMedia({ audio: AUDIO_CONSTRAINTS });
         } catch {
           stream = new MediaStream();
         }
@@ -71,6 +148,10 @@ export function useLocalMedia(): UseLocalMediaReturn {
       if (audioTrack) setSelectedAudioId(audioTrack.getSettings().deviceId ?? null);
       if (videoTrack) setSelectedVideoId(videoTrack.getSettings().deviceId ?? null);
 
+      if (audioTrack) {
+        vadCleanupRef.current = startVADOnStream(stream, (s) => setLocalSpeakingRef.current(s));
+      }
+
       await enumerateDevices();
       navigator.mediaDevices.addEventListener("devicechange", enumerateDevices);
     }
@@ -78,9 +159,12 @@ export function useLocalMedia(): UseLocalMediaReturn {
     init();
     return () => {
       navigator.mediaDevices.removeEventListener("devicechange", enumerateDevices);
+      vadCleanupRef.current?.();
       stream?.getTracks().forEach((t) => t.stop());
       screenStreamRef.current?.getTracks().forEach((t) => t.stop());
     };
+    // startVADOnStream is module-level and stable; enumerateDevices is a stable useCallback
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enumerateDevices]);
 
   const waitForStream = useCallback((): Promise<MediaStream> => {
@@ -105,7 +189,20 @@ export function useLocalMedia(): UseLocalMediaReturn {
   }, []);
 
   const startScreenShare = useCallback(async (onEnded: () => void) => {
-    const ss = await navigator.mediaDevices.getDisplayMedia({ video: true });
+    const ss = await navigator.mediaDevices.getDisplayMedia({
+      video: {
+        width: { ideal: 1920 },
+        height: { ideal: 1080 },
+        frameRate: { ideal: 30 },
+      },
+      // System audio capture — Chrome/Edge only; silently ignored elsewhere
+      audio: {
+        echoCancellation: false,
+        noiseSuppression: false,
+        autoGainControl: false,
+        sampleRate: 48000,
+      } as MediaTrackConstraints,
+    });
     screenStreamRef.current = ss;
     setScreenStream(ss);
     setIsScreenSharing(true);
@@ -117,7 +214,6 @@ export function useLocalMedia(): UseLocalMediaReturn {
     screenStreamRef.current = null;
     setScreenStream(null);
     setIsScreenSharing(false);
-    // Re-enable local video if it was disabled
     const localVideo = localStreamRef.current?.getVideoTracks()[0];
     if (localVideo) localVideo.enabled = true;
   }, []);
@@ -126,7 +222,9 @@ export function useLocalMedia(): UseLocalMediaReturn {
     const stream = localStreamRef.current;
     if (!stream) return;
     try {
-      const newStream = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: { exact: deviceId } } });
+      const newStream = await navigator.mediaDevices.getUserMedia({
+        audio: { ...AUDIO_CONSTRAINTS, deviceId: { exact: deviceId } },
+      });
       const newTrack = newStream.getAudioTracks()[0];
       if (!newTrack) return;
       const oldTrack = stream.getAudioTracks()[0];
@@ -134,6 +232,9 @@ export function useLocalMedia(): UseLocalMediaReturn {
       stream.addTrack(newTrack);
       setSelectedAudioId(deviceId);
       if (isMuted) newTrack.enabled = false;
+      // Restart VAD on the updated stream
+      vadCleanupRef.current?.();
+      vadCleanupRef.current = startVADOnStream(stream, (s) => setLocalSpeakingRef.current(s));
     } catch {
       // device switch failed
     }
@@ -143,7 +244,9 @@ export function useLocalMedia(): UseLocalMediaReturn {
     const stream = localStreamRef.current;
     if (!stream) return null;
     try {
-      const newStream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: deviceId } } });
+      const newStream = await navigator.mediaDevices.getUserMedia({
+        video: { ...VIDEO_CONSTRAINTS, deviceId: { exact: deviceId } },
+      });
       const newTrack = newStream.getVideoTracks()[0];
       if (!newTrack) return null;
       const oldTrack = stream.getVideoTracks()[0];
@@ -163,6 +266,7 @@ export function useLocalMedia(): UseLocalMediaReturn {
     isMuted,
     isCamOff,
     isScreenSharing,
+    isLocalSpeaking,
     audioDevices,
     videoDevices,
     selectedAudioId,

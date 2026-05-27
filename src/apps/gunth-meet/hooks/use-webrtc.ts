@@ -2,6 +2,7 @@
 
 import { useRef, useState, useCallback } from "react";
 import type { RemotePeer, SseEvent, SignalType } from "../types";
+import { getVADContext } from "../lib/vad-context";
 
 interface InternalPeer {
   userId: string;
@@ -18,6 +19,8 @@ interface InternalPeer {
   polite: boolean;
   pendingCandidates: RTCIceCandidateInit[];
   hasRemoteDescription: boolean;
+  vadCleanup: (() => void) | null;
+  videoIsScreenShare: boolean;
 }
 
 async function fetchIceServers(): Promise<RTCIceServer[]> {
@@ -28,6 +31,100 @@ async function fetchIceServers(): Promise<RTCIceServer[]> {
     return iceServers;
   } catch {
     return [{ urls: "stun:stun.l.google.com:19302" }];
+  }
+}
+
+// Prefer Opus for audio, VP9 > VP8 > H264 for video
+function applyCodecPreferences(pc: RTCPeerConnection): void {
+  if (typeof RTCRtpSender.getCapabilities !== "function") return;
+  for (const transceiver of pc.getTransceivers()) {
+    const kind = transceiver.sender.track?.kind ?? transceiver.receiver.track?.kind;
+    if (!kind) continue;
+    try {
+      const caps = RTCRtpSender.getCapabilities(kind);
+      if (!caps) continue;
+      if (kind === "audio") {
+        const opus = caps.codecs.filter((c) => c.mimeType.toLowerCase() === "audio/opus");
+        const rest = caps.codecs.filter((c) => c.mimeType.toLowerCase() !== "audio/opus");
+        transceiver.setCodecPreferences([...opus, ...rest]);
+      } else if (kind === "video") {
+        const order = ["video/vp9", "video/vp8", "video/h264"];
+        const sorted = [
+          ...order.flatMap((mime) => caps.codecs.filter((c) => c.mimeType.toLowerCase() === mime)),
+          ...caps.codecs.filter((c) => !order.includes(c.mimeType.toLowerCase())),
+        ];
+        if (sorted.length > 0) transceiver.setCodecPreferences(sorted);
+      }
+    } catch {
+      // setCodecPreferences may not be supported in all browsers
+    }
+  }
+}
+
+// Apply bitrate caps after connection is established
+async function applyBitrateLimits(pc: RTCPeerConnection, videoIsScreenShare: boolean): Promise<void> {
+  for (const sender of pc.getSenders()) {
+    if (!sender.track) continue;
+    try {
+      const params = sender.getParameters();
+      if (!params.encodings || params.encodings.length === 0) params.encodings = [{}];
+      const enc = params.encodings[0]!;
+      if (sender.track.kind === "audio") {
+        enc.maxBitrate = 64_000;
+      } else if (sender.track.kind === "video") {
+        enc.maxBitrate = videoIsScreenShare ? 2_500_000 : 1_200_000;
+      }
+      await sender.setParameters(params);
+    } catch {
+      // setParameters requires an active connection — may fail silently
+    }
+  }
+}
+
+const VAD_THRESHOLD = 0.01;
+const VAD_SILENCE_DELAY_MS = 500;
+
+// RMS-based VAD using the shared AudioContext (avoids per-page context limit).
+function setupRemoteVAD(
+  audioTrack: MediaStreamTrack,
+  onSpeakingChange: (speaking: boolean) => void,
+): () => void {
+  try {
+    const ctx = getVADContext();
+    const source = ctx.createMediaStreamSource(new MediaStream([audioTrack]));
+    const analyser = ctx.createAnalyser();
+    analyser.fftSize = 512;
+    analyser.smoothingTimeConstant = 0.8;
+    source.connect(analyser);
+
+    const buf = new Float32Array(analyser.fftSize);
+    let speaking = false;
+    let silenceTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const interval = setInterval(() => {
+      analyser.getFloatTimeDomainData(buf);
+      const rms = Math.sqrt(buf.reduce((s: number, x: number) => s + x * x, 0) / buf.length);
+      if (rms > VAD_THRESHOLD && !speaking) {
+        if (silenceTimer) { clearTimeout(silenceTimer); silenceTimer = null; }
+        speaking = true;
+        onSpeakingChange(true);
+      } else if (rms <= VAD_THRESHOLD && speaking && !silenceTimer) {
+        silenceTimer = setTimeout(() => {
+          speaking = false;
+          onSpeakingChange(false);
+          silenceTimer = null;
+        }, VAD_SILENCE_DELAY_MS);
+      }
+    }, 100);
+
+    return () => {
+      clearInterval(interval);
+      if (silenceTimer) clearTimeout(silenceTimer);
+      // Disconnect source node — shared ctx stays open for other peers
+      source.disconnect();
+    };
+  } catch {
+    return () => {};
   }
 }
 
@@ -43,7 +140,8 @@ export interface UseWebRtcReturn {
   ) => Promise<void>;
   handleSignal: (from: string, type: string, payload: unknown) => Promise<void>;
   removePeer: (userId: string) => void;
-  replaceVideoTrack: (track: MediaStreamTrack | null) => Promise<void>;
+  clearPeers: () => void;
+  replaceVideoTrack: (track: MediaStreamTrack | null, isScreenShare?: boolean) => Promise<void>;
   replaceAudioTrack: (track: MediaStreamTrack) => Promise<void>;
   sendSignal: (to: string, type: SignalType, payload: unknown) => Promise<void>;
   handleSseEvent: (event: SseEvent, currentUserId: string, localStreamRef: React.MutableRefObject<MediaStream | null>) => Promise<void>;
@@ -91,7 +189,16 @@ export function useWebRtc(roomId: string): UseWebRtcReturn {
     if (!iceServersRef.current) {
       iceServersRef.current = await fetchIceServers();
     }
-    const pc = new RTCPeerConnection({ iceServers: iceServersRef.current });
+
+    const pc = new RTCPeerConnection({
+      iceServers: iceServersRef.current,
+      // Bundle all media streams into one transport — reduces handshake overhead
+      bundlePolicy: "max-bundle",
+      // Multiplex RTP and RTCP on the same port
+      rtcpMuxPolicy: "require",
+      // Pre-gather ICE candidates for faster connection setup
+      iceCandidatePoolSize: 2,
+    });
 
     const peer: InternalPeer = {
       userId: remoteId,
@@ -108,6 +215,8 @@ export function useWebRtc(roomId: string): UseWebRtcReturn {
       polite,
       pendingCandidates: [],
       hasRemoteDescription: false,
+      vadCleanup: null,
+      videoIsScreenShare: false,
     };
 
     if (localStreamRef.current) {
@@ -116,8 +225,20 @@ export function useWebRtc(roomId: string): UseWebRtcReturn {
       }
     }
 
+    // Apply codec preferences right after adding tracks (before first offer)
+    applyCodecPreferences(pc);
+
     pc.ontrack = (e) => {
-      peer.stream = e.streams[0] ?? null;
+      peer.stream = e.streams[0] ?? peer.stream;
+
+      if (e.track.kind === "audio") {
+        peer.vadCleanup?.();
+        peer.vadCleanup = setupRemoteVAD(e.track, (isSpeaking) => {
+          peer.isSpeaking = isSpeaking;
+          updatePeersState();
+        });
+      }
+
       updatePeersState();
     };
 
@@ -137,7 +258,16 @@ export function useWebRtc(roomId: string): UseWebRtcReturn {
       }
     };
 
-    pc.onconnectionstatechange = () => updatePeersState();
+    pc.onconnectionstatechange = () => {
+      if (pc.connectionState === "connected") {
+        // Apply bitrate caps once the connection is live
+        void applyBitrateLimits(pc, peer.videoIsScreenShare);
+      } else if (pc.connectionState === "failed") {
+        // Attempt ICE restart before giving up
+        pc.restartIce();
+      }
+      updatePeersState();
+    };
 
     peersRef.current.set(remoteId, peer);
     pendingPeersRef.current.delete(remoteId);
@@ -159,6 +289,8 @@ export function useWebRtc(roomId: string): UseWebRtcReturn {
       peer.hasRemoteDescription = true;
 
       if (type === "offer") {
+        // Apply codec preferences as answerer too, before creating the answer
+        applyCodecPreferences(pc);
         await pc.setLocalDescription();
         sendSignal(from, "answer", pc.localDescription);
       }
@@ -192,19 +324,39 @@ export function useWebRtc(roomId: string): UseWebRtcReturn {
   const removePeer = useCallback((userId: string) => {
     const peer = peersRef.current.get(userId);
     if (peer) {
+      peer.vadCleanup?.();
       peer.pc.close();
       peersRef.current.delete(userId);
       updatePeersState();
     }
   }, [updatePeersState]);
 
-  const replaceVideoTrack = useCallback(async (track: MediaStreamTrack | null) => {
+  const clearPeers = useCallback(() => {
+    for (const peer of peersRef.current.values()) {
+      peer.vadCleanup?.();
+      peer.pc.close();
+    }
+    peersRef.current.clear();
+    pendingPeersRef.current.clear();
+    updatePeersState();
+  }, [updatePeersState]);
+
+  const replaceVideoTrack = useCallback(async (track: MediaStreamTrack | null, isScreenShare = false) => {
     for (const peer of peersRef.current.values()) {
       const sender = peer.pc.getSenders().find((s) => s.track?.kind === "video");
       if (sender && track) {
         await sender.replaceTrack(track);
+        // Update bitrate cap to match screen share vs camera
+        peer.videoIsScreenShare = isScreenShare;
+        try {
+          const params = sender.getParameters();
+          if (!params.encodings || params.encodings.length === 0) params.encodings = [{}];
+          params.encodings[0]!.maxBitrate = isScreenShare ? 2_500_000 : 1_200_000;
+          await sender.setParameters(params);
+        } catch {
+          // ok — connection may not be ready yet
+        }
       } else if (!sender && track) {
-        // audio-only fallback: add the track
         peer.pc.addTrack(track);
       }
     }
@@ -254,6 +406,7 @@ export function useWebRtc(roomId: string): UseWebRtcReturn {
     createPeerConnection,
     handleSignal,
     removePeer,
+    clearPeers,
     replaceVideoTrack,
     replaceAudioTrack,
     sendSignal,
