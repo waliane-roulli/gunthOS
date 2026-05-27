@@ -99,6 +99,12 @@ export interface SseHostMutePeer {
   targetUserId: string;
 }
 
+export interface SseAmbianceSync {
+  kind: "ambiance-sync";
+  sampleId: string | null; // null = stop
+  displayName: string;
+}
+
 export type SseEvent =
   | SseRoomState
   | SsePeerJoined
@@ -107,7 +113,8 @@ export type SseEvent =
   | SseChat
   | SseParticipantUpdate
   | SseReaction
-  | SseHostMutePeer;
+  | SseHostMutePeer
+  | SseAmbianceSync;
 
 // ── Signal types ──────────────────────────────────────────────────────────────
 

@@ -18,12 +18,16 @@ export interface UseMeetReturn {
   videoDevices: UseLocalMediaReturn["videoDevices"];
   selectedAudioId: string | null;
   selectedVideoId: string | null;
+  noiseSuppression: boolean;
+  echoCancellation: boolean;
   toggleMute: () => void;
   toggleCam: () => void;
   startScreenShare: () => Promise<void>;
   stopScreenShare: () => Promise<void>;
   switchAudioDevice: (deviceId: string) => Promise<void>;
   switchVideoDevice: (deviceId: string) => Promise<void>;
+  setNoiseSuppression: (v: boolean) => Promise<void>;
+  setEchoCancellation: (v: boolean) => Promise<void>;
   // peers
   peers: ReturnType<typeof useWebRtc>["peers"];
   // chat
@@ -35,6 +39,9 @@ export interface UseMeetReturn {
   // reactions
   reactions: Reaction[];
   sendReaction: (emoji: ReactionEmoji) => Promise<void>;
+  // ambiance
+  broadcastAmbiance: (sampleId: string | null) => Promise<void>;
+  onAmbianceSync: (cb: (sampleId: string | null, displayName: string) => void) => void;
   // moderation
   isHost: boolean;
   mutePeer: (userId: string) => Promise<void>;
@@ -61,6 +68,7 @@ export function useMeet(
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reconnectDelayRef = useRef(1_000);
   const mountedRef = useRef(true);
+  const ambianceSyncCbRef = useRef<((sampleId: string | null, displayName: string) => void) | null>(null);
 
   // Broadcast our own state changes to all peers
   const broadcastParticipantUpdate = useCallback((update: { isMuted?: boolean; isCamOff?: boolean; isScreenSharing?: boolean }) => {
@@ -121,24 +129,38 @@ export function useMeet(
   }, [chat, roomId, currentUserId, currentDisplayName]);
 
   const sendReaction = useCallback(async (emoji: ReactionEmoji) => {
-    const reaction: Reaction = {
+    const localReaction: Reaction = {
       userId: currentUserId,
       displayName: currentDisplayName,
       emoji,
       id: `${Date.now()}-${currentUserId}`,
     };
-    setReactions((prev) => [...prev, reaction]);
-    setTimeout(() => setReactions((prev) => prev.filter((r) => r.id !== reaction.id)), 3000);
+    setReactions((prev) => [...prev, localReaction]);
+    setTimeout(() => setReactions((prev) => prev.filter((r) => r.id !== localReaction.id)), 3000);
 
-    for (const peer of webrtc.peersRef.current.values()) {
-      webrtc.sendSignal(peer.userId, "reaction", reaction);
-    }
-  }, [currentUserId, currentDisplayName, webrtc]);
+    await fetch(`/api/meet/rooms/${roomId}/reactions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ emoji }),
+    });
+  }, [currentUserId, currentDisplayName, roomId]);
 
   const mutePeer = useCallback(async (userId: string) => {
     if (!isHost) return;
     webrtc.sendSignal(userId, "host-mute-peer", { targetUserId: userId });
   }, [isHost, webrtc]);
+
+  const broadcastAmbiance = useCallback(async (sampleId: string | null) => {
+    await fetch(`/api/meet/rooms/${roomId}/ambiance`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sampleId }),
+    });
+  }, [roomId]);
+
+  const onAmbianceSync = useCallback((cb: (sampleId: string | null, displayName: string) => void) => {
+    ambianceSyncCbRef.current = cb;
+  }, []);
 
   // SSE setup with exponential backoff reconnection
   useEffect(() => {
@@ -160,7 +182,6 @@ export function useMeet(
         es.close();
         if (!mountedRef.current) return;
 
-        // Drop all peer connections — they'll be re-established from room-state on reconnect
         webrtc.clearPeers();
 
         const delay = reconnectDelayRef.current;
@@ -198,6 +219,11 @@ export function useMeet(
             return;
           }
 
+          if (event.kind === "ambiance-sync") {
+            ambianceSyncCbRef.current?.(event.sampleId, event.displayName);
+            return;
+          }
+
           if (event.kind === "room-state") {
             const me = event.participants.find((p) => p.userId === currentUserId);
             if (me?.isHost) setIsHost(true);
@@ -205,7 +231,6 @@ export function useMeet(
 
           if (event.kind === "peer-joined" && event.participant.userId === currentUserId) return;
 
-          // Wait for getUserMedia to resolve before creating peer connections
           if (event.kind === "room-state" || event.kind === "peer-joined") {
             await media.waitForStream();
           }
@@ -237,12 +262,16 @@ export function useMeet(
     videoDevices: media.videoDevices,
     selectedAudioId: media.selectedAudioId,
     selectedVideoId: media.selectedVideoId,
+    noiseSuppression: media.noiseSuppression,
+    echoCancellation: media.echoCancellation,
     toggleMute,
     toggleCam,
     startScreenShare,
     stopScreenShare,
     switchAudioDevice,
     switchVideoDevice,
+    setNoiseSuppression: media.setNoiseSuppression,
+    setEchoCancellation: media.setEchoCancellation,
     peers: webrtc.peers,
     chatMessages: chat.chatMessages,
     unreadCount: chat.unreadCount,
@@ -251,6 +280,8 @@ export function useMeet(
     markChatUnread: chat.markUnread,
     reactions,
     sendReaction,
+    broadcastAmbiance,
+    onAmbianceSync,
     isHost,
     mutePeer,
     connected,

@@ -14,5 +14,6 @@ export const manifest: AppManifest = {
   loadDuration: 1200,
   showInLauncher: true,
   defaultSize: { w: 900, h: 580 },
+  audioChannels: ["gunth-meet-ambiance"],
   component: GunthMeetApp,
 };

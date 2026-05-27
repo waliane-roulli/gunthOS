@@ -7,6 +7,12 @@ export function DevicePicker({
   selectedVideoId,
   onAudioChange,
   onVideoChange,
+  outputVolume,
+  onOutputVolumeChange,
+  noiseSuppressionOn,
+  onNoiseSuppressionChange,
+  echoCancellationOn,
+  onEchoCancellationChange,
   onClose,
 }: {
   audioDevices: MediaDeviceInfo[];
@@ -15,6 +21,12 @@ export function DevicePicker({
   selectedVideoId: string | null;
   onAudioChange: (deviceId: string) => void;
   onVideoChange: (deviceId: string) => void;
+  outputVolume: number;
+  onOutputVolumeChange: (v: number) => void;
+  noiseSuppressionOn: boolean;
+  onNoiseSuppressionChange: (v: boolean) => void;
+  echoCancellationOn: boolean;
+  onEchoCancellationChange: (v: boolean) => void;
   onClose: () => void;
 }) {
   const selectStyle: React.CSSProperties = {
@@ -36,6 +48,33 @@ export function DevicePicker({
     display: "block",
   };
 
+  const toggleStyle = (active: boolean): React.CSSProperties => ({
+    display: "flex",
+    alignItems: "center",
+    gap: 6,
+    cursor: "pointer",
+    fontSize: "var(--t-text-xs)",
+    fontFamily: "var(--t-font-display)",
+    color: active ? "var(--t-accent)" : "var(--t-text-muted)",
+    userSelect: "none",
+  });
+
+  const checkboxStyle = (active: boolean): React.CSSProperties => ({
+    width: 12,
+    height: 12,
+    border: "2px solid",
+    borderColor: "var(--t-border-dark) var(--t-border-light) var(--t-border-light) var(--t-border-dark)",
+    background: active ? "var(--t-accent)" : "var(--t-bg)",
+    flexShrink: 0,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: 8,
+    color: "#fff",
+  });
+
+  const volumePercent = Math.round(outputVolume * 100);
+
   return (
     <div
       style={{
@@ -47,15 +86,16 @@ export function DevicePicker({
         borderColor: "var(--t-border-light) var(--t-border-dark) var(--t-border-dark) var(--t-border-light)",
         padding: 12,
         zIndex: 100,
-        width: 260,
+        width: 280,
         display: "flex",
         flexDirection: "column",
         gap: 12,
       }}
     >
+      {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <span style={{ fontSize: "var(--t-text-xs)", fontFamily: "var(--t-font-display)", fontWeight: "bold" }}>
-          ⚙️ Périphériques
+          ⚙️ Paramètres audio/vidéo
         </span>
         <button
           onClick={onClose}
@@ -65,6 +105,7 @@ export function DevicePicker({
         </button>
       </div>
 
+      {/* Microphone device */}
       {audioDevices.length > 0 && (
         <div>
           <label style={labelStyle}>🎤 Microphone</label>
@@ -82,6 +123,7 @@ export function DevicePicker({
         </div>
       )}
 
+      {/* Camera device */}
       {videoDevices.length > 0 && (
         <div>
           <label style={labelStyle}>📹 Caméra</label>
@@ -98,6 +140,55 @@ export function DevicePicker({
           </select>
         </div>
       )}
+
+      {/* Volume des autres */}
+      <div>
+        <label style={{ ...labelStyle, marginBottom: 6 }}>
+          🔊 Volume des autres — {volumePercent}%{volumePercent === 0 ? " 🙉" : volumePercent > 80 ? " 🔥" : ""}
+        </label>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ fontSize: 12 }}>🔈</span>
+          <input
+            type="range"
+            min={0}
+            max={1}
+            step={0.05}
+            value={outputVolume}
+            onChange={(e) => onOutputVolumeChange(parseFloat(e.target.value))}
+            style={{ flex: 1, cursor: "pointer", accentColor: "var(--t-accent)" }}
+          />
+          <span style={{ fontSize: 12 }}>📢</span>
+        </div>
+      </div>
+
+      {/* Options audio qualité */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <label style={{ ...labelStyle, marginBottom: 0 }}>🎛️ Qualité audio</label>
+
+        <label style={toggleStyle(noiseSuppressionOn)} onClick={() => onNoiseSuppressionChange(!noiseSuppressionOn)}>
+          <div style={checkboxStyle(noiseSuppressionOn)}>
+            {noiseSuppressionOn && "✓"}
+          </div>
+          🤫 Suppression de bruit
+          <span style={{ marginLeft: "auto", fontSize: 10, opacity: 0.7 }}>
+            {noiseSuppressionOn ? "ON" : "OFF"}
+          </span>
+        </label>
+
+        <label style={toggleStyle(echoCancellationOn)} onClick={() => onEchoCancellationChange(!echoCancellationOn)}>
+          <div style={checkboxStyle(echoCancellationOn)}>
+            {echoCancellationOn && "✓"}
+          </div>
+          🪃 Annulation d&apos;écho
+          <span style={{ marginLeft: "auto", fontSize: 10, opacity: 0.7 }}>
+            {echoCancellationOn ? "ON" : "OFF"}
+          </span>
+        </label>
+      </div>
+
+      <div style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)", fontFamily: "var(--t-font-display)", borderTop: "1px solid var(--t-border-dark)", paddingTop: 8 }}>
+        💡 Les options audio se prennent en compte au rechargement du micro.
+      </div>
     </div>
   );
 }

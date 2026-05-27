@@ -81,6 +81,8 @@ export interface UseLocalMediaReturn {
   videoDevices: MediaDeviceInfo[];
   selectedAudioId: string | null;
   selectedVideoId: string | null;
+  noiseSuppression: boolean;
+  echoCancellation: boolean;
   localStreamRef: React.MutableRefObject<MediaStream | null>;
   screenStreamRef: React.MutableRefObject<MediaStream | null>;
   waitForStream: () => Promise<MediaStream>;
@@ -90,6 +92,8 @@ export interface UseLocalMediaReturn {
   stopScreenShare: () => Promise<void>;
   switchAudioDevice: (deviceId: string) => Promise<void>;
   switchVideoDevice: (deviceId: string) => Promise<MediaStreamTrack | null>;
+  setNoiseSuppression: (v: boolean) => Promise<void>;
+  setEchoCancellation: (v: boolean) => Promise<void>;
 }
 
 export function useLocalMedia(): UseLocalMediaReturn {
@@ -103,6 +107,10 @@ export function useLocalMedia(): UseLocalMediaReturn {
   const [videoDevices, setVideoDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedAudioId, setSelectedAudioId] = useState<string | null>(null);
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
+  const [noiseSuppression, setNoiseSuppressionState] = useState(true);
+  const [echoCancellation, setEchoCancellationState] = useState(true);
+  const noiseSuppressionRef = useRef(true);
+  const echoCancellationRef = useRef(true);
 
   const localStreamRef = useRef<MediaStream | null>(null);
   const screenStreamRef = useRef<MediaStream | null>(null);
@@ -126,14 +134,15 @@ export function useLocalMedia(): UseLocalMediaReturn {
     let stream: MediaStream | null = null;
 
     async function init() {
+      const audioConstraints = {
+        noiseSuppression: noiseSuppressionRef.current,
+        echoCancellation: echoCancellationRef.current,
+      };
       try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: VIDEO_CONSTRAINTS,
-          audio: AUDIO_CONSTRAINTS,
-        });
+        stream = await navigator.mediaDevices.getUserMedia({ video: VIDEO_CONSTRAINTS, audio: { ...AUDIO_CONSTRAINTS, ...audioConstraints } });
       } catch {
         try {
-          stream = await navigator.mediaDevices.getUserMedia({ audio: AUDIO_CONSTRAINTS });
+          stream = await navigator.mediaDevices.getUserMedia({ audio: { ...AUDIO_CONSTRAINTS, ...audioConstraints } });
         } catch {
           stream = new MediaStream();
         }
@@ -223,7 +232,12 @@ export function useLocalMedia(): UseLocalMediaReturn {
     if (!stream) return;
     try {
       const newStream = await navigator.mediaDevices.getUserMedia({
-        audio: { ...AUDIO_CONSTRAINTS, deviceId: { exact: deviceId } },
+        audio: {
+          ...AUDIO_CONSTRAINTS,
+          deviceId: { exact: deviceId },
+          noiseSuppression: noiseSuppressionRef.current,
+          echoCancellation: echoCancellationRef.current,
+        },
       });
       const newTrack = newStream.getAudioTracks()[0];
       if (!newTrack) return;
@@ -237,6 +251,57 @@ export function useLocalMedia(): UseLocalMediaReturn {
       vadCleanupRef.current = startVADOnStream(stream, (s) => setLocalSpeakingRef.current(s));
     } catch {
       // device switch failed
+    }
+  }, [isMuted]);
+
+  const setNoiseSuppression = useCallback(async (v: boolean) => {
+    noiseSuppressionRef.current = v;
+    setNoiseSuppressionState(v);
+    // Reload audio track with new constraints
+    const stream = localStreamRef.current;
+    if (!stream) return;
+    try {
+      const deviceId = stream.getAudioTracks()[0]?.getSettings().deviceId;
+      const newStream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          ...(deviceId ? { deviceId: { exact: deviceId } } : {}),
+          noiseSuppression: v,
+          echoCancellation: echoCancellationRef.current,
+        },
+      });
+      const newTrack = newStream.getAudioTracks()[0];
+      if (!newTrack) return;
+      const oldTrack = stream.getAudioTracks()[0];
+      if (oldTrack) { stream.removeTrack(oldTrack); oldTrack.stop(); }
+      stream.addTrack(newTrack);
+      if (isMuted) newTrack.enabled = false;
+    } catch {
+      // constraint not supported
+    }
+  }, [isMuted]);
+
+  const setEchoCancellation = useCallback(async (v: boolean) => {
+    echoCancellationRef.current = v;
+    setEchoCancellationState(v);
+    const stream = localStreamRef.current;
+    if (!stream) return;
+    try {
+      const deviceId = stream.getAudioTracks()[0]?.getSettings().deviceId;
+      const newStream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          ...(deviceId ? { deviceId: { exact: deviceId } } : {}),
+          noiseSuppression: noiseSuppressionRef.current,
+          echoCancellation: v,
+        },
+      });
+      const newTrack = newStream.getAudioTracks()[0];
+      if (!newTrack) return;
+      const oldTrack = stream.getAudioTracks()[0];
+      if (oldTrack) { stream.removeTrack(oldTrack); oldTrack.stop(); }
+      stream.addTrack(newTrack);
+      if (isMuted) newTrack.enabled = false;
+    } catch {
+      // constraint not supported
     }
   }, [isMuted]);
 
@@ -271,6 +336,8 @@ export function useLocalMedia(): UseLocalMediaReturn {
     videoDevices,
     selectedAudioId,
     selectedVideoId,
+    noiseSuppression,
+    echoCancellation,
     localStreamRef,
     screenStreamRef,
     waitForStream,
@@ -280,5 +347,7 @@ export function useLocalMedia(): UseLocalMediaReturn {
     stopScreenShare,
     switchAudioDevice,
     switchVideoDevice,
+    setNoiseSuppression,
+    setEchoCancellation,
   };
 }

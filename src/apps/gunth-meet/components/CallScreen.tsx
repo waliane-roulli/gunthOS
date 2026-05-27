@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useMeet } from "../hooks/use-meet";
 import type { UseLocalMediaReturn } from "../hooks/use-local-media";
 import { VideoTile } from "./VideoTile";
@@ -8,6 +8,9 @@ import { CtrlBtn } from "./CtrlBtn";
 import { ChatPanel } from "./ChatPanel";
 import { ParticipantList } from "./ParticipantList";
 import { DevicePicker } from "./DevicePicker";
+import { AmbiancePanel } from "./AmbiancePanel";
+import { useSoundContext } from "@/lib/contexts/sound-context";
+import { useNotify } from "@/lib/contexts/notification-context";
 import type { ReactionEmoji, Reaction } from "../types";
 
 const REACTIONS: ReactionEmoji[] = ["👍", "👏", "✋", "❤️", "😂"];
@@ -30,8 +33,14 @@ export function CallScreen({
   const [chatOpen, setChatOpen] = useState(false);
   const [participantsOpen, setParticipantsOpen] = useState(false);
   const [devicePickerOpen, setDevicePickerOpen] = useState(false);
+  const [ambianceOpen, setAmbianceOpen] = useState(false);
   const [pinnedId, setPinnedId] = useState<string | null>(null);
   const [reactionsOpen, setReactionsOpen] = useState(false);
+  const [outputVolume, setOutputVolume] = useState(1);
+
+  const { playPop, playBip, playWindowClose, playNotifyInfo, init } = useSoundContext();
+  const notify = useNotify();
+  const prevPeersRef = useRef<Map<string, { displayName: string; isMuted: boolean }>>(new Map());
 
   const {
     peers,
@@ -45,6 +54,8 @@ export function CallScreen({
     videoDevices,
     selectedAudioId,
     selectedVideoId,
+    noiseSuppression,
+    echoCancellation,
     chatMessages,
     unreadCount,
     connected,
@@ -56,12 +67,53 @@ export function CallScreen({
     stopScreenShare,
     switchAudioDevice,
     switchVideoDevice,
+    setNoiseSuppression,
+    setEchoCancellation,
     sendChat,
     markChatRead,
     markChatUnread,
     sendReaction,
+    broadcastAmbiance,
+    onAmbianceSync,
     mutePeer,
   } = useMeet(roomId, userId, displayName, isHost, media);
+
+  // Sons OS + notifs sur les événements de la salle
+  useEffect(() => { init(); }, [init]);
+
+  useEffect(() => {
+    const prev = prevPeersRef.current;
+    const curr = peers;
+
+    for (const [id, peer] of curr) {
+      if (!prev.has(id)) {
+        // Nouveau participant
+        playPop();
+        notify({ type: "info", title: `📞 ${peer.displayName} a rejoint`, duration: 3000 });
+      } else {
+        const prevPeer = prev.get(id)!;
+        if (!prevPeer.isMuted && peer.isMuted) {
+          playBip();
+        }
+      }
+    }
+    for (const [id, peer] of prev) {
+      if (!curr.has(id)) {
+        playWindowClose();
+        notify({ type: "warning", title: `📴 ${peer.displayName} a raccroché`, duration: 3000 });
+      }
+    }
+
+    prevPeersRef.current = new Map([...curr].map(([id, p]) => [id, { displayName: p.displayName, isMuted: p.isMuted }]));
+  }, [peers, playPop, playBip, playWindowClose, notify]);
+
+  // Notif chat quand panneau fermé
+  useEffect(() => {
+    if (!chatOpen && unreadCount > 0) {
+      playNotifyInfo();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [unreadCount]);
 
   const handleChatOpen = useCallback(() => {
     setChatOpen(true);
@@ -95,7 +147,6 @@ export function CallScreen({
       isMuted,
       isCamOff,
       isHost: currentIsHost,
-      isSpeaking: isLocalSpeaking,
       userId: "local",
     },
     ...[...peers.values()].map((p) => ({
@@ -108,8 +159,8 @@ export function CallScreen({
       isMuted: p.isMuted,
       isCamOff: p.isCamOff,
       isHost: p.isHost,
-      isSpeaking: p.isSpeaking,
       userId: p.userId,
+      volume: outputVolume,
     })),
   ];
 
@@ -175,12 +226,12 @@ export function CallScreen({
                 isMuted={pinnedTile.isMuted}
                 isCamOff={pinnedTile.isCamOff}
                 isHost={pinnedTile.isHost}
-                isSpeaking={pinnedTile.isSpeaking}
                 isPinned
                 onPin={() => setPinnedId(null)}
                 reactions={reactionsForTile(pinnedTile.userId)}
                 canMute={currentIsHost && pinnedTile.key !== "local"}
                 onHostMute={currentIsHost && pinnedTile.key !== "local" ? () => { void mutePeer(pinnedTile.userId); } : undefined}
+                volume={pinnedTile.key === "local" ? undefined : outputVolume}
               />
             </div>
           )}
@@ -208,11 +259,11 @@ export function CallScreen({
                 isMuted={tile.isMuted}
                 isCamOff={tile.isCamOff}
                 isHost={tile.isHost}
-                isSpeaking={tile.isSpeaking}
                 onPin={() => setPinnedId(tile.key)}
                 reactions={reactionsForTile(tile.userId)}
                 canMute={currentIsHost && tile.key !== "local"}
                 onHostMute={currentIsHost && tile.key !== "local" ? () => { void mutePeer(tile.userId); } : undefined}
+                volume={tile.key === "local" ? undefined : outputVolume}
               />
             ))}
           </div>
@@ -235,6 +286,14 @@ export function CallScreen({
             messages={chatMessages}
             onSend={sendChat}
             onClose={handleChatClose}
+          />
+        )}
+        {ambianceOpen && (
+          <AmbiancePanel
+            roomId={roomId}
+            onBroadcast={broadcastAmbiance}
+            onAmbianceSync={onAmbianceSync}
+            onClose={() => setAmbianceOpen(false)}
           />
         )}
       </div>
@@ -327,8 +386,12 @@ export function CallScreen({
           💬
         </CtrlBtn>
 
+        <CtrlBtn onClick={() => setAmbianceOpen((p) => !p)} active={ambianceOpen} title="Ambiance musicale">
+          🎵
+        </CtrlBtn>
+
         <div style={{ flex: 1 }} />
-        <CtrlBtn onClick={onLeave} danger title="Raccrocher">
+        <CtrlBtn onClick={() => { playWindowClose(); onLeave(); }} danger title="Raccrocher">
           📵 Raccrocher
         </CtrlBtn>
 
@@ -341,6 +404,12 @@ export function CallScreen({
             selectedVideoId={selectedVideoId}
             onAudioChange={switchAudioDevice}
             onVideoChange={switchVideoDevice}
+            outputVolume={outputVolume}
+            onOutputVolumeChange={setOutputVolume}
+            noiseSuppressionOn={noiseSuppression}
+            onNoiseSuppressionChange={setNoiseSuppression}
+            echoCancellationOn={echoCancellation}
+            onEchoCancellationChange={setEchoCancellation}
             onClose={() => setDevicePickerOpen(false)}
           />
         )}

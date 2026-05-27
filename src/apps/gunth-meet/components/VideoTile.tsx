@@ -2,6 +2,7 @@
 
 import { useRef, useEffect } from "react";
 import type { Reaction } from "../types";
+import { useSpeaking } from "../hooks/use-speaking";
 
 export function VideoTile({
   stream,
@@ -10,7 +11,6 @@ export function VideoTile({
   isScreenSharing = false,
   noVideo = false,
   isPinned = false,
-  isSpeaking = false,
   onPin,
   reactions = [],
   isMuted = false,
@@ -18,6 +18,7 @@ export function VideoTile({
   isHost = false,
   canMute = false,
   onHostMute,
+  volume,
 }: {
   stream: MediaStream | null;
   label: string;
@@ -25,7 +26,6 @@ export function VideoTile({
   isScreenSharing?: boolean;
   noVideo?: boolean;
   isPinned?: boolean;
-  isSpeaking?: boolean;
   onPin?: () => void;
   reactions?: Reaction[];
   isMuted?: boolean;
@@ -33,8 +33,10 @@ export function VideoTile({
   isHost?: boolean;
   canMute?: boolean;
   onHostMute?: () => void;
+  volume?: number;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const isSpeaking = useSpeaking(muted ? null : stream);
 
   useEffect(() => {
     const el = videoRef.current;
@@ -45,6 +47,12 @@ export function VideoTile({
       document.addEventListener("click", resume, { once: true });
     });
   }, [stream]);
+
+  useEffect(() => {
+    const el = videoRef.current;
+    if (!el || muted) return;
+    el.volume = volume ?? 1;
+  }, [volume, muted]);
 
   const hasVideo =
     stream &&
@@ -134,6 +142,7 @@ export function VideoTile({
           {isHost && " 👑"}
         </span>
         {isMuted && "🔇"}
+        {!isMuted && isSpeaking && <span style={{ color: "#4caf50", fontSize: 10 }}>●</span>}
         {isCamOff && !isMuted && "📷"}
       </div>
 
