@@ -136,6 +136,7 @@ export function useGunthrankData() {
         genres: data.genres ? JSON.stringify(data.genres) : null,
         releaseDate: data.releaseDate ?? null,
         summary: data.summary ?? null,
+        summaryFr: null,
         createdAt: new Date(),
       };
       const newId = Date.now() + 1;

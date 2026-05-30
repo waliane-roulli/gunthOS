@@ -146,15 +146,28 @@ export function GameDetailModal({ ranking, readOnly, onClose, onRemove }: GameDe
           </div>
         )}
 
-        {/* IGDB Summary */}
-        {game.summary && (
+        {/* Summary — French if available, otherwise English */}
+        {(game.summaryFr || game.summary) && (
           <div>
             <div style={{ fontSize: "var(--t-text-xs)", fontWeight: 600, marginBottom: 4 }}>
               Résumé
             </div>
             <p style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)", lineHeight: 1.5 }}>
-              {game.summary.length > 600 ? game.summary.slice(0, 600) + "…" : game.summary}
+              {(() => {
+                const text = game.summaryFr ?? game.summary!;
+                return text.length > 600 ? text.slice(0, 600) + "…" : text;
+              })()}
             </p>
+            {game.summaryFr && game.summary && (
+              <details style={{ marginTop: 4 }}>
+                <summary style={{ fontSize: "calc(var(--t-text-xs) * 0.8)", color: "var(--t-text-muted)", cursor: "pointer" }}>
+                  Voir l'original (EN)
+                </summary>
+                <p style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)", lineHeight: 1.5, marginTop: 4 }}>
+                  {game.summary.length > 600 ? game.summary.slice(0, 600) + "…" : game.summary}
+                </p>
+              </details>
+            )}
           </div>
         )}
 

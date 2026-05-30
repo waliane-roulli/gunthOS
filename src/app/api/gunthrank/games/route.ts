@@ -7,6 +7,7 @@ import { getAuth } from "@/lib/auth";
 import { eq, like } from "drizzle-orm";
 import { headers } from "next/headers";
 import { unauthorized } from "@/lib/api-utils";
+import { translateToFrench } from "@/lib/translate";
 
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
@@ -47,6 +48,9 @@ export async function POST(req: NextRequest) {
   const byName = db().select().from(gunthrankGames).where(eq(gunthrankGames.name, body.name)).get();
   if (byName) return NextResponse.json({ game: byName });
 
+  // Translate summary to French
+  const summaryFr = body.summary ? await translateToFrench(body.summary) : null;
+
   const inserted = db()
     .insert(gunthrankGames)
     .values({
@@ -58,6 +62,7 @@ export async function POST(req: NextRequest) {
       genres: body.genres ? JSON.stringify(body.genres) : null,
       releaseDate: body.releaseDate ?? null,
       summary: body.summary ?? null,
+      summaryFr,
     })
     .returning()
     .get();
