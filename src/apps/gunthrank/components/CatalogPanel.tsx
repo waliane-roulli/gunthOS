@@ -13,8 +13,8 @@ const POPULAR_GENRES = ["Adventure", "RPG", "Shooter", "Platform", "Strategy", "
 const POPULAR_PLATFORMS = ["PC", "PlayStation 5", "Xbox Series X|S", "Nintendo Switch", "PlayStation 4", "Xbox One", "Nintendo 64", "PlayStation 2", "Super Nintendo", "Game Boy Advance", "Nintendo GameCube", "Wii"];
 
 export function CatalogPanel({ onClose, onAddFromCatalog, onAddFromIgdb }: CatalogPanelProps) {
-  const [dbGames, setDbGames] = useState<GameCatalogEntry[]>([]);
-  const [tierPickerId, setTierPickerId] = useState<string | null>(null); // "db:123" or "igdb:456"
+  const [allDbGames, setAllDbGames] = useState<GameCatalogEntry[]>([]);
+  const [tierPickerId, setTierPickerId] = useState<string | null>(null);
   const [igdbResults, setIgdbResults] = useState<IgdbSearchResult[]>([]);
   const [query, setQuery] = useState("");
   const [genreFilter, setGenreFilter] = useState<string | null>(null);
@@ -22,64 +22,65 @@ export function CatalogPanel({ onClose, onAddFromCatalog, onAddFromIgdb }: Catal
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Load full catalog once on mount (never replaced)
   useEffect(() => {
     inputRef.current?.focus();
     fetch("/api/gunthrank/games")
       .then((r) => r.json())
-      .then((d: { games: GameCatalogEntry[] }) => setDbGames(d.games));
+      .then((d: { games: GameCatalogEntry[] }) => setAllDbGames(d.games));
   }, []);
 
   const hasFilters = query.length >= 2 || genreFilter || platformFilter;
 
+  // IGDB search — only when filters are active
   useEffect(() => {
     if (!hasFilters) {
       setIgdbResults([]);
-      fetch("/api/gunthrank/games")
-        .then((r) => r.json())
-        .then((d: { games: GameCatalogEntry[] }) => setDbGames(d.games));
       return;
     }
     const timer = setTimeout(async () => {
       setLoading(true);
       try {
-        const [dbRes, igdbRes] = await Promise.all([
-          fetch(`/api/gunthrank/games?q=${encodeURIComponent(query.length >= 2 ? query : "")}`)
-            .then((r) => r.json()) as Promise<{ games: GameCatalogEntry[] }>,
-          fetch("/api/igdb/search", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              query: query.length >= 2 ? query : undefined,
-              genre: genreFilter ?? undefined,
-              platform: platformFilter ?? undefined,
-              limit: 30,
-            }),
-          }).then((r) => r.json()) as Promise<{ results: IgdbSearchResult[]; offline?: boolean }>,
-        ]);
-        setDbGames(dbRes.games);
-        setIgdbResults(igdbRes.results ?? []);
+        const igdbRes = await fetch("/api/igdb/search", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            query: query.length >= 2 ? query : undefined,
+            genre: genreFilter ?? undefined,
+            platform: platformFilter ?? undefined,
+            limit: 30,
+          }),
+        });
+        const data = await igdbRes.json() as { results: IgdbSearchResult[]; offline?: boolean };
+        setIgdbResults(data.results ?? []);
       } catch {
         setIgdbResults([]);
       }
       setLoading(false);
     }, 300);
     return () => clearTimeout(timer);
-  }, [query, genreFilter, platformFilter]);
+  }, [query, genreFilter, platformFilter, hasFilters]);
 
-  // Filter local DB games by genre/platform
+  // Filter local catalog by ALL criteria (text + genre + platform)
   const filteredDbGames = useMemo(() => {
-    return dbGames.filter((g) => {
+    const q = query.trim().toLowerCase();
+    return allDbGames.filter((g) => {
+      if (q.length >= 2 && !g.name.toLowerCase().includes(q)) return false;
       if (genreFilter && g.genres) {
-        const genres: string[] = JSON.parse(g.genres);
-        if (!genres.includes(genreFilter)) return false;
+        try {
+          const genres: string[] = JSON.parse(g.genres);
+          if (!genres.includes(genreFilter)) return false;
+        } catch { return false; }
       }
       if (platformFilter && g.platforms) {
-        const platforms: string[] = JSON.parse(g.platforms);
-        if (!platforms.includes(platformFilter)) return false;
+        try {
+          const platforms: string[] = JSON.parse(g.platforms);
+          if (!platforms.includes(platformFilter)) return false;
+        } catch { return false; }
       }
       return true;
     });
-  }, [dbGames, genreFilter, platformFilter]);
+  }, [allDbGames, query, genreFilter, platformFilter]);
 
   const handleDragStartDb = useCallback((e: React.DragEvent, game: GameCatalogEntry) => {
     e.dataTransfer.setData("text/plain", `catalog:${game.id}`);
@@ -132,7 +133,7 @@ export function CatalogPanel({ onClose, onAddFromCatalog, onAddFromIgdb }: Catal
           ref={inputRef}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Rechercher..."
+          placeholder="Rechercher un jeu..."
           className="w-full px-2 py-1"
           style={{
             fontSize: "var(--t-text-xs)",
@@ -148,7 +149,6 @@ export function CatalogPanel({ onClose, onAddFromCatalog, onAddFromIgdb }: Catal
 
       {/* Quick filters */}
       <div className="px-2 py-1.5" style={{ borderBottom: "1px solid var(--t-border-dark)" }}>
-        {/* Genres */}
         <div style={{ fontSize: "calc(var(--t-text-xs) * 0.8)", color: "var(--t-text-muted)", marginBottom: 2 }}>Genre</div>
         <div className="flex flex-wrap gap-1 max-h-16 overflow-auto">
           {POPULAR_GENRES.map((g) => (
@@ -169,7 +169,6 @@ export function CatalogPanel({ onClose, onAddFromCatalog, onAddFromIgdb }: Catal
           ))}
         </div>
 
-        {/* Platforms */}
         <div style={{ fontSize: "calc(var(--t-text-xs) * 0.8)", color: "var(--t-text-muted)", marginTop: 4, marginBottom: 2 }}>Plateforme</div>
         <div className="flex flex-wrap gap-1 max-h-16 overflow-auto">
           {POPULAR_PLATFORMS.map((p) => (
@@ -203,7 +202,7 @@ export function CatalogPanel({ onClose, onAddFromCatalog, onAddFromIgdb }: Catal
       <div className="overflow-auto flex-1">
         {loading && (
           <div className="px-2 py-1" style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)" }}>
-            Recherche...
+            Recherche IGDB...
           </div>
         )}
 
@@ -384,9 +383,9 @@ export function CatalogPanel({ onClose, onAddFromCatalog, onAddFromIgdb }: Catal
           </div>
         )}
 
-        {!hasFilters && filteredDbGames.length === 0 && (
+        {!hasFilters && allDbGames.length === 0 && (
           <div className="px-2 py-3 text-center" style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)" }}>
-            Cherche un jeu ou filtre par genre/plateforme.
+            Le catalogue est vide. Ajoute des jeux depuis IGDB !
           </div>
         )}
       </div>
