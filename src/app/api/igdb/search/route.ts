@@ -8,18 +8,51 @@ const CLIENT_SECRET = "qwza7uzglo1zmsvxcz032e5x6xcjjr";
 let cachedToken: string | null = null;
 let cachedExpiresAt = 0;
 
+async function fetchWithRetry(url: string, init: RequestInit, retries = 3): Promise<Response> {
+  let lastErr: unknown;
+  for (let i = 0; i < retries; i++) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 10_000);
+      const res = await fetch(url, { ...init, signal: controller.signal });
+      clearTimeout(timeout);
+      return res;
+    } catch (err) {
+      lastErr = err;
+      if (i < retries - 1) {
+        await new Promise((r) => setTimeout(r, Math.pow(2, i) * 500));
+      }
+    }
+  }
+  throw lastErr;
+}
+
 async function getAccessToken(): Promise<string | null> {
   if (cachedToken && Date.now() < cachedExpiresAt - 60_000) return cachedToken;
 
-  const res = await fetch(`https://id.twitch.tv/oauth2/token?client_id=${CLIENT_ID}&client_secret=${CLIENT_SECRET}&grant_type=client_credentials`, { method: "POST" });
-  if (!res.ok) {
-    console.error("Twitch OAuth failed", res.status, await res.text());
+  try {
+    const res = await fetchWithRetry("https://id.twitch.tv/oauth2/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        client_id: CLIENT_ID,
+        client_secret: CLIENT_SECRET,
+        grant_type: "client_credentials",
+      }),
+    });
+    if (!res.ok) {
+      console.error("Twitch OAuth failed", res.status, await res.text().catch(() => ""));
+      return null;
+    }
+    const data = await res.json() as { access_token: string; expires_in: number };
+    cachedToken = data.access_token;
+    cachedExpiresAt = Date.now() + data.expires_in * 1000;
+    console.log("IGDB: token refreshed, expires in", data.expires_in, "s");
+    return cachedToken;
+  } catch (err) {
+    console.error("Twitch OAuth exception:", err);
     return null;
   }
-  const data = await res.json() as { access_token: string; expires_in: number };
-  cachedToken = data.access_token;
-  cachedExpiresAt = Date.now() + data.expires_in * 1000;
-  return cachedToken;
 }
 
 export async function POST(req: NextRequest) {
@@ -53,7 +86,7 @@ export async function POST(req: NextRequest) {
   console.log("IGDB query:", bodyStr.substring(0, 200));
 
   try {
-    const igdbRes = await fetch("https://api.igdb.com/v4/games", {
+    const igdbRes = await fetchWithRetry("https://api.igdb.com/v4/games", {
       method: "POST",
       headers: {
         "Client-ID": CLIENT_ID,
@@ -64,7 +97,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (!igdbRes.ok) {
-      console.error("IGDB API error", igdbRes.status, await igdbRes.text());
+      console.error("IGDB API error", igdbRes.status, await igdbRes.text().catch(() => ""));
       return NextResponse.json({ offline: true, results: [] });
     }
 

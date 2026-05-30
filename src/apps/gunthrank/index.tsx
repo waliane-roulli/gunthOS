@@ -31,7 +31,7 @@ export function GunthrankApp({ windowId }: { windowId: string }) {
     filters, setFilters,
     allPlatforms, allGenres, allYears,
     searchIgdb,
-    addGame, addFromCatalog, removeRanking, moveGame, updateNote,
+    addGame, addFromCatalog, removeRanking, moveGame, reorderGame, updateNote,
   } = useGunthrankData();
 
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -54,11 +54,11 @@ export function GunthrankApp({ windowId }: { windowId: string }) {
     fetchAvailableUsers();
   };
 
-  const handleMoveGame = (rankingId: number, toTier: TierId) => {
+  const handleMoveGame = (rankingId: number, toTier: TierId, toIndex?: number) => {
     const entry = rankings.find((r) => r.id === rankingId);
     if (!entry) return;
     const oldTier = entry.tier;
-    moveGame(rankingId, toTier, 0);
+    moveGame(rankingId, toTier, toIndex ?? 0);
     if (toTier === "diamond" && oldTier !== "diamond") playVictory();
     else if (toTier === "caca" && oldTier !== "caca") playDelete();
     else playPop();
@@ -69,6 +69,11 @@ export function GunthrankApp({ windowId }: { windowId: string }) {
     if (!entry) return;
     moveGame(rankingId, toTier, 0);
     playPop();
+  };
+
+  const handleReorder = (rankingId: number, toIndex: number) => {
+    reorderGame(rankingId, toIndex);
+    playClick();
   };
 
   const handleAddGame = async (igdbGame: IgdbSearchResult, tier: TierId) => {
@@ -434,6 +439,7 @@ export function GunthrankApp({ windowId }: { windowId: string }) {
                   onRemove={handleRemove}
                   onUpdateNote={updateNote}
                   onMove={handleMoveToTier}
+                  onReorder={handleReorder}
                 />
               );
             })

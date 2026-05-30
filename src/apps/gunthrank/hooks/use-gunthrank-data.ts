@@ -256,6 +256,41 @@ export function useGunthrankData() {
     });
   }, [devMode]);
 
+  const reorderGame = useCallback(async (rankingId: number, toIndex: number) => {
+    setRankings((prev) => {
+      const entry = prev.find((r) => r.id === rankingId);
+      if (!entry) return prev;
+      const tier = entry.tier;
+      const othersInTier = prev
+        .filter((r) => r.tier === tier && r.id !== rankingId)
+        .sort((a, b) => a.sortOrder - b.sortOrder);
+      // Calculate effective index accounting for removal of the dragged item
+      const srcIdx = othersInTier.findIndex((r) => r.id === rankingId);
+      const effectiveIdx = toIndex > srcIdx && srcIdx >= 0 ? toIndex - 1 : toIndex;
+      const clampedIdx = Math.max(0, Math.min(effectiveIdx, othersInTier.length));
+      const reordered = [
+        ...othersInTier.slice(0, clampedIdx),
+        { ...entry, sortOrder: clampedIdx },
+        ...othersInTier.slice(clampedIdx),
+      ];
+      const full = prev.map((r) => {
+        const idx = reordered.findIndex((rr) => rr.id === r.id);
+        return idx >= 0 ? { ...r, sortOrder: idx } : r;
+      });
+      if (devMode) {
+        saveDevRankings(full);
+      } else {
+        const updates = reordered.map((r, i) => ({ id: r.id, tier: r.tier, sortOrder: i }));
+        fetch("/api/gunthrank/rankings/batch", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ updates }),
+        }).catch(() => {});
+      }
+      return full;
+    });
+  }, [devMode]);
+
   const updateNote = useCallback(async (rankingId: number, objectiveNote: number | null, noteText: string | null) => {
     setRankings((prev) => {
       const next = prev.map((r) =>
@@ -335,6 +370,6 @@ export function useGunthrankData() {
     filters, setFilters,
     allPlatforms, allGenres, allYears,
     fetchGames, searchIgdb,
-    addGame, addFromCatalog, removeRanking, moveGame, updateNote,
+    addGame, addFromCatalog, removeRanking, moveGame, reorderGame, updateNote,
   };
 }

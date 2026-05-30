@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import type { RankingEntry, TierId } from "../constants";
 import { GameCard } from "./GameCard";
 import { GameRow } from "./GameRow";
@@ -10,17 +10,19 @@ interface TierRowProps {
   games: RankingEntry[];
   readOnly?: boolean;
   viewLayout: "list" | "grid";
-  onDrop: (rankingId: number, toTier: TierId) => void;
+  onDrop: (rankingId: number, toTier: TierId, toIndex?: number) => void;
   onAddFromCatalog?: (gameId: number, toTier: TierId) => void;
   onAddFromIgdb?: (game: import("../constants").IgdbSearchResult, toTier: TierId) => void;
   onRemove?: (gameId: number) => void;
   onUpdateNote?: (rankingId: number, objectiveNote: number | null, noteText: string | null) => void;
   onMove?: (rankingId: number, toTier: TierId) => void;
+  onReorder?: (rankingId: number, toIndex: number) => void;
 }
 
-export function TierRow({ tier, games, readOnly, viewLayout, onDrop, onAddFromCatalog, onAddFromIgdb, onRemove, onUpdateNote, onMove }: TierRowProps) {
+export function TierRow({ tier, games, readOnly, viewLayout, onDrop, onAddFromCatalog, onAddFromIgdb, onRemove, onUpdateNote, onMove, onReorder }: TierRowProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [dropIndex, setDropIndex] = useState<{ idx: number; before: boolean } | null>(null);
 
   const handleDragOver = (e: React.DragEvent) => {
     if (readOnly) return;
@@ -29,7 +31,6 @@ export function TierRow({ tier, games, readOnly, viewLayout, onDrop, onAddFromCa
   };
 
   const handleDragLeave = (e: React.DragEvent) => {
-    // Only set false if we're actually leaving the container
     const rect = e.currentTarget.getBoundingClientRect();
     const { clientX, clientY } = e;
     if (clientX < rect.left || clientX > rect.right || clientY < rect.top || clientY > rect.bottom) {
@@ -54,11 +55,57 @@ export function TierRow({ tier, games, readOnly, viewLayout, onDrop, onAddFromCa
       const rankingId = parseInt(raw, 10);
       if (!isNaN(rankingId)) {
         const entry = games.find((g) => g.id === rankingId);
-        if (entry && entry.tier === tier.id) return; // Same tier, no-op
+        if (entry && entry.tier === tier.id) return;
         onDrop(rankingId, tier.id);
       }
     }
   };
+
+  const handleItemDragOver = useCallback((e: React.DragEvent, index: number) => {
+    if (readOnly) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const rect = e.currentTarget.getBoundingClientRect();
+    const midY = rect.top + rect.height / 2;
+    const before = e.clientY < midY;
+    setDropIndex({ idx: index, before });
+  }, [readOnly]);
+
+  const handleItemDrop = useCallback((e: React.DragEvent, index: number) => {
+    if (readOnly) return;
+    e.preventDefault();
+    e.stopPropagation();
+    setDropIndex(null);
+    const raw = e.dataTransfer.getData("text/plain");
+    const rankingId = parseInt(raw, 10);
+    if (isNaN(rankingId)) return;
+    const entry = games.find((g) => g.id === rankingId);
+    if (!entry) return;
+    if (entry.tier !== tier.id) {
+      // Different tier — move to this tier at the drop position
+      const rect = e.currentTarget.getBoundingClientRect();
+      const midY = rect.top + rect.height / 2;
+      const before = e.clientY < midY;
+      const toIndex = before ? index : index + 1;
+      onDrop(rankingId, tier.id, toIndex);
+      return;
+    }
+    // Same tier — reorder
+    if (!onReorder) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const midY = rect.top + rect.height / 2;
+    const before = e.clientY < midY;
+    const toIndex = before ? index : index + 1;
+    onReorder(rankingId, toIndex);
+  }, [readOnly, games, tier.id, onDrop, onReorder]);
+
+  const handleItemDragLeave = useCallback((e: React.DragEvent) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const { clientX, clientY } = e;
+    if (clientX < rect.left || clientX > rect.right || clientY < rect.top || clientY > rect.bottom) {
+      setDropIndex(null);
+    }
+  }, []);
 
   const sorted = [...games].sort((a, b) => a.sortOrder - b.sortOrder);
 
@@ -104,26 +151,40 @@ export function TierRow({ tier, games, readOnly, viewLayout, onDrop, onAddFromCa
       {/* Game list */}
       {!collapsed && (
         <div className="flex gap-2 p-2 flex-1 overflow-auto" style={{ flexDirection: viewLayout === "grid" ? "row" : "column", flexWrap: viewLayout === "grid" ? "wrap" : "nowrap" }}>
-          {sorted.map((r) =>
-            viewLayout === "list" ? (
-              <GameRow
+          {sorted.map((r, index) => {
+            const isDropBefore = dropIndex?.idx === index && dropIndex?.before;
+            const isDropAfter = dropIndex?.idx === index && !dropIndex?.before;
+            return (
+              <div
                 key={r.id}
-                ranking={r}
-                readOnly={readOnly}
-                onRemove={onRemove}
-                onUpdateNote={onUpdateNote}
-                onMove={onMove}
-              />
-            ) : (
-              <GameCard
-                key={r.id}
-                ranking={r}
-                readOnly={readOnly}
-                onRemove={onRemove}
-                onUpdateNote={onUpdateNote}
-              />
-            )
-          )}
+                onDragOver={(e) => handleItemDragOver(e, index)}
+                onDragLeave={handleItemDragLeave}
+                onDrop={(e) => handleItemDrop(e, index)}
+                style={{
+                  position: "relative",
+                  borderTop: isDropBefore ? "2px solid var(--t-accent)" : "2px solid transparent",
+                  borderBottom: isDropAfter ? "2px solid var(--t-accent)" : "2px solid transparent",
+                }}
+              >
+                {viewLayout === "list" ? (
+                  <GameRow
+                    ranking={r}
+                    readOnly={readOnly}
+                    onRemove={onRemove}
+                    onUpdateNote={onUpdateNote}
+                    onMove={onMove}
+                  />
+                ) : (
+                  <GameCard
+                    ranking={r}
+                    readOnly={readOnly}
+                    onRemove={onRemove}
+                    onUpdateNote={onUpdateNote}
+                  />
+                )}
+              </div>
+            );
+          })}
           {games.length === 0 && (
             <div
               className="flex items-center justify-center w-full flex-1"
