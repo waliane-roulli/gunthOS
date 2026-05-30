@@ -87,7 +87,7 @@ export function GameRow({ ranking, readOnly, isNew, onRemove, onUpdateNote, onMo
       {/* Main row */}
       <div
         className="flex items-center gap-2 px-2 py-1.5 min-w-0"
-        onClick={() => onDetailClick?.(ranking)}
+        onClick={() => { if (readOnly) { onDetailClick?.(ranking); } else { setExpanded(!expanded); } }}
       >
         {/* Rank number */}
         {rankNumber != null && (
@@ -144,22 +144,20 @@ export function GameRow({ ranking, readOnly, isNew, onRemove, onUpdateNote, onMo
 
         {/* Right: note + edit button */}
         <div className="flex-shrink-0 flex items-center gap-2" style={{ minWidth: 100 }}>
-          {!readOnly && (
-            <button
-              className="px-1 py-0.5 opacity-50 hover:opacity-100"
-              style={{
-                fontSize: "var(--t-text-xs)",
-                background: "none",
-                color: "var(--t-text-muted)",
-                border: "none",
-                cursor: "pointer",
-              }}
-              onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
-              title="Modifier la note"
-            >
-              ✎
-            </button>
-          )}
+          <button
+            className="px-1 py-0.5 opacity-50 hover:opacity-100"
+            style={{
+              fontSize: "var(--t-text-sm)",
+              background: "none",
+              color: "var(--t-text-muted)",
+              border: "none",
+              cursor: "pointer",
+            }}
+            onClick={(e) => { e.stopPropagation(); onDetailClick?.(ranking); }}
+            title="Voir la fiche"
+          >
+            🔍
+          </button>
           {hasNote ? (
             <div className="text-right">
               <div style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text)", fontWeight: "bold" }}>

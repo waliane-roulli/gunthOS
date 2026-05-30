@@ -14,8 +14,8 @@ interface TierRowProps {
   viewLayout: "list" | "grid";
   recentlyMovedIds?: Set<number>;
   onDrop: (rankingId: number, toTier: TierId, toIndex?: number) => void;
-  onAddFromCatalog?: (gameId: number, toTier: TierId) => void;
-  onAddFromIgdb?: (game: import("../constants").IgdbSearchResult, toTier: TierId) => void;
+  onAddFromCatalog?: (gameId: number, toTier: TierId, toIndex?: number) => void;
+  onAddFromIgdb?: (game: import("../constants").IgdbSearchResult, toTier: TierId, toIndex?: number) => void;
   onRemove?: (gameId: number) => void;
   onUpdateNote?: (rankingId: number, objectiveNote: number | null, noteText: string | null, playedOn?: string | null) => void;
   onMove?: (rankingId: number, toTier: TierId) => void;
@@ -53,11 +53,11 @@ export function TierRow({ tier, games, readOnly, viewLayout, recentlyMovedIds, o
     if (raw.startsWith("igdb:")) {
       try {
         const game = JSON.parse(raw.slice(5));
-        onAddFromIgdb?.(game, tier.id);
+        onAddFromIgdb?.(game, tier.id, games.length);
       } catch { /* ignore malformed drop */ }
     } else if (raw.startsWith("catalog:") || raw.startsWith("new:")) {
       const gameId = parseInt(raw.includes("catalog:") ? raw.slice(8) : raw.slice(4), 10);
-      if (!isNaN(gameId)) onAddFromCatalog?.(gameId, tier.id);
+      if (!isNaN(gameId)) onAddFromCatalog?.(gameId, tier.id, games.length);
     } else {
       const rankingId = parseInt(raw, 10);
       if (!isNaN(rankingId)) {
@@ -84,25 +84,37 @@ export function TierRow({ tier, games, readOnly, viewLayout, recentlyMovedIds, o
     e.stopPropagation();
     setDropIndex(null);
     const raw = e.dataTransfer.getData("text/plain");
+    const rect = e.currentTarget.getBoundingClientRect();
+    const midY = rect.top + rect.height / 2;
+    const before = e.clientY < midY;
+    const toIndex = before ? index : index + 1;
+
+    // Catalog / IGDB drops at a specific position
+    if (raw.startsWith("igdb:")) {
+      try {
+        const game = JSON.parse(raw.slice(5));
+        onAddFromIgdb?.(game, tier.id, toIndex);
+      } catch { /* ignore malformed drop */ }
+      return;
+    }
+    if (raw.startsWith("catalog:") || raw.startsWith("new:")) {
+      const gameId = parseInt(raw.includes("catalog:") ? raw.slice(8) : raw.slice(4), 10);
+      if (!isNaN(gameId)) onAddFromCatalog?.(gameId, tier.id, toIndex);
+      return;
+    }
+
+    // Existing ranking reorder
     const rankingId = parseInt(raw, 10);
     if (isNaN(rankingId)) return;
     const entry = games.find((g) => g.id === rankingId);
     if (!entry) return;
     if (entry.tier !== tier.id) {
-      const rect = e.currentTarget.getBoundingClientRect();
-      const midY = rect.top + rect.height / 2;
-      const before = e.clientY < midY;
-      const toIndex = before ? index : index + 1;
       onDrop(rankingId, tier.id, toIndex);
       return;
     }
     if (!onReorder) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const midY = rect.top + rect.height / 2;
-    const before = e.clientY < midY;
-    const toIndex = before ? index : index + 1;
     onReorder(rankingId, toIndex);
-  }, [readOnly, games, tier.id, onDrop, onReorder]);
+  }, [readOnly, games, tier.id, onDrop, onReorder, onAddFromCatalog, onAddFromIgdb]);
 
   const handleItemDragLeave = useCallback((e: React.DragEvent) => {
     const rect = e.currentTarget.getBoundingClientRect();

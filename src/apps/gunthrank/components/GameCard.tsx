@@ -63,7 +63,7 @@ export function GameCard({ ranking, readOnly, isNew, onRemove, onUpdateNote, onD
       <div
         className="relative w-full"
         style={{ aspectRatio: "2/3" }}
-        onClick={() => onDetailClick?.(ranking)}
+        onClick={() => { if (readOnly) { onDetailClick?.(ranking); } else { setExpanded(!expanded); } }}
       >
         {coverUrl ? (
           <img
@@ -120,22 +120,21 @@ export function GameCard({ ranking, readOnly, isNew, onRemove, onUpdateNote, onD
             {ranking.objectiveNote}/10
           </div>
         )}
-        {!readOnly && (
-          <button
-            className="absolute top-0.5 left-0.5 px-1 py-0.5 rounded opacity-70 hover:opacity-100"
-            style={{
-              fontSize: "calc(var(--t-text-xs) * 0.75)",
-              background: "rgba(0,0,0,0.55)",
-              color: "#fff",
-              border: "none",
-              cursor: "pointer",
-              lineHeight: 1,
-            }}
-            onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
-          >
-            ✎
-          </button>
-        )}
+        <button
+          className="absolute top-0.5 left-0.5 px-1 py-0.5 rounded opacity-70 hover:opacity-100"
+          style={{
+            fontSize: "calc(var(--t-text-xs) * 0.9)",
+            background: "rgba(0,0,0,0.55)",
+            color: "#fff",
+            border: "none",
+            cursor: "pointer",
+            lineHeight: 1,
+          }}
+          onClick={(e) => { e.stopPropagation(); onDetailClick?.(ranking); }}
+          title="Voir la fiche"
+        >
+          🔍
+        </button>
       </div>
 
       {/* Expanded: note inputs */}

@@ -239,13 +239,13 @@ function GunthrankAppInner({ windowId }: { windowId: string }) {
     notify({ type: "info", title: "Jeu retiré du classement" });
   };
 
-  const handleAddFromCatalog = async (gameId: number, toTier: TierId) => {
+  const handleAddFromCatalog = async (gameId: number, toTier: TierId, toIndex?: number) => {
     playPop();
-    await addFromCatalog(gameId, toTier);
+    await addFromCatalog(gameId, toTier, toIndex);
     notify({ type: "success", title: "Ajouté au classement !" });
   };
 
-  const handleAddFromIgdb = async (igdbGame: IgdbSearchResult, toTier: TierId) => {
+  const handleAddFromIgdb = async (igdbGame: IgdbSearchResult, toTier: TierId, toIndex?: number) => {
     playPop();
     if (devMode) {
       // In dev mode, store directly with IGDB data embedded
@@ -259,6 +259,7 @@ function GunthrankAppInner({ windowId }: { windowId: string }) {
         releaseDate: igdbGame.releaseYear,
         summary: igdbGame.summary,
         tier: toTier,
+        toIndex,
       });
     } else {
       // Add to catalog first, then create ranking
@@ -277,7 +278,7 @@ function GunthrankAppInner({ windowId }: { windowId: string }) {
         }),
       });
       const { game } = await gameRes.json() as { game: { id: number } };
-      await addFromCatalog(game.id, toTier);
+      await addFromCatalog(game.id, toTier, toIndex);
     }
     notify({ type: "success", title: `${igdbGame.name} ajouté !` });
   };

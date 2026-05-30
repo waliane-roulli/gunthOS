@@ -119,37 +119,56 @@ export function useGunthrankData() {
     releaseDate?: number | null;
     summary?: string | null;
     tier: string;
+    toIndex?: number;
     objectiveNote?: number | null;
     noteText?: string | null;
     playedOn?: string | null;
   }) => {
+    const { toIndex, ...data } = gameData;
     if (devMode) {
       const devGame: GameCatalogEntry = {
         id: Date.now(),
-        igdbId: gameData.igdbId ?? null,
-        name: gameData.name,
-        slug: gameData.slug ?? null,
-        coverUrl: gameData.coverUrl ?? null,
-        platforms: gameData.platforms ? JSON.stringify(gameData.platforms) : null,
-        genres: gameData.genres ? JSON.stringify(gameData.genres) : null,
-        releaseDate: gameData.releaseDate ?? null,
-        summary: gameData.summary ?? null,
+        igdbId: data.igdbId ?? null,
+        name: data.name,
+        slug: data.slug ?? null,
+        coverUrl: data.coverUrl ?? null,
+        platforms: data.platforms ? JSON.stringify(data.platforms) : null,
+        genres: data.genres ? JSON.stringify(data.genres) : null,
+        releaseDate: data.releaseDate ?? null,
+        summary: data.summary ?? null,
         createdAt: new Date(),
       };
+      const newId = Date.now() + 1;
       const devRanking: RankingEntry = {
-        id: Date.now() + 1,
+        id: newId,
         userId: "dev",
         gameId: devGame.id,
-        tier: gameData.tier,
-        objectiveNote: gameData.objectiveNote ?? null,
-        noteText: gameData.noteText ?? null,
-        playedOn: gameData.playedOn ?? null,
+        tier: data.tier,
+        objectiveNote: data.objectiveNote ?? null,
+        noteText: data.noteText ?? null,
+        playedOn: data.playedOn ?? null,
         sortOrder: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
         game: devGame,
       };
-      setRankings((prev) => { const next = [...prev, devRanking]; saveDevRankings(next); return next; });
+      setRankings((prev) => {
+        let next = [...prev, devRanking];
+        if (toIndex !== undefined) {
+          const tier = data.tier;
+          const inTier = next.filter((r) => r.tier === tier).sort((a, b) => a.sortOrder - b.sortOrder);
+          const target = inTier.find((r) => r.id === newId)!;
+          const others = inTier.filter((r) => r.id !== newId);
+          const clamped = Math.max(0, Math.min(toIndex, others.length));
+          const reordered = [...others.slice(0, clamped), target, ...others.slice(clamped)];
+          next = next.map((r) => {
+            const idx = reordered.findIndex((rr) => rr.id === r.id);
+            return idx >= 0 ? { ...r, sortOrder: idx } : r;
+          });
+        }
+        saveDevRankings(next);
+        return next;
+      });
       return devRanking;
     }
 
@@ -158,14 +177,14 @@ export function useGunthrankData() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        igdbId: gameData.igdbId,
-        name: gameData.name,
-        slug: gameData.slug,
-        coverUrl: gameData.coverUrl,
-        platforms: gameData.platforms,
-        genres: gameData.genres,
-        releaseDate: gameData.releaseDate,
-        summary: gameData.summary,
+        igdbId: data.igdbId,
+        name: data.name,
+        slug: data.slug,
+        coverUrl: data.coverUrl,
+        platforms: data.platforms,
+        genres: data.genres,
+        releaseDate: data.releaseDate,
+        summary: data.summary,
       }),
     });
     const { game } = await gameRes.json() as { game: GameCatalogEntry };
@@ -175,24 +194,46 @@ export function useGunthrankData() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         gameId: game.id,
-        tier: gameData.tier,
-        objectiveNote: gameData.objectiveNote,
-        noteText: gameData.noteText,
-        playedOn: gameData.playedOn,
+        tier: data.tier,
+        objectiveNote: data.objectiveNote,
+        noteText: data.noteText,
+        playedOn: data.playedOn,
       }),
     });
     const { ranking } = await rankRes.json() as { ranking: RankingEntry };
 
-    setRankings((prev) => [...prev, { ...ranking, game }]);
+    const newEntry = { ...ranking, game };
+    setRankings((prev) => {
+      let next = [...prev, newEntry];
+      if (toIndex !== undefined) {
+        const tier = data.tier;
+        const inTier = next.filter((r) => r.tier === tier).sort((a, b) => a.sortOrder - b.sortOrder);
+        const others = inTier.filter((r) => r.id !== ranking.id);
+        const clamped = Math.max(0, Math.min(toIndex, others.length));
+        const reordered = [...others.slice(0, clamped), { ...newEntry, sortOrder: clamped }, ...others.slice(clamped)];
+        const updates = reordered.map((r, i) => ({ id: r.id, tier: r.tier, sortOrder: i }));
+        fetch("/api/gunthrank/rankings/batch", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ updates }),
+        }).catch(() => {});
+        next = next.map((r) => {
+          const idx = reordered.findIndex((rr) => rr.id === r.id);
+          return idx >= 0 ? { ...r, sortOrder: idx } : r;
+        });
+      }
+      return next;
+    });
     return ranking;
   }, [devMode]);
 
-  const addFromCatalog = useCallback(async (gameId: number, tier: string) => {
+  const addFromCatalog = useCallback(async (gameId: number, tier: string, toIndex?: number) => {
     if (devMode) {
       const existing = rankings.find((r) => r.gameId === gameId);
       if (!existing?.game) return;
+      const newId = Date.now();
       const devRanking: RankingEntry = {
-        id: Date.now(),
+        id: newId,
         userId: "dev",
         gameId: existing.gameId,
         tier,
@@ -204,7 +245,22 @@ export function useGunthrankData() {
         updatedAt: new Date(),
         game: existing.game,
       };
-      setRankings((prev) => { const next = [...prev, devRanking]; saveDevRankings(next); return next; });
+      setRankings((prev) => {
+        let next = [...prev, devRanking];
+        if (toIndex !== undefined) {
+          const inTier = next.filter((r) => r.tier === tier).sort((a, b) => a.sortOrder - b.sortOrder);
+          const target = inTier.find((r) => r.id === newId)!;
+          const others = inTier.filter((r) => r.id !== newId);
+          const clamped = Math.max(0, Math.min(toIndex, others.length));
+          const reordered = [...others.slice(0, clamped), target, ...others.slice(clamped)];
+          next = next.map((r) => {
+            const idx = reordered.findIndex((rr) => rr.id === r.id);
+            return idx >= 0 ? { ...r, sortOrder: idx } : r;
+          });
+        }
+        saveDevRankings(next);
+        return next;
+      });
       return devRanking;
     }
 
@@ -217,7 +273,27 @@ export function useGunthrankData() {
     const gameRes = await fetch(`/api/gunthrank/games?q=${encodeURIComponent("")}`);
     const { games: allGames } = await gameRes.json() as { games: GameCatalogEntry[] };
     const game = allGames.find((g) => g.id === gameId) ?? null;
-    setRankings((prev) => [...prev, { ...ranking, game }]);
+    const newEntry = { ...ranking, game };
+    setRankings((prev) => {
+      let next = [...prev, newEntry];
+      if (toIndex !== undefined) {
+        const inTier = next.filter((r) => r.tier === tier).sort((a, b) => a.sortOrder - b.sortOrder);
+        const others = inTier.filter((r) => r.id !== ranking.id);
+        const clamped = Math.max(0, Math.min(toIndex, others.length));
+        const reordered = [...others.slice(0, clamped), { ...newEntry, sortOrder: clamped }, ...others.slice(clamped)];
+        const updates = reordered.map((r, i) => ({ id: r.id, tier: r.tier, sortOrder: i }));
+        fetch("/api/gunthrank/rankings/batch", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ updates }),
+        }).catch(() => {});
+        next = next.map((r) => {
+          const idx = reordered.findIndex((rr) => rr.id === r.id);
+          return idx >= 0 ? { ...r, sortOrder: idx } : r;
+        });
+      }
+      return next;
+    });
     return ranking;
   }, [devMode, rankings]);
 
@@ -265,12 +341,13 @@ export function useGunthrankData() {
       const entry = prev.find((r) => r.id === rankingId);
       if (!entry) return prev;
       const tier = entry.tier;
-      const othersInTier = prev
-        .filter((r) => r.tier === tier && r.id !== rankingId)
+      const sortedFull = prev
+        .filter((r) => r.tier === tier)
         .sort((a, b) => a.sortOrder - b.sortOrder);
-      // Calculate effective index accounting for removal of the dragged item
-      const srcIdx = othersInTier.findIndex((r) => r.id === rankingId);
-      const effectiveIdx = toIndex > srcIdx && srcIdx >= 0 ? toIndex - 1 : toIndex;
+      const srcIdx = sortedFull.findIndex((r) => r.id === rankingId);
+      const othersInTier = sortedFull.filter((r) => r.id !== rankingId);
+      // If dropping after the source position, account for the removed item shifting indices
+      const effectiveIdx = toIndex > srcIdx ? toIndex - 1 : toIndex;
       const clampedIdx = Math.max(0, Math.min(effectiveIdx, othersInTier.length));
       const reordered = [
         ...othersInTier.slice(0, clampedIdx),
