@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useKiffTheme } from "../kiff-theme-context";
 import { getPlatformColor, type RankingEntry } from "../constants";
 
 interface GameCardProps {
@@ -15,10 +16,21 @@ export function GameCard({ ranking, readOnly, onRemove, onUpdateNote }: GameCard
   const [noteValue, setNoteValue] = useState(ranking.objectiveNote ?? 5);
   const [noteText, setNoteText] = useState(ranking.noteText ?? "");
 
+  const { theme } = useKiffTheme();
   const coverUrl = ranking.game?.coverUrl;
   const gameName = ranking.game?.name ?? "Inconnu";
   const platformColor = getPlatformColor(ranking.playedOn);
   const hasNote = ranking.objectiveNote != null;
+
+  const cardBorderTop = theme.cardPlatform === "fill" && platformColor
+    ? `2px solid ${platformColor}`
+    : theme.cardPlatform === "border" && platformColor
+      ? `2px solid ${platformColor}88`
+      : "2px solid var(--t-border-light)";
+  const cardBorderLeft = cardBorderTop;
+  const cardBg = theme.cardPlatform === "fill" && platformColor
+    ? platformColor
+    : "var(--t-card-bg)";
 
   const handleDragStart = (e: React.DragEvent) => {
     if (readOnly) return;
@@ -38,9 +50,9 @@ export function GameCard({ ranking, readOnly, onRemove, onUpdateNote }: GameCard
       className="flex-shrink-0 rounded cursor-grab active:cursor-grabbing select-none overflow-hidden"
       style={{
         width: 140,
-        background: "var(--t-card-bg)",
-        borderTop: `2px solid ${platformColor ? `${platformColor}88` : "var(--t-border-light)"}`,
-        borderLeft: `2px solid ${platformColor ? `${platformColor}88` : "var(--t-border-light)"}`,
+        background: cardBg,
+        borderTop: cardBorderTop,
+        borderLeft: cardBorderLeft,
         borderBottom: "2px solid var(--t-border-dark)",
         borderRight: "2px solid var(--t-border-dark)",
       }}

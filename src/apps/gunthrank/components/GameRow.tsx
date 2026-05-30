@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useKiffTheme } from "../kiff-theme-context";
 import { TIERS, getPlatformColor, type RankingEntry, type TierId } from "../constants";
 
 interface GameRowProps {
@@ -18,6 +19,7 @@ export function GameRow({ ranking, readOnly, onRemove, onUpdateNote, onMove, ran
   const [noteText, setNoteText] = useState(ranking.noteText ?? "");
   const [moveTier, setMoveTier] = useState<TierId | null>(null);
   const [playedOn, setPlayedOn] = useState(ranking.playedOn ?? "");
+  const { theme } = useKiffTheme();
 
   const coverUrl = ranking.game?.coverUrl;
   const gameName = ranking.game?.name ?? "Inconnu";
@@ -100,10 +102,14 @@ export function GameRow({ ranking, readOnly, onRemove, onUpdateNote, onMove, ran
         )}
 
         {/* Platform color indicator */}
-        {platformColor && (
+        {platformColor && theme.rowPlatform !== "none" && (
           <div
             className="flex-shrink-0 rounded"
-            style={{ width: 3, height: 64, background: platformColor }}
+            style={{
+              width: theme.rowPlatform === "left-border" ? 4 : 3,
+              height: 64,
+              background: platformColor,
+            }}
           />
         )}
 

@@ -11,14 +11,105 @@ import { AddGameDialog } from "./components/AddGameDialog";
 import { StatsDashboard } from "./components/StatsDashboard";
 import { OverlayView } from "./components/OverlayView";
 import { CatalogPanel } from "./components/CatalogPanel";
+import { KiffThemeProvider, useKiffTheme } from "./kiff-theme-context";
 import { TIERS, type TierId, type IgdbSearchResult } from "./constants";
+import { KIFF_THEMES } from "./kiff-themes";
+
+function ThemeDropdown() {
+  const { theme, setThemeId } = useKiffTheme();
+  const { playClick } = useSoundContext();
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div style={{ position: "relative" }}>
+      <button
+        onClick={() => { playClick(); setOpen(!open); }}
+        className="px-2 py-1 flex items-center gap-1"
+        style={{
+          fontSize: "var(--t-text-xs)",
+          background: "var(--t-bg-dark)",
+          color: "var(--t-text)",
+          borderTop: "2px solid var(--t-border-light)",
+          borderLeft: "2px solid var(--t-border-light)",
+          borderBottom: "2px solid var(--t-border-dark)",
+          borderRight: "2px solid var(--t-border-dark)",
+          cursor: "pointer",
+          whiteSpace: "nowrap",
+        }}
+      >
+        {/* Mini swatches */}
+        <span className="flex gap-px" style={{ width: 16, height: 10 }}>
+          <span style={{ flex: 1, background: theme.preview.bg }} />
+          <span style={{ flex: 1, background: theme.preview.accent }} />
+        </span>
+        {theme.name} ▾
+      </button>
+      {open && (
+        <>
+          <div
+            className="fixed inset-0 z-10"
+            onClick={() => setOpen(false)}
+          />
+          <div
+            className="absolute top-full left-0 mt-0.5 rounded p-1.5 z-20"
+            style={{
+              background: "var(--t-bg)",
+              borderTop: "2px solid var(--t-border-light)",
+              borderLeft: "2px solid var(--t-border-light)",
+              borderBottom: "2px solid var(--t-border-dark)",
+              borderRight: "2px solid var(--t-border-dark)",
+              width: 220,
+              maxHeight: 320,
+              overflow: "auto",
+            }}
+          >
+            {KIFF_THEMES.map((t) => {
+              const isActive = theme.id === t.id;
+              return (
+                <button
+                  key={t.id}
+                  onClick={() => { playClick(); setThemeId(t.id); setOpen(false); }}
+                  className="flex items-center gap-2 w-full px-2 py-1 rounded text-left"
+                  style={{
+                    background: isActive ? "var(--t-accent-hover)" : "transparent",
+                    border: "none",
+                    cursor: "pointer",
+                    fontSize: "var(--t-text-xs)",
+                    color: "var(--t-text)",
+                  }}
+                >
+                  <span className="flex gap-px flex-shrink-0" style={{ width: 28, height: 12 }}>
+                    <span style={{ flex: 1, background: t.preview.bg }} />
+                    <span style={{ flex: 1, background: t.preview.titlebarFrom }} />
+                    <span style={{ flex: 1, background: t.preview.accent }} />
+                    <span style={{ flex: 1, background: t.preview.text }} />
+                  </span>
+                  <span>{t.emoji} {t.name}</span>
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
 export function GunthrankApp({ windowId }: { windowId: string }) {
+  return (
+    <KiffThemeProvider>
+      <GunthrankAppInner windowId={windowId} />
+    </KiffThemeProvider>
+  );
+}
+
+function GunthrankAppInner({ windowId }: { windowId: string }) {
   const { user } = useAuth();
   const { playClick, playPop, playVictory, playDelete } = useSoundContext();
   const { openApp } = useOpenApp();
   const notify = useNotify();
   const tierListRef = useRef<HTMLDivElement>(null);
+  const { theme } = useKiffTheme();
 
   const {
     viewMode,
@@ -169,7 +260,7 @@ export function GunthrankApp({ windowId }: { windowId: string }) {
   }
 
   return (
-    <div className="flex flex-col h-full" style={{ background: "var(--t-app-bg)" }}>
+    <div className="flex flex-col h-full" style={{ ...theme.vars, background: "var(--t-app-bg)" }}>
       {/* Top bar */}
       <div
         className="flex items-center gap-2 px-3 py-2 flex-shrink-0 flex-wrap"
@@ -236,6 +327,8 @@ export function GunthrankApp({ windowId }: { windowId: string }) {
         >
           DEV
         </button>
+
+        <ThemeDropdown />
 
         <button
           onClick={() => { playClick(); toggleViewLayout(); }}
@@ -551,6 +644,7 @@ export function GunthrankApp({ windowId }: { windowId: string }) {
           searchIgdb={searchIgdb}
         />
       )}
+
     </div>
   );
 }
