@@ -160,6 +160,13 @@ export function OsDesktop() {
       label: "Corbeille",
       onOpen: () => openNamedWindow("trash", "Corbeille", "🗑️"),
     },
+    {
+      id: "gunthrank-gunthos",
+      emoji: <OsIcon slug="gunthrank" size={46} />,
+      label: "Kiffothèque",
+      hot: true,
+      onOpen: () => openNamedWindow("gunthrank", "Kiffothèque", "🏆"),
+    },
   ];
 
   const [positions, setPositions] = useState<Record<IconId, GridCell>>(() =>
@@ -174,6 +181,16 @@ export function OsDesktop() {
     const merged = { ...defaults };
     for (const [id, cell] of Object.entries(saved)) {
       if (id in defaults) merged[id] = cell;
+    }
+    // New icons not in saved positions: find a free cell
+    for (const id of Object.keys(merged)) {
+      if (!(id in saved)) {
+        const cell = merged[id]!;
+        const occupied = Object.fromEntries(
+          Object.entries(merged).filter(([k]) => k !== id)
+        ) as Record<IconId, GridCell>;
+        merged[id] = findNearestFreeCell(cell, occupied, id);
+      }
     }
     setPositions(merged);
     // eslint-disable-next-line react-hooks/exhaustive-deps
