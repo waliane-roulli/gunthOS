@@ -24,7 +24,7 @@ const nextConfig: NextConfig = {
               "worker-src blob: 'self'",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
-              "img-src 'self' data: blob:",
+              "img-src 'self' data: blob: https://images.igdb.com",
               "media-src 'self' https://radio.frequencegroove.com",
               "connect-src 'self' https://radio.frequencegroove.com wss: https:",
               "frame-ancestors 'none'",

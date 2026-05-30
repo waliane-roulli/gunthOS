@@ -48,10 +48,12 @@ function savePositions(positions: Record<IconId, GridCell>) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(positions));
 }
 
+const MAX_ROWS_PER_COL = 8;
+
 function getDefaultLayout(icons: IconDef[]): Record<IconId, GridCell> {
   const layout: Record<IconId, GridCell> = {};
   icons.forEach((icon, i) => {
-    layout[icon.id] = { col: 0, row: i };
+    layout[icon.id] = { col: Math.floor(i / MAX_ROWS_PER_COL), row: i % MAX_ROWS_PER_COL };
   });
   return layout;
 }
