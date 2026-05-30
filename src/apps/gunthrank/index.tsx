@@ -11,6 +11,7 @@ import { FilterBar } from "./components/FilterBar";
 import { AddGameDialog } from "./components/AddGameDialog";
 import { StatsDashboard } from "./components/StatsDashboard";
 import { OverlayView } from "./components/OverlayView";
+import { CatalogPanel } from "./components/CatalogPanel";
 import { TIERS, type TierId, type IgdbSearchResult } from "./constants";
 
 export function GunthrankApp({ windowId }: { windowId: string }) {
@@ -22,19 +23,21 @@ export function GunthrankApp({ windowId }: { windowId: string }) {
 
   const {
     viewMode, setViewMode,
+    devMode, setDevMode,
     rankings, loading,
     gunthosInfo,
     filters, setFilters,
     allPlatforms, allGenres, allYears,
     searchIgdb,
-    addGame, removeRanking, moveGame, updateNote,
+    addGame, addFromCatalog, removeRanking, moveGame, updateNote,
   } = useGunthrankData();
 
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showStats, setShowStats] = useState(false);
   const [showOverlay, setShowOverlay] = useState(false);
+  const [showCatalog, setShowCatalog] = useState(true);
 
-  const readOnly = viewMode === "gunthos";
+  const readOnly = viewMode === "gunthos" && !devMode;
 
   const handleMoveGame = (rankingId: number, toTier: TierId) => {
     const entry = rankings.find((r) => r.id === rankingId);
@@ -83,6 +86,49 @@ export function GunthrankApp({ windowId }: { windowId: string }) {
     playDelete();
     await removeRanking(gameId);
     notify({ type: "info", title: "Jeu retiré du classement" });
+  };
+
+  const handleAddFromCatalog = async (gameId: number, toTier: TierId) => {
+    playPop();
+    await addFromCatalog(gameId, toTier);
+    notify({ type: "success", title: "Ajouté au classement !" });
+  };
+
+  const handleAddFromIgdb = async (igdbGame: IgdbSearchResult, toTier: TierId) => {
+    playPop();
+    if (devMode) {
+      // In dev mode, store directly with IGDB data embedded
+      await addGame({
+        igdbId: igdbGame.igdbId,
+        name: igdbGame.name,
+        slug: igdbGame.slug,
+        coverUrl: igdbGame.coverUrl,
+        platforms: igdbGame.platforms,
+        genres: igdbGame.genres,
+        releaseDate: igdbGame.releaseYear,
+        summary: igdbGame.summary,
+        tier: toTier,
+      });
+    } else {
+      // Add to catalog first, then create ranking
+      const gameRes = await fetch("/api/gunthrank/games", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          igdbId: igdbGame.igdbId,
+          name: igdbGame.name,
+          slug: igdbGame.slug,
+          coverUrl: igdbGame.coverUrl,
+          platforms: igdbGame.platforms,
+          genres: igdbGame.genres,
+          releaseDate: igdbGame.releaseYear,
+          summary: igdbGame.summary,
+        }),
+      });
+      const { game } = await gameRes.json() as { game: { id: number } };
+      await addFromCatalog(game.id, toTier);
+    }
+    notify({ type: "success", title: `${igdbGame.name} ajouté !` });
   };
 
   if (showOverlay) {
@@ -153,22 +199,54 @@ export function GunthrankApp({ windowId }: { windowId: string }) {
           </button>
         </div>
 
+        <button
+          onClick={() => { playClick(); setDevMode(!devMode); }}
+          className="px-2 py-1 font-bold"
+          style={{
+            fontSize: "var(--t-text-xs)",
+            background: devMode ? "#ff3300" : "var(--t-bg-dark)",
+            color: devMode ? "#fff" : "var(--t-text-muted)",
+            border: "none",
+            cursor: "pointer",
+          }}
+        >
+          DEV
+        </button>
+
         <div className="flex-1" />
 
         {!readOnly && (
-          <button
-            onClick={() => { playClick(); setShowAddDialog(true); }}
-            className="px-3 py-1 font-bold"
-            style={{
-              fontSize: "var(--t-text-xs)",
-              background: "var(--t-accent)",
-              color: "#fff",
-              border: "none",
-              cursor: "pointer",
-            }}
-          >
-            + Ajouter
-          </button>
+          <>
+            <button
+              onClick={() => { playClick(); setShowCatalog(!showCatalog); }}
+              className="px-3 py-1"
+              style={{
+                fontSize: "var(--t-text-xs)",
+                background: showCatalog ? "var(--t-accent)" : "var(--t-bg-dark)",
+                color: showCatalog ? "#fff" : "var(--t-text)",
+                borderTop: "2px solid var(--t-border-light)",
+                borderLeft: "2px solid var(--t-border-light)",
+                borderBottom: "2px solid var(--t-border-dark)",
+                borderRight: "2px solid var(--t-border-dark)",
+                cursor: "pointer",
+              }}
+            >
+              Catalogue
+            </button>
+            <button
+              onClick={() => { playClick(); setShowAddDialog(true); }}
+              className="px-3 py-1 font-bold"
+              style={{
+                fontSize: "var(--t-text-xs)",
+                background: "var(--t-accent)",
+                color: "#fff",
+                border: "none",
+                cursor: "pointer",
+              }}
+            >
+              + Ajouter
+            </button>
+          </>
         )}
 
         <button
@@ -223,6 +301,21 @@ export function GunthrankApp({ windowId }: { windowId: string }) {
         </button>
       </div>
 
+      {/* Dev mode banner */}
+      {devMode && (
+        <div
+          className="px-3 py-1 text-center font-bold"
+          style={{
+            fontSize: "var(--t-text-xs)",
+            color: "#fff",
+            background: "#ff3300",
+            borderBottom: "1px solid var(--t-border-dark)",
+          }}
+        >
+          MODE DEV — Données stockées en localStorage (pas d'auth requise)
+        </div>
+      )}
+
       {/* Read-only banner */}
       {readOnly && gunthosInfo && (
         <div
@@ -257,49 +350,56 @@ export function GunthrankApp({ windowId }: { windowId: string }) {
         allYears={allYears}
       />
 
-      {/* Tier list */}
-      <div ref={tierListRef} className="flex flex-col gap-3 p-3 overflow-auto flex-1 tier-list-root">
-        {viewMode === "mine" && !user ? (
-          <div className="flex flex-col items-center justify-center flex-1 gap-4" style={{ minHeight: 300 }}>
-            <p style={{ fontSize: "var(--t-text-md)", color: "var(--t-text-muted)" }}>
-              Connecte-toi pour créer ton classement !
-            </p>
-            <button
-              onClick={() => openApp("login")}
-              className="px-4 py-2 font-bold"
-              style={{
-                fontSize: "var(--t-text-sm)",
-                background: "var(--t-accent)",
-                color: "#fff",
-                border: "none",
-                cursor: "pointer",
-              }}
-            >
-              Se connecter
-            </button>
-          </div>
-        ) : loading ? (
-          <div className="flex items-center justify-center flex-1" style={{ minHeight: 300 }}>
-            <span style={{ fontSize: "var(--t-text-md)", color: "var(--t-text-muted)" }}>
-              Chargement...
-            </span>
-          </div>
-        ) : (
-          TIERS.map((tier) => {
-            const tierGames = rankings.filter((r) => r.tier === tier.id);
-            return (
-              <TierRow
-                key={tier.id}
-                tier={tier}
-                games={tierGames}
-                readOnly={readOnly}
-                onDrop={handleMoveGame}
-                onRemove={handleRemove}
-                onUpdateNote={updateNote}
-              />
-            );
-          })
+      {/* Tier list + Catalog */}
+      <div className="flex flex-1 overflow-hidden">
+        {showCatalog && !readOnly && (
+          <CatalogPanel onClose={() => setShowCatalog(false)} />
         )}
+        <div ref={tierListRef} className="flex flex-col gap-3 p-3 overflow-auto flex-1 tier-list-root">
+          {viewMode === "mine" && !user && !devMode ? (
+            <div className="flex flex-col items-center justify-center flex-1 gap-4" style={{ minHeight: 300 }}>
+              <p style={{ fontSize: "var(--t-text-md)", color: "var(--t-text-muted)" }}>
+                Connecte-toi pour créer ton classement !
+              </p>
+              <button
+                onClick={() => openApp("login")}
+                className="px-4 py-2 font-bold"
+                style={{
+                  fontSize: "var(--t-text-sm)",
+                  background: "var(--t-accent)",
+                  color: "#fff",
+                  border: "none",
+                  cursor: "pointer",
+                }}
+              >
+                Se connecter
+              </button>
+            </div>
+          ) : loading ? (
+            <div className="flex items-center justify-center flex-1" style={{ minHeight: 300 }}>
+              <span style={{ fontSize: "var(--t-text-md)", color: "var(--t-text-muted)" }}>
+                Chargement...
+              </span>
+            </div>
+          ) : (
+            TIERS.map((tier) => {
+              const tierGames = rankings.filter((r) => r.tier === tier.id);
+              return (
+                <TierRow
+                  key={tier.id}
+                  tier={tier}
+                  games={tierGames}
+                  readOnly={readOnly}
+                  onDrop={handleMoveGame}
+                  onAddFromCatalog={handleAddFromCatalog}
+                  onAddFromIgdb={handleAddFromIgdb}
+                  onRemove={handleRemove}
+                  onUpdateNote={updateNote}
+                />
+              );
+            })
+          )}
+        </div>
       </div>
 
       {/* Add Game Dialog */}

@@ -1,0 +1,280 @@
+"use client";
+
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import type { GameCatalogEntry, IgdbSearchResult } from "../constants";
+
+interface CatalogPanelProps {
+  onClose: () => void;
+}
+
+const POPULAR_GENRES = ["Adventure", "RPG", "Shooter", "Platform", "Strategy", "Racing", "Fighting", "Sport", "Puzzle", "Indie", "Simulator", "Arcade"];
+const POPULAR_PLATFORMS = ["PC", "PlayStation 5", "Xbox Series X|S", "Nintendo Switch", "PlayStation 4", "Xbox One", "Nintendo 64", "PlayStation 2", "Super Nintendo", "Game Boy Advance", "Nintendo GameCube", "Wii"];
+
+export function CatalogPanel({ onClose }: CatalogPanelProps) {
+  const [dbGames, setDbGames] = useState<GameCatalogEntry[]>([]);
+  const [igdbResults, setIgdbResults] = useState<IgdbSearchResult[]>([]);
+  const [query, setQuery] = useState("");
+  const [genreFilter, setGenreFilter] = useState<string | null>(null);
+  const [platformFilter, setPlatformFilter] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+    fetch("/api/gunthrank/games")
+      .then((r) => r.json())
+      .then((d: { games: GameCatalogEntry[] }) => setDbGames(d.games));
+  }, []);
+
+  const hasFilters = query.length >= 2 || genreFilter || platformFilter;
+
+  useEffect(() => {
+    if (!hasFilters) {
+      setIgdbResults([]);
+      fetch("/api/gunthrank/games")
+        .then((r) => r.json())
+        .then((d: { games: GameCatalogEntry[] }) => setDbGames(d.games));
+      return;
+    }
+    const timer = setTimeout(async () => {
+      setLoading(true);
+      try {
+        const [dbRes, igdbRes] = await Promise.all([
+          fetch(`/api/gunthrank/games?q=${encodeURIComponent(query.length >= 2 ? query : "")}`)
+            .then((r) => r.json()) as Promise<{ games: GameCatalogEntry[] }>,
+          fetch("/api/igdb/search", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              query: query.length >= 2 ? query : undefined,
+              genre: genreFilter ?? undefined,
+              platform: platformFilter ?? undefined,
+              limit: 30,
+            }),
+          }).then((r) => r.json()) as Promise<{ results: IgdbSearchResult[]; offline?: boolean }>,
+        ]);
+        setDbGames(dbRes.games);
+        setIgdbResults(igdbRes.results ?? []);
+      } catch {
+        setIgdbResults([]);
+      }
+      setLoading(false);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [query, genreFilter, platformFilter]);
+
+  // Filter local DB games by genre/platform
+  const filteredDbGames = useMemo(() => {
+    return dbGames.filter((g) => {
+      if (genreFilter && g.genres) {
+        const genres: string[] = JSON.parse(g.genres);
+        if (!genres.includes(genreFilter)) return false;
+      }
+      if (platformFilter && g.platforms) {
+        const platforms: string[] = JSON.parse(g.platforms);
+        if (!platforms.includes(platformFilter)) return false;
+      }
+      return true;
+    });
+  }, [dbGames, genreFilter, platformFilter]);
+
+  const handleDragStartDb = useCallback((e: React.DragEvent, game: GameCatalogEntry) => {
+    e.dataTransfer.setData("text/plain", `catalog:${game.id}`);
+    e.dataTransfer.effectAllowed = "copy";
+  }, []);
+
+  const handleDragStartIgdb = useCallback((e: React.DragEvent, game: IgdbSearchResult) => {
+    e.dataTransfer.setData("text/plain", `igdb:${JSON.stringify(game)}`);
+    e.dataTransfer.effectAllowed = "copy";
+  }, []);
+
+  const clearFilters = () => {
+    setQuery("");
+    setGenreFilter(null);
+    setPlatformFilter(null);
+  };
+
+  return (
+    <div
+      className="flex flex-col flex-shrink-0 border-r"
+      style={{
+        width: 250,
+        background: "var(--t-bg)",
+        borderRightColor: "var(--t-border-dark)",
+      }}
+    >
+      {/* Header */}
+      <div
+        className="flex items-center justify-between px-2 py-1.5"
+        style={{ borderBottom: "1px solid var(--t-border-dark)" }}
+      >
+        <span style={{ fontSize: "var(--t-text-xs)", fontWeight: "bold" }}>Catalogue</span>
+        <button
+          onClick={onClose}
+          style={{
+            fontSize: "var(--t-text-sm)",
+            background: "none",
+            border: "none",
+            color: "var(--t-text-muted)",
+            cursor: "pointer",
+          }}
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* Search */}
+      <div className="px-2 py-1.5" style={{ borderBottom: "1px solid var(--t-border-dark)" }}>
+        <input
+          ref={inputRef}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Rechercher..."
+          className="w-full px-2 py-1"
+          style={{
+            fontSize: "var(--t-text-xs)",
+            background: "var(--t-app-bg)",
+            color: "var(--t-text)",
+            borderTop: "2px solid var(--t-border-dark)",
+            borderLeft: "2px solid var(--t-border-dark)",
+            borderBottom: "2px solid var(--t-border-light)",
+            borderRight: "2px solid var(--t-border-light)",
+          }}
+        />
+      </div>
+
+      {/* Quick filters */}
+      <div className="px-2 py-1.5" style={{ borderBottom: "1px solid var(--t-border-dark)" }}>
+        {/* Genres */}
+        <div style={{ fontSize: "calc(var(--t-text-xs) * 0.8)", color: "var(--t-text-muted)", marginBottom: 2 }}>Genre</div>
+        <div className="flex flex-wrap gap-1 max-h-16 overflow-auto">
+          {POPULAR_GENRES.map((g) => (
+            <button
+              key={g}
+              onClick={() => setGenreFilter(genreFilter === g ? null : g)}
+              className="px-1 py-0.5 flex-shrink-0"
+              style={{
+                fontSize: "calc(var(--t-text-xs) * 0.75)",
+                background: genreFilter === g ? "var(--t-accent)" : "var(--t-bg-dark)",
+                color: genreFilter === g ? "#fff" : "var(--t-text-muted)",
+                border: "none",
+                cursor: "pointer",
+              }}
+            >
+              {g}
+            </button>
+          ))}
+        </div>
+
+        {/* Platforms */}
+        <div style={{ fontSize: "calc(var(--t-text-xs) * 0.8)", color: "var(--t-text-muted)", marginTop: 4, marginBottom: 2 }}>Plateforme</div>
+        <div className="flex flex-wrap gap-1 max-h-16 overflow-auto">
+          {POPULAR_PLATFORMS.map((p) => (
+            <button
+              key={p}
+              onClick={() => setPlatformFilter(platformFilter === p ? null : p)}
+              className="px-1 py-0.5 flex-shrink-0"
+              style={{
+                fontSize: "calc(var(--t-text-xs) * 0.75)",
+                background: platformFilter === p ? "var(--t-accent)" : "var(--t-bg-dark)",
+                color: platformFilter === p ? "#fff" : "var(--t-text-muted)",
+                border: "none",
+                cursor: "pointer",
+              }}
+            >
+              {p}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Results count */}
+      {!loading && hasFilters && (
+        <div className="px-2 py-1" style={{ fontSize: "calc(var(--t-text-xs) * 0.8)", color: "var(--t-text-muted)" }}>
+          {filteredDbGames.length} locaux · {igdbResults.length} IGDB
+          <button onClick={clearFilters} style={{ marginLeft: 8, background: "none", border: "none", color: "var(--t-accent)", cursor: "pointer", fontSize: "inherit" }}>clear</button>
+        </div>
+      )}
+
+      {/* Results */}
+      <div className="overflow-auto flex-1">
+        {loading && (
+          <div className="px-2 py-1" style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)" }}>
+            Recherche...
+          </div>
+        )}
+
+        {filteredDbGames.map((game) => (
+          <div
+            key={`db-${game.id}`}
+            draggable
+            onDragStart={(e) => handleDragStartDb(e, game)}
+            className="flex items-center gap-2 px-2 py-1.5 cursor-grab active:cursor-grabbing select-none hover:brightness-110"
+            style={{ borderBottom: "1px solid var(--t-border-dark)" }}
+            title={`${game.name} — glisse vers un tier !`}
+          >
+            {game.coverUrl ? (
+              <img src={game.coverUrl} alt={game.name} className="flex-shrink-0 object-cover" style={{ width: 32, height: 44 }} draggable={false} />
+            ) : (
+              <div className="flex-shrink-0 flex items-center justify-center" style={{ width: 32, height: 44, background: "var(--t-bg-dark)", fontSize: "var(--t-text-md)" }}>
+                🎮
+              </div>
+            )}
+            <div className="min-w-0 flex-1">
+              <div className="truncate" style={{ fontSize: "var(--t-text-xs)" }}>{game.name}</div>
+              {game.platforms && (
+                <div style={{ fontSize: "calc(var(--t-text-xs) * 0.8)", color: "var(--t-text-muted)" }}>
+                  {(JSON.parse(game.platforms) as string[]).slice(0, 2).join(", ")}
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+
+        {igdbResults.map((game) => (
+          <div
+            key={`igdb-${game.igdbId}`}
+            draggable
+            onDragStart={(e) => handleDragStartIgdb(e, game)}
+            className="flex items-center gap-2 px-2 py-1.5 cursor-grab active:cursor-grabbing select-none hover:brightness-110"
+            style={{ borderBottom: "1px solid var(--t-border-dark)", background: "var(--t-card-bg)" }}
+            title={`${game.name} (IGDB)\n${game.genres.join(", ")}\n${game.platforms.join(", ")}\n${game.publishers.join(", ")}`}
+          >
+            {game.coverUrl ? (
+              <img src={game.coverUrl} alt={game.name} className="flex-shrink-0 object-cover" style={{ width: 32, height: 44 }} draggable={false} />
+            ) : (
+              <div className="flex-shrink-0 flex items-center justify-center" style={{ width: 32, height: 44, background: "var(--t-bg-dark)", fontSize: "var(--t-text-md)" }}>
+                🎮
+              </div>
+            )}
+            <div className="min-w-0 flex-1">
+              <div className="truncate flex items-center gap-1" style={{ fontSize: "var(--t-text-xs)" }}>
+                {game.name}
+                <span className="flex-shrink-0 px-1" style={{ fontSize: "calc(var(--t-text-xs) * 0.7)", background: "var(--t-accent)", color: "#fff" }}>IGDB</span>
+              </div>
+              <div style={{ fontSize: "calc(var(--t-text-xs) * 0.8)", color: "var(--t-text-muted)" }}>
+                {game.genres.slice(0, 2).join(", ")}
+              </div>
+              <div style={{ fontSize: "calc(var(--t-text-xs) * 0.75)", color: "var(--t-text-muted)" }}>
+                {game.platforms.slice(0, 2).join(", ")}
+                {game.publishers.length > 0 ? ` — ${game.publishers[0]}` : ""}
+              </div>
+            </div>
+          </div>
+        ))}
+
+        {!loading && hasFilters && filteredDbGames.length === 0 && igdbResults.length === 0 && (
+          <div className="px-2 py-2" style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)" }}>
+            Aucun résultat.
+          </div>
+        )}
+
+        {!hasFilters && filteredDbGames.length === 0 && (
+          <div className="px-2 py-3 text-center" style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)" }}>
+            Cherche un jeu ou filtre par genre/plateforme.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

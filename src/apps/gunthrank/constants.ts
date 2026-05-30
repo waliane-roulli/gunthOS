@@ -26,6 +26,8 @@ export interface IgdbSearchResult {
   coverUrl: string | null;
   platforms: string[];
   genres: string[];
+  publishers: string[];
+  developers: string[];
   releaseYear: number | null;
   summary: string | null;
 }

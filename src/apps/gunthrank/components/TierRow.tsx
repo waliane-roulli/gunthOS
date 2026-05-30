@@ -9,17 +9,18 @@ interface TierRowProps {
   games: RankingEntry[];
   readOnly?: boolean;
   onDrop: (rankingId: number, toTier: TierId) => void;
+  onAddFromCatalog?: (gameId: number, toTier: TierId) => void;
+  onAddFromIgdb?: (game: import("../constants").IgdbSearchResult, toTier: TierId) => void;
   onRemove?: (gameId: number) => void;
   onUpdateNote?: (rankingId: number, objectiveNote: number | null, noteText: string | null) => void;
 }
 
-export function TierRow({ tier, games, readOnly, onDrop, onRemove, onUpdateNote }: TierRowProps) {
+export function TierRow({ tier, games, readOnly, onDrop, onAddFromCatalog, onAddFromIgdb, onRemove, onUpdateNote }: TierRowProps) {
   const [dragOver, setDragOver] = useState(false);
 
   const handleDragOver = (e: React.DragEvent) => {
     if (readOnly) return;
     e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
     setDragOver(true);
   };
 
@@ -29,9 +30,18 @@ export function TierRow({ tier, games, readOnly, onDrop, onRemove, onUpdateNote 
     if (readOnly) return;
     e.preventDefault();
     setDragOver(false);
-    const rankingId = parseInt(e.dataTransfer.getData("text/plain"), 10);
-    if (!isNaN(rankingId)) {
-      onDrop(rankingId, tier.id);
+    const raw = e.dataTransfer.getData("text/plain");
+    if (raw.startsWith("igdb:")) {
+      try {
+        const game = JSON.parse(raw.slice(5));
+        onAddFromIgdb?.(game, tier.id);
+      } catch { /* ignore malformed drop */ }
+    } else if (raw.startsWith("catalog:") || raw.startsWith("new:")) {
+      const gameId = parseInt(raw.includes("catalog:") ? raw.slice(8) : raw.slice(4), 10);
+      if (!isNaN(gameId)) onAddFromCatalog?.(gameId, tier.id);
+    } else {
+      const rankingId = parseInt(raw, 10);
+      if (!isNaN(rankingId)) onDrop(rankingId, tier.id);
     }
   };
 
