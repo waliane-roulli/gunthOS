@@ -5,6 +5,8 @@ import type { RankingEntry, TierId } from "../constants";
 import { GameCard } from "./GameCard";
 import { GameRow } from "./GameRow";
 
+const NUMBERED_TIERS = new Set<TierId>(["diamond", "gold", "silver", "bronze"]);
+
 interface TierRowProps {
   tier: { id: TierId; label: string; emoji: string; color: string };
   games: RankingEntry[];
@@ -14,15 +16,18 @@ interface TierRowProps {
   onAddFromCatalog?: (gameId: number, toTier: TierId) => void;
   onAddFromIgdb?: (game: import("../constants").IgdbSearchResult, toTier: TierId) => void;
   onRemove?: (gameId: number) => void;
-  onUpdateNote?: (rankingId: number, objectiveNote: number | null, noteText: string | null) => void;
+  onUpdateNote?: (rankingId: number, objectiveNote: number | null, noteText: string | null, playedOn?: string | null) => void;
   onMove?: (rankingId: number, toTier: TierId) => void;
   onReorder?: (rankingId: number, toIndex: number) => void;
+  globalRankOffset?: number;
 }
 
-export function TierRow({ tier, games, readOnly, viewLayout, onDrop, onAddFromCatalog, onAddFromIgdb, onRemove, onUpdateNote, onMove, onReorder }: TierRowProps) {
+export function TierRow({ tier, games, readOnly, viewLayout, onDrop, onAddFromCatalog, onAddFromIgdb, onRemove, onUpdateNote, onMove, onReorder, globalRankOffset }: TierRowProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [dropIndex, setDropIndex] = useState<{ idx: number; before: boolean } | null>(null);
+
+  const showRankNumbers = NUMBERED_TIERS.has(tier.id);
 
   const handleDragOver = (e: React.DragEvent) => {
     if (readOnly) return;
@@ -82,7 +87,6 @@ export function TierRow({ tier, games, readOnly, viewLayout, onDrop, onAddFromCa
     const entry = games.find((g) => g.id === rankingId);
     if (!entry) return;
     if (entry.tier !== tier.id) {
-      // Different tier — move to this tier at the drop position
       const rect = e.currentTarget.getBoundingClientRect();
       const midY = rect.top + rect.height / 2;
       const before = e.clientY < midY;
@@ -90,7 +94,6 @@ export function TierRow({ tier, games, readOnly, viewLayout, onDrop, onAddFromCa
       onDrop(rankingId, tier.id, toIndex);
       return;
     }
-    // Same tier — reorder
     if (!onReorder) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const midY = rect.top + rect.height / 2;
@@ -150,50 +153,85 @@ export function TierRow({ tier, games, readOnly, viewLayout, onDrop, onAddFromCa
 
       {/* Game list */}
       {!collapsed && (
-        <div className="flex gap-2 p-2 flex-1 overflow-auto" style={{ flexDirection: viewLayout === "grid" ? "row" : "column", flexWrap: viewLayout === "grid" ? "wrap" : "nowrap" }}>
-          {sorted.map((r, index) => {
-            const isDropBefore = dropIndex?.idx === index && dropIndex?.before;
-            const isDropAfter = dropIndex?.idx === index && !dropIndex?.before;
-            return (
-              <div
-                key={r.id}
-                onDragOver={(e) => handleItemDragOver(e, index)}
-                onDragLeave={handleItemDragLeave}
-                onDrop={(e) => handleItemDrop(e, index)}
-                style={{
-                  position: "relative",
-                  borderTop: isDropBefore ? "2px solid var(--t-accent)" : "2px solid transparent",
-                  borderBottom: isDropAfter ? "2px solid var(--t-accent)" : "2px solid transparent",
-                }}
-              >
-                {viewLayout === "list" ? (
-                  <GameRow
-                    ranking={r}
-                    readOnly={readOnly}
-                    onRemove={onRemove}
-                    onUpdateNote={onUpdateNote}
-                    onMove={onMove}
-                  />
-                ) : (
+        viewLayout === "grid" ? (
+          <div className="flex gap-2 p-2 flex-1 overflow-auto flex-wrap">
+            {sorted.map((r, index) => {
+              const isDropBefore = dropIndex?.idx === index && dropIndex?.before;
+              const isDropAfter = dropIndex?.idx === index && !dropIndex?.before;
+              return (
+                <div
+                  key={r.id}
+                  onDragOver={(e) => handleItemDragOver(e, index)}
+                  onDragLeave={handleItemDragLeave}
+                  onDrop={(e) => handleItemDrop(e, index)}
+                  style={{
+                    borderTop: isDropBefore ? "2px solid var(--t-accent)" : "2px solid transparent",
+                    borderBottom: isDropAfter ? "2px solid var(--t-accent)" : "2px solid transparent",
+                  }}
+                >
                   <GameCard
                     ranking={r}
                     readOnly={readOnly}
                     onRemove={onRemove}
                     onUpdateNote={onUpdateNote}
                   />
-                )}
+                </div>
+              );
+            })}
+            {games.length === 0 && (
+              <div
+                className="flex items-center justify-center w-full flex-1"
+                style={{ color: "var(--t-text-muted)", fontSize: "var(--t-text-xs)", minHeight: 80 }}
+              >
+                {readOnly ? "Aucun jeu" : "Glisse un jeu ici"}
               </div>
-            );
-          })}
-          {games.length === 0 && (
-            <div
-              className="flex items-center justify-center w-full flex-1"
-              style={{ color: "var(--t-text-muted)", fontSize: "var(--t-text-xs)", minHeight: viewLayout === "list" ? 64 : 80 }}
-            >
-              {readOnly ? "Aucun jeu" : "Glisse un jeu ici"}
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        ) : (
+          <div
+            className="gap-2 p-2 flex-1 overflow-auto"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+              alignContent: "start",
+            }}
+          >
+            {sorted.map((r, index) => {
+              const rankNum = showRankNumbers ? (globalRankOffset ?? 0) + index + 1 : null;
+              const isDropBefore = dropIndex?.idx === index && dropIndex?.before;
+              const isDropAfter = dropIndex?.idx === index && !dropIndex?.before;
+              return (
+                <div
+                  key={r.id}
+                  onDragOver={(e) => handleItemDragOver(e, index)}
+                  onDragLeave={handleItemDragLeave}
+                  onDrop={(e) => handleItemDrop(e, index)}
+                  style={{
+                    borderTop: isDropBefore ? "2px solid var(--t-accent)" : "2px solid transparent",
+                    borderBottom: isDropAfter ? "2px solid var(--t-accent)" : "2px solid transparent",
+                  }}
+                >
+                  <GameRow
+                    ranking={r}
+                    readOnly={readOnly}
+                    onRemove={onRemove}
+                    onUpdateNote={onUpdateNote}
+                    onMove={onMove}
+                    rankNumber={rankNum}
+                  />
+                </div>
+              );
+            })}
+            {games.length === 0 && (
+              <div
+                className="flex items-center justify-center"
+                style={{ color: "var(--t-text-muted)", fontSize: "var(--t-text-xs)", minHeight: 64 }}
+              >
+                {readOnly ? "Aucun jeu" : "Glisse un jeu ici"}
+              </div>
+            )}
+          </div>
+        )
       )}
     </div>
   );

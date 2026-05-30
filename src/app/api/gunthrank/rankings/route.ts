@@ -63,6 +63,7 @@ export async function POST(req: NextRequest) {
     objectiveNote?: number | null;
     noteText?: string | null;
     sortOrder?: number;
+    playedOn?: string | null;
   };
 
   const existing = db()
@@ -78,6 +79,7 @@ export async function POST(req: NextRequest) {
         tier: body.tier ?? existing.tier,
         objectiveNote: body.objectiveNote !== undefined ? body.objectiveNote : existing.objectiveNote,
         noteText: body.noteText !== undefined ? body.noteText : existing.noteText,
+        playedOn: body.playedOn !== undefined ? body.playedOn : existing.playedOn,
         sortOrder: body.sortOrder ?? existing.sortOrder,
         updatedAt: new Date(),
       })
@@ -102,6 +104,7 @@ export async function POST(req: NextRequest) {
       tier: body.tier,
       objectiveNote: body.objectiveNote ?? null,
       noteText: body.noteText ?? null,
+      playedOn: body.playedOn ?? null,
       sortOrder: body.sortOrder ?? maxOrder + 1,
     })
     .returning()

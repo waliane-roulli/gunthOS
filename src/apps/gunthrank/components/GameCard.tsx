@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import type { RankingEntry, TierId } from "../constants";
+import { getPlatformColor, type RankingEntry } from "../constants";
 
 interface GameCardProps {
   ranking: RankingEntry;
   readOnly?: boolean;
   onRemove?: (gameId: number) => void;
-  onUpdateNote?: (rankingId: number, objectiveNote: number | null, noteText: string | null) => void;
+  onUpdateNote?: (rankingId: number, objectiveNote: number | null, noteText: string | null, playedOn?: string | null) => void;
 }
 
 export function GameCard({ ranking, readOnly, onRemove, onUpdateNote }: GameCardProps) {
@@ -16,6 +16,9 @@ export function GameCard({ ranking, readOnly, onRemove, onUpdateNote }: GameCard
   const [noteText, setNoteText] = useState(ranking.noteText ?? "");
 
   const coverUrl = ranking.game?.coverUrl;
+  const gameName = ranking.game?.name ?? "Inconnu";
+  const platformColor = getPlatformColor(ranking.playedOn);
+  const hasNote = ranking.objectiveNote != null;
 
   const handleDragStart = (e: React.DragEvent) => {
     if (readOnly) return;
@@ -32,55 +35,84 @@ export function GameCard({ ranking, readOnly, onRemove, onUpdateNote }: GameCard
     <div
       draggable={!readOnly}
       onDragStart={handleDragStart}
-      onClick={() => !readOnly && setExpanded(!expanded)}
-      className="flex-shrink-0 rounded cursor-grab active:cursor-grabbing select-none"
+      className="flex-shrink-0 rounded cursor-grab active:cursor-grabbing select-none overflow-hidden"
       style={{
-        width: 110,
-        background: "var(--t-card-bg)",
+        width: 140,
+        background: platformColor ?? "var(--t-card-bg)",
         borderTop: "2px solid var(--t-border-light)",
         borderLeft: "2px solid var(--t-border-light)",
         borderBottom: "2px solid var(--t-border-dark)",
         borderRight: "2px solid var(--t-border-dark)",
       }}
     >
-      {/* Cover */}
+      {/* Cover image + name overlay */}
       <div
-        className="w-full flex items-center justify-center overflow-hidden"
-        style={{ height: 100, background: "var(--t-bg-dark)" }}
+        className="relative w-full"
+        style={{ aspectRatio: "2/3" }}
+        onClick={() => !readOnly && setExpanded(!expanded)}
       >
         {coverUrl ? (
           <img
             src={coverUrl}
-            alt={ranking.game?.name ?? ""}
+            alt={gameName}
             className="w-full h-full object-cover"
             loading="lazy"
+            draggable={false}
           />
         ) : (
-          <span className="text-muted" style={{ fontSize: "var(--t-text-2xl)" }}>🎮</span>
+          <div
+            className="w-full h-full flex items-center justify-center"
+            style={{ background: "var(--t-bg-dark)" }}
+          >
+            <span style={{ fontSize: "var(--t-text-2xl)" }}>🎮</span>
+          </div>
         )}
-      </div>
 
-      {/* Name */}
-      <div
-        className="px-1 py-0.5 text-center"
-        style={{
-          fontSize: "var(--t-text-xs)",
-          overflow: "hidden",
-          display: "-webkit-box",
-          WebkitLineClamp: 2,
-          WebkitBoxOrient: "vertical",
-          lineHeight: 1.3,
-        }}
-        title={ranking.game?.name ?? "Inconnu"}
-      >
-        {ranking.game?.name ?? "Inconnu"}
+        {/* Name overlay at bottom */}
+        <div
+          className="absolute bottom-0 left-0 right-0 px-1.5 py-1"
+          style={{
+            background: "linear-gradient(transparent, rgba(0,0,0,0.85))",
+          }}
+        >
+          <div
+            className="text-center leading-tight"
+            style={{
+              fontSize: "calc(var(--t-text-xs) * 0.82)",
+              color: "#fff",
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+              textShadow: "0 1px 2px rgba(0,0,0,0.8)",
+            }}
+            title={gameName}
+          >
+            {gameName}
+          </div>
+        </div>
+
+        {/* Note badge */}
+        {hasNote && (
+          <div
+            className="absolute top-0.5 right-0.5 px-1 py-0.5 font-bold rounded"
+            style={{
+              fontSize: "calc(var(--t-text-xs) * 0.75)",
+              background: "rgba(0,0,0,0.75)",
+              color: "#fff",
+              lineHeight: 1,
+            }}
+          >
+            {ranking.objectiveNote}/10
+          </div>
+        )}
       </div>
 
       {/* Expanded: note inputs */}
       {expanded && !readOnly && (
         <div
           className="p-2 border-t"
-          style={{ borderColor: "var(--t-border-dark)" }}
+          style={{ borderColor: "var(--t-border-dark)", background: "var(--t-bg)" }}
           onClick={(e) => e.stopPropagation()}
         >
           <label style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)" }}>

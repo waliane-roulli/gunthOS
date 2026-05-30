@@ -13,15 +13,17 @@ export async function POST(req: NextRequest) {
   if (!session?.user) return unauthorized();
 
   const body = await req.json() as {
-    updates: Array<{ id: number; tier: string; sortOrder: number }>;
+    updates: Array<{ id: number; tier: string; sortOrder: number; playedOn?: string | null }>;
   };
 
   if (!body.updates?.length) return NextResponse.json({ ok: true });
 
   for (const upd of body.updates) {
+    const setData: Record<string, unknown> = { tier: upd.tier, sortOrder: upd.sortOrder, updatedAt: new Date() };
+    if (upd.playedOn !== undefined) setData.playedOn = upd.playedOn;
     db()
       .update(gunthrankRankings)
-      .set({ tier: upd.tier, sortOrder: upd.sortOrder, updatedAt: new Date() })
+      .set(setData as typeof gunthrankRankings.$inferInsert)
       .where(and(eq(gunthrankRankings.id, upd.id), eq(gunthrankRankings.userId, session.user.id)))
       .run();
   }

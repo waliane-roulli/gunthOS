@@ -1,0 +1,1 @@
+ALTER TABLE `gunthrank_rankings` ADD `played_on` text;

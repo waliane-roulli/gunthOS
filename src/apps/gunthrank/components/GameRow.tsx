@@ -1,21 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import { TIERS, type RankingEntry, type TierId } from "../constants";
+import { TIERS, getPlatformColor, type RankingEntry, type TierId } from "../constants";
 
 interface GameRowProps {
   ranking: RankingEntry;
   readOnly?: boolean;
   onRemove?: (gameId: number) => void;
-  onUpdateNote?: (rankingId: number, objectiveNote: number | null, noteText: string | null) => void;
+  onUpdateNote?: (rankingId: number, objectiveNote: number | null, noteText: string | null, playedOn?: string | null) => void;
   onMove?: (rankingId: number, toTier: TierId) => void;
+  rankNumber?: number | null;
 }
 
-export function GameRow({ ranking, readOnly, onRemove, onUpdateNote, onMove }: GameRowProps) {
+export function GameRow({ ranking, readOnly, onRemove, onUpdateNote, onMove, rankNumber }: GameRowProps) {
   const [expanded, setExpanded] = useState(false);
   const [noteValue, setNoteValue] = useState(ranking.objectiveNote ?? 5);
   const [noteText, setNoteText] = useState(ranking.noteText ?? "");
   const [moveTier, setMoveTier] = useState<TierId | null>(null);
+  const [playedOn, setPlayedOn] = useState(ranking.playedOn ?? "");
 
   const coverUrl = ranking.game?.coverUrl;
   const gameName = ranking.game?.name ?? "Inconnu";
@@ -30,9 +32,11 @@ export function GameRow({ ranking, readOnly, onRemove, onUpdateNote, onMove }: G
   } catch { /* ignore malformed JSON */ }
 
   const metaParts: string[] = [];
-  if (platforms.length > 0) metaParts.push(platforms.slice(0, 3).join(", "));
+  if (ranking.playedOn) metaParts.push(ranking.playedOn);
   if (genres.length > 0 && genres[0]) metaParts.push(genres[0]);
   if (ranking.game?.releaseDate) metaParts.push(String(ranking.game.releaseDate));
+
+  const platformColor = getPlatformColor(ranking.playedOn);
 
   const handleDragStart = (e: React.DragEvent) => {
     if (readOnly) return;
@@ -41,13 +45,14 @@ export function GameRow({ ranking, readOnly, onRemove, onUpdateNote, onMove }: G
   };
 
   const handleSave = () => {
-    onUpdateNote?.(ranking.id, noteValue, noteText || null);
+    onUpdateNote?.(ranking.id, noteValue, noteText || null, playedOn || null);
     setExpanded(false);
   };
 
   const handleCancel = () => {
     setNoteValue(ranking.objectiveNote ?? 5);
     setNoteText(ranking.noteText ?? "");
+    setPlayedOn(ranking.playedOn ?? "");
     setMoveTier(null);
     setExpanded(false);
   };
@@ -80,13 +85,35 @@ export function GameRow({ ranking, readOnly, onRemove, onUpdateNote, onMove }: G
         className="flex items-center gap-2 px-2 py-1.5 min-w-0"
         onClick={() => { if (!readOnly) setExpanded(!expanded); }}
       >
+        {/* Rank number */}
+        {rankNumber != null && (
+          <div
+            className="flex-shrink-0 flex items-center justify-center font-bold"
+            style={{
+              width: 18,
+              fontSize: "var(--t-text-xs)",
+              color: "var(--t-text-muted)",
+            }}
+          >
+            {rankNumber}
+          </div>
+        )}
+
+        {/* Platform color indicator */}
+        {platformColor && (
+          <div
+            className="flex-shrink-0 rounded"
+            style={{ width: 3, height: 48, background: platformColor }}
+          />
+        )}
+
         {/* Cover */}
         <div className="flex-shrink-0 flex items-center justify-center overflow-hidden"
-          style={{ width: 48, height: 64, background: "var(--t-bg-dark)" }}>
+          style={{ width: 36, height: 48, background: "var(--t-bg-dark)" }}>
           {coverUrl ? (
             <img src={coverUrl} alt={gameName} className="w-full h-full object-cover" loading="lazy" draggable={false} />
           ) : (
-            <span style={{ fontSize: "var(--t-text-lg)" }}>🎮</span>
+            <span style={{ fontSize: "var(--t-text-md)" }}>🎮</span>
           )}
         </div>
 
@@ -134,6 +161,35 @@ export function GameRow({ ranking, readOnly, onRemove, onUpdateNote, onMove }: G
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex gap-3 flex-wrap">
+            {/* Platform selector */}
+            {platforms.length > 0 && (
+              <div style={{ flex: "0 0 180px" }}>
+                <label style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)", display: "block", marginBottom: 2 }}>
+                  Plateforme jouée :
+                </label>
+                <select
+                  value={playedOn}
+                  onChange={(e) => setPlayedOn(e.target.value)}
+                  className="px-1 py-0.5"
+                  style={{
+                    fontSize: "var(--t-text-xs)",
+                    background: "var(--t-app-bg)",
+                    color: "var(--t-text)",
+                    borderTop: "2px solid var(--t-border-dark)",
+                    borderLeft: "2px solid var(--t-border-dark)",
+                    borderBottom: "2px solid var(--t-border-light)",
+                    borderRight: "2px solid var(--t-border-light)",
+                    width: "100%",
+                  }}
+                >
+                  <option value="">Non précisé</option>
+                  {platforms.map((p) => (
+                    <option key={p} value={p}>{p}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
             {/* Note slider */}
             <div style={{ flex: "1 1 200px" }}>
               <label style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)", display: "block", marginBottom: 2 }}>

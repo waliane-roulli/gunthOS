@@ -424,9 +424,10 @@ export function GunthrankApp({ windowId }: { windowId: string }) {
               </span>
             </div>
           ) : (
-            TIERS.map((tier) => {
+            TIERS.reduce<{ offset: number; rows: React.ReactNode[] }>((acc, tier) => {
               const tierGames = rankings.filter((r) => r.tier === tier.id);
-              return (
+              const isNumbered = ["diamond", "gold", "silver", "bronze"].includes(tier.id);
+              const row = (
                 <TierRow
                   key={tier.id}
                   tier={tier}
@@ -440,9 +441,13 @@ export function GunthrankApp({ windowId }: { windowId: string }) {
                   onUpdateNote={updateNote}
                   onMove={handleMoveToTier}
                   onReorder={handleReorder}
+                  globalRankOffset={isNumbered ? acc.offset : undefined}
                 />
               );
-            })
+              acc.rows.push(row);
+              if (isNumbered) acc.offset += tierGames.length;
+              return acc;
+            }, { offset: 0, rows: [] }).rows
           )}
         </div>
       </div>

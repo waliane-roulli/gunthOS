@@ -368,6 +368,7 @@ export const gunthrankRankings = sqliteTable("gunthrank_rankings", {
   tier: text("tier").notNull(),
   objectiveNote: integer("objective_note"),
   noteText: text("note_text"),
+  playedOn: text("played_on"),
   sortOrder: integer("sort_order").notNull().default(0),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),

@@ -1,11 +1,54 @@
 import type { gunthrankGames, gunthrankRankings } from "@/lib/db/schema";
 
+export const PLATFORM_COLORS: Record<string, string> = {
+  "PC": "#4a9eff",
+  "PlayStation 5": "#2e6db4",
+  "PlayStation 4": "#1a4b7c",
+  "PlayStation 3": "#0d3260",
+  "PlayStation 2": "#0a1f40",
+  "PlayStation": "#081830",
+  "PSP": "#1e5f9e",
+  "PS Vita": "#256ba8",
+  "Xbox Series X|S": "#107c10",
+  "Xbox One": "#0e5e0e",
+  "Xbox 360": "#0a4a0a",
+  "Xbox": "#074007",
+  "Nintendo Switch": "#e60012",
+  "Nintendo 64": "#b3000e",
+  "Nintendo GameCube": "#6c00a8",
+  "Super Nintendo": "#8b8b8b",
+  "Game Boy Advance": "#7c007c",
+  "Wii": "#0096c8",
+  "Wii U": "#007a9e",
+  "Game Boy": "#4a7c2e",
+  "Nintendo DS": "#c0c0c0",
+  "Nintendo 3DS": "#d50000",
+  "Sega Genesis": "#005aab",
+  "Sega Saturn": "#3b3b3b",
+  "Dreamcast": "#e87500",
+  "Game Gear": "#2d2d2d",
+  "Arcade": "#ff6a00",
+  "Mobile": "#ffb800",
+  "Mac": "#999999",
+  "Linux": "#f5c842",
+  "Stadia": "#ff4c3a",
+};
+
+export function getPlatformColor(platform: string | null | undefined): string | null {
+  if (!platform) return null;
+  // Exact match first
+  if (PLATFORM_COLORS[platform]) return PLATFORM_COLORS[platform] ?? null;
+  // Try case-insensitive
+  const key = Object.keys(PLATFORM_COLORS).find((k) => k.toLowerCase() === platform.toLowerCase());
+  return key ? (PLATFORM_COLORS[key] ?? null) : null;
+}
+
 export const TIERS = [
   { id: "diamond", label: "Kiff de Diamant", emoji: "💎", color: "#4facfe" },
   { id: "gold", label: "Kiff d'Or", emoji: "🥇", color: "#f9d423" },
   { id: "silver", label: "Kiff d'Argent", emoji: "🥈", color: "#bdc3c7" },
   { id: "bronze", label: "Kiff de Bronze", emoji: "🥉", color: "#cd7f32" },
-  { id: "banger", label: "Banger du Cul", emoji: "🍑", color: "#e74c3c" },
+  { id: "banger", label: "Déjà Oublié", emoji: "🌫️", color: "#9b8ea8" },
   { id: "caca", label: "Kiff Caca d'Or", emoji: "💩", color: "#8b7355" },
 ] as const;
 

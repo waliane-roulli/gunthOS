@@ -121,6 +121,7 @@ export function useGunthrankData() {
     tier: string;
     objectiveNote?: number | null;
     noteText?: string | null;
+    playedOn?: string | null;
   }) => {
     if (devMode) {
       const devGame: GameCatalogEntry = {
@@ -142,6 +143,7 @@ export function useGunthrankData() {
         tier: gameData.tier,
         objectiveNote: gameData.objectiveNote ?? null,
         noteText: gameData.noteText ?? null,
+        playedOn: gameData.playedOn ?? null,
         sortOrder: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -176,6 +178,7 @@ export function useGunthrankData() {
         tier: gameData.tier,
         objectiveNote: gameData.objectiveNote,
         noteText: gameData.noteText,
+        playedOn: gameData.playedOn,
       }),
     });
     const { ranking } = await rankRes.json() as { ranking: RankingEntry };
@@ -195,6 +198,7 @@ export function useGunthrankData() {
         tier,
         objectiveNote: null,
         noteText: null,
+        playedOn: null,
         sortOrder: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -291,10 +295,10 @@ export function useGunthrankData() {
     });
   }, [devMode]);
 
-  const updateNote = useCallback(async (rankingId: number, objectiveNote: number | null, noteText: string | null) => {
+  const updateNote = useCallback(async (rankingId: number, objectiveNote: number | null, noteText: string | null, playedOn?: string | null) => {
     setRankings((prev) => {
       const next = prev.map((r) =>
-        r.id === rankingId ? { ...r, objectiveNote, noteText } : r
+        r.id === rankingId ? { ...r, objectiveNote, noteText, playedOn: playedOn !== undefined ? playedOn : r.playedOn } : r
       );
       if (devMode) saveDevRankings(next);
       return next;
@@ -305,7 +309,7 @@ export function useGunthrankData() {
     await fetch("/api/gunthrank/rankings", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ gameId: entry.gameId, tier: entry.tier, objectiveNote, noteText }),
+      body: JSON.stringify({ gameId: entry.gameId, tier: entry.tier, objectiveNote, noteText, playedOn }),
     });
   }, [rankings, devMode]);
 
