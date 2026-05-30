@@ -35,6 +35,7 @@ import { manifest as dbAdmin } from "./admin/manifest";
 import { manifest as changelog } from "./changelog/manifest";
 import { manifest as taskkill } from "./taskkill/manifest";
 import { manifest as gunthMeet } from "./gunth-meet/manifest";
+import { manifest as gunthrank } from "./gunthrank/manifest";
 
 export const APP_REGISTRY: AppManifest[] = [
   // Apps visibles dans le launcher (Start menu + desktop)
@@ -47,6 +48,7 @@ export const APP_REGISTRY: AppManifest[] = [
   gunthMeet,
   linkedGunth,
   guntherBoard,
+  gunthrank,
   taskkill,
 
   // Apps système (ouvertes programmatiquement, pas dans le launcher)

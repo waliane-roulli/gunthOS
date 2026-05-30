@@ -32,5 +32,6 @@ export const neonTheme: IconTheme = {
     printer:         { ...lucideTheme.icons.printer!,         color: "#aabbcc" },
     ie:              { ...lucideTheme.icons.ie!,              color: "#44aaff" },
     changelog:       { ...lucideTheme.icons.changelog!,       color: "#ffbb66" },
+    gunthrank:       { ...lucideTheme.icons.gunthrank!,       color: "#ffe066" },
   },
 };

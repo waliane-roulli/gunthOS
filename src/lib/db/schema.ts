@@ -345,3 +345,32 @@ export const osVersions = sqliteTable("os_versions", {
   changelog: text("changelog"),
   releasedAt: integer("released_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
 });
+
+// ── GunthRank — game tier-list ──────────────────────────────────────────────────
+
+export const gunthrankGames = sqliteTable("gunthrank_games", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  igdbId: integer("igdb_id").unique(),
+  name: text("name").notNull(),
+  slug: text("slug"),
+  coverUrl: text("cover_url"),
+  platforms: text("platforms"),       // JSON array string
+  genres: text("genres"),             // JSON array string
+  releaseDate: integer("release_date"), // year only
+  summary: text("summary"),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+});
+
+export const gunthrankRankings = sqliteTable("gunthrank_rankings", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  gameId: integer("game_id").notNull().references(() => gunthrankGames.id, { onDelete: "cascade" }),
+  tier: text("tier").notNull(),
+  objectiveNote: integer("objective_note"),
+  noteText: text("note_text"),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+}, (t) => [
+  uniqueIndex("gunthrank_user_game_unique").on(t.userId, t.gameId),
+]);
