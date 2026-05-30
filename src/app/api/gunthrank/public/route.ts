@@ -1,18 +1,35 @@
 export const dynamic = "force-dynamic";
 
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { gunthrankRankings, gunthrankGames, user } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 
-export async function GET() {
-  const admin = db().select({ id: user.id, name: user.name, username: user.username }).from(user).where(eq(user.role, "admin")).limit(1).get();
+export async function GET(request: NextRequest) {
+  const { searchParams } = request.nextUrl;
+  const targetUserId = searchParams.get("userId");
 
-  if (!admin) {
-    return NextResponse.json({ gunthos: null, rankings: [] });
+  if (!targetUserId) {
+    return NextResponse.json({ user: null, rankings: [] });
   }
 
-  const rankings = db().select().from(gunthrankRankings).where(eq(gunthrankRankings.userId, admin.id)).all();
+  const targetUser = db()
+    .select({ id: user.id, name: user.name, username: user.username })
+    .from(user)
+    .where(eq(user.id, targetUserId))
+    .limit(1)
+    .get();
+
+  if (!targetUser) {
+    return NextResponse.json({ user: null, rankings: [] });
+  }
+
+  const rankings = db()
+    .select()
+    .from(gunthrankRankings)
+    .where(eq(gunthrankRankings.userId, targetUser.id))
+    .all();
+
   const gameIds = [...new Set(rankings.map((r) => r.gameId))];
   const games = gameIds.length > 0
     ? db().select().from(gunthrankGames).all()
@@ -25,7 +42,7 @@ export async function GET() {
   }));
 
   return NextResponse.json({
-    gunthos: { id: admin.id, name: admin.name, username: admin.username },
+    user: { id: targetUser.id, name: targetUser.name, username: targetUser.username },
     rankings: enriched,
   });
 }

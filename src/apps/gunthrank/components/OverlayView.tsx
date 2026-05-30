@@ -1,15 +1,16 @@
 "use client";
 
 import { TIERS, type RankingEntry } from "../constants";
+import type { UserInfo } from "../hooks/use-gunthrank-data";
 
 interface OverlayViewProps {
   rankings: RankingEntry[];
-  viewMode: "mine" | "gunthos";
-  gunthosInfo: { id: string; name: string; username: string | null } | null;
+  viewMode: "mine" | "other";
+  viewedUser: UserInfo | null;
   onExit: () => void;
 }
 
-export function OverlayView({ rankings, viewMode, gunthosInfo, onExit }: OverlayViewProps) {
+export function OverlayView({ rankings, viewMode, viewedUser, onExit }: OverlayViewProps) {
   return (
     <div
       className="h-full flex flex-col relative"
@@ -25,8 +26,8 @@ export function OverlayView({ rankings, viewMode, gunthosInfo, onExit }: Overlay
         style={{ borderBottom: "1px solid #333" }}
       >
         <span style={{ fontSize: "var(--t-text-xl)", fontWeight: "bold" }}>
-          {viewMode === "gunthos" && gunthosInfo
-            ? `Classement de ${gunthosInfo.username ?? gunthosInfo.name}`
+          {viewMode === "other" && viewedUser
+            ? `Classement de ${viewedUser.username ?? viewedUser.name}`
             : "Mon classement"}
         </span>
         <button

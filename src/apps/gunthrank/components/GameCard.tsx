@@ -35,7 +35,7 @@ export function GameCard({ ranking, readOnly, onRemove, onUpdateNote }: GameCard
       onClick={() => !readOnly && setExpanded(!expanded)}
       className="flex-shrink-0 rounded cursor-grab active:cursor-grabbing select-none"
       style={{
-        width: 100,
+        width: 110,
         background: "var(--t-card-bg)",
         borderTop: "2px solid var(--t-border-light)",
         borderLeft: "2px solid var(--t-border-light)",
@@ -62,8 +62,15 @@ export function GameCard({ ranking, readOnly, onRemove, onUpdateNote }: GameCard
 
       {/* Name */}
       <div
-        className="px-1 py-0.5 text-center truncate"
-        style={{ fontSize: "var(--t-text-xs)" }}
+        className="px-1 py-0.5 text-center"
+        style={{
+          fontSize: "var(--t-text-xs)",
+          overflow: "hidden",
+          display: "-webkit-box",
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: "vertical",
+          lineHeight: 1.3,
+        }}
         title={ranking.game?.name ?? "Inconnu"}
       >
         {ranking.game?.name ?? "Inconnu"}
@@ -100,9 +107,9 @@ export function GameCard({ ranking, readOnly, onRemove, onUpdateNote }: GameCard
               borderBottom: "2px solid var(--t-border-light)",
               borderRight: "2px solid var(--t-border-light)",
               resize: "none",
-              height: 40,
+              height: 56,
             }}
-            rows={2}
+            rows={3}
           />
           <div className="flex justify-between mt-1">
             <button

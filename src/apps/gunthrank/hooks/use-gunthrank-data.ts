@@ -19,14 +19,22 @@ function saveDevRankings(r: RankingEntry[]) {
   localStorage.setItem(DEV_KEY, JSON.stringify(r));
 }
 
+export interface UserInfo {
+  id: string;
+  name: string;
+  username: string | null;
+}
+
 export function useGunthrankData() {
   const { user } = useAuth();
-  const [viewMode, setViewMode] = useState<"mine" | "gunthos">("mine");
+  const [viewMode, setViewMode] = useState<"mine" | "other">("mine");
   const [devMode, setDevMode] = useState(false);
   const [rankings, setRankings] = useState<RankingEntry[]>([]);
   const [games, setGames] = useState<GameCatalogEntry[]>([]);
   const [loading, setLoading] = useState(false);
-  const [gunthosInfo, setGunthosInfo] = useState<{ id: string; name: string; username: string | null } | null>(null);
+  const [viewedUser, setViewedUser] = useState<UserInfo | null>(null);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [availableUsers, setAvailableUsers] = useState<UserInfo[]>([]);
   const [filters, setFilters] = useState<Filters>({ platform: null, genre: null, year: null, tiers: [] });
 
   // ── Dev mode: load from localStorage on mount ──
@@ -34,32 +42,54 @@ export function useGunthrankData() {
     if (devMode) setRankings(loadDevRankings());
   }, [devMode]);
 
+  const fetchAvailableUsers = useCallback(async () => {
+    try {
+      const res = await fetch("/api/gunthrank/public/users");
+      const data = await res.json() as { users: UserInfo[] };
+      setAvailableUsers(data.users);
+      return data.users;
+    } catch { return []; }
+  }, []);
+
   const fetchRankings = useCallback(async () => {
     if (devMode) { setRankings(loadDevRankings()); setLoading(false); return; }
     setLoading(true);
     try {
-      if (viewMode === "gunthos") {
-        const res = await fetch("/api/gunthrank/public");
-        const data = await res.json() as { gunthos: { id: string; name: string; username: string | null } | null; rankings: RankingEntry[] };
-        setGunthosInfo(data.gunthos);
+      if (viewMode === "other" && selectedUserId) {
+        const res = await fetch(`/api/gunthrank/public?userId=${selectedUserId}`);
+        const data = await res.json() as { user: UserInfo | null; rankings: RankingEntry[] };
+        setViewedUser(data.user);
         setRankings(data.rankings);
       } else if (user) {
+        setViewedUser(null);
         const res = await fetch("/api/gunthrank/rankings");
         const data = await res.json() as { rankings: RankingEntry[] };
         setRankings(data.rankings);
       } else {
+        setViewedUser(null);
         setRankings([]);
       }
     } finally {
       setLoading(false);
     }
-  }, [viewMode, user, devMode]);
+  }, [viewMode, user, devMode, selectedUserId]);
 
   useEffect(() => { fetchRankings(); }, [fetchRankings]);
 
+  // ── User selection ──
+  const selectUser = useCallback((userId: string) => {
+    setSelectedUserId(userId);
+    setViewMode("other");
+  }, []);
+
+  const goToMyRankings = useCallback(() => {
+    setSelectedUserId(null);
+    setViewedUser(null);
+    setViewMode("mine");
+  }, []);
+
   const fetchGames = useCallback(async (q: string) => {
     if (devMode) {
-      // In dev mode, games live inline in rankings — no catalog needed for "add from catalog"
       const res = await fetch(`/api/gunthrank/games?q=${encodeURIComponent(q)}`);
       const data = await res.json() as { games: GameCatalogEntry[] };
       return data.games;
@@ -156,7 +186,6 @@ export function useGunthrankData() {
 
   const addFromCatalog = useCallback(async (gameId: number, tier: string) => {
     if (devMode) {
-      // In dev mode, games are inline — "catalog" drag creates a copy of an existing game
       const existing = rankings.find((r) => r.gameId === gameId);
       if (!existing?.game) return;
       const devRanking: RankingEntry = {
@@ -210,7 +239,6 @@ export function useGunthrankData() {
       ];
       const updated = prev.map((r) => (r.id === rankingId ? { ...r, tier: toTier as TierId, sortOrder: toIndex } : r));
       if (devMode) {
-        // Persist reordered rankings
         const full = updated.map((r) => {
           const inReorder = reordered.find((rr) => rr.id === r.id);
           return inReorder ? { ...r, sortOrder: inReorder.sortOrder } : r;
@@ -298,7 +326,12 @@ export function useGunthrankData() {
     rankings: filteredRankings,
     allRankings: rankings,
     loading,
-    gunthosInfo,
+    viewedUser,
+    selectedUserId,
+    availableUsers,
+    fetchAvailableUsers,
+    selectUser,
+    goToMyRankings,
     filters, setFilters,
     allPlatforms, allGenres, allYears,
     fetchGames, searchIgdb,

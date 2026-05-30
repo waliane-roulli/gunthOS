@@ -22,10 +22,12 @@ export function GunthrankApp({ windowId }: { windowId: string }) {
   const tierListRef = useRef<HTMLDivElement>(null);
 
   const {
-    viewMode, setViewMode,
+    viewMode,
     devMode, setDevMode,
     rankings, loading,
-    gunthosInfo,
+    viewedUser,
+    availableUsers, fetchAvailableUsers,
+    selectUser, goToMyRankings,
     filters, setFilters,
     allPlatforms, allGenres, allYears,
     searchIgdb,
@@ -36,8 +38,21 @@ export function GunthrankApp({ windowId }: { windowId: string }) {
   const [showStats, setShowStats] = useState(false);
   const [showOverlay, setShowOverlay] = useState(false);
   const [showCatalog, setShowCatalog] = useState(true);
+  const [viewLayout, setViewLayout] = useState<"list" | "grid">(() => {
+    try { return (localStorage.getItem("gunthrank-view-layout") as "list" | "grid") ?? "list"; } catch { return "list"; }
+  });
 
-  const readOnly = viewMode === "gunthos" && !devMode;
+  const toggleViewLayout = () => {
+    const next = viewLayout === "list" ? "grid" : "list";
+    setViewLayout(next);
+    try { localStorage.setItem("gunthrank-view-layout", next); } catch { /* noop */ }
+  };
+
+  const readOnly = viewMode === "other" && !devMode;
+
+  const handleOpenUserPicker = () => {
+    fetchAvailableUsers();
+  };
 
   const handleMoveGame = (rankingId: number, toTier: TierId) => {
     const entry = rankings.find((r) => r.id === rankingId);
@@ -47,6 +62,13 @@ export function GunthrankApp({ windowId }: { windowId: string }) {
     if (toTier === "diamond" && oldTier !== "diamond") playVictory();
     else if (toTier === "caca" && oldTier !== "caca") playDelete();
     else playPop();
+  };
+
+  const handleMoveToTier = (rankingId: number, toTier: TierId) => {
+    const entry = rankings.find((r) => r.id === rankingId);
+    if (!entry) return;
+    moveGame(rankingId, toTier, 0);
+    playPop();
   };
 
   const handleAddGame = async (igdbGame: IgdbSearchResult, tier: TierId) => {
@@ -136,7 +158,7 @@ export function GunthrankApp({ windowId }: { windowId: string }) {
       <OverlayView
         rankings={rankings}
         viewMode={viewMode}
-        gunthosInfo={gunthosInfo}
+        viewedUser={viewedUser}
         onExit={() => setShowOverlay(false)}
       />
     );
@@ -150,53 +172,51 @@ export function GunthrankApp({ windowId }: { windowId: string }) {
         style={{ borderBottom: "1px solid var(--t-border-dark)" }}
       >
         {/* View toggle */}
-        <div
-          className="flex"
-          style={{
-            borderTop: "2px solid var(--t-border-light)",
-            borderLeft: "2px solid var(--t-border-light)",
-            borderBottom: "2px solid var(--t-border-dark)",
-            borderRight: "2px solid var(--t-border-dark)",
-          }}
-        >
+        <div className="flex items-center gap-2">
           <button
-            onClick={() => { playClick(); setViewMode("mine"); }}
+            onClick={() => { playClick(); goToMyRankings(); }}
             className="px-3 py-1"
             style={{
               fontSize: "var(--t-text-xs)",
               background: viewMode === "mine" ? "var(--t-bg)" : "var(--t-bg-dark)",
               color: "var(--t-text)",
-              border: "none",
+              borderTop: viewMode === "mine" ? "2px solid var(--t-border-dark)" : "2px solid var(--t-border-light)",
+              borderLeft: viewMode === "mine" ? "2px solid var(--t-border-dark)" : "2px solid var(--t-border-light)",
+              borderBottom: viewMode === "mine" ? "2px solid var(--t-border-light)" : "2px solid var(--t-border-dark)",
+              borderRight: viewMode === "mine" ? "2px solid var(--t-border-light)" : "2px solid var(--t-border-dark)",
               cursor: "pointer",
-              ...(viewMode === "mine" ? {
-                borderTop: "2px solid var(--t-border-dark)",
-                borderLeft: "2px solid var(--t-border-dark)",
-                borderBottom: "2px solid var(--t-border-light)",
-                borderRight: "2px solid var(--t-border-light)",
-              } : {}),
             }}
           >
             Mon classement
           </button>
-          <button
-            onClick={() => { playClick(); setViewMode("gunthos"); }}
-            className="px-3 py-1"
+          <select
+            value={viewMode === "other" && viewedUser ? viewedUser.id : ""}
+            onChange={(e) => {
+              if (!e.target.value) return;
+              playClick();
+              selectUser(e.target.value);
+            }}
+            onFocus={handleOpenUserPicker}
+            className="px-2 py-1"
             style={{
               fontSize: "var(--t-text-xs)",
-              background: viewMode === "gunthos" ? "var(--t-bg)" : "var(--t-bg-dark)",
+              background: viewMode === "other" ? "var(--t-bg)" : "var(--t-bg-dark)",
               color: "var(--t-text)",
-              border: "none",
+              borderTop: viewMode === "other" ? "2px solid var(--t-border-dark)" : "2px solid var(--t-border-light)",
+              borderLeft: viewMode === "other" ? "2px solid var(--t-border-dark)" : "2px solid var(--t-border-light)",
+              borderBottom: viewMode === "other" ? "2px solid var(--t-border-light)" : "2px solid var(--t-border-dark)",
+              borderRight: viewMode === "other" ? "2px solid var(--t-border-light)" : "2px solid var(--t-border-dark)",
               cursor: "pointer",
-              ...(viewMode === "gunthos" ? {
-                borderTop: "2px solid var(--t-border-dark)",
-                borderLeft: "2px solid var(--t-border-dark)",
-                borderBottom: "2px solid var(--t-border-light)",
-                borderRight: "2px solid var(--t-border-light)",
-              } : {}),
+              maxWidth: 200,
             }}
           >
-            Classement de Gunthos
-          </button>
+            <option value="">Voir un classement...</option>
+            {availableUsers.map((u) => (
+              <option key={u.id} value={u.id}>
+                {u.username ?? u.name}
+              </option>
+            ))}
+          </select>
         </div>
 
         <button
@@ -211,6 +231,23 @@ export function GunthrankApp({ windowId }: { windowId: string }) {
           }}
         >
           DEV
+        </button>
+
+        <button
+          onClick={() => { playClick(); toggleViewLayout(); }}
+          className="px-3 py-1"
+          style={{
+            fontSize: "var(--t-text-xs)",
+            background: "var(--t-bg-dark)",
+            color: "var(--t-text)",
+            borderTop: "2px solid var(--t-border-light)",
+            borderLeft: "2px solid var(--t-border-light)",
+            borderBottom: "2px solid var(--t-border-dark)",
+            borderRight: "2px solid var(--t-border-dark)",
+            cursor: "pointer",
+          }}
+        >
+          {viewLayout === "list" ? "📋 Liste" : "⊞ Grille"}
         </button>
 
         <div className="flex-1" />
@@ -317,7 +354,7 @@ export function GunthrankApp({ windowId }: { windowId: string }) {
       )}
 
       {/* Read-only banner */}
-      {readOnly && gunthosInfo && (
+      {readOnly && viewedUser && (
         <div
           className="px-3 py-1 text-center"
           style={{
@@ -327,7 +364,7 @@ export function GunthrankApp({ windowId }: { windowId: string }) {
             borderBottom: "1px solid var(--t-border-dark)",
           }}
         >
-          Consultation seule — Classement de {gunthosInfo.username ?? gunthosInfo.name}
+          Consultation seule — Classement de {viewedUser.username ?? viewedUser.name}
         </div>
       )}
 
@@ -390,11 +427,13 @@ export function GunthrankApp({ windowId }: { windowId: string }) {
                   tier={tier}
                   games={tierGames}
                   readOnly={readOnly}
+                  viewLayout={viewLayout}
                   onDrop={handleMoveGame}
                   onAddFromCatalog={handleAddFromCatalog}
                   onAddFromIgdb={handleAddFromIgdb}
                   onRemove={handleRemove}
                   onUpdateNote={updateNote}
+                  onMove={handleMoveToTier}
                 />
               );
             })
