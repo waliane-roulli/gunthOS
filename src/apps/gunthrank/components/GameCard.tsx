@@ -38,9 +38,9 @@ export function GameCard({ ranking, readOnly, onRemove, onUpdateNote }: GameCard
       className="flex-shrink-0 rounded cursor-grab active:cursor-grabbing select-none overflow-hidden"
       style={{
         width: 140,
-        background: platformColor ?? "var(--t-card-bg)",
-        borderTop: "2px solid var(--t-border-light)",
-        borderLeft: "2px solid var(--t-border-light)",
+        background: "var(--t-card-bg)",
+        borderTop: `2px solid ${platformColor ? `${platformColor}88` : "var(--t-border-light)"}`,
+        borderLeft: `2px solid ${platformColor ? `${platformColor}88` : "var(--t-border-light)"}`,
         borderBottom: "2px solid var(--t-border-dark)",
         borderRight: "2px solid var(--t-border-dark)",
       }}

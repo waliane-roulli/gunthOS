@@ -103,17 +103,17 @@ export function GameRow({ ranking, readOnly, onRemove, onUpdateNote, onMove, ran
         {platformColor && (
           <div
             className="flex-shrink-0 rounded"
-            style={{ width: 3, height: 48, background: platformColor }}
+            style={{ width: 3, height: 64, background: platformColor }}
           />
         )}
 
         {/* Cover */}
         <div className="flex-shrink-0 flex items-center justify-center overflow-hidden"
-          style={{ width: 36, height: 48, background: "var(--t-bg-dark)" }}>
+          style={{ width: 48, height: 64, background: "var(--t-bg-dark)" }}>
           {coverUrl ? (
             <img src={coverUrl} alt={gameName} className="w-full h-full object-cover" loading="lazy" draggable={false} />
           ) : (
-            <span style={{ fontSize: "var(--t-text-md)" }}>🎮</span>
+            <span style={{ fontSize: "var(--t-text-lg)" }}>🎮</span>
           )}
         </div>
 

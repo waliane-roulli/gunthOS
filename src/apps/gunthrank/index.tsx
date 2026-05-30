@@ -7,7 +7,6 @@ import { useOpenApp } from "@/lib/hooks/use-open-app";
 import { useNotify } from "@/lib/contexts/notification-context";
 import { useGunthrankData } from "./hooks/use-gunthrank-data";
 import { TierRow } from "./components/TierRow";
-import { FilterBar } from "./components/FilterBar";
 import { AddGameDialog } from "./components/AddGameDialog";
 import { StatsDashboard } from "./components/StatsDashboard";
 import { OverlayView } from "./components/OverlayView";
@@ -255,13 +254,114 @@ export function GunthrankApp({ windowId }: { windowId: string }) {
           {viewLayout === "list" ? "📋 Liste" : "⊞ Grille"}
         </button>
 
+        {/* Inline filters */}
+        <select
+          value={filters.platform ?? ""}
+          onChange={(e) => { playClick(); setFilters({ ...filters, platform: e.target.value || null }); }}
+          className="px-1 py-0.5"
+          style={{
+            fontSize: "var(--t-text-xs)",
+            background: "var(--t-bg)",
+            color: "var(--t-text)",
+            borderTop: "2px solid var(--t-border-dark)",
+            borderLeft: "2px solid var(--t-border-dark)",
+            borderBottom: "2px solid var(--t-border-light)",
+            borderRight: "2px solid var(--t-border-light)",
+            maxWidth: 120,
+          }}
+        >
+          <option value="">Plateforme</option>
+          {allPlatforms.map((p) => (<option key={p} value={p}>{p}</option>))}
+        </select>
+
+        <select
+          value={filters.genre ?? ""}
+          onChange={(e) => { playClick(); setFilters({ ...filters, genre: e.target.value || null }); }}
+          className="px-1 py-0.5"
+          style={{
+            fontSize: "var(--t-text-xs)",
+            background: "var(--t-bg)",
+            color: "var(--t-text)",
+            borderTop: "2px solid var(--t-border-dark)",
+            borderLeft: "2px solid var(--t-border-dark)",
+            borderBottom: "2px solid var(--t-border-light)",
+            borderRight: "2px solid var(--t-border-light)",
+            maxWidth: 110,
+          }}
+        >
+          <option value="">Genre</option>
+          {allGenres.map((g) => (<option key={g} value={g}>{g}</option>))}
+        </select>
+
+        <select
+          value={filters.year ?? ""}
+          onChange={(e) => { playClick(); setFilters({ ...filters, year: e.target.value ? parseInt(e.target.value, 10) : null }); }}
+          className="px-1 py-0.5"
+          style={{
+            fontSize: "var(--t-text-xs)",
+            background: "var(--t-bg)",
+            color: "var(--t-text)",
+            borderTop: "2px solid var(--t-border-dark)",
+            borderLeft: "2px solid var(--t-border-dark)",
+            borderBottom: "2px solid var(--t-border-light)",
+            borderRight: "2px solid var(--t-border-light)",
+            maxWidth: 80,
+          }}
+        >
+          <option value="">Année</option>
+          {allYears.map((y) => (<option key={y} value={y}>{y}</option>))}
+        </select>
+
+        <div className="flex items-center gap-0.5">
+          {(["diamond", "gold", "silver", "bronze", "banger", "caca"] as TierId[]).map((tier) => {
+            const tierEmojis: Record<string, string> = { diamond: "💎", gold: "🥇", silver: "🥈", bronze: "🥉", banger: "🌫️", caca: "💩" };
+            const active = filters.tiers.includes(tier);
+            return (
+              <button
+                key={tier}
+                onClick={() => {
+                  playClick();
+                  const next = active ? filters.tiers.filter((t) => t !== tier) : [...filters.tiers, tier];
+                  setFilters({ ...filters, tiers: next });
+                }}
+                className="px-1 py-0.5"
+                style={{
+                  fontSize: "var(--t-text-xs)",
+                  background: active ? "var(--t-accent)" : "var(--t-bg-dark)",
+                  color: active ? "#fff" : "var(--t-text-muted)",
+                  border: "none",
+                  cursor: "pointer",
+                }}
+              >
+                {tierEmojis[tier]}
+              </button>
+            );
+          })}
+        </div>
+
+        {(filters.platform || filters.genre || filters.year || filters.tiers.length > 0) && (
+          <button
+            onClick={() => { playClick(); setFilters({ platform: null, genre: null, year: null, tiers: [] }); }}
+            className="px-1.5 py-0.5"
+            style={{
+              fontSize: "var(--t-text-xs)",
+              background: "var(--t-error)",
+              color: "#fff",
+              border: "none",
+              cursor: "pointer",
+            }}
+          >
+            ✕
+          </button>
+        )}
+
         <div className="flex-1" />
 
         {!readOnly && (
           <>
             <button
               onClick={() => { playClick(); setShowCatalog(!showCatalog); }}
-              className="px-3 py-1"
+              className="px-2 py-1"
               style={{
                 fontSize: "var(--t-text-xs)",
                 background: showCatalog ? "var(--t-accent)" : "var(--t-bg-dark)",
@@ -277,7 +377,7 @@ export function GunthrankApp({ windowId }: { windowId: string }) {
             </button>
             <button
               onClick={() => { playClick(); setShowAddDialog(true); }}
-              className="px-3 py-1 font-bold"
+              className="px-2 py-1 font-bold"
               style={{
                 fontSize: "var(--t-text-xs)",
                 background: "var(--t-accent)",
@@ -293,7 +393,7 @@ export function GunthrankApp({ windowId }: { windowId: string }) {
 
         <button
           onClick={() => { playClick(); setShowStats(!showStats); }}
-          className="px-3 py-1"
+          className="px-2 py-1"
           style={{
             fontSize: "var(--t-text-xs)",
             background: "var(--t-bg-dark)",
@@ -305,12 +405,12 @@ export function GunthrankApp({ windowId }: { windowId: string }) {
             cursor: "pointer",
           }}
         >
-          {showStats ? "Fermer stats" : "Stats"}
+          {showStats ? "Stats ▾" : "Stats"}
         </button>
 
         <button
           onClick={() => setShowOverlay(true)}
-          className="px-3 py-1"
+          className="px-2 py-1"
           style={{
             fontSize: "var(--t-text-xs)",
             background: "var(--t-bg-dark)",
@@ -327,7 +427,7 @@ export function GunthrankApp({ windowId }: { windowId: string }) {
 
         <button
           onClick={handleExport}
-          className="px-3 py-1"
+          className="px-2 py-1"
           style={{
             fontSize: "var(--t-text-xs)",
             background: "var(--t-bg-dark)",
@@ -339,7 +439,7 @@ export function GunthrankApp({ windowId }: { windowId: string }) {
             cursor: "pointer",
           }}
         >
-          Export PNG
+          Export
         </button>
       </div>
 
@@ -382,15 +482,6 @@ export function GunthrankApp({ windowId }: { windowId: string }) {
           onClose={() => setShowStats(false)}
         />
       )}
-
-      {/* Filter bar */}
-      <FilterBar
-        filters={filters}
-        setFilters={setFilters}
-        allPlatforms={allPlatforms}
-        allGenres={allGenres}
-        allYears={allYears}
-      />
 
       {/* Tier list + Catalog */}
       <div className="flex flex-1 overflow-hidden">

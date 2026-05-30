@@ -192,7 +192,7 @@ export function TierRow({ tier, games, readOnly, viewLayout, onDrop, onAddFromCa
             className="gap-2 p-2 flex-1 overflow-auto"
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+              gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))",
               alignContent: "start",
             }}
           >
