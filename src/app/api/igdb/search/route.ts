@@ -8,6 +8,9 @@ const CLIENT_SECRET = "qwza7uzglo1zmsvxcz032e5x6xcjjr";
 let cachedToken: string | null = null;
 let cachedExpiresAt = 0;
 
+const searchCache = new Map<string, { results: Array<{ igdbId: number; name: string; slug: string | null; coverUrl: string | null; platforms: string[]; genres: string[]; publishers: string[]; developers: string[]; releaseYear: number | null; summary: string | null }>; timestamp: number }>();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 async function fetchWithRetry(url: string, init: RequestInit, retries = 3): Promise<Response> {
   let lastErr: unknown;
   for (let i = 0; i < retries; i++) {
@@ -63,6 +66,13 @@ export async function POST(req: NextRequest) {
 
   if (!hasQuery && !genre && !platform) {
     return NextResponse.json({ results: [] });
+  }
+
+  const cacheKey = `${query ?? ""}|${genre ?? ""}|${platform ?? ""}`.toLowerCase();
+  const cached = searchCache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    console.log("IGDB cache hit:", cacheKey);
+    return NextResponse.json({ results: cached.results });
   }
 
   const token = await getAccessToken();
@@ -131,6 +141,7 @@ export async function POST(req: NextRequest) {
       summary: g.summary ?? null,
     }));
 
+    searchCache.set(cacheKey, { results, timestamp: Date.now() });
     return NextResponse.json({ results });
   } catch (err) {
     console.error("IGDB exception:", err);

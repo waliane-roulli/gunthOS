@@ -12,6 +12,7 @@ interface TierRowProps {
   games: RankingEntry[];
   readOnly?: boolean;
   viewLayout: "list" | "grid";
+  recentlyMovedIds?: Set<number>;
   onDrop: (rankingId: number, toTier: TierId, toIndex?: number) => void;
   onAddFromCatalog?: (gameId: number, toTier: TierId) => void;
   onAddFromIgdb?: (game: import("../constants").IgdbSearchResult, toTier: TierId) => void;
@@ -19,10 +20,11 @@ interface TierRowProps {
   onUpdateNote?: (rankingId: number, objectiveNote: number | null, noteText: string | null, playedOn?: string | null) => void;
   onMove?: (rankingId: number, toTier: TierId) => void;
   onReorder?: (rankingId: number, toIndex: number) => void;
+  onDetailClick?: (ranking: RankingEntry) => void;
   globalRankOffset?: number;
 }
 
-export function TierRow({ tier, games, readOnly, viewLayout, onDrop, onAddFromCatalog, onAddFromIgdb, onRemove, onUpdateNote, onMove, onReorder, globalRankOffset }: TierRowProps) {
+export function TierRow({ tier, games, readOnly, viewLayout, recentlyMovedIds, onDrop, onAddFromCatalog, onAddFromIgdb, onRemove, onUpdateNote, onMove, onReorder, onDetailClick, globalRankOffset }: TierRowProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [dropIndex, setDropIndex] = useState<{ idx: number; before: boolean } | null>(null);
@@ -172,8 +174,10 @@ export function TierRow({ tier, games, readOnly, viewLayout, onDrop, onAddFromCa
                   <GameCard
                     ranking={r}
                     readOnly={readOnly}
+                    isNew={recentlyMovedIds?.has(r.id)}
                     onRemove={onRemove}
                     onUpdateNote={onUpdateNote}
+                    onDetailClick={onDetailClick}
                   />
                 </div>
               );
@@ -214,9 +218,11 @@ export function TierRow({ tier, games, readOnly, viewLayout, onDrop, onAddFromCa
                   <GameRow
                     ranking={r}
                     readOnly={readOnly}
+                    isNew={recentlyMovedIds?.has(r.id)}
                     onRemove={onRemove}
                     onUpdateNote={onUpdateNote}
                     onMove={onMove}
+                    onDetailClick={onDetailClick}
                     rankNumber={rankNum}
                   />
                 </div>

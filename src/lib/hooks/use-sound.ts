@@ -271,6 +271,13 @@ export function useSound(muted: boolean, schemeId: SoundSchemeId = DEFAULT_SOUND
   const playNotifyError   = useCallback(() => playSchemeSound(schemeRef.current.sounds.notifyError),   [playSchemeSound]);
   const playNotifyWarning = useCallback(() => playSchemeSound(schemeRef.current.sounds.notifyWarning), [playSchemeSound]);
 
+  const playTierDiamond = useCallback(() => playSchemeSound(schemeRef.current.sounds.tierDiamond), [playSchemeSound]);
+  const playTierGold    = useCallback(() => playSchemeSound(schemeRef.current.sounds.tierGold), [playSchemeSound]);
+  const playTierSilver  = useCallback(() => playSchemeSound(schemeRef.current.sounds.tierSilver), [playSchemeSound]);
+  const playTierBronze  = useCallback(() => playSchemeSound(schemeRef.current.sounds.tierBronze), [playSchemeSound]);
+  const playTierBanger  = useCallback(() => playSchemeSound(schemeRef.current.sounds.tierBanger), [playSchemeSound]);
+  const playTierCaca    = useCallback(() => playSchemeSound(schemeRef.current.sounds.tierCaca), [playSchemeSound]);
+
   // ── Sons MP3 ─────────────────────────────────────────────────────────────────
 
   const uiChannel = useCallback(() => getChannel("ui", 1), []);
@@ -407,6 +414,12 @@ export function useSound(muted: boolean, schemeId: SoundSchemeId = DEFAULT_SOUND
     playNotifySuccess,
     playNotifyError,
     playNotifyWarning,
+    playTierDiamond,
+    playTierGold,
+    playTierSilver,
+    playTierBronze,
+    playTierBanger,
+    playTierCaca,
     playModemDialup,
     playStartupChime,
     playBiosBleep,

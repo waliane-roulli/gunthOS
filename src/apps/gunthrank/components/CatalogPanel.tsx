@@ -1,17 +1,20 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import type { GameCatalogEntry, IgdbSearchResult } from "../constants";
+import { TIERS, type TierId, type GameCatalogEntry, type IgdbSearchResult } from "../constants";
 
 interface CatalogPanelProps {
   onClose: () => void;
+  onAddFromCatalog?: (gameId: number, toTier: TierId) => void;
+  onAddFromIgdb?: (game: IgdbSearchResult, toTier: TierId) => void;
 }
 
 const POPULAR_GENRES = ["Adventure", "RPG", "Shooter", "Platform", "Strategy", "Racing", "Fighting", "Sport", "Puzzle", "Indie", "Simulator", "Arcade"];
 const POPULAR_PLATFORMS = ["PC", "PlayStation 5", "Xbox Series X|S", "Nintendo Switch", "PlayStation 4", "Xbox One", "Nintendo 64", "PlayStation 2", "Super Nintendo", "Game Boy Advance", "Nintendo GameCube", "Wii"];
 
-export function CatalogPanel({ onClose }: CatalogPanelProps) {
+export function CatalogPanel({ onClose, onAddFromCatalog, onAddFromIgdb }: CatalogPanelProps) {
   const [dbGames, setDbGames] = useState<GameCatalogEntry[]>([]);
+  const [tierPickerId, setTierPickerId] = useState<string | null>(null); // "db:123" or "igdb:456"
   const [igdbResults, setIgdbResults] = useState<IgdbSearchResult[]>([]);
   const [query, setQuery] = useState("");
   const [genreFilter, setGenreFilter] = useState<string | null>(null);
@@ -204,64 +207,176 @@ export function CatalogPanel({ onClose }: CatalogPanelProps) {
           </div>
         )}
 
-        {filteredDbGames.map((game) => (
-          <div
-            key={`db-${game.id}`}
-            draggable
-            onDragStart={(e) => handleDragStartDb(e, game)}
-            className="flex items-center gap-2 px-2 py-1.5 cursor-grab active:cursor-grabbing select-none hover:brightness-110"
-            style={{ borderBottom: "1px solid var(--t-border-dark)" }}
-            title={`${game.name} — glisse vers un tier !`}
-          >
-            {game.coverUrl ? (
-              <img src={game.coverUrl} alt={game.name} className="flex-shrink-0 object-cover" style={{ width: 32, height: 44 }} draggable={false} />
-            ) : (
-              <div className="flex-shrink-0 flex items-center justify-center" style={{ width: 32, height: 44, background: "var(--t-bg-dark)", fontSize: "var(--t-text-md)" }}>
-                🎮
-              </div>
-            )}
-            <div className="min-w-0 flex-1">
-              <div className="truncate" style={{ fontSize: "var(--t-text-xs)" }}>{game.name}</div>
-              {game.platforms && (
-                <div style={{ fontSize: "calc(var(--t-text-xs) * 0.8)", color: "var(--t-text-muted)" }}>
-                  {(JSON.parse(game.platforms) as string[]).slice(0, 2).join(", ")}
+        {filteredDbGames.map((game) => {
+          const pickerKey = `db:${game.id}`;
+          const showPicker = tierPickerId === pickerKey;
+          return (
+            <div
+              key={`db-${game.id}`}
+              draggable
+              onDragStart={(e) => handleDragStartDb(e, game)}
+              className="flex items-center gap-2 px-2 py-1.5 cursor-grab active:cursor-grabbing select-none hover:brightness-110"
+              style={{ borderBottom: "1px solid var(--t-border-dark)" }}
+              title={`${game.name} — glisse vers un tier ou clique sur +`}
+            >
+              {game.coverUrl ? (
+                <img src={game.coverUrl} alt={game.name} className="flex-shrink-0 object-cover" style={{ width: 32, height: 44 }} draggable={false} />
+              ) : (
+                <div className="flex-shrink-0 flex items-center justify-center" style={{ width: 32, height: 44, background: "var(--t-bg-dark)", fontSize: "var(--t-text-md)" }}>
+                  🎮
                 </div>
               )}
+              <div className="min-w-0 flex-1">
+                <div className="truncate" style={{ fontSize: "var(--t-text-xs)" }}>{game.name}</div>
+                {game.platforms && (
+                  <div style={{ fontSize: "calc(var(--t-text-xs) * 0.8)", color: "var(--t-text-muted)" }}>
+                    {(JSON.parse(game.platforms) as string[]).slice(0, 2).join(", ")}
+                  </div>
+                )}
+              </div>
+              <div style={{ position: "relative" }}>
+                <button
+                  className="flex-shrink-0 flex items-center justify-center"
+                  style={{
+                    width: 22, height: 22,
+                    fontSize: "var(--t-text-xs)",
+                    fontWeight: "bold",
+                    background: showPicker ? "var(--t-accent)" : "var(--t-bg-dark)",
+                    color: showPicker ? "#fff" : "var(--t-text-muted)",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
+                  onClick={(e) => { e.stopPropagation(); setTierPickerId(showPicker ? null : pickerKey); }}
+                  title="Ajouter à un tier"
+                >
+                  +
+                </button>
+                {showPicker && (
+                  <div
+                    className="absolute right-0 top-full z-30 p-1 rounded"
+                    style={{
+                      background: "var(--t-bg)",
+                      borderTop: "2px solid var(--t-border-light)",
+                      borderLeft: "2px solid var(--t-border-light)",
+                      borderBottom: "2px solid var(--t-border-dark)",
+                      borderRight: "2px solid var(--t-border-dark)",
+                      minWidth: 130,
+                    }}
+                  >
+                    {TIERS.map((t) => (
+                      <button
+                        key={t.id}
+                        className="flex items-center gap-1 w-full px-2 py-1 text-left"
+                        style={{
+                          fontSize: "var(--t-text-xs)",
+                          background: "none",
+                          color: "var(--t-text)",
+                          border: "none",
+                          cursor: "pointer",
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onAddFromCatalog?.(game.id, t.id);
+                          setTierPickerId(null);
+                        }}
+                      >
+                        {t.emoji} {t.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
 
-        {igdbResults.map((game) => (
-          <div
-            key={`igdb-${game.igdbId}`}
-            draggable
-            onDragStart={(e) => handleDragStartIgdb(e, game)}
-            className="flex items-center gap-2 px-2 py-1.5 cursor-grab active:cursor-grabbing select-none hover:brightness-110"
-            style={{ borderBottom: "1px solid var(--t-border-dark)", background: "var(--t-card-bg)" }}
-            title={`${game.name} (IGDB)\n${game.genres.join(", ")}\n${game.platforms.join(", ")}\n${game.publishers.join(", ")}`}
-          >
-            {game.coverUrl ? (
-              <img src={game.coverUrl} alt={game.name} className="flex-shrink-0 object-cover" style={{ width: 32, height: 44 }} draggable={false} />
-            ) : (
-              <div className="flex-shrink-0 flex items-center justify-center" style={{ width: 32, height: 44, background: "var(--t-bg-dark)", fontSize: "var(--t-text-md)" }}>
-                🎮
+        {igdbResults.map((game) => {
+          const pickerKey = `igdb:${game.igdbId}`;
+          const showPicker = tierPickerId === pickerKey;
+          return (
+            <div
+              key={`igdb-${game.igdbId}`}
+              draggable
+              onDragStart={(e) => handleDragStartIgdb(e, game)}
+              className="flex items-center gap-2 px-2 py-1.5 cursor-grab active:cursor-grabbing select-none hover:brightness-110"
+              style={{ borderBottom: "1px solid var(--t-border-dark)", background: "var(--t-card-bg)" }}
+              title={`${game.name} (IGDB)\n${game.genres.join(", ")}\n${game.platforms.join(", ")}\n${game.publishers.join(", ")}`}
+            >
+              {game.coverUrl ? (
+                <img src={game.coverUrl} alt={game.name} className="flex-shrink-0 object-cover" style={{ width: 32, height: 44 }} draggable={false} />
+              ) : (
+                <div className="flex-shrink-0 flex items-center justify-center" style={{ width: 32, height: 44, background: "var(--t-bg-dark)", fontSize: "var(--t-text-md)" }}>
+                  🎮
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <div className="truncate flex items-center gap-1" style={{ fontSize: "var(--t-text-xs)" }}>
+                  {game.name}
+                  <span className="flex-shrink-0 px-1" style={{ fontSize: "calc(var(--t-text-xs) * 0.7)", background: "var(--t-accent)", color: "#fff" }}>IGDB</span>
+                </div>
+                <div style={{ fontSize: "calc(var(--t-text-xs) * 0.8)", color: "var(--t-text-muted)" }}>
+                  {game.genres.slice(0, 2).join(", ")}
+                </div>
+                <div style={{ fontSize: "calc(var(--t-text-xs) * 0.75)", color: "var(--t-text-muted)" }}>
+                  {game.platforms.slice(0, 2).join(", ")}
+                  {game.publishers.length > 0 ? ` — ${game.publishers[0]}` : ""}
+                </div>
               </div>
-            )}
-            <div className="min-w-0 flex-1">
-              <div className="truncate flex items-center gap-1" style={{ fontSize: "var(--t-text-xs)" }}>
-                {game.name}
-                <span className="flex-shrink-0 px-1" style={{ fontSize: "calc(var(--t-text-xs) * 0.7)", background: "var(--t-accent)", color: "#fff" }}>IGDB</span>
-              </div>
-              <div style={{ fontSize: "calc(var(--t-text-xs) * 0.8)", color: "var(--t-text-muted)" }}>
-                {game.genres.slice(0, 2).join(", ")}
-              </div>
-              <div style={{ fontSize: "calc(var(--t-text-xs) * 0.75)", color: "var(--t-text-muted)" }}>
-                {game.platforms.slice(0, 2).join(", ")}
-                {game.publishers.length > 0 ? ` — ${game.publishers[0]}` : ""}
+              <div style={{ position: "relative" }}>
+                <button
+                  className="flex-shrink-0 flex items-center justify-center"
+                  style={{
+                    width: 22, height: 22,
+                    fontSize: "var(--t-text-xs)",
+                    fontWeight: "bold",
+                    background: showPicker ? "var(--t-accent)" : "var(--t-bg-dark)",
+                    color: showPicker ? "#fff" : "var(--t-text-muted)",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
+                  onClick={(e) => { e.stopPropagation(); setTierPickerId(showPicker ? null : pickerKey); }}
+                  title="Ajouter à un tier"
+                >
+                  +
+                </button>
+                {showPicker && (
+                  <div
+                    className="absolute right-0 top-full z-30 p-1 rounded"
+                    style={{
+                      background: "var(--t-bg)",
+                      borderTop: "2px solid var(--t-border-light)",
+                      borderLeft: "2px solid var(--t-border-light)",
+                      borderBottom: "2px solid var(--t-border-dark)",
+                      borderRight: "2px solid var(--t-border-dark)",
+                      minWidth: 130,
+                    }}
+                  >
+                    {TIERS.map((t) => (
+                      <button
+                        key={t.id}
+                        className="flex items-center gap-1 w-full px-2 py-1 text-left"
+                        style={{
+                          fontSize: "var(--t-text-xs)",
+                          background: "none",
+                          color: "var(--t-text)",
+                          border: "none",
+                          cursor: "pointer",
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onAddFromIgdb?.(game, t.id);
+                          setTierPickerId(null);
+                        }}
+                      >
+                        {t.emoji} {t.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
 
         {!loading && hasFilters && filteredDbGames.length === 0 && igdbResults.length === 0 && (
           <div className="px-2 py-2" style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)" }}>

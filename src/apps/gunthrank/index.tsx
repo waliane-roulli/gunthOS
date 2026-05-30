@@ -1,19 +1,21 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { useSoundContext } from "@/lib/contexts/sound-context";
 import { useOpenApp } from "@/lib/hooks/use-open-app";
 import { useNotify } from "@/lib/contexts/notification-context";
+import { useCelebration } from "@/lib/hooks/use-celebration";
 import { useGunthrankData } from "./hooks/use-gunthrank-data";
 import { TierRow } from "./components/TierRow";
-import { AddGameDialog } from "./components/AddGameDialog";
+import { GameDetailModal } from "./components/GameDetailModal";
 import { StatsDashboard } from "./components/StatsDashboard";
 import { OverlayView } from "./components/OverlayView";
 import { CatalogPanel } from "./components/CatalogPanel";
 import { KiffThemeProvider, useKiffTheme } from "./kiff-theme-context";
-import { TIERS, type TierId, type IgdbSearchResult } from "./constants";
+import { TIERS, type TierId, type IgdbSearchResult, type RankingEntry } from "./constants";
 import { KIFF_THEMES } from "./kiff-themes";
+import type { CelebrationOptions } from "@/types/plouf-plouf";
 
 function ThemeDropdown() {
   const { theme, setThemeId } = useKiffTheme();
@@ -105,11 +107,12 @@ export function GunthrankApp({ windowId }: { windowId: string }) {
 
 function GunthrankAppInner({ windowId }: { windowId: string }) {
   const { user } = useAuth();
-  const { playClick, playPop, playVictory, playDelete } = useSoundContext();
+  const { playClick, playPop, playDelete, playVictory, playTierDiamond, playTierGold, playTierSilver, playTierBronze, playTierBanger, playTierCaca } = useSoundContext();
   const { openApp } = useOpenApp();
   const notify = useNotify();
   const tierListRef = useRef<HTMLDivElement>(null);
   const { theme } = useKiffTheme();
+  const { canvasRef, start: startCelebration } = useCelebration();
 
   const {
     viewMode,
@@ -120,14 +123,14 @@ function GunthrankAppInner({ windowId }: { windowId: string }) {
     selectUser, goToMyRankings,
     filters, setFilters,
     allPlatforms, allGenres, allYears,
-    searchIgdb,
     addGame, addFromCatalog, removeRanking, moveGame, reorderGame, updateNote,
   } = useGunthrankData();
 
-  const [showAddDialog, setShowAddDialog] = useState(false);
   const [showStats, setShowStats] = useState(false);
   const [showOverlay, setShowOverlay] = useState(false);
   const [showCatalog, setShowCatalog] = useState(true);
+  const [detailRanking, setDetailRanking] = useState<RankingEntry | null>(null);
+  const [recentlyMovedIds, setRecentlyMovedIds] = useState<Set<number>>(new Set());
   const [viewLayout, setViewLayout] = useState<"list" | "grid">(() => {
     try { return (localStorage.getItem("gunthrank-view-layout") as "list" | "grid") ?? "list"; } catch { return "list"; }
   });
@@ -144,14 +147,62 @@ function GunthrankAppInner({ windowId }: { windowId: string }) {
     fetchAvailableUsers();
   };
 
+  const celebrateTier = useCallback((tier: TierId) => {
+    const configs: Record<TierId, { type: CelebrationOptions["type"]; density: number; duration: number; color1: string; color2: string; color3: string; flash: boolean }> = {
+      diamond: { type: "trophy-gold", density: 250, duration: 3, color1: "#FFD700", color2: "#FFA500", color3: "#FFFFFF", flash: true },
+      gold:     { type: "confetti", density: 180, duration: 2.5, color1: "#FFD700", color2: "#FFC107", color3: "#FFE082", flash: false },
+      silver:   { type: "confetti", density: 120, duration: 2, color1: "#C0C0C0", color2: "#E0E0E0", color3: "#FFFFFF", flash: false },
+      bronze:   { type: "confetti", density: 90, duration: 2, color1: "#CD7F32", color2: "#D2A679", color3: "#F5DEB3", flash: false },
+      banger:   { type: "rain", density: 50, duration: 1.5, color1: "#9B8EA8", color2: "#B8ACCC", color3: "#D4CCE0", flash: false },
+      caca:     { type: "poop", density: 120, duration: 2, color1: "#8B7355", color2: "#6B4226", color3: "#4A3728", flash: false },
+    };
+    const c = configs[tier];
+    startCelebration({
+      preset: "custom",
+      type: c.type,
+      text: "",
+      density: c.density,
+      duration: c.duration,
+      color1: c.color1,
+      color2: c.color2,
+      color3: c.color3,
+      flash: c.flash,
+      rainbow: false,
+      shake: 0,
+      marquee: false,
+      bigText: false,
+      damageNumbers: false,
+      bgPulse: false,
+      epicResult: false,
+      randomPreset: false,
+      forceTransparent: false,
+      winnerColor: "#fff",
+      winnerSubColor: "#ccc",
+    });
+  }, [startCelebration]);
+
+  const tierSounds: Record<TierId, () => void> = {
+    diamond: playTierDiamond,
+    gold: playTierGold,
+    silver: playTierSilver,
+    bronze: playTierBronze,
+    banger: playTierBanger,
+    caca: playTierCaca,
+  };
+
   const handleMoveGame = (rankingId: number, toTier: TierId, toIndex?: number) => {
     const entry = rankings.find((r) => r.id === rankingId);
     if (!entry) return;
     const oldTier = entry.tier;
     moveGame(rankingId, toTier, toIndex ?? 0);
-    if (toTier === "diamond" && oldTier !== "diamond") playVictory();
-    else if (toTier === "caca" && oldTier !== "caca") playDelete();
-    else playPop();
+    if (toTier !== oldTier) {
+      setRecentlyMovedIds((prev) => { const next = new Set(prev); next.add(rankingId); return next; });
+      setTimeout(() => setRecentlyMovedIds((prev) => { const next = new Set(prev); next.delete(rankingId); return next; }), 400);
+      tierSounds[toTier]();
+      celebrateTier(toTier);
+    } else {
+      playPop();
+    }
   };
 
   const handleMoveToTier = (rankingId: number, toTier: TierId) => {
@@ -164,23 +215,6 @@ function GunthrankAppInner({ windowId }: { windowId: string }) {
   const handleReorder = (rankingId: number, toIndex: number) => {
     reorderGame(rankingId, toIndex);
     playClick();
-  };
-
-  const handleAddGame = async (igdbGame: IgdbSearchResult, tier: TierId) => {
-    playPop();
-    await addGame({
-      igdbId: igdbGame.igdbId,
-      name: igdbGame.name,
-      slug: igdbGame.slug,
-      coverUrl: igdbGame.coverUrl,
-      platforms: igdbGame.platforms,
-      genres: igdbGame.genres,
-      releaseDate: igdbGame.releaseYear,
-      summary: igdbGame.summary,
-      tier,
-    });
-    setShowAddDialog(false);
-    notify({ type: "success", title: `${igdbGame.name} ajouté au ${TIERS.find((t) => t.id === tier)?.label ?? tier} !` });
   };
 
   const handleExport = async () => {
@@ -451,37 +485,22 @@ function GunthrankAppInner({ windowId }: { windowId: string }) {
         <div className="flex-1" />
 
         {!readOnly && (
-          <>
-            <button
-              onClick={() => { playClick(); setShowCatalog(!showCatalog); }}
-              className="px-2 py-1"
-              style={{
-                fontSize: "var(--t-text-xs)",
-                background: showCatalog ? "var(--t-accent)" : "var(--t-bg-dark)",
-                color: showCatalog ? "#fff" : "var(--t-text)",
-                borderTop: "2px solid var(--t-border-light)",
-                borderLeft: "2px solid var(--t-border-light)",
-                borderBottom: "2px solid var(--t-border-dark)",
-                borderRight: "2px solid var(--t-border-dark)",
-                cursor: "pointer",
-              }}
-            >
-              Catalogue
-            </button>
-            <button
-              onClick={() => { playClick(); setShowAddDialog(true); }}
-              className="px-2 py-1 font-bold"
-              style={{
-                fontSize: "var(--t-text-xs)",
-                background: "var(--t-accent)",
-                color: "#fff",
-                border: "none",
-                cursor: "pointer",
-              }}
-            >
-              + Ajouter
-            </button>
-          </>
+          <button
+            onClick={() => { playClick(); setShowCatalog(!showCatalog); }}
+            className="px-2 py-1 font-bold"
+            style={{
+              fontSize: "var(--t-text-xs)",
+              background: showCatalog ? "var(--t-accent)" : "var(--t-bg-dark)",
+              color: showCatalog ? "#fff" : "var(--t-text)",
+              borderTop: "2px solid var(--t-border-light)",
+              borderLeft: "2px solid var(--t-border-light)",
+              borderBottom: "2px solid var(--t-border-dark)",
+              borderRight: "2px solid var(--t-border-dark)",
+              cursor: "pointer",
+            }}
+          >
+            {showCatalog ? "🔍 Rechercher ▾" : "🔍 Rechercher"}
+          </button>
         )}
 
         <button
@@ -579,7 +598,11 @@ function GunthrankAppInner({ windowId }: { windowId: string }) {
       {/* Tier list + Catalog */}
       <div className="flex flex-1 overflow-hidden">
         {showCatalog && !readOnly && (
-          <CatalogPanel onClose={() => setShowCatalog(false)} />
+          <CatalogPanel
+            onClose={() => setShowCatalog(false)}
+            onAddFromCatalog={handleAddFromCatalog}
+            onAddFromIgdb={handleAddFromIgdb}
+          />
         )}
         <div ref={tierListRef} className="flex flex-col gap-3 p-3 overflow-auto flex-1 tier-list-root">
           {viewMode === "mine" && !user && !devMode ? (
@@ -618,6 +641,7 @@ function GunthrankAppInner({ windowId }: { windowId: string }) {
                   games={tierGames}
                   readOnly={readOnly}
                   viewLayout={viewLayout}
+                  recentlyMovedIds={recentlyMovedIds}
                   onDrop={handleMoveGame}
                   onAddFromCatalog={handleAddFromCatalog}
                   onAddFromIgdb={handleAddFromIgdb}
@@ -625,6 +649,7 @@ function GunthrankAppInner({ windowId }: { windowId: string }) {
                   onUpdateNote={updateNote}
                   onMove={handleMoveToTier}
                   onReorder={handleReorder}
+                  onDetailClick={setDetailRanking}
                   globalRankOffset={isNumbered ? acc.offset : undefined}
                 />
               );
@@ -636,15 +661,18 @@ function GunthrankAppInner({ windowId }: { windowId: string }) {
         </div>
       </div>
 
-      {/* Add Game Dialog */}
-      {showAddDialog && (
-        <AddGameDialog
-          onAdd={handleAddGame}
-          onClose={() => setShowAddDialog(false)}
-          searchIgdb={searchIgdb}
+      {/* Game Detail Modal */}
+      {detailRanking && (
+        <GameDetailModal
+          ranking={detailRanking}
+          readOnly={readOnly}
+          onClose={() => setDetailRanking(null)}
+          onRemove={handleRemove}
         />
       )}
 
+      {/* Celebration particles canvas */}
+      <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none" style={{ zIndex: 100, width: "100%", height: "100%" }} />
     </div>
   );
 }

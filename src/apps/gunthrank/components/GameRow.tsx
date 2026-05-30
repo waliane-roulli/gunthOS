@@ -7,13 +7,15 @@ import { TIERS, getPlatformColor, type RankingEntry, type TierId } from "../cons
 interface GameRowProps {
   ranking: RankingEntry;
   readOnly?: boolean;
+  isNew?: boolean;
   onRemove?: (gameId: number) => void;
   onUpdateNote?: (rankingId: number, objectiveNote: number | null, noteText: string | null, playedOn?: string | null) => void;
   onMove?: (rankingId: number, toTier: TierId) => void;
+  onDetailClick?: (ranking: RankingEntry) => void;
   rankNumber?: number | null;
 }
 
-export function GameRow({ ranking, readOnly, onRemove, onUpdateNote, onMove, rankNumber }: GameRowProps) {
+export function GameRow({ ranking, readOnly, isNew, onRemove, onUpdateNote, onMove, onDetailClick, rankNumber }: GameRowProps) {
   const [expanded, setExpanded] = useState(false);
   const [noteValue, setNoteValue] = useState(ranking.objectiveNote ?? 5);
   const [noteText, setNoteText] = useState(ranking.noteText ?? "");
@@ -73,7 +75,7 @@ export function GameRow({ ranking, readOnly, onRemove, onUpdateNote, onMove, ran
     <div
       draggable={!readOnly}
       onDragStart={handleDragStart}
-      className="flex-shrink-0 cursor-grab active:cursor-grabbing select-none"
+      className={`flex-shrink-0 cursor-grab active:cursor-grabbing select-none${isNew ? " animate-[pop_0.3s_ease-out]" : ""}`}
       style={{
         background: "var(--t-card-bg)",
         borderTop: "2px solid var(--t-border-light)",
@@ -85,7 +87,7 @@ export function GameRow({ ranking, readOnly, onRemove, onUpdateNote, onMove, ran
       {/* Main row */}
       <div
         className="flex items-center gap-2 px-2 py-1.5 min-w-0"
-        onClick={() => { if (!readOnly) setExpanded(!expanded); }}
+        onClick={() => onDetailClick?.(ranking)}
       >
         {/* Rank number */}
         {rankNumber != null && (
@@ -140,8 +142,24 @@ export function GameRow({ ranking, readOnly, onRemove, onUpdateNote, onMove, ran
           )}
         </div>
 
-        {/* Right: note */}
-        <div className="flex-shrink-0 flex items-center gap-2" style={{ minWidth: 80 }}>
+        {/* Right: note + edit button */}
+        <div className="flex-shrink-0 flex items-center gap-2" style={{ minWidth: 100 }}>
+          {!readOnly && (
+            <button
+              className="px-1 py-0.5 opacity-50 hover:opacity-100"
+              style={{
+                fontSize: "var(--t-text-xs)",
+                background: "none",
+                color: "var(--t-text-muted)",
+                border: "none",
+                cursor: "pointer",
+              }}
+              onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
+              title="Modifier la note"
+            >
+              ✎
+            </button>
+          )}
           {hasNote ? (
             <div className="text-right">
               <div style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text)", fontWeight: "bold" }}>

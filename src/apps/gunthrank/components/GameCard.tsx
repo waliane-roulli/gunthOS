@@ -7,11 +7,13 @@ import { getPlatformColor, type RankingEntry } from "../constants";
 interface GameCardProps {
   ranking: RankingEntry;
   readOnly?: boolean;
+  isNew?: boolean;
   onRemove?: (gameId: number) => void;
   onUpdateNote?: (rankingId: number, objectiveNote: number | null, noteText: string | null, playedOn?: string | null) => void;
+  onDetailClick?: (ranking: RankingEntry) => void;
 }
 
-export function GameCard({ ranking, readOnly, onRemove, onUpdateNote }: GameCardProps) {
+export function GameCard({ ranking, readOnly, isNew, onRemove, onUpdateNote, onDetailClick }: GameCardProps) {
   const [expanded, setExpanded] = useState(false);
   const [noteValue, setNoteValue] = useState(ranking.objectiveNote ?? 5);
   const [noteText, setNoteText] = useState(ranking.noteText ?? "");
@@ -47,7 +49,7 @@ export function GameCard({ ranking, readOnly, onRemove, onUpdateNote }: GameCard
     <div
       draggable={!readOnly}
       onDragStart={handleDragStart}
-      className="flex-shrink-0 rounded cursor-grab active:cursor-grabbing select-none overflow-hidden"
+      className={`flex-shrink-0 rounded cursor-grab active:cursor-grabbing select-none overflow-hidden${isNew ? " animate-[pop_0.3s_ease-out]" : ""}`}
       style={{
         width: 140,
         background: cardBg,
@@ -61,7 +63,7 @@ export function GameCard({ ranking, readOnly, onRemove, onUpdateNote }: GameCard
       <div
         className="relative w-full"
         style={{ aspectRatio: "2/3" }}
-        onClick={() => !readOnly && setExpanded(!expanded)}
+        onClick={() => onDetailClick?.(ranking)}
       >
         {coverUrl ? (
           <img
@@ -104,7 +106,7 @@ export function GameCard({ ranking, readOnly, onRemove, onUpdateNote }: GameCard
           </div>
         </div>
 
-        {/* Note badge */}
+        {/* Note badge + edit button */}
         {hasNote && (
           <div
             className="absolute top-0.5 right-0.5 px-1 py-0.5 font-bold rounded"
@@ -117,6 +119,22 @@ export function GameCard({ ranking, readOnly, onRemove, onUpdateNote }: GameCard
           >
             {ranking.objectiveNote}/10
           </div>
+        )}
+        {!readOnly && (
+          <button
+            className="absolute top-0.5 left-0.5 px-1 py-0.5 rounded opacity-70 hover:opacity-100"
+            style={{
+              fontSize: "calc(var(--t-text-xs) * 0.75)",
+              background: "rgba(0,0,0,0.55)",
+              color: "#fff",
+              border: "none",
+              cursor: "pointer",
+              lineHeight: 1,
+            }}
+            onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
+          >
+            ✎
+          </button>
         )}
       </div>
 
