@@ -19,6 +19,7 @@ export function CatalogPanel({ onClose, onAddFromCatalog, onAddFromIgdb }: Catal
   const [query, setQuery] = useState("");
   const [genreFilter, setGenreFilter] = useState<string | null>(null);
   const [platformFilter, setPlatformFilter] = useState<string | null>(null);
+  const [offline, setOffline] = useState(false);
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -32,34 +33,37 @@ export function CatalogPanel({ onClose, onAddFromCatalog, onAddFromIgdb }: Catal
 
   const hasFilters = query.length >= 2 || genreFilter || platformFilter;
 
-  // IGDB search — only when filters are active
+  // IGDB search — fires on mount for popular games, and on every filter change
   useEffect(() => {
-    if (!hasFilters) {
-      setIgdbResults([]);
-      return;
-    }
     const timer = setTimeout(async () => {
       setLoading(true);
       try {
+        const body: Record<string, unknown> = { limit: 30 };
+        if (query.length >= 2) body.query = query;
+        if (genreFilter) body.genre = genreFilter;
+        if (platformFilter) body.platform = platformFilter;
+
         const igdbRes = await fetch("/api/igdb/search", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            query: query.length >= 2 ? query : undefined,
-            genre: genreFilter ?? undefined,
-            platform: platformFilter ?? undefined,
-            limit: 30,
-          }),
+          body: JSON.stringify(body),
         });
         const data = await igdbRes.json() as { results: IgdbSearchResult[]; offline?: boolean };
-        setIgdbResults(data.results ?? []);
+        const newResults = data.results ?? [];
+        // Only replace results if we got something, or if there's no text query active.
+        // Prevents popular games from vanishing when text search returns empty.
+        if (newResults.length > 0 || query.length < 2) {
+          setIgdbResults(newResults);
+        }
+        setOffline(!!data.offline);
       } catch {
-        setIgdbResults([]);
+        if (query.length < 2) setIgdbResults([]);
+        setOffline(true);
       }
       setLoading(false);
-    }, 300);
+    }, query.length >= 2 ? 300 : 0); // debounce only for text search, instant for filters
     return () => clearTimeout(timer);
-  }, [query, genreFilter, platformFilter, hasFilters]);
+  }, [query, genreFilter, platformFilter]);
 
   // Filter local catalog by ALL criteria (text + genre + platform)
   const filteredDbGames = useMemo(() => {
@@ -190,21 +194,23 @@ export function CatalogPanel({ onClose, onAddFromCatalog, onAddFromIgdb }: Catal
         </div>
       </div>
 
-      {/* Results count */}
-      {!loading && hasFilters && (
-        <div className="px-2 py-1" style={{ fontSize: "calc(var(--t-text-xs) * 0.8)", color: "var(--t-text-muted)" }}>
-          {filteredDbGames.length} locaux · {igdbResults.length} IGDB
-          <button onClick={clearFilters} style={{ marginLeft: 8, background: "none", border: "none", color: "var(--t-accent)", cursor: "pointer", fontSize: "inherit" }}>clear</button>
-        </div>
-      )}
+      {/* Results count + offline */}
+      <div className="px-2 py-1 flex items-center gap-2" style={{ fontSize: "calc(var(--t-text-xs) * 0.8)", color: "var(--t-text-muted)" }}>
+        {loading ? (
+          <span>Recherche...</span>
+        ) : (
+          <>
+            <span>{filteredDbGames.length} locaux · {igdbResults.length} IGDB</span>
+            {offline && <span style={{ color: "var(--t-error)" }}>⚠ IGDB hors-ligne</span>}
+          </>
+        )}
+        {hasFilters && (
+          <button onClick={clearFilters} style={{ background: "none", border: "none", color: "var(--t-accent)", cursor: "pointer", fontSize: "inherit" }}>clear</button>
+        )}
+      </div>
 
       {/* Results */}
       <div className="overflow-auto flex-1">
-        {loading && (
-          <div className="px-2 py-1" style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)" }}>
-            Recherche IGDB...
-          </div>
-        )}
 
         {filteredDbGames.map((game) => {
           const pickerKey = `db:${game.id}`;
@@ -377,15 +383,9 @@ export function CatalogPanel({ onClose, onAddFromCatalog, onAddFromIgdb }: Catal
           );
         })}
 
-        {!loading && hasFilters && filteredDbGames.length === 0 && igdbResults.length === 0 && (
+        {!loading && filteredDbGames.length === 0 && igdbResults.length === 0 && (
           <div className="px-2 py-2" style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)" }}>
-            Aucun résultat.
-          </div>
-        )}
-
-        {!hasFilters && allDbGames.length === 0 && (
-          <div className="px-2 py-3 text-center" style={{ fontSize: "var(--t-text-xs)", color: "var(--t-text-muted)" }}>
-            Le catalogue est vide. Ajoute des jeux depuis IGDB !
+            {offline ? "IGDB hors-ligne. Vérifie ta connexion." : hasFilters ? "Aucun résultat." : "Aucun jeu trouvé."}
           </div>
         )}
       </div>

@@ -8,8 +8,7 @@ const CLIENT_SECRET = "qwza7uzglo1zmsvxcz032e5x6xcjjr";
 let cachedToken: string | null = null;
 let cachedExpiresAt = 0;
 
-const searchCache = new Map<string, { results: Array<{ igdbId: number; name: string; slug: string | null; coverUrl: string | null; platforms: string[]; genres: string[]; publishers: string[]; developers: string[]; releaseYear: number | null; summary: string | null }>; timestamp: number }>();
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const FIELDS = "name,slug,cover.url,platforms.name,genres.name,involved_companies.developer,involved_companies.publisher,involved_companies.company.name,first_release_date,summary";
 
 async function fetchWithRetry(url: string, init: RequestInit, retries = 3): Promise<Response> {
   let lastErr: unknown;
@@ -58,22 +57,76 @@ async function getAccessToken(): Promise<string | null> {
   }
 }
 
+async function searchEndpoint(token: string, searchTerm: string, limit: number): Promise<number[]> {
+  const res = await fetchWithRetry("https://api.igdb.com/v4/search", {
+    method: "POST",
+    headers: {
+      "Client-ID": CLIENT_ID,
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "text/plain",
+    },
+    body: `search "${searchTerm}"; fields game; limit ${limit};`,
+  });
+  if (!res.ok) {
+    console.error("IGDB search endpoint error", res.status);
+    return [];
+  }
+  const data = await res.json() as Array<{ game: number }>;
+  return data.map((d) => d.game);
+}
+
+async function queryIgdb(token: string, bodyStr: string) {
+  const igdbRes = await fetchWithRetry("https://api.igdb.com/v4/games", {
+    method: "POST",
+    headers: {
+      "Client-ID": CLIENT_ID,
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "text/plain",
+    },
+    body: bodyStr,
+  });
+
+  if (!igdbRes.ok) {
+    console.error("IGDB API error", igdbRes.status, await igdbRes.text().catch(() => ""));
+    return null;
+  }
+
+  const raw = await igdbRes.json() as Array<{
+    id: number; name: string; slug?: string;
+    cover?: { url: string };
+    platforms?: Array<{ name: string }>;
+    genres?: Array<{ name: string }>;
+    involved_companies?: Array<{ developer: boolean; publisher: boolean; company: { name: string } }>;
+    first_release_date?: number; summary?: string;
+  }>;
+
+  return raw.map((g) => ({
+    igdbId: g.id,
+    name: g.name,
+    slug: g.slug ?? null,
+    coverUrl: g.cover?.url
+      ? `https:${g.cover.url}`.replace("t_thumb", "t_cover_big")
+      : null,
+    platforms: g.platforms?.map((p) => p.name) ?? [],
+    genres: g.genres?.map((g2) => g2.name) ?? [],
+    publishers: g.involved_companies
+      ? [...new Set(g.involved_companies.filter((c) => c.publisher).map((c) => c.company.name))]
+      : [],
+    developers: g.involved_companies
+      ? [...new Set(g.involved_companies.filter((c) => c.developer).map((c) => c.company.name))]
+      : [],
+    releaseYear: g.first_release_date
+      ? new Date(g.first_release_date * 1000).getFullYear()
+      : null,
+    summary: g.summary ?? null,
+  }));
+}
+
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({})) as { query?: string; genre?: string; platform?: string; limit?: number };
   const { query, genre, platform } = body;
   const limit = body.limit ?? 20;
   const hasQuery = query && query.trim().length >= 2;
-
-  if (!hasQuery && !genre && !platform) {
-    return NextResponse.json({ results: [] });
-  }
-
-  const cacheKey = `${query ?? ""}|${genre ?? ""}|${platform ?? ""}`.toLowerCase();
-  const cached = searchCache.get(cacheKey);
-  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-    console.log("IGDB cache hit:", cacheKey);
-    return NextResponse.json({ results: cached.results });
-  }
 
   const token = await getAccessToken();
   if (!token) {
@@ -81,67 +134,51 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ offline: true, results: [] });
   }
 
-  // Build IGDB query
-  const parts: string[] = [];
-  if (hasQuery) parts.push(`search "${query!.trim()}"`);
-  const wheres: string[] = [];
-  if (genre) wheres.push(`genres.name = "${genre}"`);
-  if (platform) wheres.push(`platforms.name = "${platform}"`);
-  if (!hasQuery) wheres.push("total_rating_count > 5");
-
-  let bodyStr = parts.join(" ");
-  if (wheres.length > 0) bodyStr += ` where ${wheres.join(" & ")}`;
-  bodyStr += `; sort total_rating_count desc; fields name,slug,cover.url,platforms.name,genres.name,involved_companies.developer,involved_companies.publisher,involved_companies.company.name,first_release_date,summary; limit ${limit};`;
-
-  console.log("IGDB query:", bodyStr.substring(0, 200));
+  type IgdbResult = { igdbId: number; name: string; slug: string | null; coverUrl: string | null; platforms: string[]; genres: string[]; publishers: string[]; developers: string[]; releaseYear: number | null; summary: string | null };
 
   try {
-    const igdbRes = await fetchWithRetry("https://api.igdb.com/v4/games", {
-      method: "POST",
-      headers: {
-        "Client-ID": CLIENT_ID,
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "text/plain",
-      },
-      body: bodyStr,
-    });
-
-    if (!igdbRes.ok) {
-      console.error("IGDB API error", igdbRes.status, await igdbRes.text().catch(() => ""));
-      return NextResponse.json({ offline: true, results: [] });
+    // If no filters at all, return popular games
+    if (!hasQuery && !genre && !platform) {
+      const popularQuery = `where total_rating_count > 50; sort total_rating_count desc; fields ${FIELDS}; limit ${limit};`;
+      console.log("IGDB popular:", popularQuery);
+      const popularResults: IgdbResult[] = (await queryIgdb(token, popularQuery)) ?? [];
+      console.log("IGDB popular: returned", popularResults.length, "results");
+      return NextResponse.json({ results: popularResults });
     }
 
-    const raw = await igdbRes.json() as Array<{
-      id: number; name: string; slug?: string;
-      cover?: { url: string };
-      platforms?: Array<{ name: string }>;
-      genres?: Array<{ name: string }>;
-      involved_companies?: Array<{ developer: boolean; publisher: boolean; company: { name: string } }>;
-      first_release_date?: number; summary?: string;
-    }>;
+    let results: IgdbResult[] = [];
 
-    const results = raw.map((g) => ({
-      igdbId: g.id,
-      name: g.name,
-      slug: g.slug ?? null,
-      coverUrl: g.cover?.url
-        ? `https:${g.cover.url}`.replace("t_thumb", "t_cover_big")
-        : null,
-      platforms: g.platforms?.map((p) => p.name) ?? [],
-      genres: g.genres?.map((g2) => g2.name) ?? [],
-      publishers: g.involved_companies
-        ? [...new Set(g.involved_companies.filter((c) => c.publisher).map((c) => c.company.name))]
-        : [],
-      developers: g.involved_companies
-        ? [...new Set(g.involved_companies.filter((c) => c.developer).map((c) => c.company.name))]
-        : [],
-      releaseYear: g.first_release_date
-        ? new Date(g.first_release_date * 1000).getFullYear()
-        : null,
-      summary: g.summary ?? null,
-    }));
+    // If we have a text query, use the dedicated /v4/search endpoint
+    if (hasQuery) {
+      console.log("IGDB text search:", query!.trim());
+      const gameIds = await searchEndpoint(token, query!.trim(), limit);
 
-    searchCache.set(cacheKey, { results, timestamp: Date.now() });
+      if (gameIds.length > 0) {
+        // Fetch full game data for the matched IDs
+        const wheresForIds: string[] = [];
+        if (genre) wheresForIds.push(`genres.name = "${genre}"`);
+        if (platform) wheresForIds.push(`platforms.name = "${platform}"`);
+
+        let queryByIds = `where id = (${gameIds.join(",")}); sort total_rating_count desc; fields ${FIELDS}; limit ${limit};`;
+        if (wheresForIds.length > 0) {
+          queryByIds = `where id = (${gameIds.join(",")}) & ${wheresForIds.join(" & ")}; sort total_rating_count desc; fields ${FIELDS}; limit ${limit};`;
+        }
+        console.log("IGDB fetching by IDs:", queryByIds.substring(0, 200));
+        results = (await queryIgdb(token, queryByIds)) ?? [];
+      }
+    } else if (genre || platform) {
+      // Genre/platform filters only (no text query)
+      const wheres: string[] = [];
+      if (genre) wheres.push(`genres.name = "${genre}"`);
+      if (platform) wheres.push(`platforms.name = "${platform}"`);
+      wheres.push("total_rating_count > 5");
+
+      const bodyStr = `where ${wheres.join(" & ")}; sort total_rating_count desc; fields ${FIELDS}; limit ${limit};`;
+      console.log("IGDB filter query:", bodyStr.substring(0, 200));
+      results = (await queryIgdb(token, bodyStr)) ?? [];
+    }
+
+    console.log("IGDB: returned", results.length, "results");
     return NextResponse.json({ results });
   } catch (err) {
     console.error("IGDB exception:", err);
